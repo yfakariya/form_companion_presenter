@@ -1,4 +1,4 @@
-# form_presenter_riverpod
+# form_presenter_state_notifier
 
 A new Flutter package project.
 
