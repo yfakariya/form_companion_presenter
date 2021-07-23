@@ -1,0 +1,5 @@
+name: form_companion_presenter
+
+packages:
+  - examples/**
+  - packages/**
