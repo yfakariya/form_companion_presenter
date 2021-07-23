@@ -37,7 +37,7 @@ packages:
     source: hosted
     version: "1.1.0"
   collection:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: collection
       url: "https://pub.dartlang.org"
@@ -67,6 +67,13 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  form_companion_presenter:
+    dependency: "direct main"
+    description:
+      path: "../form_companion_presenter"
+      relative: true
+    source: path
+    version: "0.0.1"
   lints:
     dependency: transitive
     description:
@@ -114,6 +121,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.10.0"
+  state_notifier:
+    dependency: "direct main"
+    description:
+      name: state_notifier
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.7.0"
   stream_channel:
     dependency: transitive
     description:
