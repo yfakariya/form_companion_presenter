@@ -283,7 +283,7 @@ abstract class FutureInvoker<T extends AsyncOperationNotifier<R, P>, R, P> {
         break;
     }
 
-    final shouldInvoke = _nextValue == null;
+    final shouldInvoke = _processingValue == null;
     _nextValue = NullableValueHolder(parameter);
     if (shouldInvoke) {
       _log.fine(() => 'Begin async operation.');
