@@ -244,7 +244,14 @@ abstract class FutureInvoker<T extends AsyncOperationNotifier<R, P>, R, P> {
   /// and returns "initial value".
   ///
   /// Note that you can change the state with [reset] or [cancel] method.
-  /// In addition, this method debounces continous execution.
+  /// In addition, this method debounces continous execution. Specifically,
+  /// it logically holds deque of requests and pops only the last one.
+  ///
+  /// Note that the result of [executeAsync] is always spawn asynchronously.
+  /// That means even if the [executeAsync] itself throws exception before any
+  /// await expression, [status] property will be changed to
+  /// [AsyncOperationStatus.failed] in next event loop. So, the result never
+  /// be observed before any awaiting.
   R? execute(T parameter) {
     switch (_state.status) {
       case AsyncOperationStatus.completed:
@@ -357,6 +364,10 @@ abstract class FutureInvoker<T extends AsyncOperationNotifier<R, P>, R, P> {
       // "executeAsync" may throw any exception, so catch-all is required here.
       // ignore: avoid_catches_without_on_clauses
       catch (error, stackTrace) {
+        // CAUTION: This catch clause ALWAYS executed in next event of the
+        //          eventloop even if `executeAsync` threw an exception
+        //          synchronously.
+
         final asyncError = AsyncError(error, stackTrace);
         // _processingValue may be set to null before "await executeAsync" line
         // returns.
