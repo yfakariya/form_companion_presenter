@@ -106,9 +106,9 @@ void main() {
     String errorString;
     if (error != null) {
       if (stackTrace != null) {
-        errorString = '$error\n$stackTrace';
+        errorString = ' $error\n$stackTrace';
       } else {
-        errorString = error.toString();
+        errorString = ' $error';
       }
     } else {
       errorString = '';
@@ -122,10 +122,11 @@ void main() {
     () {
       group('execute', () {
         group('success', () {
-          group('1st request is executed asynchronously and set to result.',
-              () {
+          group('1 request is executed asynchronously and set to result.', () {
             Future doTest(Future<String> Function(String) future) async {
-              final parameter = Parameter<String, void>(value: 'input');
+              String? result1;
+              final parameter = Parameter<String, void>(
+                  value: 'input', onCompleted: (r) => result1 = r);
               const expected = 'output';
               const defaultResult = 'default';
 
@@ -158,8 +159,11 @@ void main() {
               expect(parameter.isOnFailedCalled, isFalse);
               expect(parameter.isOnProgressCalled, isFalse);
 
+              expect(result1, equals(expected));
+
               // We can get cached result.
               expect(target.execute(parameter), equals(expected));
+              expect(target.status, equals(AsyncOperationStatus.completed));
             }
 
             test(
@@ -178,11 +182,15 @@ void main() {
           });
 
           group(
-              '2nd request with diffrent parameter overrides and set to result.',
+              '2 request with diffrent parameter overrides and set to result.',
               () {
             Future doTest(Future<String> Function(String) future) async {
-              final parameter1 = Parameter<String, void>(value: 'input1');
-              final parameter2 = Parameter<String, void>(value: 'input2');
+              String? result1;
+              String? result2;
+              final parameter1 = Parameter<String, void>(
+                  value: 'input1', onCompleted: (r) => result1 = r);
+              final parameter2 = Parameter<String, void>(
+                  value: 'input2', onCompleted: (r) => result2 = r);
               const expected = 'output';
               const defaultResult = 'default';
 
@@ -191,7 +199,7 @@ void main() {
                 callback: (p) {
                   printOnFailure('future called with $p');
                   passed = p;
-                  return future(expected);
+                  return future(expected + p.value);
                 },
                 defaultResult: defaultResult,
               );
@@ -228,8 +236,31 @@ void main() {
               expect(parameter2.isOnFailedCalled, isFalse);
               expect(parameter2.isOnProgressCalled, isFalse);
 
+              expect(result1, isNull);
+              expect(result2, equals('$expected${parameter2.value}'));
+
               // We can get cached result.
-              expect(target.execute(parameter2), equals(expected));
+              expect(target.execute(parameter2),
+                  equals('$expected${parameter2.value}'));
+              expect(target.status, equals(AsyncOperationStatus.completed));
+            }
+
+            test(
+              'async',
+              () => doTest(
+                (r) => Future.delayed(
+                  Duration.zero,
+                  () => r,
+                ),
+              ),
+            );
+            test(
+              'sync',
+              () => doTest(
+                (r) => Future.value(r),
+              ),
+            );
+          });
             }
 
             test(
