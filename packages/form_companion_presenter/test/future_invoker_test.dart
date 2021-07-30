@@ -115,6 +115,99 @@ class CustomEquality<T> implements Equality<T> {
   }
 }
 
+Future<void> doSuccessCase(
+  TestTarget target,
+  Parameter<String, void> parameter, {
+  required String initialExpected,
+  required String finalExpected,
+  required Parameter<String, void>? Function() refPassed,
+  required String? Function() refResult,
+}) async {
+  // Assert before the future
+  expect(target.execute(parameter), equals(initialExpected));
+  expect(target.status, equals(AsyncOperationStatus.inProgress));
+
+  await parameter.completer.future;
+
+  // Assert mock
+  expect(refPassed(), same(parameter));
+
+  // Assert status after the future
+  expect(target.status, equals(AsyncOperationStatus.completed));
+
+  // Assert callback behaviors
+  expect(parameter.isOnCompletedCalled, isTrue);
+  expect(parameter.isOnFailedCalled, isFalse);
+  expect(parameter.isOnProgressCalled, isFalse);
+
+  expect(refResult(), equals(finalExpected));
+
+  // We can get cached result.
+  expect(target.execute(parameter), equals(finalExpected));
+  expect(target.status, equals(AsyncOperationStatus.completed));
+}
+
+Future<void> doFailCase(
+  TestTarget target,
+  Parameter<String, void> parameter, {
+  required String initialExpected,
+  required Object errorToBeThrown,
+  required Parameter<String, void>? Function() refPassed,
+  required AsyncError? Function() refFailure,
+}) async {
+  // Assert before the future
+  try {
+    expect(target.execute(parameter), equals(initialExpected));
+    // in async error, this try should not throw any exception here.
+    expect(target.status, equals(AsyncOperationStatus.inProgress));
+  }
+  // ignore: avoid_catching_errors
+  on AsyncError catch (e) {
+    // in sync error, this catch will be fired.
+    expect(e.error, same(errorToBeThrown));
+    expect(target.status, equals(AsyncOperationStatus.failed));
+  }
+
+  printOnFailure('${target.status}');
+  try {
+    await parameter.completer.future;
+    fail('No exception thrown.');
+  } on Exception catch (e) {
+    expect(e, same(errorToBeThrown));
+  }
+
+  // Assert mock
+  expect(refPassed(), same(parameter));
+
+  // Assert status after the future
+  expect(target.status, equals(AsyncOperationStatus.failed));
+
+  // Assert callback behaviors
+  expect(parameter.isOnCompletedCalled, isFalse);
+  expect(parameter.isOnFailedCalled, isTrue);
+  expect(parameter.isOnProgressCalled, isFalse);
+
+  final failure = refFailure();
+  expect(failure, isNotNull);
+  expect(failure?.error, isNotNull);
+  expect(failure?.stackTrace, isNotNull);
+  expect(failure?.error, same(errorToBeThrown));
+
+  // We can get cached exception.
+
+  try {
+    target.execute(parameter);
+  }
+  // ignore: avoid_catching_errors
+  on AsyncError catch (e) {
+    expect(e, isA<AsyncError>());
+    expect(e.error, same(errorToBeThrown));
+    expect(e.stackTrace, isNotNull);
+  }
+
+  expect(target.status, equals(AsyncOperationStatus.failed));
+}
+
 void main() {
   // For debugging
   loggerSink = (
@@ -173,28 +266,14 @@ void main() {
               // Assert precondition
               expect(target.status, equals(AsyncOperationStatus.initial));
 
-              // Assert before the future
-              expect(target.execute(parameter), equals(defaultResult));
-              expect(target.status, equals(AsyncOperationStatus.inProgress));
-
-              await parameter.completer.future;
-
-              // Assert mock
-              expect(passed, same(parameter));
-
-              // Assert status after the future
-              expect(target.status, equals(AsyncOperationStatus.completed));
-
-              // Assert callback behaviors
-              expect(parameter.isOnCompletedCalled, isTrue);
-              expect(parameter.isOnFailedCalled, isFalse);
-              expect(parameter.isOnProgressCalled, isFalse);
-
-              expect(result1, equals(expected));
-
-              // We can get cached result.
-              expect(target.execute(parameter), equals(expected));
-              expect(target.status, equals(AsyncOperationStatus.completed));
+              await doSuccessCase(
+                target,
+                parameter,
+                initialExpected: defaultResult,
+                finalExpected: expected,
+                refPassed: () => passed,
+                refResult: () => result1,
+              );
             }
 
             test(
@@ -432,56 +511,14 @@ void main() {
               // Assert precondition
               expect(target.status, equals(AsyncOperationStatus.initial));
 
-              // Assert before the future
-              try {
-                expect(target.execute(parameter), equals(defaultResult));
-                // in async error, this try should not throw any exception here.
-                expect(target.status, equals(AsyncOperationStatus.inProgress));
-              }
-              // ignore: avoid_catching_errors
-              on AsyncError catch (e) {
-                // in sync error, this catch will be fired.
-                expect(e.error, same(error));
-                expect(target.status, equals(AsyncOperationStatus.failed));
-              }
-
-              printOnFailure('${target.status}');
-              try {
-                await parameter.completer.future;
-                fail('No exception thrown.');
-              } on Exception catch (e) {
-                expect(e, same(error));
-              }
-
-              // Assert mock
-              expect(passed, same(parameter));
-
-              // Assert status after the future
-              expect(target.status, equals(AsyncOperationStatus.failed));
-
-              // Assert callback behaviors
-              expect(parameter.isOnCompletedCalled, isFalse);
-              expect(parameter.isOnFailedCalled, isTrue);
-              expect(parameter.isOnProgressCalled, isFalse);
-
-              expect(failure1, isNotNull);
-              expect(failure1?.error, isNotNull);
-              expect(failure1?.stackTrace, isNotNull);
-              expect(failure1?.error, same(error));
-
-              // We can get cached exception.
-
-              try {
-                target.execute(parameter);
-              }
-              // ignore: avoid_catching_errors
-              on AsyncError catch (e) {
-                expect(e, isA<AsyncError>());
-                expect(e.error, same(error));
-                expect(e.stackTrace, isNotNull);
-              }
-
-              expect(target.status, equals(AsyncOperationStatus.failed));
+              await doFailCase(
+                target,
+                parameter,
+                initialExpected: defaultResult,
+                errorToBeThrown: error,
+                refPassed: () => passed,
+                refFailure: () => failure1,
+              );
             }
 
             test(
@@ -665,67 +702,23 @@ void main() {
               // Assert precondition
               expect(target.status, equals(AsyncOperationStatus.initial));
 
-              // Assert before the future
-              try {
-                expect(target.execute(parameter1), equals(defaultResult));
-                // in async error, this try should not throw any exception here.
-                expect(target.status, equals(AsyncOperationStatus.inProgress));
-              }
-              // ignore: avoid_catching_errors
-              on AsyncError catch (e) {
-                // in sync error, this catch will be fired.
-                expect(e.error, same(error1));
-                expect(target.status, equals(AsyncOperationStatus.failed));
-              }
+              await doFailCase(
+                target,
+                parameter1,
+                initialExpected: defaultResult,
+                errorToBeThrown: error1,
+                refPassed: () => passed,
+                refFailure: () => failure1,
+              );
 
-              printOnFailure('${target.status}');
-              try {
-                await parameter1.completer.future;
-                fail('No exception thrown.');
-              } on Exception catch (e) {
-                expect(e, same(error1));
-              }
-
-              // Assert mock
-              expect(passed, same(parameter1));
-
-              // Assert status after the future
-              expect(target.status, equals(AsyncOperationStatus.failed));
-
-              // Assert callback behaviors
-              expect(parameter1.isOnCompletedCalled, isFalse);
-              expect(parameter1.isOnFailedCalled, isTrue);
-              expect(parameter1.isOnProgressCalled, isFalse);
-
-              expect(failure1, isNotNull);
-              expect(failure1?.error, isNotNull);
-              expect(failure1?.stackTrace, isNotNull);
-              expect(failure1?.error, same(error1));
-
-              expect(target.execute(parameter2), equals(defaultResult));
-              // in async error, this try should not throw any exception here.
-              expect(target.status, equals(AsyncOperationStatus.inProgress));
-
-              printOnFailure('${target.status}');
-              await parameter2.completer.future;
-
-              // Assert mock
-              expect(passed, same(parameter2));
-
-              // Assert status after the future
-              expect(target.status, equals(AsyncOperationStatus.completed));
-
-              // Assert callback behaviors
-              expect(parameter2.isOnCompletedCalled, isTrue);
-              expect(parameter2.isOnFailedCalled, isFalse);
-              expect(parameter2.isOnProgressCalled, isFalse);
-
-              expect(result2, isNotNull);
-              expect(result2, equals(expected));
-
-              // We can get cached result.
-              expect(target.execute(parameter2), equals(expected));
-              expect(target.status, equals(AsyncOperationStatus.completed));
+              await doSuccessCase(
+                target,
+                parameter2,
+                initialExpected: defaultResult,
+                finalExpected: expected,
+                refPassed: () => passed,
+                refResult: () => result2,
+              );
             }
 
             test(
@@ -785,73 +778,23 @@ void main() {
               // Assert precondition
               expect(target.status, equals(AsyncOperationStatus.initial));
 
-              expect(target.execute(parameter1), equals(defaultResult));
-              // in async error, this try should not throw any exception here.
-              expect(target.status, equals(AsyncOperationStatus.inProgress));
+              await doSuccessCase(
+                target,
+                parameter1,
+                initialExpected: defaultResult,
+                finalExpected: expected,
+                refPassed: () => passed,
+                refResult: () => result1,
+              );
 
-              printOnFailure('${target.status}');
-              await parameter1.completer.future;
-
-              // Assert mock
-              expect(passed, same(parameter1));
-
-              // Assert status after the future
-              expect(target.status, equals(AsyncOperationStatus.completed));
-
-              // Assert callback behaviors
-              expect(parameter1.isOnCompletedCalled, isTrue);
-              expect(parameter1.isOnFailedCalled, isFalse);
-              expect(parameter1.isOnProgressCalled, isFalse);
-              expect(result1, equals(expected));
-
-              // Assert before the future
-              try {
-                expect(target.execute(parameter2), equals(expected));
-                // in async error, this try should not throw any exception here.
-                expect(target.status, equals(AsyncOperationStatus.inProgress));
-              }
-              // ignore: avoid_catching_errors
-              on AsyncError catch (e) {
-                // in sync error, this catch will be fired.
-                expect(e.error, same(error2));
-                expect(target.status, equals(AsyncOperationStatus.failed));
-              }
-
-              printOnFailure('${target.status}');
-              try {
-                await parameter2.completer.future;
-                fail('No exception thrown.');
-              } on Exception catch (e) {
-                expect(e, same(error2));
-              }
-
-              // Assert mock
-              expect(passed, same(parameter2));
-
-              // Assert status after the future
-              expect(target.status, equals(AsyncOperationStatus.failed));
-
-              // Assert callback behaviors
-              expect(parameter2.isOnCompletedCalled, isFalse);
-              expect(parameter2.isOnFailedCalled, isTrue);
-              expect(parameter2.isOnProgressCalled, isFalse);
-
-              expect(failure2, isNotNull);
-              expect(failure2?.error, isNotNull);
-              expect(failure2?.stackTrace, isNotNull);
-              expect(failure2?.error, same(error2));
-
-              // We can get cached result.
-              try {
-                expect(target.execute(parameter2), equals(defaultResult));
-                fail('Never thrown');
-              }
-              // ignore: avoid_catching_errors
-              on AsyncError catch (e) {
-                // in sync error, this catch will be fired.
-                expect(e.error, same(error2));
-                expect(target.status, equals(AsyncOperationStatus.failed));
-              }
+              await doFailCase(
+                target,
+                parameter2,
+                initialExpected: expected,
+                errorToBeThrown: error2,
+                refPassed: () => passed,
+                refFailure: () => failure2,
+              );
             }
 
             test(
