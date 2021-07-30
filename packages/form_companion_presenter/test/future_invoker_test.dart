@@ -115,7 +115,7 @@ class CustomEquality<T> implements Equality<T> {
   }
 }
 
-typedef CancellationTestEpilogue = Future<void> Function(
+typedef TestEpilogue = Future<void> Function(
   TestTarget target,
   Parameter<String, void> parameter,
   String initialExpected,
@@ -123,8 +123,8 @@ typedef CancellationTestEpilogue = Future<void> Function(
   Parameter<String, void>? Function() refPassed,
 );
 
-typedef CancellationTest = Future<void> Function(
-  CancellationTestEpilogue,
+typedef TestBody = Future<void> Function(
+  TestEpilogue,
   Parameter<String, void>,
   String?,
   Exception?,
@@ -221,6 +221,63 @@ Future<void> doFailCase(
   }
 
   expect(target.status, equals(AsyncOperationStatus.failed));
+}
+
+Future<void> doThenSucceedTest(
+  TestBody doTest,
+) async {
+  String? result;
+  final parameter =
+      Parameter<String, void>(value: 'SUCCESS', onCompleted: (r) => result = r);
+  await doTest(
+    (
+      target,
+      parameter,
+      initialExpected,
+      finalExpected,
+      refPassed,
+    ) =>
+        doSuccessCase(
+      target,
+      parameter,
+      initialExpected: initialExpected,
+      finalExpected: finalExpected,
+      refPassed: refPassed,
+      refResult: () => result,
+    ),
+    parameter,
+    'SUCCESS',
+    null,
+  );
+}
+
+Future<void> doThenFailTest(
+  TestBody doTest,
+) async {
+  final error = Exception('DUMMY');
+  AsyncError? failure;
+  final parameter =
+      Parameter<String, void>(value: 'FAIL', onFailed: (e) => failure = e);
+  await doTest(
+    (
+      target,
+      parameter,
+      initialExpected,
+      finalExpected,
+      refPassed,
+    ) =>
+        doFailCase(
+      target,
+      parameter,
+      initialExpected: initialExpected,
+      errorToBeThrown: error,
+      refPassed: refPassed,
+      refFailure: () => failure,
+    ),
+    parameter,
+    null,
+    error,
+  );
 }
 
 void main() {
@@ -894,67 +951,10 @@ void main() {
         });
       });
 
-      Future<void> doSuccessCancelellationTest(
-        CancellationTest doTest,
-      ) async {
-        String? result;
-        final parameter = Parameter<String, void>(
-            value: 'SUCCESS', onCompleted: (r) => result = r);
-        await doTest(
-          (
-            target,
-            parameter,
-            initialExpected,
-            finalExpected,
-            refPassed,
-          ) =>
-              doSuccessCase(
-            target,
-            parameter,
-            initialExpected: initialExpected,
-            finalExpected: finalExpected,
-            refPassed: refPassed,
-            refResult: () => result,
-          ),
-          parameter,
-          'SUCCESS',
-          null,
-        );
-      }
-
-      Future<void> doFailureCancelellationTest(
-        CancellationTest doTest,
-      ) async {
-        final error = Exception('DUMMY');
-        AsyncError? failure;
-        final parameter = Parameter<String, void>(
-            value: 'FAIL', onFailed: (e) => failure = e);
-        await doTest(
-          (
-            target,
-            parameter,
-            initialExpected,
-            finalExpected,
-            refPassed,
-          ) =>
-              doFailCase(
-            target,
-            parameter,
-            initialExpected: initialExpected,
-            errorToBeThrown: error,
-            refPassed: refPassed,
-            refFailure: () => failure,
-          ),
-          parameter,
-          null,
-          error,
-        );
-      }
-
       group('cancel', () {
         group('initial -(cancel)-> initial', () {
           Future<void> doTest(
-            CancellationTestEpilogue doAfter,
+            TestEpilogue doAfter,
             Parameter<String, void> afterParameter,
             String? afterResult,
             Exception? afterError,
@@ -995,13 +995,13 @@ void main() {
             );
           }
 
-          test('-> success', () async => doSuccessCancelellationTest(doTest));
-          test('-> failure', () async => doFailureCancelellationTest(doTest));
+          test('-> success', () async => doThenSucceedTest(doTest));
+          test('-> failure', () async => doThenFailTest(doTest));
         });
 
-        group('inprogress -(cancel)-> initial', () {
+        group('initial -> inprogress -(cancel)-> initial', () {
           Future<void> doTest(
-            CancellationTestEpilogue doAfter,
+            TestEpilogue doAfter,
             Parameter<String, void> afterParameter,
             String? afterResult,
             Exception? afterError,
@@ -1053,13 +1053,13 @@ void main() {
             );
           }
 
-          test('-> success', () async => doSuccessCancelellationTest(doTest));
-          test('-> failure', () async => doFailureCancelellationTest(doTest));
+          test('-> success', () async => doThenSucceedTest(doTest));
+          test('-> failure', () async => doThenFailTest(doTest));
         });
 
         group('completed -(cancel)-> completed', () {
           Future<void> doTest(
-            CancellationTestEpilogue doAfter,
+            TestEpilogue doAfter,
             Parameter<String, void> afterParameter,
             String? afterResult,
             Exception? afterError,
@@ -1108,13 +1108,13 @@ void main() {
             );
           }
 
-          test('-> success', () async => doSuccessCancelellationTest(doTest));
-          test('-> failure', () async => doFailureCancelellationTest(doTest));
+          test('-> success', () async => doThenSucceedTest(doTest));
+          test('-> failure', () async => doThenFailTest(doTest));
         });
 
         group('completed -> inProgress -(cancel)-> completed', () {
           Future<void> doTest(
-            CancellationTestEpilogue doAfter,
+            TestEpilogue doAfter,
             Parameter<String, void> afterParameter,
             String? afterResult,
             Exception? afterError,
@@ -1179,13 +1179,13 @@ void main() {
             );
           }
 
-          test('-> success', () async => doSuccessCancelellationTest(doTest));
-          test('-> failure', () async => doFailureCancelellationTest(doTest));
+          test('-> success', () async => doThenSucceedTest(doTest));
+          test('-> failure', () async => doThenFailTest(doTest));
         });
 
         group('failed -(cancel)-> failed', () {
           Future<void> doTest(
-            CancellationTestEpilogue doAfter,
+            TestEpilogue doAfter,
             Parameter<String, void> afterParameter,
             String? afterResult,
             Exception? afterError,
@@ -1249,13 +1249,13 @@ void main() {
             );
           }
 
-          test('-> success', () async => doSuccessCancelellationTest(doTest));
-          test('-> failure', () async => doFailureCancelellationTest(doTest));
+          test('-> success', () async => doThenSucceedTest(doTest));
+          test('-> failure', () async => doThenFailTest(doTest));
         });
 
         group('failed -> inProgress -(cancel)-> failed', () {
           Future<void> doTest(
-            CancellationTestEpilogue doAfter,
+            TestEpilogue doAfter,
             Parameter<String, void> afterParameter,
             String? afterResult,
             Exception? afterError,
@@ -1342,8 +1342,8 @@ void main() {
             );
           }
 
-          test('-> success', () async => doSuccessCancelellationTest(doTest));
-          test('-> failure', () async => doFailureCancelellationTest(doTest));
+          test('-> success', () async => doThenSucceedTest(doTest));
+          test('-> failure', () async => doThenFailTest(doTest));
         });
       });
 
