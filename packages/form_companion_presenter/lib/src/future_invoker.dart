@@ -297,6 +297,14 @@ abstract class FutureInvoker<T extends AsyncOperationNotifier<R, P>, R, P> {
       _executeAsync();
     }
 
+    final synchronousError = _state.error;
+    if (synchronousError != null) {
+      // If executeAsync() throws exception synchronously,
+      // the thrown error is catched and cached.
+      // So throw it now.
+      throw synchronousError;
+    }
+
     _log.fine(() => 'Returns default result.');
     // Returns "initial value".
     return _state.result;
