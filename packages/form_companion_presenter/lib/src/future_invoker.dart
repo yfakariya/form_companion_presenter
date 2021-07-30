@@ -188,6 +188,9 @@ abstract class FutureInvoker<T extends AsyncOperationNotifier<R, P>, R, P> {
   /// * The asynchronous operation was canceled in after execution.
   NullableValueHolder<T>? _processingValue;
 
+  /// Last state for cancellation.
+  late _AsyncOperationState<T, R> _lastState;
+
   /// Overall state.
   _AsyncOperationState<T, R> _state;
 
@@ -219,6 +222,7 @@ abstract class FutureInvoker<T extends AsyncOperationNotifier<R, P>, R, P> {
         _parameterEquality = parameterEquality,
         _state = _AsyncOperationState.initial(defaultResult) {
     _log = Logger(name: debugLabel ?? runtimeType.toString());
+    _lastState = _state;
   }
 
   bool _isAlreadyHandled(T? parameter) {
@@ -320,9 +324,10 @@ abstract class FutureInvoker<T extends AsyncOperationNotifier<R, P>, R, P> {
   ///
   /// This method causes value change notification.
   void reset(R? newDefaultResult) {
-    _state = _AsyncOperationState.initial(newDefaultResult);
-    _nextValue = null;
     _processingValue = null;
+    _nextValue = null;
+    _state = _AsyncOperationState.initial(newDefaultResult);
+    _lastState = _state;
     _log.fine(() => 'Reset with new default result "$newDefaultResult".');
   }
 
@@ -335,20 +340,20 @@ abstract class FutureInvoker<T extends AsyncOperationNotifier<R, P>, R, P> {
   ///
   /// This method causes value change notification.
   void cancel() {
-    _state = _AsyncOperationState.initial(_state.result);
     _processingValue = null;
+    _state = _lastState;
     _log.fine(() => 'Cancel asynchronous operation.');
   }
 
   // The catch clause should catch every exception.
   // ignore: avoid_void_async
   void _executeAsync() async {
-    _ParameterAndResult<T, R>? lastState;
+    _ParameterAndResult<T, R>? finalSuccessfulState;
     for (var parameter = _processingValue = _nextValue;
         parameter != null;
         parameter = _processingValue = _nextValue) {
       try {
-        lastState = null;
+        finalSuccessfulState = null;
         _state = _AsyncOperationState.inProgress(
           parameter.value,
           _state.error == null ? _state.result : _defaultResult,
@@ -365,7 +370,7 @@ abstract class FutureInvoker<T extends AsyncOperationNotifier<R, P>, R, P> {
           return;
         }
 
-        lastState = _ParameterAndResult(parameter.value, result);
+        finalSuccessfulState = _ParameterAndResult(parameter.value, result);
         _log.fine(() =>
             'Executed asynchronous operation with parameter "${parameter?.value}", result is "$result", check next request.');
       }
@@ -400,6 +405,7 @@ abstract class FutureInvoker<T extends AsyncOperationNotifier<R, P>, R, P> {
             parameter.value,
             asyncError,
           );
+          _lastState = _state;
 
           parameter.value.onFailed(asyncError);
         }
@@ -407,17 +413,18 @@ abstract class FutureInvoker<T extends AsyncOperationNotifier<R, P>, R, P> {
     }
 
     // Below lines should not throw anything except fatal runtime errors.
-    if (lastState != null) {
+    if (finalSuccessfulState != null) {
       _log.fine(() =>
-          'All requested asynchronous operations are done. Last result with parameter "${lastState?.parameter}" is "${lastState?.result}".');
+          'All requested asynchronous operations are done. Last result with parameter "${finalSuccessfulState?.parameter}" is "${finalSuccessfulState?.result}".');
 
       _state = _AsyncOperationState.completed(
-        lastState.parameter,
-        lastState.result,
+        finalSuccessfulState.parameter,
+        finalSuccessfulState.result,
       );
+      _lastState = _state;
       // This line may throw exception, but it should be treated as "unhandled"
       // rather than be treated as an async error.
-      lastState.parameter.onCompleted(lastState.result);
+      finalSuccessfulState.parameter.onCompleted(finalSuccessfulState.result);
     }
   }
 
