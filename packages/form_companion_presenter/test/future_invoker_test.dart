@@ -70,17 +70,29 @@ class TestTarget<R, P> extends FutureInvoker<Parameter<R, P>, R, P> {
         );
 
   @override
-  Future<R> executeAsync(Parameter<R, P> parameter) async {
+  Future<R> executeAsync(Parameter<R, P> parameter) {
+    // This method is NOT async method to simulate synchronous error flow.
+    Future<R> future;
     try {
-      final result = await _callback(parameter);
-      parameter.completer.complete(result);
-      return result;
+      future = _callback(parameter);
     }
     // ignore: avoid_catches_without_on_clauses
     catch (error, stackTrace) {
       parameter.completer.completeError(error, stackTrace);
       rethrow;
     }
+
+    // Use classic then to avoid async/await it postpones catch block even if
+    // the exception is thrown synchronously from the target async method.
+    return future.then((value) {
+      parameter.completer.complete(value);
+      return value;
+    }).onError((error, stackTrace) {
+      parameter.completer.completeError(error!, stackTrace);
+      // rethrow.
+      // ignore: only_throw_errors
+      throw error;
+    });
   }
 }
 
@@ -402,8 +414,17 @@ void main() {
               expect(target.status, equals(AsyncOperationStatus.initial));
 
               // Assert before the future
-              expect(target.execute(parameter), equals(defaultResult));
-              expect(target.status, equals(AsyncOperationStatus.inProgress));
+              try {
+                expect(target.execute(parameter), equals(defaultResult));
+                // in async error, this try should not throw any exception here.
+                expect(target.status, equals(AsyncOperationStatus.inProgress));
+              }
+              // ignore: avoid_catching_errors
+              on AsyncError catch (e) {
+                // in sync error, this catch will be fired.
+                expect(e.error, same(error));
+                expect(target.status, equals(AsyncOperationStatus.failed));
+              }
 
               printOnFailure('${target.status}');
               try {
@@ -415,9 +436,6 @@ void main() {
 
               // Assert mock
               expect(passed, same(parameter));
-
-              // Do message pump to execute catch on 'sync' case...
-              await Future<void>.delayed(Duration.zero);
 
               // Assert status after the future
               expect(target.status, equals(AsyncOperationStatus.failed));
