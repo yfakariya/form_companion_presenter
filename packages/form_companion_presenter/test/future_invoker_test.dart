@@ -1347,19 +1347,396 @@ void main() {
         });
       });
 
-      // TODO(yfakariya): reset
-      //   initial -> initial
-      //     -> complete
-      //     -> failed
-      //   inProgress -> initial
-      //     -> complete
-      //     -> failed
-      //   completed -> initial
-      //     -> complete
-      //     -> failed
-      //   failed -> initial
-      //     -> complete
-      //     -> failed
+      group('reset', () {
+        group('initial -(reset)-> initial', () {
+          Future<void> doTest(
+            TestEpilogue doAfter,
+            Parameter<String, void> afterParameter,
+            String? afterResult,
+            Exception? afterError,
+          ) async {
+            final completer = Completer<void>();
+            const defaultResult = 'default1';
+            const newDefault = 'default2';
+
+            Parameter<String, void>? passed;
+            final target = TestTarget<String, void>(
+              callback: (p) async {
+                passed = p;
+                await completer.future;
+                if (afterError != null) {
+                  throw afterError;
+                }
+                return afterResult!;
+              },
+              defaultResult: defaultResult,
+            );
+
+            // Assert precondition
+            expect(target.status, equals(AsyncOperationStatus.initial));
+
+            printOnFailure('reset()');
+            target.reset(newDefault);
+
+            expect(target.status, equals(AsyncOperationStatus.initial));
+
+            completer.complete();
+
+            printOnFailure('doAfter()');
+            await doAfter(
+              target,
+              afterParameter,
+              newDefault,
+              afterResult ?? afterParameter.value,
+              () => passed,
+            );
+          }
+
+          test('-> success', () async => doThenSucceedTest(doTest));
+          test('-> failure', () async => doThenFailTest(doTest));
+        });
+
+        group('initial -> inprogress -(reset)-> initial', () {
+          Future<void> doTest(
+            TestEpilogue doAfter,
+            Parameter<String, void> afterParameter,
+            String? afterResult,
+            Exception? afterError,
+          ) async {
+            final completer = Completer<void>();
+            final parameter = Parameter<String, void>(value: 'ERROR');
+            const defaultResult = 'default1';
+            const newDefault = 'default2';
+
+            Parameter<String, void>? passed;
+            final target = TestTarget<String, void>(
+              callback: (p) async {
+                passed = p;
+                await completer.future;
+                if (p.value == parameter.value) {
+                  return p.value;
+                }
+
+                if (afterError != null) {
+                  throw afterError;
+                }
+                return afterResult!;
+              },
+              defaultResult: defaultResult,
+            );
+
+            // Assert precondition
+            expect(target.status, equals(AsyncOperationStatus.initial));
+
+            expect(target.execute(parameter), equals(defaultResult));
+            expect(target.status, equals(AsyncOperationStatus.inProgress));
+
+            printOnFailure('reset()');
+            target.reset(newDefault);
+
+            expect(target.status, equals(AsyncOperationStatus.initial));
+
+            completer.complete();
+            await parameter.completer.future;
+
+            expect(target.status, equals(AsyncOperationStatus.initial));
+
+            printOnFailure('doAfter()');
+            await doAfter(
+              target,
+              afterParameter,
+              newDefault,
+              afterResult ?? afterParameter.value,
+              () => passed,
+            );
+          }
+
+          test('-> success', () async => doThenSucceedTest(doTest));
+          test('-> failure', () async => doThenFailTest(doTest));
+        });
+
+        group('completed -(reset)-> initial', () {
+          Future<void> doTest(
+            TestEpilogue doAfter,
+            Parameter<String, void> afterParameter,
+            String? afterResult,
+            Exception? afterError,
+          ) async {
+            final parameter = Parameter<String, void>(value: 'INITIAL');
+            const defaultResult = 'default1';
+            const newDefault = 'default2';
+            const expected = 'RESULT';
+
+            Parameter<String, void>? passed;
+            final target = TestTarget<String, void>(
+              callback: (p) async {
+                passed = p;
+                if (p.value == parameter.value) {
+                  return expected;
+                }
+
+                if (afterError != null) {
+                  throw afterError;
+                }
+                return afterResult!;
+              },
+              defaultResult: defaultResult,
+            );
+
+            // Assert precondition
+            expect(target.status, equals(AsyncOperationStatus.initial));
+
+            expect(target.execute(parameter), equals(defaultResult));
+            await parameter.completer.future;
+            expect(target.status, equals(AsyncOperationStatus.completed));
+
+            printOnFailure('reset()');
+            target.reset(newDefault);
+
+            expect(target.status, equals(AsyncOperationStatus.initial));
+
+            printOnFailure('doAfter()');
+            await doAfter(
+              target,
+              afterParameter,
+              newDefault,
+              afterResult ?? afterParameter.value,
+              () => passed,
+            );
+          }
+
+          test('-> success', () async => doThenSucceedTest(doTest));
+          test('-> failure', () async => doThenFailTest(doTest));
+        });
+
+        group('completed -> inProgress -(reset)-> initial', () {
+          Future<void> doTest(
+            TestEpilogue doAfter,
+            Parameter<String, void> afterParameter,
+            String? afterResult,
+            Exception? afterError,
+          ) async {
+            Completer? completer1;
+            Completer? completer2;
+            const expected1 = 'RESULT1';
+            const expected2 = 'RESULT2';
+            final parameter1 = Parameter<String, void>(value: expected1);
+            final parameter2 = Parameter<String, void>(value: expected2);
+            const defaultResult = 'default1';
+            const newDefault = 'default2';
+
+            Parameter<String, void>? passed;
+            final target = TestTarget<String, void>(
+              callback: (p) async {
+                passed = p;
+                final completer = completer1 ?? completer2;
+                if (completer != null) {
+                  await completer.future;
+                }
+
+                if (p.value.startsWith('RESULT')) {
+                  return p.value;
+                }
+
+                if (afterError != null) {
+                  throw afterError;
+                }
+                return afterResult!;
+              },
+              defaultResult: defaultResult,
+            );
+
+            // Assert precondition
+            expect(target.status, equals(AsyncOperationStatus.initial));
+
+            completer1 = Completer<void>();
+            expect(target.execute(parameter1), equals(defaultResult));
+            completer1.complete();
+            await parameter1.completer.future;
+            expect(target.status, equals(AsyncOperationStatus.completed));
+
+            completer2 = Completer<void>();
+            expect(target.execute(parameter2), equals(expected1));
+            expect(target.status, equals(AsyncOperationStatus.inProgress));
+
+            printOnFailure('reset()');
+            target.reset(newDefault);
+
+            completer2.complete();
+            await parameter2.completer.future;
+
+            expect(target.status, equals(AsyncOperationStatus.initial));
+
+            printOnFailure('doAfter()');
+            await doAfter(
+              target,
+              afterParameter,
+              newDefault,
+              afterResult ?? afterParameter.value,
+              () => passed,
+            );
+          }
+
+          test('-> success', () async => doThenSucceedTest(doTest));
+          test('-> failure', () async => doThenFailTest(doTest));
+        });
+
+        group('failed -(reset)-> initial', () {
+          Future<void> doTest(
+            TestEpilogue doAfter,
+            Parameter<String, void> afterParameter,
+            String? afterResult,
+            Exception? afterError,
+          ) async {
+            final parameter = Parameter<String, void>(value: 'INITIAL');
+            const defaultResult = 'default1';
+            const newDefault = 'default2';
+            final error = Exception('DUMMY');
+
+            Parameter<String, void>? passed;
+            final target = TestTarget<String, void>(
+              callback: (p) async {
+                passed = p;
+                if (p.value == parameter.value) {
+                  throw error;
+                }
+
+                if (afterError != null) {
+                  throw afterError;
+                }
+                return afterResult!;
+              },
+              defaultResult: defaultResult,
+            );
+
+            // Assert precondition
+            expect(target.status, equals(AsyncOperationStatus.initial));
+
+            expect(target.execute(parameter), equals(defaultResult));
+            try {
+              await parameter.completer.future;
+              fail('Never thrown');
+            }
+            // ignore: avoid_catches_without_on_clauses
+            catch (e) {
+              expect(e, same(error));
+              expect(target.status, equals(AsyncOperationStatus.failed));
+            }
+
+            printOnFailure('reset()');
+            target.reset(newDefault);
+
+            expect(target.status, equals(AsyncOperationStatus.initial));
+
+            printOnFailure('doAfter()');
+            await doAfter(
+              target,
+              afterParameter,
+              newDefault,
+              afterResult ?? afterParameter.value,
+              () => passed,
+            );
+          }
+
+          test('-> success', () async => doThenSucceedTest(doTest));
+          test('-> failure', () async => doThenFailTest(doTest));
+        });
+
+        group('failed -> inProgress -(reset)-> initial', () {
+          Future<void> doTest(
+            TestEpilogue doAfter,
+            Parameter<String, void> afterParameter,
+            String? afterResult,
+            Exception? afterError,
+          ) async {
+            Completer? completer1;
+            Completer? completer2;
+            final error1 = Exception('ERROR1');
+            final error2 = Exception('ERROR2');
+            final parameter1 = Parameter<String, void>(value: 'ERROR1');
+            final parameter2 = Parameter<String, void>(value: 'ERROR2');
+            const defaultResult = 'default1';
+            const newDefault = 'default2';
+
+            Parameter<String, void>? passed;
+            AsyncError? canceledOperationError;
+            final target = TestTarget<String, void>(
+              callback: (p) async {
+                passed = p;
+                final completer = completer1 ?? completer2;
+                if (completer != null) {
+                  await completer.future;
+                }
+
+                if (p.value == 'ERROR1') {
+                  throw error1;
+                }
+
+                if (p.value == 'ERROR2') {
+                  throw error2;
+                }
+
+                if (afterError != null) {
+                  throw afterError;
+                }
+                return afterResult!;
+              },
+              defaultResult: defaultResult,
+              canceledOperationErrorHandler: (e) => canceledOperationError = e,
+            );
+
+            // Assert precondition
+            expect(target.status, equals(AsyncOperationStatus.initial));
+
+            completer1 = Completer<void>();
+            expect(target.execute(parameter1), equals(defaultResult));
+            completer1.complete();
+            try {
+              await parameter1.completer.future;
+              fail('Never thrown');
+            }
+            // ignore: avoid_catches_without_on_clauses
+            catch (e) {
+              expect(e, same(error1));
+              expect(target.status, equals(AsyncOperationStatus.failed));
+            }
+
+            completer2 = Completer<void>();
+            expect(target.execute(parameter2), equals(defaultResult));
+            expect(target.status, equals(AsyncOperationStatus.inProgress));
+
+            printOnFailure('reset()');
+            target.reset(newDefault);
+            expect(target.status, equals(AsyncOperationStatus.initial));
+
+            completer2.complete();
+            try {
+              await parameter2.completer.future;
+              fail('Never thrown');
+            }
+            // ignore: avoid_catches_without_on_clauses
+            catch (e) {
+              expect(e, same(error2));
+              expect(target.status, equals(AsyncOperationStatus.initial));
+            }
+
+            expect(canceledOperationError, isNotNull);
+            expect(canceledOperationError?.error, same(error2));
+
+            printOnFailure('doAfter()');
+            await doAfter(
+              target,
+              afterParameter,
+              newDefault,
+              afterResult ?? afterParameter.value,
+              () => passed,
+            );
+          }
+
+          test('-> success', () async => doThenSucceedTest(doTest));
+          test('-> failure', () async => doThenFailTest(doTest));
+        });
+      });
 
       // TODO(yfakariya): onProgress
     },
