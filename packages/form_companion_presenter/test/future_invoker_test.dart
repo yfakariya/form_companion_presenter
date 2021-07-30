@@ -96,6 +96,25 @@ class TestTarget<R, P> extends FutureInvoker<Parameter<R, P>, R, P> {
   }
 }
 
+class CustomEquality<T> implements Equality<T> {
+  final bool Function(T l, T r) _equals;
+
+  CustomEquality(this._equals);
+
+  @override
+  bool equals(T e1, T e2) => _equals(e1, e2);
+
+  @override
+  int hash(T e) {
+    throw UnimplementedError();
+  }
+
+  @override
+  bool isValidKey(Object? o) {
+    throw UnimplementedError();
+  }
+}
+
 void main() {
   // For debugging
   loggerSink = (
@@ -865,6 +884,55 @@ void main() {
               ),
             );
           });
+        });
+
+        test('specified equality used.', () async {
+          String? result1;
+          // ignore: unused_local_variable
+          String? result2;
+          final parameter1 = Parameter<String, void>(
+              value: 'input', onCompleted: (r) => result1 = r);
+          final parameter2 = Parameter<String, void>(
+              value: 'INPUT', onCompleted: (r) => result2 = r);
+          const defaultResult = 'default';
+
+          Parameter<String, void>? passed;
+          final target = TestTarget<String, void>(
+            callback: (p) {
+              passed = p;
+              return Future.value(p.value);
+            },
+            defaultResult: defaultResult,
+            parameterEquality: CustomEquality((l, r) =>
+                const CaseInsensitiveEquality().equals(l.value, r.value)),
+          );
+
+          // Assert precondition
+          expect(target.status, equals(AsyncOperationStatus.initial));
+
+          // Assert before the future
+          expect(target.execute(parameter1), equals(defaultResult));
+          expect(target.status, equals(AsyncOperationStatus.inProgress));
+
+          await parameter1.completer.future;
+
+          // Assert mock
+          expect(passed, same(parameter1));
+
+          // Assert status after the future
+          expect(target.status, equals(AsyncOperationStatus.completed));
+
+          // Assert callback behaviors
+          expect(parameter1.isOnCompletedCalled, isTrue);
+          expect(parameter1.isOnFailedCalled, isFalse);
+          expect(parameter1.isOnProgressCalled, isFalse);
+
+          expect(result1, equals(parameter1.value));
+
+          // We can get cached result instead of 2nd because case-insensitive
+          // value comparison will be used.
+          expect(target.execute(parameter2), equals(parameter1.value));
+          expect(target.status, equals(AsyncOperationStatus.completed));
         });
 
         // TODO(yfakariya): reset
