@@ -356,7 +356,7 @@ abstract class FutureInvoker<T extends AsyncOperationNotifier<R, P>, R, P> {
         finalSuccessfulState = null;
         _state = _AsyncOperationState.inProgress(
           parameter.value,
-          _state.error == null ? _state.result : _defaultResult,
+          _defaultResult,
         );
         _nextValue = null;
         _log.fine(
