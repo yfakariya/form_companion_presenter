@@ -395,6 +395,7 @@ void main() {
               // Assert before the future
               expect(target.execute(parameter1), equals(defaultResult));
               expect(target.status, equals(AsyncOperationStatus.inProgress));
+              // cache will be expired because parameter1 != parameter2
               expect(target.execute(parameter2), equals(defaultResult));
               expect(target.status, equals(AsyncOperationStatus.inProgress));
 
@@ -514,8 +515,7 @@ void main() {
               // 2) the FutureInvoker can handle additional execute() call,
               //    inProgress -> completed state transition.
 
-              expect(target.execute(parameter3),
-                  equals('$expected${parameter2.value}'));
+              expect(target.execute(parameter3), equals(defaultResult));
               expect(target.status, equals(AsyncOperationStatus.inProgress));
 
               printOnFailure('await parameter3.completer');
@@ -865,7 +865,8 @@ void main() {
               await doFailCase(
                 target,
                 parameter2,
-                initialExpected: expected,
+                // cache will be expired because parameter1 != parameter2
+                initialExpected: defaultResult,
                 errorToBeThrown: error2,
                 refPassed: () => passed,
                 refFailure: () => failure2,
@@ -1196,7 +1197,7 @@ void main() {
             await doAfter(
               target,
               afterParameter,
-              expected,
+              defaultResult,
               afterResult ?? afterParameter.value,
               () => passed,
             );
@@ -1252,7 +1253,7 @@ void main() {
             expect(target.status, equals(AsyncOperationStatus.completed));
 
             completer2 = Completer<void>();
-            expect(target.execute(parameter2), equals(expected1));
+            expect(target.execute(parameter2), equals(defaultResult));
             expect(target.status, equals(AsyncOperationStatus.inProgress));
 
             printOnFailure('cancel()');
@@ -1267,7 +1268,7 @@ void main() {
             await doAfter(
               target,
               afterParameter,
-              expected1,
+              defaultResult,
               afterResult ?? afterParameter.value,
               () => passed,
             );
@@ -1480,7 +1481,7 @@ void main() {
             await doAfter(
               target,
               afterParameter,
-              newDefault,
+              defaultResult,
               afterResult ?? afterParameter.value,
               () => passed,
             );
@@ -1539,7 +1540,7 @@ void main() {
             await doAfter(
               target,
               afterParameter,
-              newDefault,
+              defaultResult,
               afterResult ?? afterParameter.value,
               () => passed,
             );
@@ -1593,7 +1594,7 @@ void main() {
             await doAfter(
               target,
               afterParameter,
-              newDefault,
+              defaultResult,
               afterResult ?? afterParameter.value,
               () => passed,
             );
@@ -1650,7 +1651,7 @@ void main() {
             expect(target.status, equals(AsyncOperationStatus.completed));
 
             completer2 = Completer<void>();
-            expect(target.execute(parameter2), equals(expected1));
+            expect(target.execute(parameter2), equals(defaultResult));
             expect(target.status, equals(AsyncOperationStatus.inProgress));
 
             printOnFailure('reset()');
@@ -1665,7 +1666,7 @@ void main() {
             await doAfter(
               target,
               afterParameter,
-              newDefault,
+              defaultResult,
               afterResult ?? afterParameter.value,
               () => passed,
             );
@@ -1726,7 +1727,7 @@ void main() {
             await doAfter(
               target,
               afterParameter,
-              newDefault,
+              defaultResult,
               afterResult ?? afterParameter.value,
               () => passed,
             );
@@ -1821,7 +1822,7 @@ void main() {
             await doAfter(
               target,
               afterParameter,
-              newDefault,
+              defaultResult,
               afterResult ?? afterParameter.value,
               () => passed,
             );
@@ -1832,8 +1833,6 @@ void main() {
         });
       });
 
-      // TODO(yfakariya): A with completed -> failed -> B : default
-      // TODO(yfakariya): A with completed -> B : default
       // TODO(yfakariya): onProgress
     },
   );
