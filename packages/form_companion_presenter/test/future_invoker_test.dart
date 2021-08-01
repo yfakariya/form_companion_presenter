@@ -1,5 +1,7 @@
 // See LICENCE file in the root.
 
+@Timeout(Duration(seconds: 3))
+
 import 'dart:async';
 
 import 'package:collection/collection.dart';
