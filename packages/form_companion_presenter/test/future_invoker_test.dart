@@ -13,6 +13,7 @@ import 'package:form_companion_presenter/src/internal_utils.dart';
 class Parameter<T, P> implements AsyncOperationNotifier<T, P> {
   final String value;
   final Completer<T> completer = Completer();
+  final Completer<void> waiter = Completer();
 
   bool isOnCompletedCalled = false;
   final AsyncOperationCompletedCallback<T> _onCompleted;
@@ -951,6 +952,97 @@ void main() {
           expect(target.execute(parameter2), equals(parameter1.value));
           expect(target.status, equals(AsyncOperationStatus.completed));
         });
+
+        group('successor under in progress', () {
+          Future<void> doTest(
+            Future<void> Function(TestTarget<String, void>, String) doPrologue,
+          ) async {
+            // Do prologue
+            String? result1;
+            String? result2;
+            final parameter1 = Parameter<String, void>(
+                value: 'input1', onCompleted: (r) => result1 = r);
+            final parameter2 = Parameter<String, void>(
+                value: 'input2', onCompleted: (r) => result2 = r);
+            const defaultResult = 'default';
+
+            final target = TestTarget<String, void>(
+              callback: (p) async {
+                await p.waiter.future;
+                return Future.value(p.value);
+              },
+              defaultResult: defaultResult,
+            );
+
+            // Assert precondition
+            expect(target.status, equals(AsyncOperationStatus.initial));
+
+            await doPrologue(target, defaultResult);
+
+            // Assert before the future
+            expect(target.execute(parameter1), equals(defaultResult));
+            expect(target.status, equals(AsyncOperationStatus.inProgress));
+            expect(target.execute(parameter2), equals(defaultResult));
+            expect(target.status, equals(AsyncOperationStatus.inProgress));
+
+            parameter1.waiter.complete();
+            parameter2.waiter.complete();
+
+            // Assert mock
+            await parameter1.completer.future;
+            await parameter2.completer.future;
+
+            // Assert status after the future
+            expect(target.status, equals(AsyncOperationStatus.completed));
+
+            // Assert callback behaviors
+            expect(parameter1.isOnCompletedCalled, isFalse);
+            expect(parameter1.isOnFailedCalled, isFalse);
+            expect(parameter1.isOnProgressCalled, isFalse);
+            expect(parameter2.isOnCompletedCalled, isTrue);
+            expect(parameter2.isOnFailedCalled, isFalse);
+            expect(parameter2.isOnProgressCalled, isFalse);
+
+            expect(result1, isNull);
+            expect(result2, equals(parameter2.value));
+
+            // We can get cached result.
+            expect(target.execute(parameter2), equals(parameter2.value));
+            expect(target.status, equals(AsyncOperationStatus.completed));
+          }
+
+          test('initial -> ', () async {
+            await doTest((target, _) async {
+              expect(target.status, equals(AsyncOperationStatus.initial));
+            });
+          });
+          test('completed -> ', () async {
+            await doTest((target, defaultResult) async {
+              final parameter = Parameter<String, void>(value: 'PREVIOUS');
+              parameter.waiter.complete();
+              expect(target.execute(parameter), equals(defaultResult));
+              await parameter.completer.future;
+              expect(target.execute(parameter), equals(parameter.value));
+              expect(target.status, equals(AsyncOperationStatus.completed));
+            });
+          });
+          test('failed -> ', () async {
+            await doTest((target, defaultResult) async {
+              final parameter = Parameter<String, void>(value: 'ERROR');
+              final error = Exception('DUMMY');
+              parameter.waiter.completeError(error);
+              expect(target.execute(parameter), equals(defaultResult));
+              try {
+                await parameter.completer.future;
+              }
+              // ignore: avoid_catches_without_on_clauses
+              catch (e) {
+                expect(e, same(error));
+              }
+              expect(target.status, equals(AsyncOperationStatus.failed));
+            });
+          });
+        });
       });
 
       group('cancel', () {
@@ -1740,6 +1832,8 @@ void main() {
         });
       });
 
+      // TODO(yfakariya): A with completed -> failed -> B : default
+      // TODO(yfakariya): A with completed -> B : default
       // TODO(yfakariya): onProgress
     },
   );
