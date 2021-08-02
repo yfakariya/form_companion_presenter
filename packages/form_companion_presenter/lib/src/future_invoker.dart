@@ -282,15 +282,6 @@ abstract class FutureInvoker<T extends AsyncOperationNotifier<R, P>, R, P> {
           return _state.result;
         }
 
-        final processingValue = _processingValue;
-        if (processingValue != null &&
-            _parameterEquality.equals(processingValue.value, parameter)) {
-          _log.fine(() =>
-              'Async operation result for parameter $parameter is in progress, returns default value.');
-          // Do nothing
-          return _state.result;
-        }
-
         break;
     }
 
