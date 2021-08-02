@@ -1833,7 +1833,92 @@ void main() {
         });
       });
 
-      // TODO(yfakariya): onProgress
+      group('AsyncOperationNotifier callbacks', () {
+        test('completed', () async {
+          const defaultResult = 'DEFAULT';
+          const result = 'RESULT1';
+
+          // should be 3, 1, 2
+          final reported = <int>[];
+          String? onCompletedParameter;
+          AsyncError? onFailedParameter;
+          final parameter = Parameter<String, int>(
+            value: 'VALUE1',
+            onCompleted: (p) {
+              onCompletedParameter = p;
+            },
+            onFailed: (e) {
+              onFailedParameter = e;
+            },
+            onProgress: reported.add,
+          );
+
+          final target = TestTarget<String, int>(
+            callback: (p) async {
+              p.onProgress(3);
+              await Future<void>.delayed(Duration.zero);
+              p.onProgress(1);
+              await Future<void>.delayed(Duration.zero);
+              p.onProgress(2);
+              await Future<void>.delayed(Duration.zero);
+              return result;
+            },
+            defaultResult: defaultResult,
+          );
+
+          expect(target.execute(parameter), equals(defaultResult));
+          await parameter.completer.future;
+          expect(onCompletedParameter, equals(result));
+          expect(onFailedParameter, isNull);
+          expect(reported, orderedEquals(<int>[3, 1, 2]));
+        });
+        test('failed', () async {
+          final error = Exception('DUMMY');
+          const defaultResult = 'DEFAULT';
+
+          // should be 3, 1, 2
+          final reported = <int>[];
+          String? onCompletedParameter;
+          AsyncError? onFailedParameter;
+          final parameter = Parameter<String, int>(
+            value: 'VALUE1',
+            onCompleted: (p) {
+              onCompletedParameter = p;
+            },
+            onFailed: (e) {
+              onFailedParameter = e;
+            },
+            onProgress: reported.add,
+          );
+
+          final target = TestTarget<String, int>(
+            callback: (p) async {
+              p.onProgress(3);
+              await Future<void>.delayed(Duration.zero);
+              p.onProgress(1);
+              await Future<void>.delayed(Duration.zero);
+              p.onProgress(2);
+              await Future<void>.delayed(Duration.zero);
+              throw error;
+            },
+            defaultResult: defaultResult,
+          );
+
+          expect(target.execute(parameter), equals(defaultResult));
+          try {
+            await parameter.completer.future;
+          }
+          // ignore: avoid_catches_without_on_clauses
+          catch (e) {
+            expect(e, same(error));
+          }
+
+          expect(onCompletedParameter, isNull);
+          expect(onFailedParameter, isNotNull);
+          expect(onFailedParameter?.error, same(error));
+          expect(reported, orderedEquals(<int>[3, 1, 2]));
+        });
+      });
     },
   );
 }
