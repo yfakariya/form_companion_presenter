@@ -1043,6 +1043,62 @@ void main() {
               expect(target.status, equals(AsyncOperationStatus.failed));
             });
           });
+
+          test('inProgress (same parameter) -> defaultResult', () async {
+            // Do prologue
+            String? result1;
+            String? result2;
+            final parameter1 = Parameter<String, void>(
+                value: 'input', onCompleted: (r) => result1 = r);
+            final parameter2 = Parameter<String, void>(
+                value: 'input', onCompleted: (r) => result2 = r);
+            const defaultResult = 'default';
+
+            final target = TestTarget<String, void>(
+              callback: (p) async {
+                await p.waiter.future;
+                return Future.value(p.value);
+              },
+              defaultResult: defaultResult,
+            );
+
+            // Assert precondition
+            expect(target.status, equals(AsyncOperationStatus.initial));
+
+            // Assert before the future
+            expect(target.execute(parameter1), equals(defaultResult));
+            expect(target.status, equals(AsyncOperationStatus.inProgress));
+            expect(target.execute(parameter2), equals(defaultResult));
+            expect(target.status, equals(AsyncOperationStatus.inProgress));
+
+            parameter1.waiter.complete();
+            parameter2.waiter.complete();
+
+            // Assert mock
+            await Future.any([
+              parameter1.completer.future,
+              parameter2.completer.future,
+            ]);
+
+            // Assert status after the future
+            expect(target.status, equals(AsyncOperationStatus.completed));
+
+            // Assert callback behaviors
+            // 1st is called because 2nd is not queued.
+            expect(parameter1.isOnCompletedCalled, isTrue);
+            expect(parameter1.isOnFailedCalled, isFalse);
+            expect(parameter1.isOnProgressCalled, isFalse);
+            expect(parameter2.isOnCompletedCalled, isFalse);
+            expect(parameter2.isOnFailedCalled, isFalse);
+            expect(parameter2.isOnProgressCalled, isFalse);
+
+            expect(result1, equals(parameter1.value));
+            expect(result2, isNull);
+
+            // We can get cached result.
+            expect(target.execute(parameter1), equals(parameter1.value));
+            expect(target.status, equals(AsyncOperationStatus.completed));
+          });
         });
       });
 
