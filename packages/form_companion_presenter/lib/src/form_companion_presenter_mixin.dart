@@ -434,9 +434,10 @@ class PropertyDescriptor<T, P> {
     final locale = presenter.getLocale(context);
     final notifyCompletion = presenter.buildOnAsyncValidationCompleted(context);
     // ignore: prefer_function_declarations_over_variables, avoid_types_on_closure_parameters
-    final onCompleted = (String? result) {
+    final onCompleted = (String? result, AsyncError? _) {
       // This line refers lates field instead of the time when getValidator is called.
       _completer?.complete();
+      // TODO: handle async error
       notifyCompletion(result);
     };
     return _chainValidators([

@@ -78,6 +78,17 @@ class ValidationInvocation<T, P> implements AsyncOperationNotifier<String?, P> {
         onProgress = onProgress ?? ((_) {});
 }
 
+/// Callback of complection of [AsyncValidatorExecutor.validate].
+/// [error] will be `null` when the validation is complected successfully
+/// regardless its (validation) result, and [error] will not be `null` when the
+/// validation is not completed with unexpected error.
+/// Note that the value of [result] is string representation of the [error]
+/// when [error] is not `null`.
+typedef AsyncValidationCompletionCallback = void Function(
+  String? result,
+  AsyncError? error,
+);
+
 /// Handles asynchronous ([Future] based) validation logic.
 class AsyncValidatorExecutor<T, P>
     extends FutureInvoker<ValidationInvocation<T?, P>, String?, void> {
@@ -129,20 +140,25 @@ class AsyncValidatorExecutor<T, P>
   /// [onCompleted] will be called when the validation will be done.
   /// The parameter is validation message, which will be `null` if there will
   /// be no validation errors.
+  /// Note that this callback will be called when the validation is NOT
+  /// completed with unexpected error. In the case, the `error` parameter will
+  /// not be `null`, and the value of `result` parameter will be string
+  /// representation of the `error`.
   ///
   /// This method just calls [execute].
   String? validate({
     required AsyncValidator<T, P> validator,
     required T? value,
     required Locale locale,
-    required AsyncOperationCompletedCallback<String?> onCompleted,
+    required AsyncValidationCompletionCallback onCompleted,
   }) =>
       execute(
         ValidationInvocation(
           validator: validator,
           value: value,
           locale: locale,
-          onCompleted: onCompleted,
+          onCompleted: (v) => onCompleted(v, null),
+          onFailed: (e) => onCompleted(e.toString(), e),
         ),
       );
 }
