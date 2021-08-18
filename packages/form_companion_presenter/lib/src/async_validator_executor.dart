@@ -73,7 +73,7 @@ class ValidationInvocation<T, P> implements AsyncOperationNotifier<String?, P> {
     required this.locale,
     required this.onCompleted,
     AsyncOperationFailedCallback? onFailed,
-    AsyncOperationProgressCallback? onProgress,
+    AsyncOperationProgressCallback<P>? onProgress,
   })  : onFailed = onFailed ?? ((_) {}),
         onProgress = onProgress ?? ((_) {});
 }
@@ -145,20 +145,26 @@ class AsyncValidatorExecutor<T, P>
   /// not be `null`, and the value of `result` parameter will be string
   /// representation of the `error`.
   ///
+  /// An optional [onProgress] will be called when the [validator] emits progress event.
+  /// The parameter is progress value which type is [P].
+  /// Note that [P] may be [void] in many cases.
+  ///
   /// This method just calls [execute].
   String? validate({
     required AsyncValidator<T, P> validator,
     required T? value,
     required Locale locale,
     required AsyncValidationCompletionCallback onCompleted,
+    AsyncOperationProgressCallback<P>? onProgress,
   }) =>
       execute(
-        ValidationInvocation(
+        ValidationInvocation<T?, P>(
           validator: validator,
           value: value,
           locale: locale,
           onCompleted: (v) => onCompleted(v, null),
           onFailed: (e) => onCompleted(e.toString(), e),
+          onProgress: onProgress,
         ),
       );
 }
