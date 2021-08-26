@@ -205,10 +205,10 @@ mixin FormCompanionPresenterMixin {
   /// all fields validity.
   @protected
   @visibleForOverriding
-  AsyncOperationCompletedCallback<String?> buildOnAsyncValidationCompleted(
+  AsyncValidationCompletionCallback buildOnAsyncValidationCompleted(
     BuildContext context,
   ) =>
-      (_) => maybeFormStateOf(context)?.validate();
+      (_result, _error) => maybeFormStateOf(context)?.validate();
 
   /// Builds and returns [VoidCallback] which prepares and calls [doSubmit].
   ///
@@ -445,11 +445,15 @@ class PropertyDescriptor<T, P> {
     final locale = presenter.getLocale(context);
     final notifyCompletion = presenter.buildOnAsyncValidationCompleted(context);
     // ignore: prefer_function_declarations_over_variables, avoid_types_on_closure_parameters
-    final onCompleted = (String? result, AsyncError? _) {
+    final onCompleted = (String? result, AsyncError? error) {
       // This line refers lates field instead of the time when getValidator is called.
-      _completer?.complete();
-      // TODO: handle async error
-      notifyCompletion(result);
+      if (error == null) {
+        _completer?.complete();
+      } else {
+        _completer?.completeError(error);
+      }
+
+      notifyCompletion(result, error);
     };
     return _chainValidators([
       ..._validatorFactories.map((f) => f(context)),
