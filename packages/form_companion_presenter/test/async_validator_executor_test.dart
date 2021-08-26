@@ -3,7 +3,6 @@
 @Timeout(Duration(seconds: 3))
 
 import 'dart:async';
-import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -298,6 +297,50 @@ void main() {
           expect(onCompletedCalled, isTrue);
         },
       );
+    });
+  });
+
+  group('ValidationInvocation', () {
+    group('Constructor', () {
+      test('Specified callbacks are used.', () {
+        // ignore: avoid_types_on_closure_parameters, prefer_function_declarations_over_variables
+        final onCompleted = (String? value) {};
+        // ignore: avoid_types_on_closure_parameters, prefer_function_declarations_over_variables
+        final onFailed = (AsyncError? error) {};
+        // ignore: avoid_types_on_closure_parameters, prefer_function_declarations_over_variables
+        final onProgress = (int progress) {};
+
+        final target = ValidationInvocation<int, int>(
+          validator: (value, locale, onProgress) {
+            return Future.delayed(Duration.zero, () => null);
+          },
+          value: 1,
+          locale: const Locale('en', 'US'),
+          onCompleted: onCompleted,
+          onFailed: onFailed,
+          onProgress: onProgress,
+        );
+
+        expect(target.onCompleted, same(onCompleted));
+        expect(target.onFailed, same(onFailed));
+        expect(target.onProgress, same(onProgress));
+      });
+
+      test('Optional parameter replaced with empty.', () {
+        final target = ValidationInvocation<int, void>(
+          validator: (value, locale, onProgress) {
+            return Future.delayed(Duration.zero, null);
+          },
+          value: 1,
+          locale: const Locale('en', 'US'),
+          onCompleted: (value) {
+            // nop
+          },
+        );
+
+        expect(target.onFailed, isNotNull);
+        expect(target.onProgress, isNotNull);
+      });
     });
   });
 }
