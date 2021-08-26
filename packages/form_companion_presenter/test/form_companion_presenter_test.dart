@@ -32,6 +32,29 @@ class TestPresenter with FormCompanionPresenterMixin {
       _maybeFormStateOfCalled(context);
 }
 
+class FixedFormStateAdapter implements FormStateAdapter {
+  final AutovalidateMode _autovalidateMode;
+  final VoidCallback _onSave;
+  final bool Function() _onValidate;
+
+  FixedFormStateAdapter({
+    AutovalidateMode? autovalidateMode,
+    VoidCallback? onSave,
+    bool Function()? onValidate,
+  })  : _autovalidateMode = autovalidateMode ?? AutovalidateMode.disabled,
+        _onSave = (onSave ?? () {}),
+        _onValidate = (onValidate ?? () => true) {}
+
+  @override
+  AutovalidateMode get autovalidateMode => _autovalidateMode;
+
+  @override
+  void save() => _onSave();
+
+  @override
+  bool validate() => _onValidate();
+}
+
 class DummyBuildContext extends BuildContext {
   DummyBuildContext();
 
@@ -254,6 +277,191 @@ void main() {
         final property = target.getProperty<int>('int');
         expect(() => property.value, throwsStateError);
       });
+    });
+  });
+
+  group('submit', () {
+    group('canSubmit()', () {
+      test('calls maybeFormStateOf() anyway.', () {
+        final context = DummyBuildContext();
+        BuildContext? passedContext;
+        final target = TestPresenter(
+          properties: PropertyDescriptorsBuilder(),
+          maybeFormStateOfCalled: (x) {
+            passedContext = x;
+            return null;
+          },
+        );
+
+        // ignore: cascade_invocations, invalid_use_of_protected_member
+        target.canSubmit(context);
+        expect(passedContext, same(context));
+      });
+
+      test('returns true when maybeFormStateOf() returns null.', () {
+        final context = DummyBuildContext();
+        final target = TestPresenter(
+          properties: PropertyDescriptorsBuilder(),
+          maybeFormStateOfCalled: (_) => null,
+        );
+        // ignore: invalid_use_of_protected_member
+        expect(target.canSubmit(context), isTrue);
+      });
+
+      test('returns true when maybeFormStateOf() returns null.', () {
+        final context = DummyBuildContext();
+        final target = TestPresenter(
+          properties: PropertyDescriptorsBuilder(),
+          maybeFormStateOfCalled: (_) => FixedFormStateAdapter(
+            autovalidateMode: AutovalidateMode.disabled,
+          ),
+        );
+        // ignore: invalid_use_of_protected_member
+        expect(target.canSubmit(context), isTrue);
+      });
+
+      test('returns false when any validation is failed.', () {
+        final context = DummyBuildContext();
+        final target = TestPresenter(
+          properties: PropertyDescriptorsBuilder(),
+          maybeFormStateOfCalled: (_) => FixedFormStateAdapter(
+            autovalidateMode: AutovalidateMode.onUserInteraction,
+            onValidate: () => false,
+          ),
+        );
+        // ignore: invalid_use_of_protected_member
+        expect(target.canSubmit(context), isFalse);
+      });
+
+      test('returns false when any async validation is not completed.', () {
+        final completer = Completer<String?>();
+        final context = DummyBuildContext();
+        TestPresenter? target;
+        target = TestPresenter(
+          properties: PropertyDescriptorsBuilder()
+            ..add(
+              name: 'never',
+              asyncValidatorFactories: [
+                (_) => (v, l, p) => completer.future,
+              ],
+            ),
+          maybeFormStateOfCalled: (_) => FixedFormStateAdapter(
+            autovalidateMode: AutovalidateMode.onUserInteraction,
+            onValidate: () => target!.properties.values.every(
+              // Simulate validators call here with null value
+              // and then check there is no error message (null).
+              (p) => p.getValidator(DummyBuildContext()).call(null) == null,
+            ),
+          ),
+        );
+        // ignore: invalid_use_of_protected_member
+        expect(target.canSubmit(context), isFalse);
+        // drain
+        completer.complete();
+      });
+
+      test('returns true when there are no properties.', () {
+        final context = DummyBuildContext();
+        final target = TestPresenter(
+          properties: PropertyDescriptorsBuilder(),
+          maybeFormStateOfCalled: (_) => FixedFormStateAdapter(
+            autovalidateMode: AutovalidateMode.onUserInteraction,
+            // This lamda returns null because the array is empty.
+            onValidate: () => <bool>[].every((_) => false),
+          ),
+        );
+        // ignore: invalid_use_of_protected_member
+        expect(target.canSubmit(context), isTrue);
+      });
+
+      test('returns true when all validation is completed successfully.',
+          () async {
+        final context = DummyBuildContext();
+        TestPresenter? target;
+        target = TestPresenter(
+          properties: PropertyDescriptorsBuilder()
+            ..add(
+              name: 'valid',
+              validatorFactories: [
+                (_) => (v) => null,
+                (_) => (v) => null,
+              ],
+              asyncValidatorFactories: [
+                // Note that following lambdas will complete only after
+                // event pumping...
+                (_) => (v, l, p) => null,
+                (_) => (v, l, p) => null,
+              ],
+            ),
+          maybeFormStateOfCalled: (_) => FixedFormStateAdapter(
+            autovalidateMode: AutovalidateMode.onUserInteraction,
+            onValidate: () => target!.properties.values.every(
+              // Simulate validators call here with null value
+              // and then check there is no error message (null).
+              (p) => p.getValidator(DummyBuildContext()).call(null) == null,
+            ),
+          ),
+        );
+        // ignore: invalid_use_of_protected_member
+        expect(target.canSubmit(context), isFalse);
+        // Do event pumping to complete Future.sync of lambdas.
+        await Future<void>.delayed(Duration.zero);
+        // ignore: invalid_use_of_protected_member
+        expect(target.canSubmit(context), isTrue);
+      });
+
+      group('submit', () {
+        test('returns null when canSubmit() is false.', () {
+          TestPresenter? target;
+          target = TestPresenter(
+            properties: PropertyDescriptorsBuilder()
+              ..add(name: 'valid', validatorFactories: [
+                (_) => (v) => 'DUMMY',
+              ]),
+            doSubmitCalled: (_) {},
+            maybeFormStateOfCalled: (_) => FixedFormStateAdapter(
+              autovalidateMode: AutovalidateMode.onUserInteraction,
+              onValidate: () => target!.properties.values.every(
+                // Simulate validators call here with null value
+                // and then check there is no error message (null).
+                (p) => p.getValidator(DummyBuildContext()).call(null) == null,
+              ),
+            ),
+          );
+
+          expect(target.submit(DummyBuildContext()), isNull);
+        });
+
+        test('returns doSubmit when canSubmit() is true.', () {
+          BuildContext? passedContext;
+          final context = DummyBuildContext();
+          TestPresenter? target;
+          target = TestPresenter(
+            properties: PropertyDescriptorsBuilder()
+              ..add(name: 'valid', validatorFactories: [
+                (_) => (v) => null,
+              ]),
+            doSubmitCalled: (x) {
+              passedContext = x;
+            },
+            maybeFormStateOfCalled: (_) => FixedFormStateAdapter(
+              autovalidateMode: AutovalidateMode.onUserInteraction,
+              onValidate: () => target!.properties.values.every(
+                // Simulate validators call here with null value
+                // and then check there is no error message (null).
+                (p) => p.getValidator(DummyBuildContext()).call(null) == null,
+              ),
+            ),
+          );
+
+          final submit = target.submit(context);
+          expect(submit, isNotNull);
+          submit!();
+          expect(passedContext, same(context));
+        });
+      });
+
+      // TODO(yfakariya): delayed async validation completion case in Widget tests.
     });
   });
 
