@@ -118,6 +118,10 @@ mixin FormCompanionPresenterMixin {
   /// Gets a [PropertyDescriptor] for the specified [name],
   /// which was registered via constrcutor.
   ///
+  /// This method throws [ArgumentError] if the property named [name] does not
+  /// exist, and throws [StateError] if [P] is not compatible with the `T` of
+  /// getting [PropertyDescriptor].
+  ///
   /// You should defined wrapper getter in your presenter class to avoid typo
   /// and repeated input for the name and value type error:
   /// ```dart
@@ -125,8 +129,24 @@ mixin FormCompanionPresenterMixin {
   /// PropertyDescriptor<int> get age => getProperty<int>('age');
   /// ```
   @nonVirtual
-  PropertyDescriptor<P, void> getProperty<P>(String name) =>
-      properties[name]! as PropertyDescriptor<P, void>;
+  PropertyDescriptor<P, void> getProperty<P>(String name) {
+    final property = properties[name];
+    if (property == null) {
+      throw ArgumentError.value(
+        name,
+        'name',
+        'Specified property is not registered.',
+      );
+    }
+
+    if (property is! PropertyDescriptor<P, void>) {
+      throw StateError(
+        'A type of \'$name\' property is ${property.runtimeType} instead of not $P.',
+      );
+    }
+
+    return property;
+  }
 
   /// Gets the ancestor [FormState] like state from specified [BuildContext],
   /// and wraps it to [FormStateAdapter].
@@ -399,14 +419,35 @@ class PropertyDescriptor<T, P> {
   Completer<void>? _completer;
 
   /// Saved value.
-  T get value => _value!.value;
+  ///
+  /// This getter throws [StateError] if the value has never set.
+  T get value {
+    final value = _value;
+    if (value == null) {
+      throw StateError('value is not set yet.');
+    }
+
+    return value.value;
+  }
 
   /// Save value from form field or simular widget.
   set value(T value) => _value = NullableValueHolder(value);
 
   /// Save value from logic which handles this [PropertyDescriptor] without
   /// strong typing.
-  void setDynamicValue(dynamic value) => this.value = value as T;
+  ///
+  /// This method throws [ArgumentError] if [value] is not compatible [T].
+  void setDynamicValue(dynamic value) {
+    if (value is! T) {
+      throw ArgumentError.value(
+        value,
+        'value',
+        '${value.runtimeType} is not compatible with $T.',
+      );
+    }
+
+    this.value = value;
+  }
 
   /// Whether any asynchronous validations is running now.
   bool get hasPendingAsyncValidations =>
