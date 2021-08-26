@@ -60,15 +60,11 @@ abstract class FormStateAdapter {
 ///   is ready for "submit" or `null` otherwise. This class checks validation
 ///   results of [FormField]s and existance of pending async validations.
 mixin FormCompanionPresenterMixin {
-  late Map<String, PropertyDescriptor> _properties;
+  late final Map<String, PropertyDescriptor> _properties;
 
   /// Map of [PropertyDescriptor]. Key is [PropertyDescriptor.name].
   @nonVirtual
-  Map<String, PropertyDescriptor> get properties {
-    // ignore: unnecessary_null_comparison
-    assert(_properties != null, 'initializeProperties must be called.');
-    return _properties;
-  }
+  Map<String, PropertyDescriptor> get properties => _properties;
 
   /// Initializes [FormCompanionPresenterMixin].
   ///
@@ -103,8 +99,6 @@ mixin FormCompanionPresenterMixin {
   void initializeFormCompanionMixin(
     PropertyDescriptorsBuilder properties,
   ) {
-    // ignore: unnecessary_null_comparison
-    assert(_properties == null, 'initializeProperty can be called only once.');
     _properties = properties._build(this);
   }
 
