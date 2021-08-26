@@ -5,6 +5,7 @@ import 'dart:ui';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
+import 'package:meta/meta.dart';
 
 import 'future_invoker.dart';
 
@@ -93,6 +94,7 @@ typedef AsyncValidationCompletionCallback = void Function(
 class AsyncValidatorExecutor<T, P>
     extends FutureInvoker<ValidationInvocation<T?, P>, String?, void> {
   /// Indicates that whether this executor validating asynchronously or not.
+  @nonVirtual
   bool get validating => status == AsyncOperationStatus.inProgress;
 
   /// Creates a new [AsyncValidatorExecutor].
@@ -150,6 +152,7 @@ class AsyncValidatorExecutor<T, P>
   /// Note that [P] may be [void] in many cases.
   ///
   /// This method just calls [execute].
+  @nonVirtual
   String? validate({
     required AsyncValidator<T, P> validator,
     required T? value,

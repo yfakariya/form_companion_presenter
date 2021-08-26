@@ -256,6 +256,7 @@ abstract class FutureInvoker<T extends AsyncOperationNotifier<R, P>, R, P> {
   /// await expression, [status] property will be changed to
   /// [AsyncOperationStatus.failed] in next event loop. So, the result never
   /// be observed before any awaiting.
+  @nonVirtual
   R? execute(T parameter) {
     switch (_state.status) {
       case AsyncOperationStatus.completed:
@@ -314,6 +315,7 @@ abstract class FutureInvoker<T extends AsyncOperationNotifier<R, P>, R, P> {
   /// will be called.
   ///
   /// This method causes value change notification.
+  @nonVirtual
   void reset(R? newDefaultResult) {
     _processingValue = null;
     _nextValue = null;
@@ -422,6 +424,7 @@ abstract class FutureInvoker<T extends AsyncOperationNotifier<R, P>, R, P> {
   /// Do actual asynchronous operation.
   /// Note that the override can call [AsyncOperationNotifier.onProgress] in
   /// arbitrary timings and frequrencies.
+  @protected
   @visibleForOverriding
   Future<R> executeAsync(T parameter);
 }

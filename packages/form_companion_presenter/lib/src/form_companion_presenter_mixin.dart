@@ -63,6 +63,7 @@ mixin FormCompanionPresenterMixin {
   late Map<String, PropertyDescriptor> _properties;
 
   /// Map of [PropertyDescriptor]. Key is [PropertyDescriptor.name].
+  @nonVirtual
   Map<String, PropertyDescriptor> get properties {
     // ignore: unnecessary_null_comparison
     assert(_properties != null, 'initializeProperties must be called.');
@@ -97,6 +98,8 @@ mixin FormCompanionPresenterMixin {
   ///   );
   /// }
   /// ```
+  @protected
+  @nonVirtual
   void initializeFormCompanionMixin(
     PropertyDescriptorsBuilder properties,
   ) {
@@ -113,6 +116,7 @@ mixin FormCompanionPresenterMixin {
   ///
   /// Default implementation delegates the error handling to
   /// [async.Zone.current] and its [async.Zone.handleUncaughtError] method.
+  @protected
   @visibleForOverriding
   void handleCanceledAsyncValidationError(AsyncError error) =>
       Zone.current.handleUncaughtError(error, error.stackTrace);
@@ -126,6 +130,7 @@ mixin FormCompanionPresenterMixin {
   /// PropertyDescriptor<String> get name => getProperty<String>('name');
   /// PropertyDescriptor<int> get age => getProperty<int>('age');
   /// ```
+  @nonVirtual
   PropertyDescriptor<P, void> getProperty<P>(String name) =>
       properties[name]! as PropertyDescriptor<P, void>;
 
@@ -136,6 +141,7 @@ mixin FormCompanionPresenterMixin {
   ///
   /// This method shall be implemented in the concrete class which is mix-ined
   /// [FormCompanionPresenterMixin].
+  @protected
   FormStateAdapter? maybeFormStateOf(BuildContext context);
 
   /// Returns whether the state of this presenter is "completed" or not.
@@ -174,6 +180,7 @@ mixin FormCompanionPresenterMixin {
   /// otherwise, this returns [doSubmit] as function type result.
   /// So, the button will be disabled when [canSubmit] is `false`,
   /// and will be enabled otherwise.
+  @nonVirtual
   VoidCallback? submit(BuildContext context) {
     if (!canSubmit(context)) {
       return null;
@@ -187,6 +194,7 @@ mixin FormCompanionPresenterMixin {
   /// This implementation uses [Localizations.maybeLocaleOf]. If it fails,
   /// returns `en-US` locale.
   /// You can change this behavior with overriding this method.
+  @protected
   @visibleForOverriding
   Locale getLocale(BuildContext context) =>
       Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US');
@@ -195,6 +203,7 @@ mixin FormCompanionPresenterMixin {
   ///
   /// This implementation just call [FormStateAdapter.validate] to re-evaluate
   /// all fields validity.
+  @protected
   @visibleForOverriding
   AsyncOperationCompletedCallback<String?> buildOnAsyncValidationCompleted(
     BuildContext context,
@@ -225,6 +234,8 @@ mixin FormCompanionPresenterMixin {
   }
 
   /// Performs saving of form fields.
+  @protected
+  @nonVirtual
   void saveFields(FormStateAdapter formState) {
     formState.save();
   }
@@ -235,6 +246,7 @@ mixin FormCompanionPresenterMixin {
   ///
   /// Note that [FutureOr] will be [bool] if no asynchronous validations are
   /// registered.
+  @nonVirtual
   FutureOr<bool> validateAll(FormStateAdapter formState) {
     if (properties.values.every((p) => p._asynvValidatorEntries.isEmpty)) {
       // just validate.
@@ -279,6 +291,7 @@ mixin FormCompanionPresenterMixin {
   /// respectively for manual validate & save from [doSubmit] when
   /// [AutovalidateMode] of the form is not set or is set to
   /// [AutovalidateMode.disabled].
+  @nonVirtual
   Future<bool> validateAndSave(FormStateAdapter formState) async {
     if (!await validateAll(formState)) {
       return false;
