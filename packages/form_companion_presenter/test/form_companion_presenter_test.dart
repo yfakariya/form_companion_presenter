@@ -31,6 +31,100 @@ class TestPresenter with FormCompanionPresenterMixin {
   FormStateAdapter? maybeFormStateOf(BuildContext context) =>
       _maybeFormStateOfCalled(context);
 }
+
+class DummyBuildContext extends BuildContext {
+  DummyBuildContext();
+
+  @override
+  bool get debugDoingBuild => throw UnimplementedError();
+
+  @override
+  InheritedWidget dependOnInheritedElement(InheritedElement ancestor,
+      {Object? aspect}) {
+    throw UnimplementedError();
+  }
+
+  @override
+  T? dependOnInheritedWidgetOfExactType<T extends InheritedWidget>(
+      {Object? aspect}) {
+    // Required for getLocale() test.
+    return null;
+  }
+
+  @override
+  DiagnosticsNode describeElement(String name,
+      {DiagnosticsTreeStyle style = DiagnosticsTreeStyle.errorProperty}) {
+    throw UnimplementedError();
+  }
+
+  @override
+  List<DiagnosticsNode> describeMissingAncestor(
+      {required Type expectedAncestorType}) {
+    throw UnimplementedError();
+  }
+
+  @override
+  DiagnosticsNode describeOwnershipChain(String name) {
+    throw UnimplementedError();
+  }
+
+  @override
+  DiagnosticsNode describeWidget(String name,
+      {DiagnosticsTreeStyle style = DiagnosticsTreeStyle.errorProperty}) {
+    throw UnimplementedError();
+  }
+
+  @override
+  T? findAncestorRenderObjectOfType<T extends RenderObject>() {
+    throw UnimplementedError();
+  }
+
+  @override
+  T? findAncestorStateOfType<T extends State<StatefulWidget>>() {
+    throw UnimplementedError();
+  }
+
+  @override
+  T? findAncestorWidgetOfExactType<T extends Widget>() {
+    throw UnimplementedError();
+  }
+
+  @override
+  RenderObject? findRenderObject() {
+    throw UnimplementedError();
+  }
+
+  @override
+  T? findRootAncestorStateOfType<T extends State<StatefulWidget>>() {
+    throw UnimplementedError();
+  }
+
+  @override
+  InheritedElement?
+      getElementForInheritedWidgetOfExactType<T extends InheritedWidget>() {
+    throw UnimplementedError();
+  }
+
+  @override
+  BuildOwner? get owner => throw UnimplementedError();
+
+  @override
+  Size? get size => throw UnimplementedError();
+
+  @override
+  void visitAncestorElements(bool Function(Element element) visitor) {
+    throw UnimplementedError();
+  }
+
+  @override
+  void visitChildElements(ElementVisitor visitor) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Widget get widget => throw UnimplementedError();
+}
+
 void main() {
   // Note: maybeFormStateOf() and saveFields() should be tested as overridden.
   group('property', () {
@@ -160,6 +254,17 @@ void main() {
         final property = target.getProperty<int>('int');
         expect(() => property.value, throwsStateError);
       });
+    });
+  });
+
+  group('helpers', () {
+    test('getLocale() returns \'en-US\' for outside widgets.', () {
+      final target = TestPresenter(properties: PropertyDescriptorsBuilder());
+      // ignore: invalid_use_of_protected_member
+      final locale = target.getLocale(DummyBuildContext());
+      expect(locale.languageCode, equals('en'));
+      expect(locale.countryCode, equals('US'));
+      expect(locale.scriptCode, isNull);
     });
   });
 }
