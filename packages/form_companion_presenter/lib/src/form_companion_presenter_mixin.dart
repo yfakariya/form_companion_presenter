@@ -121,7 +121,7 @@ mixin FormCompanionPresenterMixin {
   void handleCanceledAsyncValidationError(AsyncError error) =>
       Zone.current.handleUncaughtError(error, error.stackTrace);
 
-  /// Get a [PropertyDescriptor] for the specified [name],
+  /// Gets a [PropertyDescriptor] for the specified [name],
   /// which was registered via constrcutor.
   ///
   /// You should defined wrapper getter in your presenter class to avoid typo
@@ -134,7 +134,7 @@ mixin FormCompanionPresenterMixin {
   PropertyDescriptor<P, void> getProperty<P>(String name) =>
       properties[name]! as PropertyDescriptor<P, void>;
 
-  /// Get the ancestor [FormState] like state from specified [BuildContext],
+  /// Gets the ancestor [FormState] like state from specified [BuildContext],
   /// and wraps it to [FormStateAdapter].
   ///
   /// This method returns `null` when there is no ancestor [Form] like widget.
