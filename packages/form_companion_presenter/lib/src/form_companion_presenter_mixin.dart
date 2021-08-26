@@ -179,7 +179,7 @@ mixin FormCompanionPresenterMixin {
       return null;
     }
 
-    return buildDoSubmit(context);
+    return _buildDoSubmit(context);
   }
 
   /// Gets current [Locale] for current [BuildContext].
@@ -210,9 +210,7 @@ mixin FormCompanionPresenterMixin {
   /// saving within [doSubmit] or you omitted creating [Form] or simular widgets
   /// to coordinate [FormField]s. If so, this method effectively returns a
   /// closure which just call and await [doSubmit].
-  @protected
-  @visibleForOverriding
-  VoidCallback buildDoSubmit(BuildContext context) {
+  VoidCallback _buildDoSubmit(BuildContext context) {
     final formState = maybeFormStateOf(context);
 
     return () async {
