@@ -60,34 +60,20 @@ abstract class FormBuilderPresenter<T> extends FormPresenter<T> {
         properties.values.every((p) => !p.hasPendingAsyncValidations);
   }
 
-  @protected
-  @visibleForOverriding
-  @override
-  VoidCallback buildDoSubmit(BuildContext context) {
-    final formState = _maybeFormStateOf(context);
-
-    return () async {
-      if (formState != null) {
-        if (formState.autovalidateMode != AutovalidateMode.disabled) {
-          formState.save();
-          for (final field in formState._state.value.entries) {
-            properties[field.key]?.setDynamicValue(field.value);
-          }
-        }
-      }
-
-      await doSubmit(context);
-    };
-  }
-
   @override
   @protected
   void saveFields(FormStateAdapter formState) {
-    formState.save();
     if (formState is _FormBuilderStateAdapter) {
+      formState.save();
       for (final field in formState._state.value.entries) {
         properties[field.key]?.setDynamicValue(field.value);
       }
+    } else {
+      assert(
+        false,
+        'formState should be _FormBuilderStateAdapter but ${formState.runtimeType}',
+      );
+      super.saveFields(formState);
     }
   }
 }
