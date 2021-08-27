@@ -28,7 +28,7 @@ import 'future_invoker.dart';
 /// asynchronous validation.
 /// If you cannot report any meaningful progress, you can completely ignore
 /// progress reporting and specify `dynamic`, [Null], or [void] for [P].
-typedef AsyncValidator<T, P> = Future<String?> Function(
+typedef AsyncValidator<T, P> = FutureOr<String?> Function(
   T? value,
   Locale locale,
   AsyncOperationProgressCallback<P> onProgress,
@@ -126,7 +126,7 @@ class AsyncValidatorExecutor<T, P>
         );
 
   @override
-  Future<String?> executeAsync(ValidationInvocation<T?, P> parameter) =>
+  FutureOr<String?> executeAsync(ValidationInvocation<T?, P> parameter) =>
       parameter.validator(
         parameter.value,
         parameter.locale,

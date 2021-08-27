@@ -426,5 +426,5 @@ abstract class FutureInvoker<T extends AsyncOperationNotifier<R, P>, R, P> {
   /// arbitrary timings and frequrencies.
   @protected
   @visibleForOverriding
-  Future<R> executeAsync(T parameter);
+  FutureOr<R> executeAsync(T parameter);
 }
