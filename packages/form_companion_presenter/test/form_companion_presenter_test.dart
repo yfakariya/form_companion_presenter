@@ -1,7 +1,8 @@
 // See LICENCE file in the root.
 
+@Timeout(Duration(seconds: 3))
+
 import 'dart:async';
-import 'dart:math';
 
 import 'package:flutter/src/foundation/diagnostics.dart';
 import 'package:flutter/src/widgets/framework.dart';
@@ -43,7 +44,7 @@ class FixedFormStateAdapter implements FormStateAdapter {
     bool Function()? onValidate,
   })  : _autovalidateMode = autovalidateMode ?? AutovalidateMode.disabled,
         _onSave = (onSave ?? () {}),
-        _onValidate = (onValidate ?? () => true) {}
+        _onValidate = (onValidate ?? () => true);
 
   @override
   AutovalidateMode get autovalidateMode => _autovalidateMode;
@@ -149,6 +150,38 @@ class DummyBuildContext extends BuildContext {
 }
 
 void main() {
+  // For debugging
+  loggerSink = (
+    name,
+    level,
+    message,
+    zone,
+    error,
+    stackTrace,
+  ) {
+    String messageString;
+    if (message is String Function()) {
+      messageString = message();
+    } else if (message is String) {
+      messageString = message;
+    } else {
+      messageString = message?.toString() ?? '';
+    }
+
+    String errorString;
+    if (error != null) {
+      if (stackTrace != null) {
+        errorString = ' $error\n$stackTrace';
+      } else {
+        errorString = ' $error';
+      }
+    } else {
+      errorString = '';
+    }
+
+    printOnFailure('[${level.name}] $name: $messageString$errorString');
+  };
+
   // Note: maybeFormStateOf() and saveFields() should be tested as overridden.
   group('property', () {
     group('properties', () {
