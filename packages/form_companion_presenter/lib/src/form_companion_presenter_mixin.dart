@@ -219,6 +219,7 @@ mixin FormCompanionPresenterMixin {
   /// all fields validity.
   @protected
   @visibleForOverriding
+  @visibleForTesting
   AsyncValidationCompletionCallback buildOnAsyncValidationCompleted(
     BuildContext context,
   ) =>

@@ -9,18 +9,33 @@ import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:form_companion_presenter/form_companion_presenter.dart';
+import 'package:form_companion_presenter/src/internal_utils.dart';
 
 class TestPresenter with FormCompanionPresenterMixin {
   final void Function(BuildContext) _doSubmitCalled;
   final FormStateAdapter? Function(BuildContext) _maybeFormStateOfCalled;
+  final void Function(AsyncError)? _onHandleCanceledAsyncValidationError;
 
   TestPresenter({
     required PropertyDescriptorsBuilder properties,
     void Function(BuildContext)? doSubmitCalled,
     FormStateAdapter? Function(BuildContext)? maybeFormStateOfCalled,
+    void Function(AsyncError)? onHandleCanceledAsyncValidationError,
   })  : _doSubmitCalled = (doSubmitCalled ?? (_) {}),
-        _maybeFormStateOfCalled = (maybeFormStateOfCalled ?? (_) => null) {
+        _maybeFormStateOfCalled = (maybeFormStateOfCalled ?? (_) => null),
+        _onHandleCanceledAsyncValidationError =
+            onHandleCanceledAsyncValidationError {
     initializeFormCompanionMixin(properties);
+  }
+
+  @override
+  void handleCanceledAsyncValidationError(AsyncError error) {
+    final handler = _onHandleCanceledAsyncValidationError;
+    if (handler != null) {
+      handler(error);
+    } else {
+      super.handleCanceledAsyncValidationError(error);
+    }
   }
 
   @override
@@ -495,6 +510,177 @@ void main() {
       });
 
       // TODO(yfakariya): delayed async validation completion case in Widget tests.
+    });
+  });
+
+    group('buildOnAsyncValidationCompleted()', () {
+      test('returned callback calls validator\'s.validate()', () {
+        var isValidatorCalled = false;
+        final state = FixedFormStateAdapter(
+          onValidate: () {
+            isValidatorCalled = true;
+            return true;
+          },
+        );
+        final target = TestPresenter(
+          properties: PropertyDescriptorsBuilder(),
+          maybeFormStateOfCalled: (_) => state,
+        );
+
+        final context = DummyBuildContext();
+        final notifier = target.buildOnAsyncValidationCompleted(context);
+        notifier(null, null);
+        expect(isValidatorCalled, isTrue);
+      });
+    });
+
+    group('validateAll()', () {
+      test('calls validate() when no asyncs', () {
+        final target = TestPresenter(
+          properties: PropertyDescriptorsBuilder(),
+        );
+
+        var isStateValidateCalled = false;
+        final state = FixedFormStateAdapter(
+          onValidate: () {
+            isStateValidateCalled = true;
+            return true;
+          },
+        );
+        target.validateAll(state);
+        expect(isStateValidateCalled, isTrue);
+      });
+
+      test('calls asyncValidators and wait when any asyncs exist', () async {
+        final target = TestPresenter(
+          properties: PropertyDescriptorsBuilder()
+            ..add<int>(
+              name: 'property',
+              validatorFactories: [
+                (context) => (value) => null,
+              ],
+              asyncValidatorFactories: [
+                (context) => (value, locale, progress) => null,
+              ],
+            ),
+        );
+
+        var stateValidateCalled = 0;
+        final state = FixedFormStateAdapter(
+          onValidate: () {
+            stateValidateCalled++;
+            return true;
+          },
+        );
+        await target.validateAll(state);
+        // FormState.validate() is called twice --
+        //   1st is initiation, 2nd is getting (cached) results.
+        expect(stateValidateCalled, equals(2));
+      });
+    });
+
+    group('validateAndSave()', () {
+      test(
+          'calls validateAll() and call save() when validateAll() returns true',
+          () async {
+        final target = TestPresenter(
+          properties: PropertyDescriptorsBuilder(),
+        );
+
+        var isStateValidateCalled = false;
+        var isSaveCalled = false;
+        final state = FixedFormStateAdapter(
+          onValidate: () {
+            isStateValidateCalled = true;
+            return true;
+          },
+          onSave: () {
+            isSaveCalled = true;
+          },
+        );
+        final result = await target.validateAndSave(state);
+        expect(isStateValidateCalled, isTrue);
+        expect(result, isTrue);
+        expect(isSaveCalled, isTrue);
+      });
+
+      test(
+          'calls validateAll() and then just return false when validateAll() returns false',
+          () async {
+        final target = TestPresenter(
+          properties: PropertyDescriptorsBuilder(),
+        );
+
+        var isStateValidateCalled = false;
+        var isSaveCalled = false;
+        final state = FixedFormStateAdapter(
+          onValidate: () {
+            isStateValidateCalled = true;
+            return false;
+          },
+          onSave: () {
+            isSaveCalled = true;
+          },
+        );
+        final result = await target.validateAndSave(state);
+        expect(isStateValidateCalled, isTrue);
+        expect(result, isFalse);
+        expect(isSaveCalled, isFalse);
+      });
+    });
+  });
+
+  group('PropertyDescriptor', () {
+    test('getValidator() returns validator which wraps syncs and asyncs.', () {
+      const name = 'property';
+      int? syncValue1;
+      int? syncValue2;
+      int? asyncValue1;
+      int? asyncValue2;
+      Locale? asyncLocale1;
+      Locale? asyncLocale2;
+      final target = TestPresenter(
+        properties: PropertyDescriptorsBuilder()
+          ..add<int>(
+            name: name,
+            validatorFactories: [
+              (context) => (value) {
+                    syncValue1 = value;
+                    return null;
+                  },
+              (context) => (value) {
+                    syncValue2 = value;
+                    return null;
+                  },
+            ],
+            asyncValidatorFactories: [
+              (context) => (value, locale, progress) {
+                    asyncValue1 = value;
+                    asyncLocale1 = locale;
+                    return Future.value(null);
+                  },
+              (context) => (value, locale, progress) {
+                    asyncValue2 = value;
+                    asyncLocale2 = locale;
+                    return Future.value(null);
+                  },
+            ],
+          ),
+      );
+
+      final property = target.getProperty<int>(name);
+      const locale = Locale('en', 'US');
+      final context = DummyBuildContext();
+      const value = 123;
+      // NOTE: We cannot inject Locale, so we just validate default (en-US) or not.
+      final result = property.getValidator(context)(value);
+      expect(result, isNull);
+      expect(syncValue1, equals(value));
+      expect(syncValue2, equals(value));
+      expect(asyncValue1, equals(value));
+      expect(asyncValue2, equals(value));
+      expect(asyncLocale1, equals(locale));
+      expect(asyncLocale2, equals(locale));
     });
   });
 
