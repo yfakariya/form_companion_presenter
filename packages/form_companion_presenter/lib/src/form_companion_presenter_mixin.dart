@@ -109,7 +109,7 @@ mixin FormCompanionPresenterMixin {
   /// record the error with your logger or APM library.
   ///
   /// Default implementation delegates the error handling to
-  /// [async.Zone.current] and its [async.Zone.handleUncaughtError] method.
+  /// [async.Zone.current] and its [Zone.handleUncaughtError] method.
   @protected
   @visibleForOverriding
   void handleCanceledAsyncValidationError(AsyncError error) =>
@@ -499,12 +499,17 @@ class PropertyDescriptor<T, P> {
         (e) {
           final asyncValidator = e.createValidator(context);
           final executor = e._executor;
-          return (v) => executor.validate(
-                validator: asyncValidator,
-                value: v,
-                locale: locale,
-                onCompleted: onCompleted,
-              );
+
+          return (v) {
+            // Cancels previous validation -- it might hang
+            executor.cancel();
+            return executor.validate(
+              validator: asyncValidator,
+              value: v,
+              locale: locale,
+              onCompleted: onCompleted,
+            );
+          };
         },
       ),
     ]);
