@@ -272,21 +272,23 @@ mixin FormCompanionPresenterMixin {
   }
 
   Future<bool> _validateAllWithAsync(FormStateAdapter formState) async {
-    final completers = <Completer<void>>[];
+    // Kick async validators.
+    formState.validate();
 
-    // Set Completers and stores to list for bulk awaiting.
-    for (final property in properties.values) {
-      if (property._asynvValidatorEntries.isNotEmpty) {
+    // Creates completers to wait pending async validations.
+    final completers = properties.values
+        .where((property) => property._asynvValidatorEntries.any(
+              (entry) => entry._executor.validating,
+            ))
+        .map(
+      (property) {
         final completer = Completer<void>();
-        property._completer = completer;
-        completers.add(completer);
-      }
-    }
+        property._asyncValidationCompletion = completer;
+        return completer;
+      },
+    ).toList();
 
     try {
-      // Kick async validators.
-      formState.validate();
-
       // wait completions of asynchronous validations.
       await Future.wait(completers.map((f) => f.future));
 
@@ -294,7 +296,7 @@ mixin FormCompanionPresenterMixin {
       return formState.validate();
     } finally {
       for (final property in properties.values) {
-        property._completer = null;
+        property._asyncValidationCompletion = null;
       }
     }
   }
@@ -417,7 +419,7 @@ class PropertyDescriptor<T, P> {
   /// [Completer] to notify [FormCompanionPresenterMixin] with
   /// non-autovalidation mode which should run and wait asynchronous validators
   /// in its submit method.
-  Completer<void>? _completer;
+  Completer<void>? _asyncValidationCompletion;
 
   /// Saved value.
   ///
@@ -484,9 +486,9 @@ class PropertyDescriptor<T, P> {
     final onCompleted = (String? result, AsyncError? error) {
       // This line refers lates field instead of the time when getValidator is called.
       if (error == null) {
-        _completer?.complete();
+        _asyncValidationCompletion?.complete();
       } else {
-        _completer?.completeError(error);
+        _asyncValidationCompletion?.completeError(error);
       }
 
       notifyCompletion(result, error);
