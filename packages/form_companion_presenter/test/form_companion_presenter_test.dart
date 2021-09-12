@@ -513,6 +513,150 @@ void main() {
     });
   });
 
+  group('validation', () {
+    group('handleCanceledAsyncValidationError()', () {
+      test('is called for unhandled exception in canceled validation.',
+          () async {
+        // TODO(yfakariya): Refactor this group
+        Object? handledError;
+        final context = DummyBuildContext();
+        final completers = [
+          Completer<void>(),
+          Completer<void>(),
+          Completer<void>(),
+        ];
+        final backCompleters = [
+          Completer<void>(),
+          Completer<void>(),
+          Completer<void>(),
+        ];
+
+        final target = TestPresenter(
+          properties: PropertyDescriptorsBuilder()
+            ..add<int>(
+              name: 'prop',
+              asyncValidatorFactories: [
+                (context) => (value, locale, onProgress) async {
+                      if (value != null) {
+                        await completers[value].future;
+                      }
+
+                      try {
+                        if ((value ?? 0) == 0) {
+                          return null;
+                        } else if (value == 1) {
+                          return 'Validation error.';
+                        } else {
+                          throw Exception(value?.toString());
+                        }
+                      } finally {
+                        final backCompleter = backCompleters[value ?? 0];
+                        if (!backCompleter.isCompleted) {
+                          backCompleter.complete();
+                        }
+                      }
+                    }
+              ],
+            ),
+          onHandleCanceledAsyncValidationError: (error) {
+            handledError = error;
+          },
+        );
+
+        final validator = target.getProperty<int>('prop').getValidator(context);
+        // Causes exception
+        expect(validator(2), isNull);
+        // Cancel previous
+        expect(validator(1), isNull);
+        completers[1].complete();
+        completers[2].complete();
+
+        await backCompleters[1].future;
+        await backCompleters[2].future;
+
+        expect(validator(1), isNotNull);
+
+        expect(handledError, isNotNull);
+      });
+      test('calles Zone\'s handler by default.', () async {
+        Object? handledError;
+        Zone? unhandledZone;
+        final context = DummyBuildContext();
+        final completers = [
+          Completer<void>(),
+          Completer<void>(),
+          Completer<void>(),
+        ];
+        final backCompleters = [
+          Completer<void>(),
+          Completer<void>(),
+          Completer<void>(),
+        ];
+
+        await runZoned(
+          () async {
+            final target = TestPresenter(
+              properties: PropertyDescriptorsBuilder()
+                ..add<int>(
+                  name: 'prop',
+                  asyncValidatorFactories: [
+                    (context) => (value, locale, onProgress) async {
+                          if (value != null) {
+                            await completers[value].future;
+                          }
+
+                          try {
+                            if ((value ?? 0) == 0) {
+                              return null;
+                            } else if (value == 1) {
+                              return 'Validation error.';
+                            } else {
+                              throw Exception(value?.toString());
+                            }
+                          } finally {
+                            final backCompleter = backCompleters[value ?? 0];
+                            if (!backCompleter.isCompleted) {
+                              backCompleter.complete();
+                            }
+                          }
+                        }
+                  ],
+                ),
+            );
+
+            final validator =
+                target.getProperty<int>('prop').getValidator(context);
+            // Causes exception
+            expect(validator(2), isNull);
+            // Cancel previous
+            expect(validator(1), isNull);
+            completers[1].complete();
+            completers[2].complete();
+
+            await backCompleters[1].future;
+            await backCompleters[2].future;
+
+            expect(validator(1), isNotNull);
+
+            // Default implementation of handleCanceledAsyncValidationError()
+            // calles current zone's handleUncaughtError()
+            expect(handledError, isNotNull);
+            expect(unhandledZone, same(Zone.current));
+          },
+          zoneSpecification: ZoneSpecification(handleUncaughtError: (
+            self,
+            parent,
+            zone,
+            error,
+            stackTrace,
+          ) {
+            handledError = error;
+            unhandledZone = zone;
+          }),
+        );
+      });
+    });
+
     group('buildOnAsyncValidationCompleted()', () {
       test('returned callback calls validator\'s.validate()', () {
         var isValidatorCalled = false;
