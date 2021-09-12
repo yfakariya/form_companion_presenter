@@ -109,11 +109,10 @@ mixin FormCompanionPresenterMixin {
   /// record the error with your logger or APM library.
   ///
   /// Default implementation delegates the error handling to
-  /// [async.Zone.current] and its [Zone.handleUncaughtError] method.
+  /// [Zone.handleUncaughtError] method by throwing the error.
   @protected
   @visibleForOverriding
-  void handleCanceledAsyncValidationError(AsyncError error) =>
-      Zone.current.handleUncaughtError(error, error.stackTrace);
+  void handleCanceledAsyncValidationError(AsyncError error) => throw error;
 
   /// Gets a [PropertyDescriptor] for the specified [name],
   /// which was registered via constrcutor.
