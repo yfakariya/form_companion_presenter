@@ -1,5 +1,6 @@
 {
     "dart.flutterSdkPath": ".fvm/flutter_sdk",
+    "dart.runPubGetOnPubspecChanges": false,
     // Remove .fvm files from search
     "search.exclude": {
       "**/.fvm": true
