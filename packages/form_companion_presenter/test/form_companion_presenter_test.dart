@@ -514,6 +514,70 @@ void main() {
   });
 
   group('validation', () {
+    test('preceding validation is canceled', () async {
+      final context = DummyBuildContext();
+      final asyncOperationStartGates = [
+        Completer<void>(),
+        Completer<void>(),
+      ];
+      final asyncOperationCompletions = [
+        Completer<void>(),
+        Completer<void>(),
+      ];
+
+      final values = <int?>[];
+      final target = TestPresenter(
+          properties: PropertyDescriptorsBuilder()
+            ..add<int>(
+              name: 'prop',
+              asyncValidatorFactories: [
+                (context) => (value, locale, onProgress) async {
+                      values.add(value);
+                      if (value != null) {
+                        await asyncOperationStartGates[value].future;
+                      }
+
+                      try {
+                        return value?.toString() ?? 'null';
+                      } finally {
+                        final completion =
+                            asyncOperationCompletions[value ?? 0];
+                        if (!completion.isCompleted) {
+                          completion.complete();
+                        }
+                      }
+                    }
+              ],
+            ));
+
+      final validator = target.getProperty<int>('prop').getValidator(context);
+      expect(validator(0), isNull);
+      expect(asyncOperationStartGates[0].isCompleted, isFalse);
+      expect(validator(1), isNull);
+      expect(asyncOperationStartGates[1].isCompleted, isFalse);
+
+      // Resume following validation first and then wait.
+      asyncOperationStartGates[1].complete();
+      await asyncOperationCompletions[1].future;
+
+      // Resume preceding validation next and then wait.
+      asyncOperationStartGates[0].complete();
+      await asyncOperationCompletions[0].future;
+
+      // Check validation calls with their order.
+      expect(values, equals([0, 1]));
+
+      // Try call following validation again
+      expect(validator(1), equals('1'));
+      // If preceding validation is NOT canceled,
+      // the cache should be a result of validator(0),
+      // so validator(1) invocation does not hit the cache
+      // and causes additional validation logic execution.
+      // But if the preceding validation is canceled correctly,
+      // validation calls record should not be changed here.
+      expect(values, equals([0, 1]));
+    });
+
     group('handleCanceledAsyncValidationError()', () {
       Future<void> doTest({
         void Function(AsyncError)? onHandleCanceledAsyncValidationError,
