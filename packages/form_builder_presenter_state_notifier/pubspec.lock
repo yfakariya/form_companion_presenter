@@ -85,14 +85,14 @@ packages:
       path: "../form_companion_presenter"
       relative: true
     source: path
-    version: "0.0.1"
+    version: "0.1.0"
   form_presenter_state_notifier:
     dependency: "direct main"
     description:
       path: "../form_presenter_state_notifier"
       relative: true
     source: path
-    version: "0.0.1"
+    version: "0.1.0"
   intl:
     dependency: transitive
     description:
