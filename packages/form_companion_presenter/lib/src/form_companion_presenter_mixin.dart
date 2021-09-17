@@ -174,6 +174,7 @@ mixin FormCompanionPresenterMixin {
   /// you should override this method.
   @protected
   @visibleForOverriding
+  @visibleForTesting
   bool canSubmit(BuildContext context) {
     final formState = maybeFormStateOf(context);
     if (formState == null ||
@@ -209,6 +210,7 @@ mixin FormCompanionPresenterMixin {
   /// You can change this behavior with overriding this method.
   @protected
   @visibleForOverriding
+  @visibleForTesting
   Locale getLocale(BuildContext context) =>
       Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US');
 
