@@ -1,14 +1,15 @@
 # form_companion_presenter
 
-A new Flutter package project.
+Core package of `form_companion_presenter` project.
+This package includes three main modules:
+
+* `FormCompanionPresenterMixIn`, which is main entry point of this `form_companion_presenter`.
+* `AsyncValidatorExecutor`, which is helper of asynchronous validation.
+  * This is a helper of `FormCompanionPresenterMixIn`, but you can utilize alone.
+* `FutureInvoker`, which translates `Future` based async to completion callback based async.
+  * This is base class of `AsyncValidatorExecutor`, and you can use it as you like.
 
 ## Getting Started
 
-This project is a starting point for a Dart
-[package](https://flutter.dev/developing-packages/),
-a library module containing code that can be shared easily across
-multiple Flutter or Dart projects.
+T.B.D.
 
-For help getting started with Flutter, view our 
-[online documentation](https://flutter.dev/docs), which offers tutorials, 
-samples, guidance on mobile development, and a full API reference.
