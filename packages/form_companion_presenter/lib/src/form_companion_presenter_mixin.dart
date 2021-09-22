@@ -147,6 +147,18 @@ mixin FormCompanionPresenterMixin {
     return property;
   }
 
+  T? getPropertyValue<T extends Object>(String name) =>
+      getProperty<T>(name).value;
+
+  void Function(T?) savePropertyValue<T extends Object>(String name) =>
+      (v) => getProperty<T>(name).setDynamicValue(v);
+
+  FormFieldValidator<T> getPropertyValidator<T extends Object>(
+    String name,
+    BuildContext context,
+  ) =>
+      getProperty<T>(name).getValidator(context);
+
   /// Gets the ancestor [FormState] like state from specified [BuildContext],
   /// and wraps it to [FormStateAdapter].
   ///

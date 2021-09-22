@@ -23,38 +23,33 @@ class _AutoValidationFormBuilderPane extends ConsumerWidget {
   @override
   Widget build(BuildContext context, ScopedReader watch) {
     final presenter = watch(_presenter.notifier);
-    final id = presenter.getProperty<String>('id');
-    final name = presenter.getProperty<String>('name');
-    final age = presenter.getProperty<String>('age');
-    final sex = presenter.getProperty<Sex>('sex');
-    final note = presenter.getProperty<String>('note');
     return Column(
       children: [
         FormBuilderTextField(
-          name: id.name,
-          initialValue: id.value,
+          name: 'id',
+          initialValue: presenter.getPropertyValue('id'),
           decoration: InputDecoration(
             labelText: LocaleKeys.id_label.tr(),
             hintText: LocaleKeys.id_hint.tr(),
           ),
-          validator: id.getValidator(context),
+          validator: presenter.getPropertyValidator('id', context),
         ),
         FormBuilderTextField(
-          name: name.name,
-          initialValue: name.value,
+          name: 'name',
+          initialValue: presenter.getPropertyValue('name'),
           decoration: InputDecoration(
             labelText: LocaleKeys.name_label.tr(),
             hintText: LocaleKeys.name_hint.tr(),
           ),
-          validator: name.getValidator(context),
+          validator: presenter.getPropertyValidator('name', context),
         ),
         FormBuilderDropdown<Sex>(
-          name: sex.name,
+          name: 'sex',
           decoration: InputDecoration(
             labelText: LocaleKeys.sex_label.tr(),
             hintText: LocaleKeys.sex_hint.tr(),
           ),
-          initialValue: sex.value,
+          initialValue: presenter.getPropertyValue('sex'),
           items: [
             DropdownMenuItem(
               value: Sex.notKnown,
@@ -75,24 +70,24 @@ class _AutoValidationFormBuilderPane extends ConsumerWidget {
           ],
         ),
         FormBuilderTextField(
-          name: age.name,
-          initialValue: age.value.toString(),
+          name: 'age',
+          initialValue: presenter.getPropertyValue('age'),
           decoration: InputDecoration(
             labelText: LocaleKeys.age_label.tr(),
             hintText: LocaleKeys.age_hint.tr(),
           ),
-          validator: age.getValidator(context),
+          validator: presenter.getPropertyValidator('age', context),
           valueTransformer: (v) => v == null ? null : int.parse(v),
         ),
         FormBuilderTextField(
-          name: note.name,
-          initialValue: note.value,
+          name: 'note',
+          initialValue: presenter.getPropertyValue('note'),
           maxLines: null,
           decoration: InputDecoration(
             labelText: LocaleKeys.note_label.tr(),
             hintText: LocaleKeys.note_label.tr(),
           ),
-          validator: note.getValidator(context),
+          validator: presenter.getPropertyValidator('note', context),
         ),
       ],
     );
@@ -116,11 +111,11 @@ class AutoValidationFormBuilderPresenter
   @override
   FutureOr<void> doSubmit(BuildContext context) async {
     state = TargetState.completed(
-      id: getProperty<String>('id').value!,
-      name: getProperty<String>('name').value!,
-      sex: getProperty<Sex>('sex').value!,
-      age: int.parse(getProperty<String>('age').value!),
-      note: getProperty<String>('note').value!,
+      id: getPropertyValue('id')!,
+      name: getPropertyValue('name')!,
+      sex: getPropertyValue('sex')!,
+      age: int.parse(getPropertyValue('age')!),
+      note: getPropertyValue('note')!,
     );
   }
 }

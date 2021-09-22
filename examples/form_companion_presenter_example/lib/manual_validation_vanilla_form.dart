@@ -22,38 +22,33 @@ class _ManualValidationVanillaFormPane extends ConsumerWidget {
   @override
   Widget build(BuildContext context, ScopedReader watch) {
     final presenter = watch(_presenter.notifier);
-    final id = presenter.getProperty<String>('id');
-    final name = presenter.getProperty<String>('name');
-    final age = presenter.getProperty<String>('age');
-    final sex = presenter.getProperty<Sex>('sex');
-    final note = presenter.getProperty<String>('note');
     return Column(
       children: [
         TextFormField(
-          initialValue: id.value,
+          initialValue: presenter.getPropertyValue('id'),
           decoration: InputDecoration(
             labelText: LocaleKeys.id_label.tr(),
             hintText: LocaleKeys.id_hint.tr(),
           ),
-          validator: id.getValidator(context),
-          onSaved: id.setDynamicValue,
+          validator: presenter.getPropertyValidator('id', context),
+          onSaved: presenter.savePropertyValue('id'),
         ),
         TextFormField(
-          initialValue: name.value,
+          initialValue: presenter.getPropertyValue('name'),
           decoration: InputDecoration(
             labelText: LocaleKeys.name_label.tr(),
             hintText: LocaleKeys.name_hint.tr(),
           ),
-          validator: name.getValidator(context),
-          onSaved: name.setDynamicValue,
+          validator: presenter.getPropertyValidator('name', context),
+          onSaved: presenter.savePropertyValue('name'),
         ),
         DropdownButtonFormField<Sex>(
           decoration: InputDecoration(
             labelText: LocaleKeys.sex_label.tr(),
             hintText: LocaleKeys.sex_hint.tr(),
           ),
-          value: sex.value,
-          onSaved: sex.setDynamicValue,
+          value: presenter.getPropertyValue('sex'),
+          onSaved: presenter.savePropertyValue('sex'),
           items: [
             DropdownMenuItem(
               value: Sex.notKnown,
@@ -74,23 +69,23 @@ class _ManualValidationVanillaFormPane extends ConsumerWidget {
           ],
         ),
         TextFormField(
-          initialValue: age.value.toString(),
+          initialValue: presenter.getPropertyValue('age'),
           decoration: InputDecoration(
             labelText: LocaleKeys.age_label.tr(),
             hintText: LocaleKeys.age_hint.tr(),
           ),
-          validator: age.getValidator(context),
-          onSaved: (v) => age.setDynamicValue(int.parse(v!)),
+          validator: presenter.getPropertyValidator('age', context),
+          onSaved: presenter.savePropertyValue('age'),
         ),
         TextFormField(
-          initialValue: note.value,
+          initialValue: presenter.getPropertyValue('note'),
           maxLines: null,
           decoration: InputDecoration(
             labelText: LocaleKeys.note_label.tr(),
             hintText: LocaleKeys.note_label.tr(),
           ),
-          validator: note.getValidator(context),
-          onSaved: note.setDynamicValue,
+          validator: presenter.getPropertyValidator('note', context),
+          onSaved: presenter.savePropertyValue('note'),
         ),
       ],
     );
@@ -117,11 +112,11 @@ class ManualValidationVanillaFormPresenter extends FormPresenter<TargetState> {
     }
 
     state = TargetState.completed(
-      id: getProperty<String>('id').value!,
-      name: getProperty<String>('name').value!,
-      sex: getProperty<Sex>('sex').value!,
-      age: int.parse(getProperty<String>('age').value!),
-      note: getProperty<String>('note').value!,
+      id: getPropertyValue('id')!,
+      name: getPropertyValue('name')!,
+      sex: getPropertyValue('sex')!,
+      age: int.parse(getPropertyValue('age')!),
+      note: getPropertyValue('note')!,
     );
   }
 }
