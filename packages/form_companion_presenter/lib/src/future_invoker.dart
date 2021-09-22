@@ -8,6 +8,21 @@ import 'package:meta/meta.dart';
 
 import 'internal_utils.dart';
 
+/// Helps distinction between "set" null-value and "not set" any value for
+/// nullable type.
+@sealed
+class _NullableValueHolder<T> {
+  /// Value itself.
+  ///
+  /// Note that [value] can be `null` when [T] is nullable.
+  final T value;
+
+  /// Creates new [_NullableValueHolder].
+  ///
+  /// Note that [value] can be `null` when [T] is nullable.
+  _NullableValueHolder(this.value);
+}
+
 /// Represents status of asynchronous operation.
 enum AsyncOperationStatus {
   /// [FutureInvoker] is initialized, but any asynchronous operations have not
@@ -33,7 +48,7 @@ enum AsyncOperationStatus {
 class _AsyncOperationState<P, R> {
   /// Cached parameter. `null` when no last execution, that is, [status] is
   /// [AsyncOperationStatus.initial].
-  final NullableValueHolder<P>? parameter;
+  final _NullableValueHolder<P>? parameter;
 
   /// Last result. This value only valid iff [parameter] is not `null` and
   /// [error] is `null`, that is, [status] is [AsyncOperationStatus.completed]
@@ -63,7 +78,7 @@ class _AsyncOperationState<P, R> {
       _AsyncOperationState(
         result,
         null,
-        NullableValueHolder(parameter),
+        _NullableValueHolder(parameter),
         AsyncOperationStatus.completed,
       );
 
@@ -74,7 +89,7 @@ class _AsyncOperationState<P, R> {
       _AsyncOperationState(
         null,
         error,
-        NullableValueHolder(parameter),
+        _NullableValueHolder(parameter),
         AsyncOperationStatus.failed,
       );
 
@@ -95,7 +110,7 @@ class _AsyncOperationState<P, R> {
       _AsyncOperationState(
         lastResultOrDefault,
         null,
-        NullableValueHolder(parameter),
+        _NullableValueHolder(parameter),
         AsyncOperationStatus.inProgress,
       );
 }
@@ -181,12 +196,12 @@ abstract class FutureInvoker<T extends AsyncOperationNotifier<R, P>, R, P> {
   final R _defaultResult;
 
   /// "Queued" next operation request. `null` for no pending request.
-  NullableValueHolder<T>? _nextValue;
+  _NullableValueHolder<T>? _nextValue;
 
   /// Processing operation. `null` means:
   /// * This "thread" should call asynchronous operation in before execution.
   /// * The asynchronous operation was canceled in after execution.
-  NullableValueHolder<T>? _processingValue;
+  _NullableValueHolder<T>? _processingValue;
 
   /// Last state for cancellation.
   late _AsyncOperationState<T, R> _lastState;
@@ -287,7 +302,7 @@ abstract class FutureInvoker<T extends AsyncOperationNotifier<R, P>, R, P> {
     }
 
     final shouldInvoke = _processingValue == null;
-    _nextValue = NullableValueHolder(parameter);
+    _nextValue = _NullableValueHolder(parameter);
     if (shouldInvoke) {
       _log.fine(() => 'Begin async operation.');
       _executeAsync();

@@ -4,21 +4,6 @@ import 'dart:async';
 
 import 'package:meta/meta.dart';
 
-/// Helps distinction between "set" null-value and "not set" any value for
-/// nullable type.
-@sealed
-class NullableValueHolder<T> {
-  /// Value itself.
-  ///
-  /// Note that [value] can be `null` when [T] is nullable.
-  final T value;
-
-  /// Creates new [NullableValueHolder].
-  ///
-  /// Note that [value] can be `null` when [T] is nullable.
-  NullableValueHolder(this.value);
-}
-
 // Compatible with package:logging https://github.com/dart-lang/logging/blob/9d9fd5a83f52649264e34605ffa2d364d73316f4/lib/src/level.dart
 /// Represents log level.
 @sealed

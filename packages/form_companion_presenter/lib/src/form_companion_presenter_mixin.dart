@@ -128,7 +128,7 @@ mixin FormCompanionPresenterMixin {
   /// PropertyDescriptor<int> get age => getProperty<int>('age');
   /// ```
   @nonVirtual
-  PropertyDescriptor<P, void> getProperty<P>(String name) {
+  PropertyDescriptor<P, void> getProperty<P extends Object>(String name) {
     final property = properties[name];
     if (property == null) {
       throw ArgumentError.value(
@@ -395,7 +395,7 @@ FormFieldValidator<T> _chainValidators<T>(
 /// This object is built with [PropertyDescriptorsBuilder] which is passed to
 /// [FormCompanionPresenterMixin.initializeFormCompanionMixin].
 @sealed
-class PropertyDescriptor<T, P> {
+class PropertyDescriptor<T extends Object, P> {
   /// Unique name of this property.
   final String name;
 
@@ -413,36 +413,20 @@ class PropertyDescriptor<T, P> {
   /// Entries to build [AsyncValidator].
   final List<_AsyncValidatorEntry<T, P>> _asynvValidatorEntries;
 
-  /// Saved value which can be null.
-  // ignore: use_late_for_private_fields_and_variables
-  NullableValueHolder<T>? _value;
+  /// Saved property value. This value can be `null`.
+  T? value;
 
   /// [Completer] to notify [FormCompanionPresenterMixin] with
   /// non-autovalidation mode which should run and wait asynchronous validators
   /// in its submit method.
   Completer<void>? _asyncValidationCompletion;
 
-  /// Saved value.
-  ///
-  /// This getter throws [StateError] if the value has never set.
-  T get value {
-    final value = _value;
-    if (value == null) {
-      throw StateError('value is not set yet.');
-    }
-
-    return value.value;
-  }
-
-  /// Save value from form field or simular widget.
-  set value(T value) => _value = NullableValueHolder(value);
-
   /// Save value from logic which handles this [PropertyDescriptor] without
   /// strong typing.
   ///
   /// This method throws [ArgumentError] if [value] is not compatible [T].
   void setDynamicValue(dynamic value) {
-    if (value is! T) {
+    if (value is! T?) {
       throw ArgumentError.value(
         value,
         'value',
@@ -464,6 +448,7 @@ class PropertyDescriptor<T, P> {
   PropertyDescriptor._({
     required this.name,
     required this.presenter,
+    required this.value,
     List<FormFieldValidatorFactory<T>>? validatorFactories,
     List<AsyncValidatorFactory<T, P>>? asyncValidatorFactories,
     Equality<T?>? equality,
@@ -518,13 +503,15 @@ class PropertyDescriptor<T, P> {
 }
 
 /// Required values to create [PropertyDescriptor].
-class _PropertyDescriptorSource<T, P> {
+class _PropertyDescriptorSource<T extends Object, P> {
   final String name;
+  final T? initialValue;
   final List<FormFieldValidatorFactory<T>> validatorFactories;
   final List<AsyncValidatorFactory<T, P>> asyncValidatorFactories;
 
   _PropertyDescriptorSource({
     required this.name,
+    required this.initialValue,
     required this.validatorFactories,
     required this.asyncValidatorFactories,
   });
@@ -536,6 +523,7 @@ class _PropertyDescriptorSource<T, P> {
       PropertyDescriptor<T, P>._(
         name: name,
         presenter: presenter,
+        value: initialValue,
         validatorFactories: validatorFactories,
         asyncValidatorFactories: asyncValidatorFactories,
       );
@@ -544,7 +532,8 @@ class _PropertyDescriptorSource<T, P> {
 /// Builder object to build [PropertyDescriptor].
 @sealed
 class PropertyDescriptorsBuilder {
-  final Map<String, _PropertyDescriptorSource> _properties = {};
+  final Map<String, _PropertyDescriptorSource<Object, dynamic>> _properties =
+      {};
 
   /// Defines new property without asynchronous validation progress reporting.
   ///
@@ -553,13 +542,15 @@ class PropertyDescriptorsBuilder {
   /// validation framework requires live [BuildContext] to initialize validator,
   /// and current [Locale] of the application should be stored to
   /// [BuildContext].
-  void add<T>({
+  void add<T extends Object>({
     required String name,
+    T? initialValue,
     List<FormFieldValidatorFactory<T>>? validatorFactories,
     List<AsyncValidatorFactory<T, void>>? asyncValidatorFactories,
   }) =>
       addWithProgressReport(
         name: name,
+        initialValue: initialValue,
         validatorFactories: validatorFactories,
         asyncValidatorFactories: asyncValidatorFactories,
       );
@@ -571,13 +562,15 @@ class PropertyDescriptorsBuilder {
   /// validation framework requires live [BuildContext] to initialize validator,
   /// and current [Locale] of the application should be stored to
   /// [BuildContext].
-  void addWithProgressReport<T, P>({
+  void addWithProgressReport<T extends Object, P>({
     required String name,
+    T? initialValue,
     List<FormFieldValidatorFactory<T>>? validatorFactories,
     List<AsyncValidatorFactory<T, P>>? asyncValidatorFactories,
   }) {
     final descriptor = _PropertyDescriptorSource<T, P>(
       name: name,
+      initialValue: initialValue,
       validatorFactories: validatorFactories ?? [],
       asyncValidatorFactories: asyncValidatorFactories ?? [],
     );

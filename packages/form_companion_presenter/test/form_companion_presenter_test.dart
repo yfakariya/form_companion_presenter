@@ -262,10 +262,10 @@ void main() {
     group('PropertyDescriptor', () {
       test('can be get / set typed value.', () {
         final target = TestPresenter(
-          properties: PropertyDescriptorsBuilder()..add<int?>(name: 'int'),
+          properties: PropertyDescriptorsBuilder()..add<int>(name: 'int'),
         );
 
-        final property = target.getProperty<int?>('int');
+        final property = target.getProperty<int>('int');
         // ignore: cascade_invocations
         property.value = 123;
         expect(property.value, equals(123));
@@ -273,57 +273,24 @@ void main() {
 
       test('can be get / set dynamic value.', () {
         final target = TestPresenter(
-          properties: PropertyDescriptorsBuilder()..add<int?>(name: 'int'),
+          properties: PropertyDescriptorsBuilder()..add<int>(name: 'int'),
         );
 
-        final property = target.getProperty<int?>('int');
+        final property = target.getProperty<int>('int');
         // ignore: cascade_invocations
         property.setDynamicValue(123);
         expect(property.value, equals(123));
       });
 
-      test('throws StateError from get value until any value set.', () {
-        final target = TestPresenter(
-          properties: PropertyDescriptorsBuilder()
-            ..add<int?>(name: 'int?')
-            ..add<int>(name: 'int'),
-        );
-
-        expect(() => target.getProperty<int>('int').value, throwsStateError);
-        // ... even if nullable
-        expect(() => target.getProperty<int?>('int?').value, throwsStateError);
-      });
-
       test('throws ArgumentError from setDynamicValue for incompatible type.',
           () {
         final target = TestPresenter(
-          properties: PropertyDescriptorsBuilder()..add<int?>(name: 'int'),
+          properties: PropertyDescriptorsBuilder()..add<int>(name: 'int'),
         );
 
-        final property = target.getProperty<int?>('int');
+        final property = target.getProperty<int>('int');
         // ignore: cascade_invocations
         expect(() => property.setDynamicValue('ABC'), throwsArgumentError);
-      });
-
-      test(
-          'throws ArgumentError from setDynamicValue for incompatible nullability type.',
-          () {
-        final target = TestPresenter(
-          properties: PropertyDescriptorsBuilder()..add<int>(name: 'int'),
-        );
-
-        final property = target.getProperty<int>('int');
-        expect(() => property.setDynamicValue(null), throwsArgumentError);
-      });
-
-      test('throws StateError from get value for non-nullable type initially.',
-          () {
-        final target = TestPresenter(
-          properties: PropertyDescriptorsBuilder()..add<int>(name: 'int'),
-        );
-
-        final property = target.getProperty<int>('int');
-        expect(() => property.value, throwsStateError);
       });
     });
   });

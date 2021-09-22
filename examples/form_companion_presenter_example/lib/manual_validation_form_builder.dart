@@ -120,11 +120,11 @@ class ManualValidationFormBuilderPresenter
     }
 
     state = TargetState.completed(
-      id: getProperty<String>('id').value,
-      name: getProperty<String>('name').value,
-      sex: getProperty<Sex>('sex').value,
-      age: int.parse(getProperty<String>('age').value),
-      note: getProperty<String>('note').value,
+      id: getProperty<String>('id').value!,
+      name: getProperty<String>('name').value!,
+      sex: getProperty<Sex>('sex').value!,
+      age: int.parse(getProperty<String>('age').value!),
+      note: getProperty<String>('note').value!,
     );
   }
 }
