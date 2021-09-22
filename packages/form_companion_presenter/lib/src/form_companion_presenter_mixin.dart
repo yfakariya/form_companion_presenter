@@ -140,7 +140,7 @@ mixin FormCompanionPresenterMixin {
 
     if (property is! PropertyDescriptor<P, void>) {
       throw StateError(
-        'A type of \'$name\' property is ${property.runtimeType} instead of not $P.',
+        'A type of \'$name\' property is ${property.runtimeType} instead of PropertyDescriptor<$P, ?>.',
       );
     }
 
