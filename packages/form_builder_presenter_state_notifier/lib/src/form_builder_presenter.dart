@@ -29,10 +29,10 @@ abstract class FormBuilderPresenter<T> extends FormPresenter<T> {
   /// Creates [FormBuilderPresenter] with its initial state.
   FormBuilderPresenter({
     required T initialState,
-    required PropertyDescriptorsBuilder propertiesBuilder,
+    required PropertyDescriptorsBuilder properties,
   }) : super(
           initialState: initialState,
-          properties: propertiesBuilder,
+          properties: properties,
         );
 
   @override
