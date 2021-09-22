@@ -1,0 +1,28 @@
+{
+    "title": "テストアプリケーション",
+    "id": {
+        "label": "ユーザーID *",
+        "hint": "他の人とは異なるであろうユーザーIDを入力してください。"
+    },
+    "name": {
+        "label": "ニックネーム *",
+        "hint": "ニックネームを入力してください。"
+    },
+    "sex": {
+        "label": "性別 *",
+        "hint": "性別を選択してください。",
+        "enumNotKnown": "不明",
+        "enumMale": "男性",
+        "enumFemale": "女性",
+        "enumNotApplicable": "N/A"
+    },
+    "age": {
+        "label": "年齢 *",
+        "hint": "年齢を数字で入力してください。"
+    },
+    "note": {
+        "label": "メモ",
+        "hint": "自由にメモを入力してください。"
+    },
+    "submit": "送信"
+}

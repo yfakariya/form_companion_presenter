@@ -1,0 +1,40 @@
+{
+    "title": "Test Application",
+    "drawer": {
+        "item": {
+            "manual": {
+                "vanilla": "Manual validation, vanilla Form",
+                "flutterFormBuilder": "Manual validation, Flutter Form Builder"
+            },
+            "auto": {
+                "vanilla": "Auto validation, vanilla Form",
+                "flutterFormBuilder": "Auto validation, Flutter Form Builder"
+            }
+        }
+    },
+    "id": {
+        "label": "User ID *",
+        "hint": "Enter your user ID which should be unique."
+    },
+    "name": {
+        "label": "Nick name *",
+        "hint": "Enter your nick name."
+    },
+    "sex": {
+        "label": "Sex *",
+        "hint": "Select your sex.",
+        "enumNotKnown": "Not known",
+        "enumMale": "Male",
+        "enumFemale": "Female",
+        "enumNotApplicable": "N/A"
+    },
+    "age": {
+        "label": "Age *",
+        "hint": "Enter your age in number."
+    },
+    "note": {
+        "label": "Note",
+        "hint": "Enter note for you."
+    },
+    "submit": "Submit"
+}
