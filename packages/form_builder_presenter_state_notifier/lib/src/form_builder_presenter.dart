@@ -62,6 +62,7 @@ abstract class FormBuilderPresenter<T> extends FormPresenter<T> {
 
   @override
   @protected
+  @nonVirtual
   void saveFields(FormStateAdapter formState) {
     if (formState is _FormBuilderStateAdapter) {
       formState.save();
