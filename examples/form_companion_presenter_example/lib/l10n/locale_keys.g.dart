@@ -1,15 +1,17 @@
 // DO NOT EDIT. This is code generated via package:easy_localization/generate.dart
 
 abstract class  LocaleKeys {
-  static const title = 'title';
-  static const drawer_item_manual_vanilla = 'drawer.item.manual.vanilla';
-  static const drawer_item_manual_flutterFormBuilder = 'drawer.item.manual.flutterFormBuilder';
-  static const drawer_item_manual = 'drawer.item.manual';
-  static const drawer_item_auto_vanilla = 'drawer.item.auto.vanilla';
-  static const drawer_item_auto_flutterFormBuilder = 'drawer.item.auto.flutterFormBuilder';
-  static const drawer_item_auto = 'drawer.item.auto';
-  static const drawer_item = 'drawer.item';
-  static const drawer = 'drawer';
+  static const titleTemplate = 'titleTemplate';
+  static const manual_vanilla_title = 'manual.vanilla.title';
+  static const manual_vanilla = 'manual.vanilla';
+  static const manual_flutterFormBuilder_title = 'manual.flutterFormBuilder.title';
+  static const manual_flutterFormBuilder = 'manual.flutterFormBuilder';
+  static const manual = 'manual';
+  static const auto_vanilla_title = 'auto.vanilla.title';
+  static const auto_vanilla = 'auto.vanilla';
+  static const auto_flutterFormBuilder_title = 'auto.flutterFormBuilder.title';
+  static const auto_flutterFormBuilder = 'auto.flutterFormBuilder';
+  static const auto = 'auto';
   static const id_label = 'id.label';
   static const id_hint = 'id.hint';
   static const id = 'id';

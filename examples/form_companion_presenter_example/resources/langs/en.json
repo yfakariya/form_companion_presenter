@@ -1,15 +1,19 @@
 {
-    "title": "Test Application",
-    "drawer": {
-        "item": {
-            "manual": {
-                "vanilla": "Manual validation, vanilla Form",
-                "flutterFormBuilder": "Manual validation, Flutter Form Builder"
-            },
-            "auto": {
-                "vanilla": "Auto validation, vanilla Form",
-                "flutterFormBuilder": "Auto validation, Flutter Form Builder"
-            }
+    "titleTemplate": "Example of form_companion_presenter: {screenName}",
+    "manual": {
+        "vanilla": {
+            "title": "Manual validation, vanilla Form"
+        },
+        "flutterFormBuilder": {
+            "title": "Manual validation, Flutter Form Builder"
+        }
+    },
+    "auto": {
+        "vanilla": {
+            "title": "Auto validation, vanilla Form"
+        },
+        "flutterFormBuilder": {
+            "title": "Auto validation, Flutter Form Builder"
         }
     },
     "id": {

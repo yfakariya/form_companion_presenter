@@ -1,5 +1,21 @@
 {
-    "title": "テストアプリケーション",
+    "titleTemplate": "form_companion_presenter の例：{screenName}",
+    "manual": {
+        "vanilla": {
+            "title": "手動バリデーション、素の Form"
+        },
+        "flutterFormBuilder": {
+            "title": "手動バリデーション、Flutter Form Builder"
+        }
+    },
+    "auto": {
+        "vanilla": {
+            "title": "自動バリデーション、素の Form"
+        },
+        "flutterFormBuilder": {
+            "title": "自動バリデーション、Flutter Form Builder"
+        }
+    },
     "id": {
         "label": "ユーザーID *",
         "hint": "他の人とは異なるであろうユーザーIDを入力してください。"

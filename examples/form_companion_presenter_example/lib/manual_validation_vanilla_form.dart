@@ -1,3 +1,5 @@
+// See LICENCE file in the root.
+
 import 'dart:async';
 
 import 'package:easy_localization/easy_localization.dart';
@@ -9,10 +11,14 @@ import 'package:meta/meta.dart';
 
 import 'l10n/locale_keys.g.dart';
 import 'models.dart';
+import 'screen.dart';
 
-class ManualValidationVanillaFormPage extends ConsumerWidget {
+class ManualValidationVanillaFormPage extends Screen {
   @override
-  Widget build(BuildContext context, ScopedReader watch) => Form(
+  String get title => LocaleKeys.manual_vanilla_title.tr();
+
+  @override
+  Widget buildPage(BuildContext context, ScopedReader watch) => Form(
         autovalidateMode: AutovalidateMode.disabled,
         child: _ManualValidationVanillaFormPane(),
       );
@@ -49,6 +55,8 @@ class _ManualValidationVanillaFormPane extends ConsumerWidget {
           ),
           value: presenter.getPropertyValue('sex'),
           onSaved: presenter.savePropertyValue('sex'),
+          // Tip: required to work
+          onChanged: (_) {},
           items: [
             DropdownMenuItem(
               value: Sex.notKnown,
@@ -100,8 +108,14 @@ class ManualValidationVanillaFormPresenter extends FormPresenter<TargetState> {
           properties: PropertyDescriptorsBuilder()
             ..add<String>(name: 'id')
             ..add<String>(name: 'name')
-            ..add<Sex>(name: 'sex')
-            ..add<String>(name: 'age')
+            ..add<Sex>(
+              name: 'sex',
+              initialValue: Sex.notKnown,
+            )
+            ..add<String>(
+              name: 'age',
+              initialValue: '18',
+            )
             ..add<String>(name: 'note'),
         );
 

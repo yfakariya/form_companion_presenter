@@ -15,17 +15,21 @@ class CodegenLoader extends AssetLoader{
   }
 
   static const Map<String,dynamic> en = {
-  "title": "Test Application",
-  "drawer": {
-    "item": {
-      "manual": {
-        "vanilla": "Manual validation, vanilla Form",
-        "flutterFormBuilder": "Manual validation, Flutter Form Builder"
-      },
-      "auto": {
-        "vanilla": "Auto validation, vanilla Form",
-        "flutterFormBuilder": "Auto validation, Flutter Form Builder"
-      }
+  "titleTemplate": "Example of form_companion_presenter: {screenName}",
+  "manual": {
+    "vanilla": {
+      "title": "Manual validation, vanilla Form"
+    },
+    "flutterFormBuilder": {
+      "title": "Manual validation, Flutter Form Builder"
+    }
+  },
+  "auto": {
+    "vanilla": {
+      "title": "Auto validation, vanilla Form"
+    },
+    "flutterFormBuilder": {
+      "title": "Auto validation, Flutter Form Builder"
     }
   },
   "id": {
@@ -55,7 +59,23 @@ class CodegenLoader extends AssetLoader{
   "submit": "Submit"
 };
 static const Map<String,dynamic> ja = {
-  "title": "テストアプリケーション",
+  "titleTemplate": "form_companion_presenter の例：{screenName}",
+  "manual": {
+    "vanilla": {
+      "title": "手動バリデーション、素の Form"
+    },
+    "flutterFormBuilder": {
+      "title": "手動バリデーション、Flutter Form Builder"
+    }
+  },
+  "auto": {
+    "vanilla": {
+      "title": "自動バリデーション、素の Form"
+    },
+    "flutterFormBuilder": {
+      "title": "自動バリデーション、Flutter Form Builder"
+    }
+  },
   "id": {
     "label": "ユーザーID *",
     "hint": "他の人とは異なるであろうユーザーIDを入力してください。"
