@@ -2,18 +2,24 @@
     "titleTemplate": "Example of form_companion_presenter: {screenName}",
     "manual": {
         "vanilla": {
-            "title": "Manual validation, vanilla Form"
+            "title": "Manual validation, vanilla Form for Account"
         },
-        "flutterFormBuilder": {
-            "title": "Manual validation, Flutter Form Builder"
+        "flutterFormBuilderAccount": {
+            "title": "Manual validation, Flutter Form Builder for Account"
+        },
+        "flutterFormBuilderBooking": {
+            "title": "Manual validation, Flutter Form Builder for Booking"
         }
     },
     "auto": {
         "vanilla": {
-            "title": "Auto validation, vanilla Form"
+            "title": "Auto validation, vanilla Form for Account"
         },
-        "flutterFormBuilder": {
-            "title": "Auto validation, Flutter Form Builder"
+        "flutterFormBuilderAccount": {
+            "title": "Auto validation, Flutter Form Builder for Account"
+        },
+        "flutterFormBuilderBooking": {
+            "title": "Auto validation, Flutter Form Builder for Booking"
         }
     },
     "id": {
@@ -24,7 +30,7 @@
         "label": "Nick name *",
         "hint": "Enter your nick name."
     },
-    "sex": {
+    "gender": {
         "label": "Sex *",
         "hint": "Select your sex.",
         "enumNotKnown": "Not known",
@@ -36,9 +42,72 @@
         "label": "Age *",
         "hint": "Enter your age in number."
     },
+    "preferredRegions": {
+        "label": "Preferred regions",
+        "hint": "Select your preferred regions."
+    },
+    "region": {
+        "afurika": "Afurika",
+        "asia": "Asia",
+        "australia": "Australia",
+        "europe": "Europe",
+        "northAmelica": "North Amelica",
+        "southAmelica": "South Amelica"
+    },
+    "booking": {
+        "captionTemplate": {
+            "existing": "Welcome back {userName}! Do you want to modify booking {bookingId}?",
+            "new": "Welcome {userName}! Input following to book now!"
+        }
+    },
+    "stay": {
+        "label": "Stay *",
+        "hint": "Specify stay period."
+    },
+    "specialOffer": {
+        "description": "You can get special offer! When do you want to receive?",
+        "label": "When will you receive special offer? *",
+        "hint": "Specify the day in your stay."
+    },
+    "roomType": {
+        "label": "Room type *",
+        "hint": "Specify room type.",
+        "standard": "Standard",
+        "delux": "Delux",
+        "suite": "Suite"
+    },
+    "mealOffers": {
+        "label": "Special meal offers",
+        "hint": "For other offers, tell us with note on end of this input form."
+    },
+    "mealType": {
+        "halal": "Halal",
+        "vegan": "Vegan"
+    },
+    "smoking": {
+        "title": "I want to do smoking in my room",
+        "label": "Smoking *",
+        "hint": "Specify you want do smoking or not. Note that you cannot do smoking in any space outside of the room."
+    },
+    "persons": {
+        "label": "Persons *",
+        "hint": "Cound children under 12 years old as 0.5, and round up in total."
+    },
+    "babyBeds": {
+        "label": "Baby beds *",
+        "hint": "Specify baby beds. If you want to more than 2 beds, tell us with note on end of this input form."
+    },
+    "preferredPrice": {
+        "label": "Preferred price range *",
+        "hint": "Specify preferred price range you want to pay."
+    },
     "note": {
         "label": "Note",
-        "hint": "Enter note for you."
+        "hint": "Enter note of this booking including special meal offers."
+    },
+    "acceptsTermsOfUse": {
+        "title": "I read terms of use (*) and accept it.",
+        "message": "Accepting the terms of use is required."
     },
     "submit": "Submit"
 }

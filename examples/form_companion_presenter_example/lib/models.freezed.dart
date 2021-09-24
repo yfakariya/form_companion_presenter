@@ -14,247 +14,164 @@ final _privateConstructorUsedError = UnsupportedError(
     'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more informations: https://github.com/rrousselGit/freezed#custom-getters-and-methods');
 
 /// @nodoc
-class _$TargetStateTearOff {
-  const _$TargetStateTearOff();
+class _$AccountTearOff {
+  const _$AccountTearOff();
 
-  TargetStatePartial partial(
-      {String? id, String? name, Sex? sex, int? age, String? note}) {
-    return TargetStatePartial(
-      id: id,
-      name: name,
-      sex: sex,
-      age: age,
-      note: note,
-    );
+  AccountEmpty empty() {
+    return AccountEmpty();
   }
 
-  TargetStateCompleted completed(
+  AccountRegistered registered(
       {required String id,
       required String name,
-      required Sex sex,
+      required Gender gender,
       required int age,
-      required String note}) {
-    return TargetStateCompleted(
+      required List<Region> preferredRegions}) {
+    return AccountRegistered(
       id: id,
       name: name,
-      sex: sex,
+      gender: gender,
       age: age,
-      note: note,
+      preferredRegions: preferredRegions,
     );
   }
 }
 
 /// @nodoc
-const $TargetState = _$TargetStateTearOff();
+const $Account = _$AccountTearOff();
 
 /// @nodoc
-mixin _$TargetState {
+mixin _$Account {
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(
-            String? id, String? name, Sex? sex, int? age, String? note)
-        partial,
-    required TResult Function(
-            String id, String name, Sex sex, int age, String note)
-        completed,
+    required TResult Function() empty,
+    required TResult Function(String id, String name, Gender gender, int age,
+            List<Region> preferredRegions)
+        registered,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult Function(
-            String? id, String? name, Sex? sex, int? age, String? note)?
-        partial,
-    TResult Function(String id, String name, Sex sex, int age, String note)?
-        completed,
+    TResult Function()? empty,
+    TResult Function(String id, String name, Gender gender, int age,
+            List<Region> preferredRegions)?
+        registered,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(
-            String? id, String? name, Sex? sex, int? age, String? note)?
-        partial,
-    TResult Function(String id, String name, Sex sex, int age, String note)?
-        completed,
+    TResult Function()? empty,
+    TResult Function(String id, String name, Gender gender, int age,
+            List<Region> preferredRegions)?
+        registered,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
-    required TResult Function(TargetStatePartial value) partial,
-    required TResult Function(TargetStateCompleted value) completed,
+    required TResult Function(AccountEmpty value) empty,
+    required TResult Function(AccountRegistered value) registered,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult Function(TargetStatePartial value)? partial,
-    TResult Function(TargetStateCompleted value)? completed,
+    TResult Function(AccountEmpty value)? empty,
+    TResult Function(AccountRegistered value)? registered,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
-    TResult Function(TargetStatePartial value)? partial,
-    TResult Function(TargetStateCompleted value)? completed,
+    TResult Function(AccountEmpty value)? empty,
+    TResult Function(AccountRegistered value)? registered,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $TargetStateCopyWith<$Res> {
-  factory $TargetStateCopyWith(
-          TargetState value, $Res Function(TargetState) then) =
-      _$TargetStateCopyWithImpl<$Res>;
+abstract class $AccountCopyWith<$Res> {
+  factory $AccountCopyWith(Account value, $Res Function(Account) then) =
+      _$AccountCopyWithImpl<$Res>;
 }
 
 /// @nodoc
-class _$TargetStateCopyWithImpl<$Res> implements $TargetStateCopyWith<$Res> {
-  _$TargetStateCopyWithImpl(this._value, this._then);
+class _$AccountCopyWithImpl<$Res> implements $AccountCopyWith<$Res> {
+  _$AccountCopyWithImpl(this._value, this._then);
 
-  final TargetState _value;
+  final Account _value;
   // ignore: unused_field
-  final $Res Function(TargetState) _then;
+  final $Res Function(Account) _then;
 }
 
 /// @nodoc
-abstract class $TargetStatePartialCopyWith<$Res> {
-  factory $TargetStatePartialCopyWith(
-          TargetStatePartial value, $Res Function(TargetStatePartial) then) =
-      _$TargetStatePartialCopyWithImpl<$Res>;
-  $Res call({String? id, String? name, Sex? sex, int? age, String? note});
+abstract class $AccountEmptyCopyWith<$Res> {
+  factory $AccountEmptyCopyWith(
+          AccountEmpty value, $Res Function(AccountEmpty) then) =
+      _$AccountEmptyCopyWithImpl<$Res>;
 }
 
 /// @nodoc
-class _$TargetStatePartialCopyWithImpl<$Res>
-    extends _$TargetStateCopyWithImpl<$Res>
-    implements $TargetStatePartialCopyWith<$Res> {
-  _$TargetStatePartialCopyWithImpl(
-      TargetStatePartial _value, $Res Function(TargetStatePartial) _then)
-      : super(_value, (v) => _then(v as TargetStatePartial));
+class _$AccountEmptyCopyWithImpl<$Res> extends _$AccountCopyWithImpl<$Res>
+    implements $AccountEmptyCopyWith<$Res> {
+  _$AccountEmptyCopyWithImpl(
+      AccountEmpty _value, $Res Function(AccountEmpty) _then)
+      : super(_value, (v) => _then(v as AccountEmpty));
 
   @override
-  TargetStatePartial get _value => super._value as TargetStatePartial;
-
-  @override
-  $Res call({
-    Object? id = freezed,
-    Object? name = freezed,
-    Object? sex = freezed,
-    Object? age = freezed,
-    Object? note = freezed,
-  }) {
-    return _then(TargetStatePartial(
-      id: id == freezed
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String?,
-      name: name == freezed
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String?,
-      sex: sex == freezed
-          ? _value.sex
-          : sex // ignore: cast_nullable_to_non_nullable
-              as Sex?,
-      age: age == freezed
-          ? _value.age
-          : age // ignore: cast_nullable_to_non_nullable
-              as int?,
-      note: note == freezed
-          ? _value.note
-          : note // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
-  }
+  AccountEmpty get _value => super._value as AccountEmpty;
 }
 
 /// @nodoc
 
-class _$TargetStatePartial implements TargetStatePartial {
-  _$TargetStatePartial({this.id, this.name, this.sex, this.age, this.note});
-
-  @override
-  final String? id;
-  @override
-  final String? name;
-  @override
-  final Sex? sex;
-  @override
-  final int? age;
-  @override
-  final String? note;
+class _$AccountEmpty extends AccountEmpty {
+  _$AccountEmpty() : super._();
 
   @override
   String toString() {
-    return 'TargetState.partial(id: $id, name: $name, sex: $sex, age: $age, note: $note)';
+    return 'Account.empty()';
   }
 
   @override
   bool operator ==(dynamic other) {
-    return identical(this, other) ||
-        (other is TargetStatePartial &&
-            (identical(other.id, id) ||
-                const DeepCollectionEquality().equals(other.id, id)) &&
-            (identical(other.name, name) ||
-                const DeepCollectionEquality().equals(other.name, name)) &&
-            (identical(other.sex, sex) ||
-                const DeepCollectionEquality().equals(other.sex, sex)) &&
-            (identical(other.age, age) ||
-                const DeepCollectionEquality().equals(other.age, age)) &&
-            (identical(other.note, note) ||
-                const DeepCollectionEquality().equals(other.note, note)));
+    return identical(this, other) || (other is AccountEmpty);
   }
 
   @override
-  int get hashCode =>
-      runtimeType.hashCode ^
-      const DeepCollectionEquality().hash(id) ^
-      const DeepCollectionEquality().hash(name) ^
-      const DeepCollectionEquality().hash(sex) ^
-      const DeepCollectionEquality().hash(age) ^
-      const DeepCollectionEquality().hash(note);
-
-  @JsonKey(ignore: true)
-  @override
-  $TargetStatePartialCopyWith<TargetStatePartial> get copyWith =>
-      _$TargetStatePartialCopyWithImpl<TargetStatePartial>(this, _$identity);
+  int get hashCode => runtimeType.hashCode;
 
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(
-            String? id, String? name, Sex? sex, int? age, String? note)
-        partial,
-    required TResult Function(
-            String id, String name, Sex sex, int age, String note)
-        completed,
+    required TResult Function() empty,
+    required TResult Function(String id, String name, Gender gender, int age,
+            List<Region> preferredRegions)
+        registered,
   }) {
-    return partial(id, name, sex, age, note);
+    return empty();
   }
 
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult Function(
-            String? id, String? name, Sex? sex, int? age, String? note)?
-        partial,
-    TResult Function(String id, String name, Sex sex, int age, String note)?
-        completed,
+    TResult Function()? empty,
+    TResult Function(String id, String name, Gender gender, int age,
+            List<Region> preferredRegions)?
+        registered,
   }) {
-    return partial?.call(id, name, sex, age, note);
+    return empty?.call();
   }
 
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(
-            String? id, String? name, Sex? sex, int? age, String? note)?
-        partial,
-    TResult Function(String id, String name, Sex sex, int age, String note)?
-        completed,
+    TResult Function()? empty,
+    TResult Function(String id, String name, Gender gender, int age,
+            List<Region> preferredRegions)?
+        registered,
     required TResult orElse(),
   }) {
-    if (partial != null) {
-      return partial(id, name, sex, age, note);
+    if (empty != null) {
+      return empty();
     }
     return orElse();
   }
@@ -262,81 +179,72 @@ class _$TargetStatePartial implements TargetStatePartial {
   @override
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
-    required TResult Function(TargetStatePartial value) partial,
-    required TResult Function(TargetStateCompleted value) completed,
+    required TResult Function(AccountEmpty value) empty,
+    required TResult Function(AccountRegistered value) registered,
   }) {
-    return partial(this);
+    return empty(this);
   }
 
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult Function(TargetStatePartial value)? partial,
-    TResult Function(TargetStateCompleted value)? completed,
+    TResult Function(AccountEmpty value)? empty,
+    TResult Function(AccountRegistered value)? registered,
   }) {
-    return partial?.call(this);
+    return empty?.call(this);
   }
 
   @override
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
-    TResult Function(TargetStatePartial value)? partial,
-    TResult Function(TargetStateCompleted value)? completed,
+    TResult Function(AccountEmpty value)? empty,
+    TResult Function(AccountRegistered value)? registered,
     required TResult orElse(),
   }) {
-    if (partial != null) {
-      return partial(this);
+    if (empty != null) {
+      return empty(this);
     }
     return orElse();
   }
 }
 
-abstract class TargetStatePartial implements TargetState {
-  factory TargetStatePartial(
-      {String? id,
-      String? name,
-      Sex? sex,
-      int? age,
-      String? note}) = _$TargetStatePartial;
-
-  String? get id => throw _privateConstructorUsedError;
-  String? get name => throw _privateConstructorUsedError;
-  Sex? get sex => throw _privateConstructorUsedError;
-  int? get age => throw _privateConstructorUsedError;
-  String? get note => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
-  $TargetStatePartialCopyWith<TargetStatePartial> get copyWith =>
-      throw _privateConstructorUsedError;
+abstract class AccountEmpty extends Account {
+  factory AccountEmpty() = _$AccountEmpty;
+  AccountEmpty._() : super._();
 }
 
 /// @nodoc
-abstract class $TargetStateCompletedCopyWith<$Res> {
-  factory $TargetStateCompletedCopyWith(TargetStateCompleted value,
-          $Res Function(TargetStateCompleted) then) =
-      _$TargetStateCompletedCopyWithImpl<$Res>;
-  $Res call({String id, String name, Sex sex, int age, String note});
+abstract class $AccountRegisteredCopyWith<$Res> {
+  factory $AccountRegisteredCopyWith(
+          AccountRegistered value, $Res Function(AccountRegistered) then) =
+      _$AccountRegisteredCopyWithImpl<$Res>;
+  $Res call(
+      {String id,
+      String name,
+      Gender gender,
+      int age,
+      List<Region> preferredRegions});
 }
 
 /// @nodoc
-class _$TargetStateCompletedCopyWithImpl<$Res>
-    extends _$TargetStateCopyWithImpl<$Res>
-    implements $TargetStateCompletedCopyWith<$Res> {
-  _$TargetStateCompletedCopyWithImpl(
-      TargetStateCompleted _value, $Res Function(TargetStateCompleted) _then)
-      : super(_value, (v) => _then(v as TargetStateCompleted));
+class _$AccountRegisteredCopyWithImpl<$Res> extends _$AccountCopyWithImpl<$Res>
+    implements $AccountRegisteredCopyWith<$Res> {
+  _$AccountRegisteredCopyWithImpl(
+      AccountRegistered _value, $Res Function(AccountRegistered) _then)
+      : super(_value, (v) => _then(v as AccountRegistered));
 
   @override
-  TargetStateCompleted get _value => super._value as TargetStateCompleted;
+  AccountRegistered get _value => super._value as AccountRegistered;
 
   @override
   $Res call({
     Object? id = freezed,
     Object? name = freezed,
-    Object? sex = freezed,
+    Object? gender = freezed,
     Object? age = freezed,
-    Object? note = freezed,
+    Object? preferredRegions = freezed,
   }) {
-    return _then(TargetStateCompleted(
+    return _then(AccountRegistered(
       id: id == freezed
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
@@ -345,62 +253,64 @@ class _$TargetStateCompletedCopyWithImpl<$Res>
           ? _value.name
           : name // ignore: cast_nullable_to_non_nullable
               as String,
-      sex: sex == freezed
-          ? _value.sex
-          : sex // ignore: cast_nullable_to_non_nullable
-              as Sex,
+      gender: gender == freezed
+          ? _value.gender
+          : gender // ignore: cast_nullable_to_non_nullable
+              as Gender,
       age: age == freezed
           ? _value.age
           : age // ignore: cast_nullable_to_non_nullable
               as int,
-      note: note == freezed
-          ? _value.note
-          : note // ignore: cast_nullable_to_non_nullable
-              as String,
+      preferredRegions: preferredRegions == freezed
+          ? _value.preferredRegions
+          : preferredRegions // ignore: cast_nullable_to_non_nullable
+              as List<Region>,
     ));
   }
 }
 
 /// @nodoc
 
-class _$TargetStateCompleted implements TargetStateCompleted {
-  _$TargetStateCompleted(
+class _$AccountRegistered extends AccountRegistered {
+  _$AccountRegistered(
       {required this.id,
       required this.name,
-      required this.sex,
+      required this.gender,
       required this.age,
-      required this.note});
+      required this.preferredRegions})
+      : super._();
 
   @override
   final String id;
   @override
   final String name;
   @override
-  final Sex sex;
+  final Gender gender;
   @override
   final int age;
   @override
-  final String note;
+  final List<Region> preferredRegions;
 
   @override
   String toString() {
-    return 'TargetState.completed(id: $id, name: $name, sex: $sex, age: $age, note: $note)';
+    return 'Account.registered(id: $id, name: $name, gender: $gender, age: $age, preferredRegions: $preferredRegions)';
   }
 
   @override
   bool operator ==(dynamic other) {
     return identical(this, other) ||
-        (other is TargetStateCompleted &&
+        (other is AccountRegistered &&
             (identical(other.id, id) ||
                 const DeepCollectionEquality().equals(other.id, id)) &&
             (identical(other.name, name) ||
                 const DeepCollectionEquality().equals(other.name, name)) &&
-            (identical(other.sex, sex) ||
-                const DeepCollectionEquality().equals(other.sex, sex)) &&
+            (identical(other.gender, gender) ||
+                const DeepCollectionEquality().equals(other.gender, gender)) &&
             (identical(other.age, age) ||
                 const DeepCollectionEquality().equals(other.age, age)) &&
-            (identical(other.note, note) ||
-                const DeepCollectionEquality().equals(other.note, note)));
+            (identical(other.preferredRegions, preferredRegions) ||
+                const DeepCollectionEquality()
+                    .equals(other.preferredRegions, preferredRegions)));
   }
 
   @override
@@ -408,53 +318,48 @@ class _$TargetStateCompleted implements TargetStateCompleted {
       runtimeType.hashCode ^
       const DeepCollectionEquality().hash(id) ^
       const DeepCollectionEquality().hash(name) ^
-      const DeepCollectionEquality().hash(sex) ^
+      const DeepCollectionEquality().hash(gender) ^
       const DeepCollectionEquality().hash(age) ^
-      const DeepCollectionEquality().hash(note);
+      const DeepCollectionEquality().hash(preferredRegions);
 
   @JsonKey(ignore: true)
   @override
-  $TargetStateCompletedCopyWith<TargetStateCompleted> get copyWith =>
-      _$TargetStateCompletedCopyWithImpl<TargetStateCompleted>(
-          this, _$identity);
+  $AccountRegisteredCopyWith<AccountRegistered> get copyWith =>
+      _$AccountRegisteredCopyWithImpl<AccountRegistered>(this, _$identity);
 
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(
-            String? id, String? name, Sex? sex, int? age, String? note)
-        partial,
-    required TResult Function(
-            String id, String name, Sex sex, int age, String note)
-        completed,
+    required TResult Function() empty,
+    required TResult Function(String id, String name, Gender gender, int age,
+            List<Region> preferredRegions)
+        registered,
   }) {
-    return completed(id, name, sex, age, note);
+    return registered(id, name, gender, age, preferredRegions);
   }
 
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult Function(
-            String? id, String? name, Sex? sex, int? age, String? note)?
-        partial,
-    TResult Function(String id, String name, Sex sex, int age, String note)?
-        completed,
+    TResult Function()? empty,
+    TResult Function(String id, String name, Gender gender, int age,
+            List<Region> preferredRegions)?
+        registered,
   }) {
-    return completed?.call(id, name, sex, age, note);
+    return registered?.call(id, name, gender, age, preferredRegions);
   }
 
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(
-            String? id, String? name, Sex? sex, int? age, String? note)?
-        partial,
-    TResult Function(String id, String name, Sex sex, int age, String note)?
-        completed,
+    TResult Function()? empty,
+    TResult Function(String id, String name, Gender gender, int age,
+            List<Region> preferredRegions)?
+        registered,
     required TResult orElse(),
   }) {
-    if (completed != null) {
-      return completed(id, name, sex, age, note);
+    if (registered != null) {
+      return registered(id, name, gender, age, preferredRegions);
     }
     return orElse();
   }
@@ -462,49 +367,647 @@ class _$TargetStateCompleted implements TargetStateCompleted {
   @override
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
-    required TResult Function(TargetStatePartial value) partial,
-    required TResult Function(TargetStateCompleted value) completed,
+    required TResult Function(AccountEmpty value) empty,
+    required TResult Function(AccountRegistered value) registered,
   }) {
-    return completed(this);
+    return registered(this);
   }
 
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult Function(TargetStatePartial value)? partial,
-    TResult Function(TargetStateCompleted value)? completed,
+    TResult Function(AccountEmpty value)? empty,
+    TResult Function(AccountRegistered value)? registered,
   }) {
-    return completed?.call(this);
+    return registered?.call(this);
   }
 
   @override
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
-    TResult Function(TargetStatePartial value)? partial,
-    TResult Function(TargetStateCompleted value)? completed,
+    TResult Function(AccountEmpty value)? empty,
+    TResult Function(AccountRegistered value)? registered,
     required TResult orElse(),
   }) {
-    if (completed != null) {
-      return completed(this);
+    if (registered != null) {
+      return registered(this);
     }
     return orElse();
   }
 }
 
-abstract class TargetStateCompleted implements TargetState {
-  factory TargetStateCompleted(
+abstract class AccountRegistered extends Account {
+  factory AccountRegistered(
       {required String id,
       required String name,
-      required Sex sex,
+      required Gender gender,
       required int age,
-      required String note}) = _$TargetStateCompleted;
+      required List<Region> preferredRegions}) = _$AccountRegistered;
+  AccountRegistered._() : super._();
 
   String get id => throw _privateConstructorUsedError;
   String get name => throw _privateConstructorUsedError;
-  Sex get sex => throw _privateConstructorUsedError;
+  Gender get gender => throw _privateConstructorUsedError;
   int get age => throw _privateConstructorUsedError;
+  List<Region> get preferredRegions => throw _privateConstructorUsedError;
+  @JsonKey(ignore: true)
+  $AccountRegisteredCopyWith<AccountRegistered> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+class _$BookingTearOff {
+  const _$BookingTearOff();
+
+  BookingEmpty empty() {
+    return BookingEmpty();
+  }
+
+  BookingRegistered registered(
+      {required String bookingId,
+      required String userId,
+      required DateTimeRange stay,
+      required DateTime specialOfferDate,
+      required RoomType roomType,
+      required List<MealType> mealOffers,
+      required int persons,
+      required int babyBeds,
+      required bool smoking,
+      required double price,
+      required String note}) {
+    return BookingRegistered(
+      bookingId: bookingId,
+      userId: userId,
+      stay: stay,
+      specialOfferDate: specialOfferDate,
+      roomType: roomType,
+      mealOffers: mealOffers,
+      persons: persons,
+      babyBeds: babyBeds,
+      smoking: smoking,
+      price: price,
+      note: note,
+    );
+  }
+}
+
+/// @nodoc
+const $Booking = _$BookingTearOff();
+
+/// @nodoc
+mixin _$Booking {
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() empty,
+    required TResult Function(
+            String bookingId,
+            String userId,
+            DateTimeRange stay,
+            DateTime specialOfferDate,
+            RoomType roomType,
+            List<MealType> mealOffers,
+            int persons,
+            int babyBeds,
+            bool smoking,
+            double price,
+            String note)
+        registered,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult Function()? empty,
+    TResult Function(
+            String bookingId,
+            String userId,
+            DateTimeRange stay,
+            DateTime specialOfferDate,
+            RoomType roomType,
+            List<MealType> mealOffers,
+            int persons,
+            int babyBeds,
+            bool smoking,
+            double price,
+            String note)?
+        registered,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? empty,
+    TResult Function(
+            String bookingId,
+            String userId,
+            DateTimeRange stay,
+            DateTime specialOfferDate,
+            RoomType roomType,
+            List<MealType> mealOffers,
+            int persons,
+            int babyBeds,
+            bool smoking,
+            double price,
+            String note)?
+        registered,
+    required TResult orElse(),
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(BookingEmpty value) empty,
+    required TResult Function(BookingRegistered value) registered,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult Function(BookingEmpty value)? empty,
+    TResult Function(BookingRegistered value)? registered,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(BookingEmpty value)? empty,
+    TResult Function(BookingRegistered value)? registered,
+    required TResult orElse(),
+  }) =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $BookingCopyWith<$Res> {
+  factory $BookingCopyWith(Booking value, $Res Function(Booking) then) =
+      _$BookingCopyWithImpl<$Res>;
+}
+
+/// @nodoc
+class _$BookingCopyWithImpl<$Res> implements $BookingCopyWith<$Res> {
+  _$BookingCopyWithImpl(this._value, this._then);
+
+  final Booking _value;
+  // ignore: unused_field
+  final $Res Function(Booking) _then;
+}
+
+/// @nodoc
+abstract class $BookingEmptyCopyWith<$Res> {
+  factory $BookingEmptyCopyWith(
+          BookingEmpty value, $Res Function(BookingEmpty) then) =
+      _$BookingEmptyCopyWithImpl<$Res>;
+}
+
+/// @nodoc
+class _$BookingEmptyCopyWithImpl<$Res> extends _$BookingCopyWithImpl<$Res>
+    implements $BookingEmptyCopyWith<$Res> {
+  _$BookingEmptyCopyWithImpl(
+      BookingEmpty _value, $Res Function(BookingEmpty) _then)
+      : super(_value, (v) => _then(v as BookingEmpty));
+
+  @override
+  BookingEmpty get _value => super._value as BookingEmpty;
+}
+
+/// @nodoc
+
+class _$BookingEmpty extends BookingEmpty {
+  _$BookingEmpty() : super._();
+
+  @override
+  String toString() {
+    return 'Booking.empty()';
+  }
+
+  @override
+  bool operator ==(dynamic other) {
+    return identical(this, other) || (other is BookingEmpty);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() empty,
+    required TResult Function(
+            String bookingId,
+            String userId,
+            DateTimeRange stay,
+            DateTime specialOfferDate,
+            RoomType roomType,
+            List<MealType> mealOffers,
+            int persons,
+            int babyBeds,
+            bool smoking,
+            double price,
+            String note)
+        registered,
+  }) {
+    return empty();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult Function()? empty,
+    TResult Function(
+            String bookingId,
+            String userId,
+            DateTimeRange stay,
+            DateTime specialOfferDate,
+            RoomType roomType,
+            List<MealType> mealOffers,
+            int persons,
+            int babyBeds,
+            bool smoking,
+            double price,
+            String note)?
+        registered,
+  }) {
+    return empty?.call();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? empty,
+    TResult Function(
+            String bookingId,
+            String userId,
+            DateTimeRange stay,
+            DateTime specialOfferDate,
+            RoomType roomType,
+            List<MealType> mealOffers,
+            int persons,
+            int babyBeds,
+            bool smoking,
+            double price,
+            String note)?
+        registered,
+    required TResult orElse(),
+  }) {
+    if (empty != null) {
+      return empty();
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(BookingEmpty value) empty,
+    required TResult Function(BookingRegistered value) registered,
+  }) {
+    return empty(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult Function(BookingEmpty value)? empty,
+    TResult Function(BookingRegistered value)? registered,
+  }) {
+    return empty?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(BookingEmpty value)? empty,
+    TResult Function(BookingRegistered value)? registered,
+    required TResult orElse(),
+  }) {
+    if (empty != null) {
+      return empty(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class BookingEmpty extends Booking {
+  factory BookingEmpty() = _$BookingEmpty;
+  BookingEmpty._() : super._();
+}
+
+/// @nodoc
+abstract class $BookingRegisteredCopyWith<$Res> {
+  factory $BookingRegisteredCopyWith(
+          BookingRegistered value, $Res Function(BookingRegistered) then) =
+      _$BookingRegisteredCopyWithImpl<$Res>;
+  $Res call(
+      {String bookingId,
+      String userId,
+      DateTimeRange stay,
+      DateTime specialOfferDate,
+      RoomType roomType,
+      List<MealType> mealOffers,
+      int persons,
+      int babyBeds,
+      bool smoking,
+      double price,
+      String note});
+}
+
+/// @nodoc
+class _$BookingRegisteredCopyWithImpl<$Res> extends _$BookingCopyWithImpl<$Res>
+    implements $BookingRegisteredCopyWith<$Res> {
+  _$BookingRegisteredCopyWithImpl(
+      BookingRegistered _value, $Res Function(BookingRegistered) _then)
+      : super(_value, (v) => _then(v as BookingRegistered));
+
+  @override
+  BookingRegistered get _value => super._value as BookingRegistered;
+
+  @override
+  $Res call({
+    Object? bookingId = freezed,
+    Object? userId = freezed,
+    Object? stay = freezed,
+    Object? specialOfferDate = freezed,
+    Object? roomType = freezed,
+    Object? mealOffers = freezed,
+    Object? persons = freezed,
+    Object? babyBeds = freezed,
+    Object? smoking = freezed,
+    Object? price = freezed,
+    Object? note = freezed,
+  }) {
+    return _then(BookingRegistered(
+      bookingId: bookingId == freezed
+          ? _value.bookingId
+          : bookingId // ignore: cast_nullable_to_non_nullable
+              as String,
+      userId: userId == freezed
+          ? _value.userId
+          : userId // ignore: cast_nullable_to_non_nullable
+              as String,
+      stay: stay == freezed
+          ? _value.stay
+          : stay // ignore: cast_nullable_to_non_nullable
+              as DateTimeRange,
+      specialOfferDate: specialOfferDate == freezed
+          ? _value.specialOfferDate
+          : specialOfferDate // ignore: cast_nullable_to_non_nullable
+              as DateTime,
+      roomType: roomType == freezed
+          ? _value.roomType
+          : roomType // ignore: cast_nullable_to_non_nullable
+              as RoomType,
+      mealOffers: mealOffers == freezed
+          ? _value.mealOffers
+          : mealOffers // ignore: cast_nullable_to_non_nullable
+              as List<MealType>,
+      persons: persons == freezed
+          ? _value.persons
+          : persons // ignore: cast_nullable_to_non_nullable
+              as int,
+      babyBeds: babyBeds == freezed
+          ? _value.babyBeds
+          : babyBeds // ignore: cast_nullable_to_non_nullable
+              as int,
+      smoking: smoking == freezed
+          ? _value.smoking
+          : smoking // ignore: cast_nullable_to_non_nullable
+              as bool,
+      price: price == freezed
+          ? _value.price
+          : price // ignore: cast_nullable_to_non_nullable
+              as double,
+      note: note == freezed
+          ? _value.note
+          : note // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _$BookingRegistered extends BookingRegistered {
+  _$BookingRegistered(
+      {required this.bookingId,
+      required this.userId,
+      required this.stay,
+      required this.specialOfferDate,
+      required this.roomType,
+      required this.mealOffers,
+      required this.persons,
+      required this.babyBeds,
+      required this.smoking,
+      required this.price,
+      required this.note})
+      : super._();
+
+  @override
+  final String bookingId;
+  @override
+  final String userId;
+  @override
+  final DateTimeRange stay;
+  @override
+  final DateTime specialOfferDate;
+  @override
+  final RoomType roomType;
+  @override
+  final List<MealType> mealOffers;
+  @override
+  final int persons;
+  @override
+  final int babyBeds;
+  @override
+  final bool smoking;
+  @override
+  final double price;
+  @override
+  final String note;
+
+  @override
+  String toString() {
+    return 'Booking.registered(bookingId: $bookingId, userId: $userId, stay: $stay, specialOfferDate: $specialOfferDate, roomType: $roomType, mealOffers: $mealOffers, persons: $persons, babyBeds: $babyBeds, smoking: $smoking, price: $price, note: $note)';
+  }
+
+  @override
+  bool operator ==(dynamic other) {
+    return identical(this, other) ||
+        (other is BookingRegistered &&
+            (identical(other.bookingId, bookingId) ||
+                const DeepCollectionEquality()
+                    .equals(other.bookingId, bookingId)) &&
+            (identical(other.userId, userId) ||
+                const DeepCollectionEquality().equals(other.userId, userId)) &&
+            (identical(other.stay, stay) ||
+                const DeepCollectionEquality().equals(other.stay, stay)) &&
+            (identical(other.specialOfferDate, specialOfferDate) ||
+                const DeepCollectionEquality()
+                    .equals(other.specialOfferDate, specialOfferDate)) &&
+            (identical(other.roomType, roomType) ||
+                const DeepCollectionEquality()
+                    .equals(other.roomType, roomType)) &&
+            (identical(other.mealOffers, mealOffers) ||
+                const DeepCollectionEquality()
+                    .equals(other.mealOffers, mealOffers)) &&
+            (identical(other.persons, persons) ||
+                const DeepCollectionEquality()
+                    .equals(other.persons, persons)) &&
+            (identical(other.babyBeds, babyBeds) ||
+                const DeepCollectionEquality()
+                    .equals(other.babyBeds, babyBeds)) &&
+            (identical(other.smoking, smoking) ||
+                const DeepCollectionEquality()
+                    .equals(other.smoking, smoking)) &&
+            (identical(other.price, price) ||
+                const DeepCollectionEquality().equals(other.price, price)) &&
+            (identical(other.note, note) ||
+                const DeepCollectionEquality().equals(other.note, note)));
+  }
+
+  @override
+  int get hashCode =>
+      runtimeType.hashCode ^
+      const DeepCollectionEquality().hash(bookingId) ^
+      const DeepCollectionEquality().hash(userId) ^
+      const DeepCollectionEquality().hash(stay) ^
+      const DeepCollectionEquality().hash(specialOfferDate) ^
+      const DeepCollectionEquality().hash(roomType) ^
+      const DeepCollectionEquality().hash(mealOffers) ^
+      const DeepCollectionEquality().hash(persons) ^
+      const DeepCollectionEquality().hash(babyBeds) ^
+      const DeepCollectionEquality().hash(smoking) ^
+      const DeepCollectionEquality().hash(price) ^
+      const DeepCollectionEquality().hash(note);
+
+  @JsonKey(ignore: true)
+  @override
+  $BookingRegisteredCopyWith<BookingRegistered> get copyWith =>
+      _$BookingRegisteredCopyWithImpl<BookingRegistered>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() empty,
+    required TResult Function(
+            String bookingId,
+            String userId,
+            DateTimeRange stay,
+            DateTime specialOfferDate,
+            RoomType roomType,
+            List<MealType> mealOffers,
+            int persons,
+            int babyBeds,
+            bool smoking,
+            double price,
+            String note)
+        registered,
+  }) {
+    return registered(bookingId, userId, stay, specialOfferDate, roomType,
+        mealOffers, persons, babyBeds, smoking, price, note);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult Function()? empty,
+    TResult Function(
+            String bookingId,
+            String userId,
+            DateTimeRange stay,
+            DateTime specialOfferDate,
+            RoomType roomType,
+            List<MealType> mealOffers,
+            int persons,
+            int babyBeds,
+            bool smoking,
+            double price,
+            String note)?
+        registered,
+  }) {
+    return registered?.call(bookingId, userId, stay, specialOfferDate, roomType,
+        mealOffers, persons, babyBeds, smoking, price, note);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? empty,
+    TResult Function(
+            String bookingId,
+            String userId,
+            DateTimeRange stay,
+            DateTime specialOfferDate,
+            RoomType roomType,
+            List<MealType> mealOffers,
+            int persons,
+            int babyBeds,
+            bool smoking,
+            double price,
+            String note)?
+        registered,
+    required TResult orElse(),
+  }) {
+    if (registered != null) {
+      return registered(bookingId, userId, stay, specialOfferDate, roomType,
+          mealOffers, persons, babyBeds, smoking, price, note);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(BookingEmpty value) empty,
+    required TResult Function(BookingRegistered value) registered,
+  }) {
+    return registered(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult Function(BookingEmpty value)? empty,
+    TResult Function(BookingRegistered value)? registered,
+  }) {
+    return registered?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(BookingEmpty value)? empty,
+    TResult Function(BookingRegistered value)? registered,
+    required TResult orElse(),
+  }) {
+    if (registered != null) {
+      return registered(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class BookingRegistered extends Booking {
+  factory BookingRegistered(
+      {required String bookingId,
+      required String userId,
+      required DateTimeRange stay,
+      required DateTime specialOfferDate,
+      required RoomType roomType,
+      required List<MealType> mealOffers,
+      required int persons,
+      required int babyBeds,
+      required bool smoking,
+      required double price,
+      required String note}) = _$BookingRegistered;
+  BookingRegistered._() : super._();
+
+  String get bookingId => throw _privateConstructorUsedError;
+  String get userId => throw _privateConstructorUsedError;
+  DateTimeRange get stay => throw _privateConstructorUsedError;
+  DateTime get specialOfferDate => throw _privateConstructorUsedError;
+  RoomType get roomType => throw _privateConstructorUsedError;
+  List<MealType> get mealOffers => throw _privateConstructorUsedError;
+  int get persons => throw _privateConstructorUsedError;
+  int get babyBeds => throw _privateConstructorUsedError;
+  bool get smoking => throw _privateConstructorUsedError;
+  double get price => throw _privateConstructorUsedError;
   String get note => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
-  $TargetStateCompletedCopyWith<TargetStateCompleted> get copyWith =>
+  $BookingRegisteredCopyWith<BookingRegistered> get copyWith =>
       throw _privateConstructorUsedError;
 }

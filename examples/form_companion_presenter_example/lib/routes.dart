@@ -6,7 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'manual_validation_vanilla_form.dart';
 
 final _pages = [
-  MaterialPage<dynamic>(child: ManualValidationVanillaFormPage())
+  const MaterialPage<dynamic>(child: ManualValidationVanillaFormPage())
 ];
 
+/// Provider to control page stack of navigator.
 final pagesProvider = StateProvider((_) => _pages);

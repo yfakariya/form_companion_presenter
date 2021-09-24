@@ -5,16 +5,26 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'auto_validation_form_builder.dart';
+import 'auto_validation_form_builder_account.dart';
+import 'auto_validation_form_builder_booking.dart';
 import 'auto_validation_vanilla_form.dart';
 import 'l10n/locale_keys.g.dart';
-import 'manual_validation_form_builder.dart';
+import 'manual_validation_form_builder_account.dart';
+import 'manual_validation_form_builder_booking.dart';
 import 'manual_validation_vanilla_form.dart';
 import 'routes.dart';
 
+/// Base class of all example widgets.
+///
+/// This class provides basic structure, menu, and navigation.
 abstract class Screen extends ConsumerWidget {
+  /// Constructor.
+  const Screen({Key? key}) : super(key: key);
+
+  /// Gets a title of the page.
   String get title;
 
+  /// Builds page content.
   Widget buildPage(BuildContext context, ScopedReader watch);
 
   @override
@@ -40,7 +50,7 @@ abstract class Screen extends ConsumerWidget {
                   LocaleKeys.manual_vanilla_title.tr(),
                 ),
                 onTap: () => pages.state = [
-                  MaterialPage<dynamic>(
+                  const MaterialPage<dynamic>(
                     child: ManualValidationVanillaFormPage(),
                   )
                 ],
@@ -50,28 +60,48 @@ abstract class Screen extends ConsumerWidget {
                   LocaleKeys.auto_vanilla_title.tr(),
                 ),
                 onTap: () => pages.state = [
-                  MaterialPage<dynamic>(
+                  const MaterialPage<dynamic>(
                     child: AutoValidationVanillaFormPage(),
                   )
                 ],
               ),
               ListTile(
                 title: Text(
-                  LocaleKeys.manual_flutterFormBuilder_title.tr(),
+                  LocaleKeys.manual_flutterFormBuilderAccount_title.tr(),
                 ),
                 onTap: () => pages.state = [
-                  MaterialPage<dynamic>(
-                    child: ManualValidationFormBuilderPage(),
+                  const MaterialPage<dynamic>(
+                    child: ManualValidationFormBuilderAccountPage(),
                   )
                 ],
               ),
               ListTile(
                 title: Text(
-                  LocaleKeys.auto_flutterFormBuilder_title.tr(),
+                  LocaleKeys.manual_flutterFormBuilderBooking_title.tr(),
                 ),
                 onTap: () => pages.state = [
-                  MaterialPage<dynamic>(
-                    child: AutoValidationFormBuilderPage(),
+                  const MaterialPage<dynamic>(
+                    child: ManualValidationFormBuilderBookingPage(),
+                  )
+                ],
+              ),
+              ListTile(
+                title: Text(
+                  LocaleKeys.auto_flutterFormBuilderAccount_title.tr(),
+                ),
+                onTap: () => pages.state = [
+                  const MaterialPage<dynamic>(
+                    child: AutoValidationFormBuilderAccountPage(),
+                  )
+                ],
+              ),
+              ListTile(
+                title: Text(
+                  LocaleKeys.auto_flutterFormBuilderBooking_title.tr(),
+                ),
+                onTap: () => pages.state = [
+                  const MaterialPage<dynamic>(
+                    child: AutoValidationFormBuilderBookingPage(),
                   )
                 ],
               ),
