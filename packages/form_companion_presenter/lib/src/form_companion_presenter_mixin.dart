@@ -8,7 +8,6 @@ import 'package:meta/meta.dart';
 
 import 'async_validator_executor.dart';
 import 'future_invoker.dart';
-import 'internal_utils.dart';
 
 /// Signature for factory of [FormFieldValidator].
 typedef FormFieldValidatorFactory<T> = FormFieldValidator<T> Function(
@@ -19,11 +18,11 @@ typedef AsyncValidatorFactory<T, P> = AsyncValidator<T, P> Function(
   BuildContext context,
 );
 
-/// Defines interface between [FormCompanionPresenterMixin] and actual state of `Form`.
+/// Defines interface between [CompanionPresenterMixin] and actual state of `Form`.
 abstract class FormStateAdapter {
   /// Gets a current [AutovalidateMode] of the `Form`.
   ///
-  /// [FormCompanionPresenterMixin] behaves respecting to [AutovalidateMode].
+  /// [CompanionPresenterMixin] behaves respecting to [AutovalidateMode].
   AutovalidateMode get autovalidateMode;
 
   /// Do validation of all form's fields and then returns the value whether
@@ -59,14 +58,17 @@ abstract class FormStateAdapter {
 /// * Disables "submit" action. The [submit] method returns [Function] when it
 ///   is ready for "submit" or `null` otherwise. This class checks validation
 ///   results of [FormField]s and existance of pending async validations.
-mixin FormCompanionPresenterMixin {
-  late final Map<String, PropertyDescriptor> _properties;
+mixin CompanionPresenterMixin {
+  late final Map<String, PropertyDescriptor<Object, dynamic>> _properties;
 
   /// Map of [PropertyDescriptor]. Key is [PropertyDescriptor.name].
   @nonVirtual
-  Map<String, PropertyDescriptor> get properties => _properties;
+  @protected
+  @visibleForTesting
+  Map<String, PropertyDescriptor<Object, dynamic>> get properties =>
+      _properties;
 
-  /// Initializes [FormCompanionPresenterMixin].
+  /// Initializes [CompanionPresenterMixin].
   ///
   /// [properties] must be [PropertyDescriptorsBuilder] instance which
   /// have all properties which will be input via correspond [FormField]s.
@@ -95,7 +97,6 @@ mixin FormCompanionPresenterMixin {
   /// }
   /// ```
   @protected
-  @nonVirtual
   void initializeFormCompanionMixin(
     PropertyDescriptorsBuilder properties,
   ) {
@@ -114,21 +115,7 @@ mixin FormCompanionPresenterMixin {
   @visibleForOverriding
   void handleCanceledAsyncValidationError(AsyncError error) => throw error;
 
-  /// Gets a [PropertyDescriptor] for the specified [name],
-  /// which was registered via constrcutor.
-  ///
-  /// This method throws [ArgumentError] if the property named [name] does not
-  /// exist, and throws [StateError] if [P] is not compatible with the `T` of
-  /// getting [PropertyDescriptor].
-  ///
-  /// You should defined wrapper getter in your presenter class to avoid typo
-  /// and repeated input for the name and value type error:
-  /// ```dart
-  /// PropertyDescriptor<String> get name => getProperty<String>('name');
-  /// PropertyDescriptor<int> get age => getProperty<int>('age');
-  /// ```
-  @nonVirtual
-  PropertyDescriptor<P, void> getProperty<P extends Object>(String name) {
+  PropertyDescriptor<Object, dynamic> _getProperty(String name) {
     final property = properties[name];
     if (property == null) {
       throw ArgumentError.value(
@@ -138,27 +125,75 @@ mixin FormCompanionPresenterMixin {
       );
     }
 
-    if (property is! PropertyDescriptor<P, void>) {
+    return property;
+  }
+
+  /// Gets a [PropertyDescriptor] for the specified [name],
+  /// which was registered via constrcutor.
+  ///
+  /// This method throws [ArgumentError] if the property named [name] does not
+  /// exist, and throws [StateError] if [T] is not compatible with the `T` of
+  /// getting [PropertyDescriptor].
+  ///
+  /// You should defined wrapper getter in your presenter class to avoid typo
+  /// and repeated input for the name and value type error:
+  /// ```dart
+  /// PropertyDescriptor<String> get name => getProperty<String>('name');
+  /// PropertyDescriptor<int> get age => getProperty<int>('age');
+  /// ```
+  @nonVirtual
+  @protected
+  @visibleForTesting
+  PropertyDescriptor<T, dynamic> getProperty<T extends Object>(String name) {
+    final property = _getProperty(name);
+
+    if (property is! PropertyDescriptor<T, dynamic>) {
       throw StateError(
-        'A type of \'$name\' property is ${property.runtimeType} instead of PropertyDescriptor<$P, ?>.',
+        'A type of \'$name\' property is ${property.runtimeType} instead of PropertyDescriptor<$T, ?>.',
       );
     }
 
     return property;
   }
 
+  /// Gets a saved property value of specified name.
+  ///
+  /// The value should be set from `FormField` via [savePropertyValue].
+  /// This getter should be called in [doSubmit] implementation to get saved
+  /// valid values.
   @protected
+  @nonVirtual
   T? getSavedPropertyValue<T extends Object>(String name) =>
       getProperty<T>(name).savedValue;
 
+  /// Gets a setter to set a proprty value with validated form field input.
+  ///
+  /// The result should be bound to [FormField.onSaved] for vanilla [Form].
+  @nonVirtual
   void Function(T?) savePropertyValue<T extends Object>(String name) =>
       (v) => getProperty<T>(name).saveValue(v);
 
+  /// Gets a validator to validate form field input.
+  ///
+  /// The result should be bound to [FormField.validator].
+  @nonVirtual
   FormFieldValidator<T> getPropertyValidator<T extends Object>(
     String name,
     BuildContext context,
   ) =>
       getProperty<T>(name).getValidator(context);
+
+  /// Gets a value which indicates that specified property has pencing
+  /// asynchronous validation or not.
+  ///
+  /// Note that pencing validation complection causes re-evaluation of validity
+  /// of the form field, so rebuild will be caused from the field.
+  @nonVirtual
+  bool hasPendingAsyncValidations(String name) =>
+      _getProperty(name).hasPendingAsyncValidations;
+
+  // TODO(yfakariya): converter: ConversionResult Function(T? inputValue) ; class ConversionResult { final String? error; final dynamic value; }; PropertyDescriptor<T, P>.getConvertedValue()
+  //       The converter should be "final" validator of validator chain because it is convinient and general that conversion error indicates validation error.
 
   /// Gets the ancestor [FormState] like state from specified [BuildContext],
   /// and wraps it to [FormStateAdapter].
@@ -166,7 +201,7 @@ mixin FormCompanionPresenterMixin {
   /// This method returns `null` when there is no ancestor [Form] like widget.
   ///
   /// This method shall be implemented in the concrete class which is mix-ined
-  /// [FormCompanionPresenterMixin].
+  /// [CompanionPresenterMixin].
   @protected
   FormStateAdapter? maybeFormStateOf(BuildContext context);
 
@@ -188,17 +223,7 @@ mixin FormCompanionPresenterMixin {
   @protected
   @visibleForOverriding
   @visibleForTesting
-  bool canSubmit(BuildContext context) {
-    final formState = maybeFormStateOf(context);
-    if (formState == null ||
-        formState.autovalidateMode == AutovalidateMode.disabled) {
-      // Should be manual validation in doSubmit(), so returns true here.
-      return true;
-    }
-
-    return formState.validate() &&
-        properties.values.every((p) => !p.hasPendingAsyncValidations);
-  }
+  bool canSubmit(BuildContext context);
 
   /// Returns submit callback suitable for `onClick` callback of button
   /// which represents `submit` of form.
@@ -264,7 +289,6 @@ mixin FormCompanionPresenterMixin {
 
   /// Performs saving of form fields.
   @protected
-  @nonVirtual
   void saveFields(FormStateAdapter formState) {
     formState.save();
   }
@@ -348,12 +372,75 @@ mixin FormCompanionPresenterMixin {
   ///   state to display for users.
   ///
   /// This method shall be implemented in the concrete class which is mix-ined
-  /// [FormCompanionPresenterMixin].
+  /// [CompanionPresenterMixin].
   @protected
   @visibleForOverriding
   FutureOr<void> doSubmit(
     BuildContext context,
   );
+}
+
+/// [FormStateAdapter] implementation for [FormState].
+class _FormStateAdapter implements FormStateAdapter {
+  final FormState _state;
+
+  @override
+  AutovalidateMode get autovalidateMode => _state.widget.autovalidateMode;
+
+  _FormStateAdapter(this._state);
+
+  @override
+  bool validate() => _state.validate();
+
+  @override
+  void save() => _state.save();
+}
+
+/// Extended mixin of [CompanionPresenterMixin] for vanilla [Form].
+mixin FormCompanionMixin on CompanionPresenterMixin {
+  late final Map<String, GlobalKey<FormFieldState<dynamic>>?> _fieldKeys;
+
+  /// Gets a key for specified named field.
+  ///
+  /// Binding keys for each field is required to [canSubmit] works correctly.
+  Key getKey(String name, BuildContext context) {
+    var key = _fieldKeys[name];
+    if (key != null) {
+      return key;
+    }
+
+    return key = _fieldKeys[name] = GlobalObjectKey(context);
+  }
+
+  @override
+  @nonVirtual
+  void initializeFormCompanionMixin(
+    PropertyDescriptorsBuilder properties,
+  ) {
+    super.initializeFormCompanionMixin(properties);
+    _fieldKeys = {for (final name in properties._properties.keys) name: null};
+  }
+
+  @override
+  @nonVirtual
+  FormStateAdapter? maybeFormStateOf(BuildContext context) {
+    final state = Form.of(context);
+    return state == null ? null : _FormStateAdapter(state);
+  }
+
+  @override
+  @nonVirtual
+  bool canSubmit(BuildContext context) {
+    final formState = maybeFormStateOf(context);
+    if (formState == null ||
+        formState.autovalidateMode == AutovalidateMode.disabled) {
+      // Should be manual validation in doSubmit(), so returns true here.
+      return true;
+    }
+
+    return _fieldKeys.values.every((f) => f?.currentState?.hasError ?? false) &&
+        properties.values.every((p) => !p.hasPendingAsyncValidations);
+  }
 }
 
 class _AsyncValidatorEntry<T, P> {
@@ -390,30 +477,39 @@ FormFieldValidator<T> _chainValidators<T>(
       return null;
     };
 
-/// Represents "property" of view model which uses [FormCompanionPresenterMixin].
+/// Represents "property" of view model which uses [CompanionPresenterMixin].
 ///
-/// You can use this descriptor to:
-/// * Setup [FormField] or simluar widgets such as [getValidator] method to get
-///   [FormFieldValidator] which sequentially run validators including
-///   asynchronous ones, which should be set as [FormField.validator] parameter,
-///   [value] setter which should be set as [FormField.onSaved] parameter,
+/// This is advanced feature, so normal users should not concern this object.
+///
+/// You can use this descriptor indirectly to:
+/// * Setup [FormField] or simluar widgets. [FormFieldValidator] is provided
+///   via [CompanionPresenterMixin.getPropertyValidator] (it internally calls
+///   [getValidator]), which sequentially run validators including asynchronous
+///   ones and they should be set to [FormField.validator] parameters.
+///   For vanilla [FormField], it is required to bind [FormField.onSaved]
+///   parameters and callbacks returned from
+///   [CompanionPresenterMixin.savePropertyValue] methods to work the mixin
+///   correctly. The callback internally calls [saveValue] method.
 ///   [name] property which should be set to name for some form frameworks.
-/// * Get whether asynchronous validation is executing to show some indicator
-///   with [hasPendingAsyncValidations].
-/// * Get saved valid value for this property.
+/// * Checking whether asynchronous validation via
+///   [CompanionPresenterMixin.hasPendingAsyncValidations] to show some
+///   indicator. It internally calls [hasPendingAsyncValidations].
+/// * Get saved valid value for this property via
+///   [CompanionPresenterMixin.getSavedPropertyValue] which internally calls
+///   [savedValue] property.
 ///
 /// Conversely, you must use this object to setup form fields to work
-/// [FormCompanionPresenterMixin] logics correctly.
+/// [CompanionPresenterMixin] logics correctly.
 ///
 /// This object is built with [PropertyDescriptorsBuilder] which is passed to
-/// [FormCompanionPresenterMixin.initializeFormCompanionMixin].
+/// [CompanionPresenterMixin.initializeFormCompanionMixin].
 @sealed
 class PropertyDescriptor<T extends Object, P> {
   /// Unique name of this property.
   final String name;
 
-  /// Connected presenter object which implements [FormCompanionPresenterMixin].
-  final FormCompanionPresenterMixin presenter;
+  /// Connected presenter object which implements [CompanionPresenterMixin].
+  final CompanionPresenterMixin presenter;
 
   // The reason of using factories instead of validators theirselves is some
   // validator framework requires BuildContext to localize their messages.
@@ -431,7 +527,7 @@ class PropertyDescriptor<T extends Object, P> {
 
   bool _isValueSet = false;
 
-  /// [Completer] to notify [FormCompanionPresenterMixin] with
+  /// [Completer] to notify [CompanionPresenterMixin] with
   /// non-autovalidation mode which should run and wait asynchronous validators
   /// in its submit method.
   Completer<void>? _asyncValidationCompletion;
@@ -543,7 +639,7 @@ class _PropertyDescriptorSource<T extends Object, P> {
 
   /// Build [PropertyDescriptor] which is connected with specified [presenter].
   PropertyDescriptor<T, P> build(
-    FormCompanionPresenterMixin presenter,
+    CompanionPresenterMixin presenter,
   ) =>
       PropertyDescriptor<T, P>._(
         name: name,
@@ -599,8 +695,8 @@ class PropertyDescriptorsBuilder {
   }
 
   /// Build [PropertyDescriptor] which is connected with specified [presenter].
-  Map<String, PropertyDescriptor> _build(
-    FormCompanionPresenterMixin presenter,
+  Map<String, PropertyDescriptor<Object, dynamic>> _build(
+    CompanionPresenterMixin presenter,
   ) =>
       _properties.map(
         (key, value) => MapEntry(

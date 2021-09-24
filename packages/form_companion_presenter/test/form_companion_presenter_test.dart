@@ -9,9 +9,10 @@ import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:form_companion_presenter/form_companion_presenter.dart';
+import 'package:form_companion_presenter/src/form_companion_presenter_mixin.dart';
 import 'package:form_companion_presenter/src/internal_utils.dart';
 
-class TestPresenter with FormCompanionPresenterMixin {
+class TestPresenter with CompanionPresenterMixin, FormCompanionMixin {
   final void Function(BuildContext) _doSubmitCalled;
   final FormStateAdapter? Function(BuildContext) _maybeFormStateOfCalled;
   final void Function(AsyncError)? _onHandleCanceledAsyncValidationError;
@@ -44,6 +45,7 @@ class TestPresenter with FormCompanionPresenterMixin {
   }
 
   @override
+  // ignore: invalid_override_of_non_virtual_member
   FormStateAdapter? maybeFormStateOf(BuildContext context) =>
       _maybeFormStateOfCalled(context);
 }

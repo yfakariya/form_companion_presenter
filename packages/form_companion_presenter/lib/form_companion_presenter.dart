@@ -11,7 +11,8 @@ export 'src/form_companion_presenter_mixin.dart'
         FormStateAdapter,
         PropertyDescriptor,
         PropertyDescriptorsBuilder,
-        FormCompanionPresenterMixin;
+        CompanionPresenterMixin,
+        FormCompanionMixin;
 export 'src/future_invoker.dart'
     show
         AsyncErrorHandler,

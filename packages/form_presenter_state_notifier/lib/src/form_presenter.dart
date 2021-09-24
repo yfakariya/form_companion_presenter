@@ -1,25 +1,8 @@
 // See LICENCE file in the root.
 
 import 'package:flutter/widgets.dart';
-import 'package:state_notifier/state_notifier.dart';
-
 import 'package:form_companion_presenter/form_companion_presenter.dart';
-
-/// [FormStateAdapter] implementation for [FormState].
-class _FormStateAdapter implements FormStateAdapter {
-  final FormState _state;
-
-  @override
-  AutovalidateMode get autovalidateMode => _state.widget.autovalidateMode;
-
-  _FormStateAdapter(this._state);
-
-  @override
-  bool validate() => _state.validate();
-
-  @override
-  void save() => _state.save();
-}
+import 'package:state_notifier/state_notifier.dart';
 
 /// Provides base implementation of presenter which cooporates with correspond
 /// [Form] and [FormField]s to handle user inputs, their transitive states,
@@ -45,7 +28,7 @@ class _FormStateAdapter implements FormStateAdapter {
 ///   is ready for "submit" or `null` otherwise. This class checks validation
 ///   results of [FormField]s and existance of pending async validations.
 abstract class FormPresenter<T> extends StateNotifier<T>
-    with FormCompanionPresenterMixin {
+    with CompanionPresenterMixin, FormCompanionMixin {
   /// Creates a new [FormPresenter] with its initial state and properties.
   ///
   /// [properties] must be [PropertyDescriptorsBuilder] instance which
@@ -78,11 +61,5 @@ abstract class FormPresenter<T> extends StateNotifier<T>
     required PropertyDescriptorsBuilder properties,
   }) : super(initialState) {
     initializeFormCompanionMixin(properties);
-  }
-
-  @override
-  FormStateAdapter? maybeFormStateOf(BuildContext context) {
-    final state = Form.of(context);
-    return state == null ? null : _FormStateAdapter(state);
   }
 }

@@ -2,10 +2,9 @@
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
-import 'package:meta/meta.dart';
-
 import 'package:form_companion_presenter/form_companion_presenter.dart';
-import 'package:form_presenter_state_notifier/form_presenter_state_notifier.dart';
+import 'package:meta/meta.dart';
+import 'package:state_notifier/state_notifier.dart';
 
 /// [FormStateAdapter] implementation for [FormBuilderState].
 class _FormBuilderStateAdapter implements FormStateAdapter {
@@ -24,18 +23,10 @@ class _FormBuilderStateAdapter implements FormStateAdapter {
   void save() => _state.save();
 }
 
-/// Base class for presenters which binds to a form using [FormBuilder].
-abstract class FormBuilderPresenter<T> extends FormPresenter<T> {
-  /// Creates [FormBuilderPresenter] with its initial state.
-  FormBuilderPresenter({
-    required T initialState,
-    required PropertyDescriptorsBuilder properties,
-  }) : super(
-          initialState: initialState,
-          properties: properties,
-        );
-
+/// Extended mixin of [CompanionPresenterMixin] for [FormBuilder].
+mixin FormBuilderCompanionMixin on CompanionPresenterMixin {
   @override
+  @nonVirtual
   FormStateAdapter? maybeFormStateOf(BuildContext context) =>
       _maybeFormStateOf(context);
 
@@ -46,6 +37,7 @@ abstract class FormBuilderPresenter<T> extends FormPresenter<T> {
 
   @override
   @protected
+  @nonVirtual
   @visibleForOverriding
   bool canSubmit(BuildContext context) {
     final formState = _maybeFormStateOf(context);
@@ -63,6 +55,7 @@ abstract class FormBuilderPresenter<T> extends FormPresenter<T> {
   @override
   @protected
   @nonVirtual
+  @visibleForTesting
   void saveFields(FormStateAdapter formState) {
     if (formState is _FormBuilderStateAdapter) {
       formState.save();
@@ -76,5 +69,17 @@ abstract class FormBuilderPresenter<T> extends FormPresenter<T> {
       );
       super.saveFields(formState);
     }
+  }
+}
+
+/// Base class for presenters which binds to a form using [FormBuilder].
+abstract class FormBuilderPresenter<T> extends StateNotifier<T>
+    with CompanionPresenterMixin, FormBuilderCompanionMixin {
+  /// Creates [FormBuilderPresenter] with its initial state.
+  FormBuilderPresenter({
+    required T initialState,
+    required PropertyDescriptorsBuilder properties,
+  }) : super(initialState) {
+    super.initializeFormCompanionMixin(properties);
   }
 }
