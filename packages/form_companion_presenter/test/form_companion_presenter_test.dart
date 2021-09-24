@@ -267,8 +267,8 @@ void main() {
 
         final property = target.getProperty<int>('int');
         // ignore: cascade_invocations
-        property.value = 123;
-        expect(property.value, equals(123));
+        property.saveValue(123);
+        expect(property.savedValue, equals(123));
       });
 
       test('can be get / set dynamic value.', () {
@@ -278,8 +278,8 @@ void main() {
 
         final property = target.getProperty<int>('int');
         // ignore: cascade_invocations
-        property.setDynamicValue(123);
-        expect(property.value, equals(123));
+        property.saveValue(123);
+        expect(property.savedValue, equals(123));
       });
 
       test('throws ArgumentError from setDynamicValue for incompatible type.',
@@ -290,7 +290,7 @@ void main() {
 
         final property = target.getProperty<int>('int');
         // ignore: cascade_invocations
-        expect(() => property.setDynamicValue('ABC'), throwsArgumentError);
+        expect(() => property.saveValue('ABC'), throwsArgumentError);
       });
     });
   });

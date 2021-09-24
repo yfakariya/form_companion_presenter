@@ -147,11 +147,12 @@ mixin FormCompanionPresenterMixin {
     return property;
   }
 
-  T? getPropertyValue<T extends Object>(String name) =>
-      getProperty<T>(name).value;
+  @protected
+  T? getSavedPropertyValue<T extends Object>(String name) =>
+      getProperty<T>(name).savedValue;
 
   void Function(T?) savePropertyValue<T extends Object>(String name) =>
-      (v) => getProperty<T>(name).setDynamicValue(v);
+      (v) => getProperty<T>(name).saveValue(v);
 
   FormFieldValidator<T> getPropertyValidator<T extends Object>(
     String name,
@@ -426,18 +427,32 @@ class PropertyDescriptor<T extends Object, P> {
   final List<_AsyncValidatorEntry<T, P>> _asynvValidatorEntries;
 
   /// Saved property value. This value can be `null`.
-  T? value;
+  T? _value;
+
+  bool _isValueSet = false;
 
   /// [Completer] to notify [FormCompanionPresenterMixin] with
   /// non-autovalidation mode which should run and wait asynchronous validators
   /// in its submit method.
   Completer<void>? _asyncValidationCompletion;
 
+  /// Saved property value. This value can be `null`.
+  ///
+  /// Note that this property should not be used for initial value of [FormField].,
+  T? get savedValue {
+    assert(
+      _isValueSet,
+      'value has not been set yet via saveValue(). Note that this property should not be used for initial value of FormField.',
+    );
+
+    return _value;
+  }
+
   /// Save value from logic which handles this [PropertyDescriptor] without
   /// strong typing.
   ///
   /// This method throws [ArgumentError] if [value] is not compatible [T].
-  void setDynamicValue(dynamic value) {
+  void saveValue(dynamic value) {
     if (value is! T?) {
       throw ArgumentError.value(
         value,
@@ -446,7 +461,8 @@ class PropertyDescriptor<T extends Object, P> {
       );
     }
 
-    this.value = value;
+    _value = value;
+    _isValueSet = true;
   }
 
   /// Whether any asynchronous validations is running now.
@@ -460,7 +476,6 @@ class PropertyDescriptor<T extends Object, P> {
   PropertyDescriptor._({
     required this.name,
     required this.presenter,
-    required this.value,
     List<FormFieldValidatorFactory<T>>? validatorFactories,
     List<AsyncValidatorFactory<T, P>>? asyncValidatorFactories,
     Equality<T?>? equality,
@@ -517,13 +532,11 @@ class PropertyDescriptor<T extends Object, P> {
 /// Required values to create [PropertyDescriptor].
 class _PropertyDescriptorSource<T extends Object, P> {
   final String name;
-  final T? initialValue;
   final List<FormFieldValidatorFactory<T>> validatorFactories;
   final List<AsyncValidatorFactory<T, P>> asyncValidatorFactories;
 
   _PropertyDescriptorSource({
     required this.name,
-    required this.initialValue,
     required this.validatorFactories,
     required this.asyncValidatorFactories,
   });
@@ -535,7 +548,6 @@ class _PropertyDescriptorSource<T extends Object, P> {
       PropertyDescriptor<T, P>._(
         name: name,
         presenter: presenter,
-        value: initialValue,
         validatorFactories: validatorFactories,
         asyncValidatorFactories: asyncValidatorFactories,
       );
@@ -556,13 +568,11 @@ class PropertyDescriptorsBuilder {
   /// [BuildContext].
   void add<T extends Object>({
     required String name,
-    T? initialValue,
     List<FormFieldValidatorFactory<T>>? validatorFactories,
     List<AsyncValidatorFactory<T, void>>? asyncValidatorFactories,
   }) =>
       addWithProgressReport(
         name: name,
-        initialValue: initialValue,
         validatorFactories: validatorFactories,
         asyncValidatorFactories: asyncValidatorFactories,
       );
@@ -576,13 +586,11 @@ class PropertyDescriptorsBuilder {
   /// [BuildContext].
   void addWithProgressReport<T extends Object, P>({
     required String name,
-    T? initialValue,
     List<FormFieldValidatorFactory<T>>? validatorFactories,
     List<AsyncValidatorFactory<T, P>>? asyncValidatorFactories,
   }) {
     final descriptor = _PropertyDescriptorSource<T, P>(
       name: name,
-      initialValue: initialValue,
       validatorFactories: validatorFactories ?? [],
       asyncValidatorFactories: asyncValidatorFactories ?? [],
     );

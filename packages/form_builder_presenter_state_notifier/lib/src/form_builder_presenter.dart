@@ -67,7 +67,7 @@ abstract class FormBuilderPresenter<T> extends FormPresenter<T> {
     if (formState is _FormBuilderStateAdapter) {
       formState.save();
       for (final field in formState._state.value.entries) {
-        properties[field.key]?.setDynamicValue(field.value);
+        properties[field.key]?.saveValue(field.value);
       }
     } else {
       assert(
