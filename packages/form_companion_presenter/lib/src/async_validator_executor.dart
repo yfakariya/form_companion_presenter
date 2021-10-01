@@ -9,36 +9,38 @@ import 'package:meta/meta.dart';
 
 import 'future_invoker.dart';
 
+/// Options for asyncronous validators.
+@sealed
+class AsyncValidatorOptions {
+  /// [Locale] which is used to localize validation message.
+  /// Caller must specify valid locale.
+  /// You can get current [Locale] via
+  /// [Localizations.mayBeLocaleOf([BuildContext])]. If the returned [Locale] is
+  /// `null`, you must specify appropriate locale like `Locale('en', 'US')` or
+  /// your primary users' locale.
+  final Locale locale;
+
+  AsyncValidatorOptions._({required this.locale});
+}
+
 /// A function represents async validation invocation.
 ///
 /// It takes target [value], which may be `null`,
 /// and then returns validation error message if the value is not valid,
 /// or returns `null` if the value is valid.
 ///
-/// [locale] is [Locale] which is used to localize validation message.
-/// Caller must specify valid locale.
-/// You can get current [Locale] via
-/// [Localizations.mayBeLocaleOf([BuildContext])]. If the returned [Locale] is
-/// `null`, you must specify appropriate locale like `Locale('en', 'US')` or
-/// your primary users' locale.
-///
-/// [onProgress] is callback to be used to report progress for caller.
-/// This type is application specific.
-/// You can use the callback to indicate progress status of multi-step
-/// asynchronous validation.
-/// If you cannot report any meaningful progress, you can completely ignore
-/// progress reporting and specify `dynamic`, [Null], or [void] for [P].
-typedef AsyncValidator<T, P> = FutureOr<String?> Function(
+/// [options] is [AsyncValidatorOptions] which has options for validators
+/// such as [Locale] to localize error message.
+typedef AsyncValidator<T> = FutureOr<String?> Function(
   T? value,
-  Locale locale,
-  AsyncOperationProgressCallback<P> onProgress,
+  AsyncValidatorOptions options,
 );
 
 /// Represents asynchronous validation invocation.
 ///
 /// This class defines callbacks to compliant with [AsyncOperationNotifier]
 /// which is required from [FutureInvoker].
-class ValidationInvocation<T, P> implements AsyncOperationNotifier<String?, P> {
+class ValidationInvocation<T> implements AsyncOperationNotifier<String?, void> {
   /// Actual validating value.
   final T value;
 
@@ -50,7 +52,7 @@ class ValidationInvocation<T, P> implements AsyncOperationNotifier<String?, P> {
   /// So, [ValidationInvocation] also holds current [validator] as parameter
   /// for [FutureInvoker.execute] method instead of storing [validator] in
   /// field of [AsyncValidatorExecutor] instance.
-  final AsyncValidator<T, P> validator;
+  final AsyncValidator<T> validator;
 
   /// Current [Locale] to localize validation message.
   final Locale locale;
@@ -61,8 +63,11 @@ class ValidationInvocation<T, P> implements AsyncOperationNotifier<String?, P> {
   @override
   final AsyncOperationFailedCallback onFailed;
 
+  @Deprecated('ValidationInvocation does not support onProgress')
+  @nonVirtual
+  @protected
   @override
-  final AsyncOperationProgressCallback<P> onProgress;
+  final AsyncOperationProgressCallback<void> onProgress;
 
   /// Creates a new [ValidationInvocation].
   ///
@@ -74,9 +79,9 @@ class ValidationInvocation<T, P> implements AsyncOperationNotifier<String?, P> {
     required this.locale,
     required this.onCompleted,
     AsyncOperationFailedCallback? onFailed,
-    AsyncOperationProgressCallback<P>? onProgress,
   })  : onFailed = onFailed ?? ((_) {}),
-        onProgress = onProgress ?? ((_) {});
+        // ignore: deprecated_member_use_from_same_package
+        onProgress = ((_) {});
 }
 
 /// Callback of complection of [AsyncValidatorExecutor.validate].
@@ -91,8 +96,8 @@ typedef AsyncValidationCompletionCallback = void Function(
 );
 
 /// Handles asynchronous ([Future] based) validation logic.
-class AsyncValidatorExecutor<T, P>
-    extends FutureInvoker<ValidationInvocation<T?, P>, String?, void> {
+class AsyncValidatorExecutor<T extends Object>
+    extends FutureInvoker<ValidationInvocation<T?>, String?, void> {
   /// Indicates that whether this executor validating asynchronously or not.
   @nonVirtual
   bool get validating => status == AsyncOperationStatus.inProgress;
@@ -117,7 +122,7 @@ class AsyncValidatorExecutor<T, P>
     String? debugLabel,
   }) : super(
           defaultResult: null,
-          parameterEquality: EqualityBy<ValidationInvocation<T?, P>, T?>(
+          parameterEquality: EqualityBy<ValidationInvocation<T?>, T?>(
             (x) => x.value,
             equality ?? const Equality(),
           ),
@@ -126,11 +131,10 @@ class AsyncValidatorExecutor<T, P>
         );
 
   @override
-  FutureOr<String?> executeAsync(ValidationInvocation<T?, P> parameter) =>
+  FutureOr<String?> executeAsync(ValidationInvocation<T?> parameter) =>
       parameter.validator(
         parameter.value,
-        parameter.locale,
-        parameter.onProgress,
+        AsyncValidatorOptions._(locale: parameter.locale),
       );
 
   /// Validates specified value with specified [AsyncValidator] and [Locale].
@@ -147,27 +151,21 @@ class AsyncValidatorExecutor<T, P>
   /// not be `null`, and the value of `result` parameter will be string
   /// representation of the `error`.
   ///
-  /// An optional [onProgress] will be called when the [validator] emits progress event.
-  /// The parameter is progress value which type is [P].
-  /// Note that [P] may be [void] in many cases.
-  ///
   /// This method just calls [execute].
   @nonVirtual
   String? validate({
-    required AsyncValidator<T, P> validator,
+    required AsyncValidator<T> validator,
     required T? value,
     required Locale locale,
     required AsyncValidationCompletionCallback onCompleted,
-    AsyncOperationProgressCallback<P>? onProgress,
   }) =>
       execute(
-        ValidationInvocation<T?, P>(
+        ValidationInvocation<T?>(
           validator: validator,
           value: value,
           locale: locale,
           onCompleted: (v) => onCompleted(v, null),
           onFailed: (e) => onCompleted(e.toString(), e),
-          onProgress: onProgress,
         ),
       );
 }

@@ -14,7 +14,7 @@ typedef FormFieldValidatorFactory<T> = FormFieldValidator<T> Function(
     BuildContext context);
 
 /// Signature for factory of [AsyncValidator].
-typedef AsyncValidatorFactory<T, P> = AsyncValidator<T, P> Function(
+typedef AsyncValidatorFactory<T> = AsyncValidator<T> Function(
   BuildContext context,
 );
 
@@ -59,14 +59,13 @@ abstract class FormStateAdapter {
 ///   is ready for "submit" or `null` otherwise. This class checks validation
 ///   results of [FormField]s and existance of pending async validations.
 mixin CompanionPresenterMixin {
-  late final Map<String, PropertyDescriptor<Object, dynamic>> _properties;
+  late final Map<String, PropertyDescriptor<Object>> _properties;
 
   /// Map of [PropertyDescriptor]. Key is [PropertyDescriptor.name].
   @nonVirtual
   @protected
   @visibleForTesting
-  Map<String, PropertyDescriptor<Object, dynamic>> get properties =>
-      _properties;
+  Map<String, PropertyDescriptor<Object>> get properties => _properties;
 
   /// Initializes [CompanionPresenterMixin].
   ///
@@ -115,7 +114,7 @@ mixin CompanionPresenterMixin {
   @visibleForOverriding
   void handleCanceledAsyncValidationError(AsyncError error) => throw error;
 
-  PropertyDescriptor<Object, dynamic> _getProperty(String name) {
+  PropertyDescriptor<Object> _getProperty(String name) {
     final property = properties[name];
     if (property == null) {
       throw ArgumentError.value(
@@ -144,12 +143,12 @@ mixin CompanionPresenterMixin {
   @nonVirtual
   @protected
   @visibleForTesting
-  PropertyDescriptor<T, dynamic> getProperty<T extends Object>(String name) {
+  PropertyDescriptor<T> getProperty<T extends Object>(String name) {
     final property = _getProperty(name);
 
-    if (property is! PropertyDescriptor<T, dynamic>) {
+    if (property is! PropertyDescriptor<T>) {
       throw StateError(
-        'A type of \'$name\' property is ${property.runtimeType} instead of PropertyDescriptor<$T, ?>.',
+        'A type of \'$name\' property is ${property.runtimeType} instead of PropertyDescriptor<$T>.',
       );
     }
 
@@ -444,9 +443,9 @@ mixin FormCompanionMixin on CompanionPresenterMixin {
   }
 }
 
-class _AsyncValidatorEntry<T, P> {
-  final AsyncValidatorFactory<T, P> _factory;
-  final AsyncValidatorExecutor<T, P> _executor;
+class _AsyncValidatorEntry<T extends Object> {
+  final AsyncValidatorFactory<T> _factory;
+  final AsyncValidatorExecutor<T> _executor;
 
   bool get validating => _executor.validating;
 
@@ -459,8 +458,7 @@ class _AsyncValidatorEntry<T, P> {
           canceledValidationErrorHandler: canceledValidationErrorHandler,
         );
 
-  AsyncValidator<T, P> createValidator(BuildContext context) =>
-      _factory(context);
+  AsyncValidator<T> createValidator(BuildContext context) => _factory(context);
 }
 
 // The idea is borrowed from FormBuilderValidators.composite()
@@ -505,7 +503,7 @@ FormFieldValidator<T> _chainValidators<T>(
 /// This object is built with [PropertyDescriptorsBuilder] which is passed to
 /// [CompanionPresenterMixin.initializeFormCompanionMixin].
 @sealed
-class PropertyDescriptor<T extends Object, P> {
+class PropertyDescriptor<T extends Object> {
   /// Unique name of this property.
   final String name;
 
@@ -521,7 +519,7 @@ class PropertyDescriptor<T extends Object, P> {
   final List<FormFieldValidatorFactory<T>> _validatorFactories;
 
   /// Entries to build [AsyncValidator].
-  final List<_AsyncValidatorEntry<T, P>> _asynvValidatorEntries;
+  final List<_AsyncValidatorEntry<T>> _asynvValidatorEntries;
 
   /// Saved property value. This value can be `null`.
   T? _value;
@@ -574,12 +572,12 @@ class PropertyDescriptor<T extends Object, P> {
     required this.name,
     required this.presenter,
     List<FormFieldValidatorFactory<T>>? validatorFactories,
-    List<AsyncValidatorFactory<T, P>>? asyncValidatorFactories,
+    List<AsyncValidatorFactory<T>>? asyncValidatorFactories,
     Equality<T?>? equality,
   })  : _validatorFactories = validatorFactories ?? [],
         _asynvValidatorEntries = (asyncValidatorFactories ?? [])
             .map(
-              (v) => _AsyncValidatorEntry<T, P>(
+              (v) => _AsyncValidatorEntry<T>(
                 v,
                 equality,
                 presenter.handleCanceledAsyncValidationError,
@@ -627,10 +625,10 @@ class PropertyDescriptor<T extends Object, P> {
 }
 
 /// Required values to create [PropertyDescriptor].
-class _PropertyDescriptorSource<T extends Object, P> {
+class _PropertyDescriptorSource<T extends Object> {
   final String name;
   final List<FormFieldValidatorFactory<T>> validatorFactories;
-  final List<AsyncValidatorFactory<T, P>> asyncValidatorFactories;
+  final List<AsyncValidatorFactory<T>> asyncValidatorFactories;
 
   _PropertyDescriptorSource({
     required this.name,
@@ -639,10 +637,10 @@ class _PropertyDescriptorSource<T extends Object, P> {
   });
 
   /// Build [PropertyDescriptor] which is connected with specified [presenter].
-  PropertyDescriptor<T, P> build(
+  PropertyDescriptor<T> build(
     CompanionPresenterMixin presenter,
   ) =>
-      PropertyDescriptor<T, P>._(
+      PropertyDescriptor<T>._(
         name: name,
         presenter: presenter,
         validatorFactories: validatorFactories,
@@ -653,8 +651,7 @@ class _PropertyDescriptorSource<T extends Object, P> {
 /// Builder object to build [PropertyDescriptor].
 @sealed
 class PropertyDescriptorsBuilder {
-  final Map<String, _PropertyDescriptorSource<Object, dynamic>> _properties =
-      {};
+  final Map<String, _PropertyDescriptorSource<Object>> _properties = {};
 
   /// Defines new property without asynchronous validation progress reporting.
   ///
@@ -666,27 +663,9 @@ class PropertyDescriptorsBuilder {
   void add<T extends Object>({
     required String name,
     List<FormFieldValidatorFactory<T>>? validatorFactories,
-    List<AsyncValidatorFactory<T, void>>? asyncValidatorFactories,
-  }) =>
-      addWithProgressReport(
-        name: name,
-        validatorFactories: validatorFactories,
-        asyncValidatorFactories: asyncValidatorFactories,
-      );
-
-  /// Defines new property with asynchronous validation progress reporting.
-  ///
-  /// Note that [name] must be unique, and validators are registered as
-  /// factories instead of normal closures (function objects) because some
-  /// validation framework requires live [BuildContext] to initialize validator,
-  /// and current [Locale] of the application should be stored to
-  /// [BuildContext].
-  void addWithProgressReport<T extends Object, P>({
-    required String name,
-    List<FormFieldValidatorFactory<T>>? validatorFactories,
-    List<AsyncValidatorFactory<T, P>>? asyncValidatorFactories,
+    List<AsyncValidatorFactory<T>>? asyncValidatorFactories,
   }) {
-    final descriptor = _PropertyDescriptorSource<T, P>(
+    final descriptor = _PropertyDescriptorSource<T>(
       name: name,
       validatorFactories: validatorFactories ?? [],
       asyncValidatorFactories: asyncValidatorFactories ?? [],
@@ -696,7 +675,7 @@ class PropertyDescriptorsBuilder {
   }
 
   /// Build [PropertyDescriptor] which is connected with specified [presenter].
-  Map<String, PropertyDescriptor<Object, dynamic>> _build(
+  Map<String, PropertyDescriptor<Object>> _build(
     CompanionPresenterMixin presenter,
   ) =>
       _properties.map(

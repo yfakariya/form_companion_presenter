@@ -221,7 +221,7 @@ void main() {
           ..add<String>(
             name: 'prop',
             asyncValidatorFactories: [
-              (context) => (value, locale, progress) async {
+              (context) => (value, options) async {
                     await completer.future;
                     return null;
                   },
@@ -269,7 +269,7 @@ void main() {
           ..add<String>(
             name: 'prop',
             asyncValidatorFactories: [
-              (context) => (value, locale, progress) async {
+              (context) => (value, options) async {
                     await completer.future;
                     validatorCompleted.complete();
                     return null;

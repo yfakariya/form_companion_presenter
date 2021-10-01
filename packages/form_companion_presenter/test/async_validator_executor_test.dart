@@ -13,12 +13,12 @@ void main() {
   group('AsyncValidatorExecutor', () {
     group('constructor', () {
       test('default equality', () async {
-        final target = AsyncValidatorExecutor<int, void>();
+        final target = AsyncValidatorExecutor<int>();
         const result = 'DUMMY';
         final completer1 = Completer<String>();
         expect(
           target.validate(
-            validator: (value, locale, onProgress) => Future.delayed(
+            validator: (value, options) => Future.delayed(
               Duration.zero,
               () => result,
             ),
@@ -36,7 +36,7 @@ void main() {
         final completer2 = Completer<String>();
         expect(
           target.validate(
-            validator: (value, locale, onProgress) => Future.delayed(
+            validator: (value, options) => Future.delayed(
               Duration.zero,
               // Returns different result here.
               () => result + result,
@@ -54,7 +54,7 @@ void main() {
         final completer3 = Completer<String>();
         expect(
           target.validate(
-            validator: (value, locale, onProgress) => Future.delayed(
+            validator: (value, options) => Future.delayed(
               Duration.zero,
               // Returns different result here.
               () => result + result,
@@ -76,20 +76,17 @@ void main() {
     group('override', () {
       // Note: onCompleted is automatically tested by many cases :)
       test('locale and onProgress are passed to validator', () async {
-        final target = AsyncValidatorExecutor<int, String>();
+        final target = AsyncValidatorExecutor<int>();
         const result = 'DUMMY';
         final completer = Completer<String>();
         const theValue = 123;
         const theLocale = Locale('en', 'US');
-        // ignore: prefer_function_declarations_over_variables, avoid_types_on_closure_parameters
-        final theOnProgress = (String p) {};
 
         expect(
           target.validate(
-            validator: (value, locale, onProgress) {
+            validator: (value, options) {
               expect(value, equals(theValue));
-              expect(locale, same(theLocale));
-              expect(onProgress, same(theOnProgress));
+              expect(options.locale, same(theLocale));
               return Future.delayed(
                 Duration.zero,
                 () => result,
@@ -98,7 +95,6 @@ void main() {
             value: theValue,
             locale: theLocale,
             onCompleted: (v, e) => completer.complete(v),
-            onProgress: theOnProgress,
           ),
           isNull,
         );
@@ -108,15 +104,13 @@ void main() {
         expect(await completer.future, equals(result));
       });
       test('onFailed handler is used when specified', () async {
-        final target = AsyncValidatorExecutor<int, String>();
+        final target = AsyncValidatorExecutor<int>();
         final theError = Exception('DUMMY');
         final completer = Completer<String>();
-        // ignore: prefer_function_declarations_over_variables, avoid_types_on_closure_parameters
-        final theOnProgress = (String p) {};
 
         expect(
           target.validate(
-            validator: (value, locale, onProgress) {
+            validator: (value, options) {
               return Future.delayed(
                 Duration.zero,
                 () {
@@ -128,7 +122,6 @@ void main() {
             locale: const Locale('en', 'US'),
             onCompleted: (v, e) =>
                 e == null ? completer.complete(v) : completer.completeError(e),
-            onProgress: theOnProgress,
           ),
           isNull,
         );
@@ -147,12 +140,12 @@ void main() {
     });
 
     group('scenario', () {
-      Future<void> doTest<V, P>({
-        required AsyncValidator<V, P> validator,
+      Future<void> doTest<V extends Object>({
+        required AsyncValidator<V> validator,
         required AsyncValidationCompletionCallback onCompleted,
         required V value,
       }) async {
-        final target = AsyncValidatorExecutor<V, P>();
+        final target = AsyncValidatorExecutor<V>();
         final completer = Completer<String?>();
 
         try {
@@ -196,8 +189,8 @@ void main() {
 
       test(
         'Immediately success',
-        () async => doTest<int, void>(
-          validator: (v, l, p) {
+        () async => doTest<int>(
+          validator: (value, options) {
             return Future.value(null);
           },
           onCompleted: (r, e) {
@@ -212,8 +205,8 @@ void main() {
         'Immediately validation failure',
         () async {
           const result = 'required.';
-          await doTest<int, void>(
-            validator: (v, l, p) {
+          await doTest<int>(
+            validator: (value, options) {
               return Future.value(result);
             },
             onCompleted: (r, e) {
@@ -230,8 +223,8 @@ void main() {
         () async {
           final theError = Exception('DUMMY');
           var onCompletedCalled = false;
-          await doTest<int, void>(
-            validator: (v, l, p) {
+          await doTest<int>(
+            validator: (value, options) {
               throw theError;
             },
             onCompleted: (r, e) {
@@ -248,8 +241,8 @@ void main() {
 
       test(
         'Asynchronously success',
-        () async => doTest<int, void>(
-          validator: (v, l, p) {
+        () async => doTest<int>(
+          validator: (value, options) {
             return Future.delayed(Duration.zero, () => null);
           },
           onCompleted: (r, e) {
@@ -264,8 +257,8 @@ void main() {
         'Asynchronously validation failure',
         () async {
           const result = 'required.';
-          await doTest<int, void>(
-            validator: (v, l, p) {
+          await doTest<int>(
+            validator: (value, options) {
               return Future.delayed(Duration.zero, () => result);
             },
             onCompleted: (r, e) {
@@ -282,8 +275,8 @@ void main() {
         () async {
           final theError = Exception('DUMMY');
           var onCompletedCalled = false;
-          await doTest<int, void>(
-            validator: (v, l, p) {
+          await doTest<int>(
+            validator: (value, options) {
               return Future.delayed(Duration.zero, () => throw theError);
             },
             onCompleted: (r, e) {
@@ -307,28 +300,24 @@ void main() {
         final onCompleted = (String? value) {};
         // ignore: avoid_types_on_closure_parameters, prefer_function_declarations_over_variables
         final onFailed = (AsyncError? error) {};
-        // ignore: avoid_types_on_closure_parameters, prefer_function_declarations_over_variables
-        final onProgress = (int progress) {};
 
-        final target = ValidationInvocation<int, int>(
-          validator: (value, locale, onProgress) {
+        final target = ValidationInvocation<int>(
+          validator: (value, options) {
             return Future.delayed(Duration.zero, () => null);
           },
           value: 1,
           locale: const Locale('en', 'US'),
           onCompleted: onCompleted,
           onFailed: onFailed,
-          onProgress: onProgress,
         );
 
         expect(target.onCompleted, same(onCompleted));
         expect(target.onFailed, same(onFailed));
-        expect(target.onProgress, same(onProgress));
       });
 
       test('Optional parameter replaced with empty.', () {
-        final target = ValidationInvocation<int, void>(
-          validator: (value, locale, onProgress) {
+        final target = ValidationInvocation<int>(
+          validator: (value, options) {
             return Future.delayed(Duration.zero, null);
           },
           value: 1,
@@ -339,7 +328,6 @@ void main() {
         );
 
         expect(target.onFailed, isNotNull);
-        expect(target.onProgress, isNotNull);
       });
     });
   });

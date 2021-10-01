@@ -215,12 +215,12 @@ void main() {
         );
         expect(target.properties.length, equals(2));
         expect(target.properties, contains('int'));
-        expect(target.properties['int'], isA<PropertyDescriptor<int, void>>());
+        expect(target.properties['int'], isA<PropertyDescriptor<int>>());
 
         expect(target.properties, contains('string'));
         expect(
           target.properties['string'],
-          isA<PropertyDescriptor<String, void>>(),
+          isA<PropertyDescriptor<String>>(),
         );
       });
 
@@ -370,7 +370,7 @@ void main() {
             ..add<int>(
               name: 'prop',
               asyncValidatorFactories: [
-                (context) => (value, locale, onProgress) async {
+                (context) => (value, options) async {
                       values.add(value);
                       if (value != null) {
                         await asyncOperationStartGates[value].future;
@@ -438,7 +438,7 @@ void main() {
             ..add<int>(
               name: 'prop',
               asyncValidatorFactories: [
-                (context) => (value, locale, onProgress) async {
+                (context) => (value, options) async {
                       if (value != null) {
                         await completers[value].future;
                       }
@@ -563,7 +563,7 @@ void main() {
                 (context) => (value) => null,
               ],
               asyncValidatorFactories: [
-                (context) => (value, locale, progress) => null,
+                (context) => (value, options) => null,
               ],
             ),
         );
@@ -657,14 +657,14 @@ void main() {
                   },
             ],
             asyncValidatorFactories: [
-              (context) => (value, locale, progress) {
+              (context) => (value, options) {
                     asyncValue1 = value;
-                    asyncLocale1 = locale;
+                    asyncLocale1 = options.locale;
                     return Future.value(null);
                   },
-              (context) => (value, locale, progress) {
+              (context) => (value, options) {
                     asyncValue2 = value;
-                    asyncLocale2 = locale;
+                    asyncLocale2 = options.locale;
                     return Future.value(null);
                   },
             ],
@@ -697,6 +697,4 @@ void main() {
       expect(locale.scriptCode, isNull);
     });
   });
-
-  // TODO(yfakariya): progress test!
 }
