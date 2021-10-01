@@ -6,7 +6,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:form_builder_presenter_state_notifier/form_builder_presenter_state_notifier.dart';
+import 'package:form_builder_companion_presenter/form_builder_companion_presenter.dart';
 import 'package:form_companion_presenter/form_companion_presenter.dart';
 import 'package:meta/meta.dart';
 
@@ -227,8 +227,8 @@ class _AutoValidationFormBuilderBookingPane extends ConsumerWidget {
 
 /// Testable presenter.
 @visibleForTesting
-class AutoValidationFormBuilderBookingPresenter
-    extends FormBuilderPresenter<Booking> {
+class AutoValidationFormBuilderBookingPresenter extends StateNotifier<Booking>
+    with CompanionPresenterMixin, FormBuilderCompanionMixin {
   final Account _account;
   final Reader _read;
 
@@ -237,33 +237,34 @@ class AutoValidationFormBuilderBookingPresenter
     Booking initialState,
     this._account,
     this._read,
-  ) : super(
-          initialState: initialState,
-          properties: PropertyDescriptorsBuilder()
-            ..add<DateTimeRange>(name: 'stay')
-            ..add<DateTime>(name: 'specialOfferDate')
-            ..add<RoomType>(
-              name: 'roomType',
-            )
-            ..add<List<MealType>>(
-              name: 'mealOffers',
-            )
-            ..add<bool>(
-              name: 'smoking',
-            )
-            ..add<int>(
-              name: 'persons',
-            )
-            ..add<int>(
-              name: 'babyBeds',
-            )
-            ..add<RangeValues>(
-              name: 'prefferedPrice',
-            )
-            ..add<String>(
-              name: 'note',
-            ),
-        );
+  ) : super(initialState) {
+    initializeFormCompanionMixin(
+      PropertyDescriptorsBuilder()
+        ..add<DateTimeRange>(name: 'stay')
+        ..add<DateTime>(name: 'specialOfferDate')
+        ..add<RoomType>(
+          name: 'roomType',
+        )
+        ..add<List<MealType>>(
+          name: 'mealOffers',
+        )
+        ..add<bool>(
+          name: 'smoking',
+        )
+        ..add<int>(
+          name: 'persons',
+        )
+        ..add<int>(
+          name: 'babyBeds',
+        )
+        ..add<RangeValues>(
+          name: 'prefferedPrice',
+        )
+        ..add<String>(
+          name: 'note',
+        ),
+    );
+  }
 
   @override
   FutureOr<void> doSubmit(BuildContext context) async {

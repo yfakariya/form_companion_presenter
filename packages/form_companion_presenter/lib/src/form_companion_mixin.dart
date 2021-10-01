@@ -396,6 +396,26 @@ class _FormStateAdapter implements FormStateAdapter {
 }
 
 /// Extended mixin of [CompanionPresenterMixin] for vanilla [Form].
+///
+/// **It is required for [submit] method that there is a [Form] widget as
+/// an ancestor in [BuildContext].**
+///
+/// This class supports following features:
+/// * Decouples validation logic from view layer -- validation logic often
+///   should exist in domain layer to encourage reuse.
+/// * Async validation handling. This class tracks pending asynchronous
+///   validation logics. The underlying validation infrastructure supports:
+///   * Throttling. If continous validation requests are issued, the validation
+///     will only handle last one. [FormField] often issues continous validation
+///     because of such user input like fast text typing as well as repeated
+///     validate() calls.
+///   * Caching. Since async validation can be costly and idempotent in most
+///     cases, and the result must be same for identical input, so caching
+///     validation result reduces latency. It also second guard about continuous
+///     validation requests.
+/// * Disables "submit" action. The [submit] method returns [Function] when it
+///   is ready for "submit" or `null` otherwise. This class checks validation
+///   results of [FormField]s and existance of pending async validations.
 mixin FormCompanionMixin on CompanionPresenterMixin {
   late final Map<String, GlobalKey<FormFieldState<dynamic>>?> _fieldKeys;
 

@@ -4,7 +4,6 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_companion_presenter/form_companion_presenter.dart';
 import 'package:meta/meta.dart';
-import 'package:state_notifier/state_notifier.dart';
 
 /// [FormStateAdapter] implementation for [FormBuilderState].
 class _FormBuilderStateAdapter implements FormStateAdapter {
@@ -23,7 +22,10 @@ class _FormBuilderStateAdapter implements FormStateAdapter {
   void save() => _state.save();
 }
 
-/// Extended mixin of [CompanionPresenterMixin] for [FormBuilder].
+/// Another [FormCompanionMixin] for [FormBuilder] instead of [Form].
+///
+/// **It is required for [submit] method that there is a [FormBuilder] widget as
+/// an ancestor in [BuildContext].**
 mixin FormBuilderCompanionMixin on CompanionPresenterMixin {
   @override
   @nonVirtual
@@ -39,6 +41,7 @@ mixin FormBuilderCompanionMixin on CompanionPresenterMixin {
   @protected
   @nonVirtual
   @visibleForOverriding
+  @visibleForTesting
   bool canSubmit(BuildContext context) {
     final formState = _maybeFormStateOf(context);
     if (formState == null ||
@@ -69,17 +72,5 @@ mixin FormBuilderCompanionMixin on CompanionPresenterMixin {
       );
       super.saveFields(formState);
     }
-  }
-}
-
-/// Base class for presenters which binds to a form using [FormBuilder].
-abstract class FormBuilderPresenter<T> extends StateNotifier<T>
-    with CompanionPresenterMixin, FormBuilderCompanionMixin {
-  /// Creates [FormBuilderPresenter] with its initial state.
-  FormBuilderPresenter({
-    required T initialState,
-    required PropertyDescriptorsBuilder properties,
-  }) : super(initialState) {
-    super.initializeFormCompanionMixin(properties);
   }
 }

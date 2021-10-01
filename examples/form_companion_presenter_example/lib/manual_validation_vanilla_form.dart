@@ -5,9 +5,9 @@ import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:form_companion_presenter/form_companion_presenter.dart';
-import 'package:form_presenter_state_notifier/form_presenter_state_notifier.dart';
 import 'package:meta/meta.dart';
 
 import 'l10n/locale_keys.g.dart';
@@ -121,25 +121,27 @@ class _ManualValidationVanillaFormPane extends ConsumerWidget {
 
 /// Testable presenter.
 @visibleForTesting
-class ManualValidationVanillaFormPresenter extends FormPresenter<Account> {
+class ManualValidationVanillaFormPresenter extends StateNotifier<Account>
+    with CompanionPresenterMixin, FormCompanionMixin {
   final Reader _read;
 
   /// Creates new [ManualValidationVanillaFormPresenter].
   ManualValidationVanillaFormPresenter(
     Account initialState,
     this._read,
-  ) : super(
-          initialState: initialState,
-          properties: PropertyDescriptorsBuilder()
-            ..add<String>(name: 'id')
-            ..add<String>(name: 'name')
-            ..add<Gender>(
-              name: 'gender',
-            )
-            ..add<String>(
-              name: 'age',
-            ),
-        );
+  ) : super(initialState) {
+    initializeFormCompanionMixin(
+      PropertyDescriptorsBuilder()
+        ..add<String>(name: 'id')
+        ..add<String>(name: 'name')
+        ..add<Gender>(
+          name: 'gender',
+        )
+        ..add<String>(
+          name: 'age',
+        ),
+    );
+  }
 
   @override
   FutureOr<void> doSubmit(BuildContext context) async {

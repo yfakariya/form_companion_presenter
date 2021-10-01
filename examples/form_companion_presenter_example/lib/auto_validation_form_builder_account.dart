@@ -6,7 +6,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:form_builder_presenter_state_notifier/form_builder_presenter_state_notifier.dart';
+import 'package:form_builder_companion_presenter/form_builder_companion_presenter.dart';
 import 'package:form_companion_presenter/form_companion_presenter.dart';
 import 'package:meta/meta.dart';
 
@@ -159,27 +159,28 @@ class _AutoValidationFormBuilderAccountPane extends ConsumerWidget {
 
 /// Testable presenter.
 @visibleForTesting
-class AutoValidationFormBuilderAccountPresenter
-    extends FormBuilderPresenter<Account> {
+class AutoValidationFormBuilderAccountPresenter extends StateNotifier<Account>
+    with CompanionPresenterMixin, FormBuilderCompanionMixin {
   final Reader _read;
 
   /// Creates new [AutoValidationFormBuilderAccountPresenter].
   AutoValidationFormBuilderAccountPresenter(
     Account initialState,
     this._read,
-  ) : super(
-          initialState: initialState,
-          properties: PropertyDescriptorsBuilder()
-            ..add<String>(name: 'id')
-            ..add<String>(name: 'name')
-            ..add<Gender>(
-              name: 'gender',
-            )
-            ..add<String>(
-              name: 'age',
-            )
-            ..add<List<Region>>(name: 'preferredRegions'),
-        );
+  ) : super(initialState) {
+    initializeFormCompanionMixin(
+      PropertyDescriptorsBuilder()
+        ..add<String>(name: 'id')
+        ..add<String>(name: 'name')
+        ..add<Gender>(
+          name: 'gender',
+        )
+        ..add<String>(
+          name: 'age',
+        )
+        ..add<List<Region>>(name: 'preferredRegions'),
+    );
+  }
 
   @override
   FutureOr<void> doSubmit(BuildContext context) async {

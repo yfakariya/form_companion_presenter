@@ -252,10 +252,10 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  form_builder_presenter_state_notifier:
+  form_builder_companion_presenter:
     dependency: "direct main"
     description:
-      path: "../../packages/form_builder_presenter_state_notifier"
+      path: "../../packages/form_builder_companion_presenter"
       relative: true
     source: path
     version: "0.1.0"
@@ -263,13 +263,6 @@ packages:
     dependency: "direct main"
     description:
       path: "../../packages/form_companion_presenter"
-      relative: true
-    source: path
-    version: "0.1.0"
-  form_presenter_state_notifier:
-    dependency: "direct main"
-    description:
-      path: "../../packages/form_presenter_state_notifier"
       relative: true
     source: path
     version: "0.1.0"
