@@ -22,3 +22,7 @@ export 'src/future_invoker.dart'
         AsyncOperationNotifier,
         AsyncOperationStatus,
         FutureInvoker;
+
+// for testing
+// Enable this line to take effect logs in tests in form_builder_companion_presenter package.
+// export 'src/internal_utils.dart' show loggerSink;
