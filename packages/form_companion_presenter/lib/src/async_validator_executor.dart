@@ -82,6 +82,9 @@ class ValidationInvocation<T> implements AsyncOperationNotifier<String?, void> {
   })  : onFailed = onFailed ?? ((_) {}),
         // ignore: deprecated_member_use_from_same_package
         onProgress = ((_) {});
+
+  @override
+  String toString() => "Instance of 'ValidationInvocation<$T>' ($value)";
 }
 
 /// Callback of complection of [AsyncValidatorExecutor.validate].
