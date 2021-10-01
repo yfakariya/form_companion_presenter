@@ -9,6 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:form_companion_presenter/src/future_invoker.dart';
 import 'package:form_companion_presenter/src/internal_utils.dart';
+import 'package:meta/meta.dart';
 
 class Parameter<T, P> implements AsyncOperationNotifier<T, P> {
   final String value;
@@ -55,6 +56,7 @@ class Parameter<T, P> implements AsyncOperationNotifier<T, P> {
   String toString() => value;
 }
 
+@optionalTypeArgs
 class TestTarget<R, P> extends FutureInvoker<Parameter<R, P>, R, P> {
   final Future<R> Function(Parameter<R, P>) _callback;
 
@@ -322,7 +324,7 @@ void main() {
       group('execute', () {
         group('success', () {
           group('1 request is executed asynchronously and set to result.', () {
-            Future doTest(Future<String> Function(String) future) async {
+            Future<void> doTest(Future<String> Function(String) future) async {
               String? result1;
               final parameter = Parameter<String, void>(
                   value: 'input', onCompleted: (r) => result1 = r);
@@ -369,7 +371,7 @@ void main() {
           group(
               '2 request with diffrent parameter overrides and set to result.',
               () {
-            Future doTest(Future<String> Function(String) future) async {
+            Future<void> doTest(Future<String> Function(String) future) async {
               String? result1;
               String? result2;
               final parameter1 = Parameter<String, void>(
@@ -451,7 +453,7 @@ void main() {
           group(
               '2 request with same parameter only early one is executed and set to result.',
               () {
-            Future doTest(Future<String> Function(String) future) async {
+            Future<void> doTest(Future<String> Function(String) future) async {
               String? result1;
               String? result2;
               String? result3;
@@ -567,7 +569,8 @@ void main() {
         group('failure', () {
           group('1 request is executed asynchronously and remember exception.',
               () {
-            Future doTest(Future<String> Function(Exception) future) async {
+            Future<void> doTest(
+                Future<String> Function(Exception) future) async {
               AsyncError? failure1;
               final parameter = Parameter<String, void>(
                   value: 'input', onFailed: (f) => failure1 = f);
@@ -619,7 +622,8 @@ void main() {
           group(
               '2 request is executed asynchronously and remember later exception.',
               () {
-            Future doTest(Future<String> Function(Exception) future) async {
+            Future<void> doTest(
+                Future<String> Function(Exception) future) async {
               AsyncError? failure1;
               AsyncError? failure2;
               final parameter1 = Parameter<String, void>(
@@ -754,7 +758,7 @@ void main() {
           group(
               '2 request is executed asynchronously, fail then success, later result is cached.',
               () {
-            Future doTest(Future<String> Function(Object) future) async {
+            Future<void> doTest(Future<String> Function(Object) future) async {
               AsyncError? failure1;
               String? result2;
               final parameter1 = Parameter<String, void>(
@@ -830,7 +834,7 @@ void main() {
           group(
               '2 request is executed asynchronously, success then fail, later result is cached.',
               () {
-            Future doTest(Future<String> Function(Object) future) async {
+            Future<void> doTest(Future<String> Function(Object) future) async {
               String? result1;
               AsyncError? failure2;
               final parameter1 = Parameter<String, void>(
@@ -1270,8 +1274,8 @@ void main() {
             String? afterResult,
             Exception? afterError,
           ) async {
-            Completer? completer1;
-            Completer? completer2;
+            Completer<void>? completer1;
+            Completer<void>? completer2;
             const expected1 = 'RESULT1';
             const expected2 = 'RESULT2';
             final parameter1 = Parameter<String, void>(value: expected1);
@@ -1411,8 +1415,8 @@ void main() {
             String? afterResult,
             Exception? afterError,
           ) async {
-            Completer? completer1;
-            Completer? completer2;
+            Completer<void>? completer1;
+            Completer<void>? completer2;
             final error1 = Exception('ERROR1');
             final error2 = Exception('ERROR2');
             final parameter1 = Parameter<String, void>(value: 'ERROR1');
@@ -1667,8 +1671,8 @@ void main() {
             String? afterResult,
             Exception? afterError,
           ) async {
-            Completer? completer1;
-            Completer? completer2;
+            Completer<void>? completer1;
+            Completer<void>? completer2;
             const expected1 = 'RESULT1';
             const expected2 = 'RESULT2';
             final parameter1 = Parameter<String, void>(value: expected1);
@@ -1800,8 +1804,8 @@ void main() {
             String? afterResult,
             Exception? afterError,
           ) async {
-            Completer? completer1;
-            Completer? completer2;
+            Completer<void>? completer1;
+            Completer<void>? completer2;
             final error1 = Exception('ERROR1');
             final error2 = Exception('ERROR2');
             final parameter1 = Parameter<String, void>(value: 'ERROR1');
