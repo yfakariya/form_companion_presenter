@@ -438,7 +438,8 @@ mixin FormCompanionMixin on CompanionPresenterMixin {
       return true;
     }
 
-    return _fieldKeys.values.every((f) => f?.currentState?.hasError ?? false) &&
+    return _fieldKeys.values
+            .every((f) => !(f?.currentState?.hasError ?? false)) &&
         properties.values.every((p) => !p.hasPendingAsyncValidations);
   }
 }
