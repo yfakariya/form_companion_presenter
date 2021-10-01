@@ -299,6 +299,12 @@ void main() {
         find.byWidgetPredicate((w) => w is TextFormField),
         'A',
       );
+
+      expect(maybeFormStateOfResult, isNotNull);
+
+      expect(canSubmitResult, isNotNull);
+      expect(canSubmitResult, isFalse);
+
       completer.complete();
       await tester.pump();
       await validatorCompleted.future;
