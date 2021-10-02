@@ -34,7 +34,15 @@ mixin FormBuilderCompanionMixin on CompanionPresenterMixin {
 
   _FormBuilderStateAdapter? _maybeFormStateOf(BuildContext context) {
     final state = FormBuilder.of(context);
-    return state == null ? null : _FormBuilderStateAdapter(state);
+    if (state == null) {
+      return null;
+    }
+
+    // This is required to register this BuildContext source is depending
+    // Form. Note that FormBuilder internally uses Form to set _FormScope.
+    final formState = Form.of(context);
+    assert(formState != null);
+    return _FormBuilderStateAdapter(state);
   }
 
   @override
