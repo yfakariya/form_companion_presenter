@@ -200,7 +200,7 @@ void main() {
       );
 
       await tester.enterText(
-        find.byWidgetPredicate((w) => w is TextFormField),
+        find.byType(TextFormField),
         'A',
       );
 
@@ -247,7 +247,7 @@ void main() {
       );
 
       await tester.enterText(
-        find.byWidgetPredicate((w) => w is TextFormField),
+        find.byType(TextFormField),
         'A',
       );
       await tester.pump();
@@ -296,9 +296,10 @@ void main() {
       );
 
       await tester.enterText(
-        find.byWidgetPredicate((w) => w is TextFormField),
+        find.byType(TextFormField),
         'A',
       );
+      await tester.pump();
 
       expect(maybeFormStateOfResult, isNotNull);
 
@@ -306,7 +307,6 @@ void main() {
       expect(canSubmitResult, isFalse);
 
       completer.complete();
-      await tester.pump();
       await validatorCompleted.future;
       // widget pump again
       await tester.pump();
@@ -368,7 +368,7 @@ void main() {
       );
 
       await tester.enterText(
-        find.byWidgetPredicate((w) => w is TextFormField),
+        find.byType(TextFormField),
         'A',
       );
       await tester.pump();

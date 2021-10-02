@@ -205,7 +205,7 @@ void main() {
       );
 
       await tester.enterText(
-        find.byWidgetPredicate((w) => w is FormBuilderTextField),
+        find.byType(FormBuilderTextField),
         'A',
       );
 
@@ -252,7 +252,7 @@ void main() {
       );
 
       await tester.enterText(
-        find.byWidgetPredicate((w) => w is FormBuilderTextField),
+        find.byType(FormBuilderTextField),
         'A',
       );
       await tester.pump();
@@ -301,9 +301,10 @@ void main() {
       );
 
       await tester.enterText(
-        find.byWidgetPredicate((w) => w is FormBuilderTextField),
+        find.byType(FormBuilderTextField),
         'A',
       );
+      await tester.pump();
 
       expect(maybeFormStateOfResult, isNotNull);
 
@@ -311,7 +312,6 @@ void main() {
       expect(canSubmitResult, isFalse);
 
       completer.complete();
-      await tester.pump();
       await validatorCompleted.future;
       // widget pump again
       await tester.pump();
@@ -375,7 +375,7 @@ void main() {
       );
 
       await tester.enterText(
-        find.byWidgetPredicate((w) => w is FormBuilderTextField),
+        find.byType(FormBuilderTextField),
         'A',
       );
       await tester.pump();
@@ -447,7 +447,7 @@ void main() {
 
       final result = adapter!.validate();
       expect(validatorCalled, isTrue);
-      expect(validatorArgument, isNull);
+      expect(validatorArgument, isEmpty);
       return result;
     }
 
@@ -487,7 +487,7 @@ void main() {
 
       adapter!.save();
       expect(onSavedCalled, isTrue);
-      expect(savingArgument, isNull);
+      expect(savingArgument, isEmpty);
     });
 
     FutureOr<void> testAutoValidateMode(
