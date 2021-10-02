@@ -20,7 +20,30 @@ This project depends on [melos](https://melos.invertase.dev/) and [fvm](https://
 3. Run `melos bootstrap` in this (repository root) directory.
 4. Open this (repository root) directory in your favorite IDE.
 
-### Run pub commands
+### Lint
+
+This project uses customized [pedantic mono](https://github.com/mono0926/pedantic_mono/).
+Please ensure your contribution does not introduce additional warnings except `TODO` which is TODO item you will resolve in future contribution :)
+
+### Test
+
+* Add reproducing test if you find a bug and fix it.
+* Add a set of unit tests and optional widget tests when you add new feature.
+  * You should add example in `/example` directory if you add new features to describe it for users and verify its effectivity for yourself.
+
+### Commit
+
+Ensure you use [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/) in your message. Because we use melos to create changelog, it requires conventional commits format.
+
+### Documentation
+
+Many of us are not native English speaker, many of us are not expert of foreign language, and so many of us are not technical writer. So, documents and comments may include many bugs (grammer, spelling, etc) and wrong expressions. So it is welcome to PR to fix them.
+
+### References
+
+There are some design docs in `/doc` directory.
+
+### Tips for run pub commands
 
 #### Run melos scripts
 
@@ -95,22 +118,3 @@ fvm flutter pub run easy_localization:generate -O lib/l10n -f keys -o locale_key
 #### libraries in example
 
 We use [riverpod](https://pub.dev/packages/riverpod) and [state notifier](https://pub.dev/packages/state_notifier) to implement examples.
-
-### Lint
-
-This project uses customized [pedantic mono](https://github.com/mono0926/pedantic_mono/).
-Please ensure your contribution does not introduce additional warnings except `TODO` which is TODO item you will resolve in future contribution :)
-
-### Test
-
-* Add reproducing test if you find a bug and fix it.
-* Add a set of unit tests and optional widget tests when you add new feature.
-  * You should add example in `/example` directory if you add new features to describe it for users and verify its effectivity for yourself.
-
-### Documentation
-
-Many of us are not native English speaker, many of us are not expert of foreign language, and so many of us are not technical writer. So, documents and comments may include many bugs (grammer, spelling, etc) and wrong expressions. So it is welcome to PR to fix them.
-
-### References
-
-There are some design docs in `/doc` directory.
