@@ -96,7 +96,7 @@ mixin CompanionPresenterMixin {
   /// }
   /// ```
   @protected
-  void initializeFormCompanionMixin(
+  void initializeCompanionMixin(
     PropertyDescriptorsBuilder properties,
   ) {
     _properties = properties._build(this);
@@ -433,10 +433,10 @@ mixin FormCompanionMixin on CompanionPresenterMixin {
 
   @override
   @nonVirtual
-  void initializeFormCompanionMixin(
+  void initializeCompanionMixin(
     PropertyDescriptorsBuilder properties,
   ) {
-    super.initializeFormCompanionMixin(properties);
+    super.initializeCompanionMixin(properties);
     _fieldKeys = {for (final name in properties._properties.keys) name: null};
   }
 
@@ -521,7 +521,7 @@ FormFieldValidator<T> _chainValidators<T>(
 /// [CompanionPresenterMixin] logics correctly.
 ///
 /// This object is built with [PropertyDescriptorsBuilder] which is passed to
-/// [CompanionPresenterMixin.initializeFormCompanionMixin].
+/// [CompanionPresenterMixin.initializeCompanionMixin].
 @sealed
 class PropertyDescriptor<T extends Object> {
   /// Unique name of this property.

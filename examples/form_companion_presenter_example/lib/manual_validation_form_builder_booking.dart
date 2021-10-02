@@ -243,7 +243,7 @@ class ManualValidationFormBuilderBookingPresenter extends StateNotifier<Booking>
     this._account,
     this._read,
   ) : super(initialState) {
-    initializeFormCompanionMixin(
+    initializeCompanionMixin(
       PropertyDescriptorsBuilder()
         ..add<DateTimeRange>(name: 'stay')
         ..add<DateTime>(name: 'specialOfferDate')

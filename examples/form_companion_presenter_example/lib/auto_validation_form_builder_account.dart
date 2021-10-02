@@ -168,7 +168,7 @@ class AutoValidationFormBuilderAccountPresenter extends StateNotifier<Account>
     Account initialState,
     this._read,
   ) : super(initialState) {
-    initializeFormCompanionMixin(
+    initializeCompanionMixin(
       PropertyDescriptorsBuilder()
         ..add<String>(name: 'id')
         ..add<String>(name: 'name')

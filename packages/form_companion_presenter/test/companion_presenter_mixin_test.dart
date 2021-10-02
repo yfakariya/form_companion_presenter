@@ -29,7 +29,7 @@ class TestPresenter with CompanionPresenterMixin {
         _onHandleCanceledAsyncValidationError =
             onHandleCanceledAsyncValidationError,
         _canSubmitCalled = (canSubmitCalled ?? (_) => true) {
-    initializeFormCompanionMixin(properties);
+    initializeCompanionMixin(properties);
   }
 
   @override

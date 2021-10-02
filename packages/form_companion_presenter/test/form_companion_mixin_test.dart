@@ -105,7 +105,7 @@ class Presenter with CompanionPresenterMixin, FormCompanionMixin {
       {required PropertyDescriptorsBuilder properties,
       FutureOr<void> Function(BuildContext)? doSubmitCalled})
       : _doSubmitCalled = (doSubmitCalled ?? (_) {}) {
-    initializeFormCompanionMixin(properties);
+    initializeCompanionMixin(properties);
   }
 
   @override
