@@ -4,38 +4,34 @@ import 'dart:async';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:form_builder_companion_presenter/form_builder_companion_presenter.dart';
 import 'package:form_companion_presenter/form_companion_presenter.dart';
 import 'package:meta/meta.dart';
 
-import 'l10n/locale_keys.g.dart';
-import 'models.dart';
-import 'screen.dart';
+import '../l10n/locale_keys.g.dart';
+import '../models.dart';
+import '../screen.dart';
 
-//------------------------------------------------------------------------------
-// Note that vanilla FormFields requires settings key and onSaved callbacks.
-//------------------------------------------------------------------------------
+//!macro headerNote
 
-/// Page for [Account] input which just declares [Form].
-///
-/// This class is required to work [CompanionPresenterMixin] correctly
-/// because it uses [Form.of] to access form state which requires
-/// [Form] exists in ancestor of element tree ([BuildContext]).
-class AutoValidationVanillaFormAccountPage extends Screen {
+/// //!macro pageDocument
+class AccountPageTemplate extends Screen {
   /// Constructor.
-  const AutoValidationVanillaFormAccountPage({Key? key}) : super(key: key);
+  const AccountPageTemplate({Key? key}) : super(key: key);
 
   @override
-  String get title => LocaleKeys.auto_vanilla_title.tr();
+  String get title => 'TITLE_TEMPLATE';
 
   @override
-  Widget buildPage(BuildContext context, ScopedReader watch) => Form(
-        autovalidateMode: AutovalidateMode.onUserInteraction,
-        child: _AutoValidationVanillaFormAccountPane(),
+  Widget buildPage(BuildContext context, ScopedReader watch) => FormBuilder(
+        //!macro validateMode
+        child: _AccountPaneTemplate(),
       );
 }
 
-class _AutoValidationVanillaFormAccountPane extends ConsumerWidget {
+class _AccountPaneTemplate extends ConsumerWidget {
   @override
   Widget build(BuildContext context, ScopedReader watch) {
     final state = watch(_presenter);
@@ -44,33 +40,38 @@ class _AutoValidationVanillaFormAccountPane extends ConsumerWidget {
     return SingleChildScrollView(
       child: Column(
         children: [
-          TextFormField(
-            key: presenter.getKey('id', context),
+          FormBuilderTextField(
+            name: 'id', //!macro fieldInit id
             initialValue: state.id,
             validator: presenter.getPropertyValidator('id', context),
+            //!macro beginVanillaOnly
             onSaved: presenter.savePropertyValue('id'),
+            //!macro endVanillaOnly
             keyboardType: TextInputType.emailAddress,
             decoration: InputDecoration(
               labelText: LocaleKeys.id_label.tr(),
               hintText: LocaleKeys.id_hint.tr(),
             ),
           ),
-          TextFormField(
-            key: presenter.getKey('name', context),
+          FormBuilderTextField(
+            name: 'name', //!macro fieldInit name
             initialValue: state.name,
             validator: presenter.getPropertyValidator('name', context),
+            //!macro beginVanillaOnly
             onSaved: presenter.savePropertyValue('name'),
+            //!macro endVanillaOnly
             decoration: InputDecoration(
               labelText: LocaleKeys.name_label.tr(),
               hintText: LocaleKeys.name_hint.tr(),
             ),
           ),
-          DropdownButtonFormField<Gender>(
-            key: presenter.getKey('gender', context),
-            value: state.gender,
+          FormBuilderDropdown<Gender>(
+            name: 'gender', //!macro fieldInit gender
+            //!macro dropDownInit gender
             onSaved: presenter.savePropertyValue('gender'),
             // Tip: required to work
             onChanged: (_) {},
+            //!macro endVanillaOnly
             decoration: InputDecoration(
               labelText: LocaleKeys.gender_label.tr(),
               hintText: LocaleKeys.gender_hint.tr(),
@@ -94,16 +95,66 @@ class _AutoValidationVanillaFormAccountPane extends ConsumerWidget {
               ),
             ],
           ),
-          TextFormField(
-            key: presenter.getKey('age', context),
+          FormBuilderTextField(
+            name: 'age', //!macro fieldInit age
             initialValue: state.age.toString(),
             validator: presenter.getPropertyValidator('age', context),
+            //!macro beginVanillaOnly
             onSaved: presenter.savePropertyValue('age'),
+            //!macro endVanillaOnly
             decoration: InputDecoration(
               labelText: LocaleKeys.age_label.tr(),
               hintText: LocaleKeys.age_hint.tr(),
             ),
           ),
+          //!macro beginBuilderOnly
+          FormBuilderCheckboxGroup<Region>(
+            name: 'preferredRegions', //!macro fieldInit preferredRegions
+            initialValue: state.preferredRegsions,
+            decoration: InputDecoration(
+              labelText: LocaleKeys.preferredRegions_label.tr(),
+              hintText: LocaleKeys.preferredRegions_hint.tr(),
+            ),
+            options: [
+              FormBuilderFieldOption(
+                value: Region.afurika,
+                child: Text(
+                  LocaleKeys.region_afurika.tr(),
+                ),
+              ),
+              FormBuilderFieldOption(
+                value: Region.asia,
+                child: Text(
+                  LocaleKeys.region_asia.tr(),
+                ),
+              ),
+              FormBuilderFieldOption(
+                value: Region.australia,
+                child: Text(
+                  LocaleKeys.region_australia.tr(),
+                ),
+              ),
+              FormBuilderFieldOption(
+                value: Region.europe,
+                child: Text(
+                  LocaleKeys.region_europe.tr(),
+                ),
+              ),
+              FormBuilderFieldOption(
+                value: Region.northAmelica,
+                child: Text(
+                  LocaleKeys.region_northAmelica.tr(),
+                ),
+              ),
+              FormBuilderFieldOption(
+                value: Region.southAmelica,
+                child: Text(
+                  LocaleKeys.region_southAmelica.tr(),
+                ),
+              ),
+            ],
+          ),
+          //!macro endBuilderOnly
           ElevatedButton(
             onPressed: presenter.submit(context),
             child: Text(
@@ -118,12 +169,12 @@ class _AutoValidationVanillaFormAccountPane extends ConsumerWidget {
 
 /// Testable presenter.
 @visibleForTesting
-class AutoValidationVanillaFormAccountPresenter extends StateNotifier<Account>
-    with CompanionPresenterMixin, FormCompanionMixin {
+class AccountPresenterTemplate extends StateNotifier<Account>
+    with CompanionPresenterMixin, FormBuilderCompanionMixin {
   final Reader _read;
 
-  /// Creates new [AutoValidationVanillaFormAccountPresenter].
-  AutoValidationVanillaFormAccountPresenter(
+  /// Creates new [AccountPresenterTemplate].
+  AccountPresenterTemplate(
     Account initialState,
     this._read,
   ) : super(initialState) {
@@ -140,21 +191,39 @@ class AutoValidationVanillaFormAccountPresenter extends StateNotifier<Account>
         )
         ..add<String>(
           name: 'age',
-        ),
+        )
+        //!macro beginBuilderOnly
+        ..add<List<Region>>(name: 'preferredRegions')
+      //!macro endBuilderOnly
+      ,
     );
   }
 
   @override
   FutureOr<void> doSubmit(BuildContext context) async {
+    //!macro doSubmitPrologue
     // Get saved values here to call business logic.
     final id = getSavedPropertyValue<String>('id')!;
     final name = getSavedPropertyValue<String>('name')!;
     final gender = getSavedPropertyValue<Gender>('gender')!;
     // You can omit generic type argument occasionally.
     final age = int.parse(getSavedPropertyValue('age')!);
+    //!macro beginBuilderOnly
+    final preferredRegions =
+        getSavedPropertyValue<List<Region>>('preferredRegions')!;
+    //!macro endBuilderOnly
 
     // Call business logic.
-    if (!(await doSubmitLogic(id, name, gender, age))) {
+    if (!(await doSubmitLogic(
+        id,
+        name,
+        gender,
+        age
+        //!macro beginBuilderOnly
+        ,
+        preferredRegions
+        //!macro endBuilderOnly
+        ))) {
       return;
     }
 
@@ -164,7 +233,7 @@ class AutoValidationVanillaFormAccountPresenter extends StateNotifier<Account>
       name: name,
       gender: gender,
       age: age,
-      preferredRegions: [],
+      preferredRegions: preferredRegions, //!macro preferredRegionsAssignment
     );
 
     // Propagate to global state.
@@ -183,15 +252,17 @@ class AutoValidationVanillaFormAccountPresenter extends StateNotifier<Account>
     String name,
     Gender gender,
     int age,
+    //!macro beginBuilderOnly
+    List<Region> preferredRegions,
+    //!macro endBuilderOnly
   ) async {
     // Write actual registration logic via API here.
     return true;
   }
 }
 
-final _presenter =
-    StateNotifierProvider<AutoValidationVanillaFormAccountPresenter, Account>(
-  (ref) => AutoValidationVanillaFormAccountPresenter(
+final _presenter = StateNotifierProvider<AccountPresenterTemplate, Account>(
+  (ref) => AccountPresenterTemplate(
     ref.watch(account).state,
     ref.read,
   ),

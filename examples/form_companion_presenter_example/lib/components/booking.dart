@@ -10,40 +10,28 @@ import 'package:form_builder_companion_presenter/form_builder_companion_presente
 import 'package:form_companion_presenter/form_companion_presenter.dart';
 import 'package:meta/meta.dart';
 
-import 'l10n/locale_keys.g.dart';
-import 'models.dart';
-import 'screen.dart';
+import '../l10n/locale_keys.g.dart';
+import '../models.dart';
+import '../screen.dart';
 
-//------------------------------------------------------------------------------
-// There are 2 differences from Auto* variant:
-//   1. Of cource, `autoValidateMode` is set to `AutovalidateMode.disabled`
-//      in `Form` constructor.
-//   2. The override of `doSubmit` calls `validateAndSave()` and returns
-//      immediately when the validation is failed.
-// Note that FormBuilderFields requires unique names and they must be identical
-// to names for `PropertyDescriptor`s.
-//------------------------------------------------------------------------------
+//!macro headerNote
 
-/// Page for [Booking] input which just declares [FormBuilder].
-///
-/// This class is required to work [CompanionPresenterMixin] correctly
-/// because it uses [FormBuilder.of] to access form state which requires
-/// [FormBuilder] exists in ancestor of element tree ([BuildContext]).
-class ManualValidationFormBuilderBookingPage extends Screen {
+/// //!macro pageDocument
+class BookingPageTemplate extends Screen {
   /// Constructor.
-  const ManualValidationFormBuilderBookingPage({Key? key}) : super(key: key);
+  const BookingPageTemplate({Key? key}) : super(key: key);
 
   @override
-  String get title => LocaleKeys.manual_flutterFormBuilderBooking_title.tr();
+  String get title => 'TITLE_TEMPLATE';
 
   @override
   Widget buildPage(BuildContext context, ScopedReader watch) => FormBuilder(
-        autovalidateMode: AutovalidateMode.disabled,
-        child: _ManualValidationFormBuilderBookingPane(),
+        //!macro validateMode
+        child: _BookingPaneTemplate(),
       );
 }
 
-class _ManualValidationFormBuilderBookingPane extends ConsumerWidget {
+class _BookingPaneTemplate extends ConsumerWidget {
   @override
   Widget build(BuildContext context, ScopedReader watch) {
     final today = DateTime.now();
@@ -72,7 +60,7 @@ class _ManualValidationFormBuilderBookingPane extends ConsumerWidget {
             style: Theme.of(context).textTheme.bodyText1,
           ),
           FormBuilderDateRangePicker(
-            name: 'stay',
+            name: 'stay', //!macro fieldInit stay
             initialValue: state.stay,
             firstDate: state.stay.start,
             lastDate: today.add(const Duration(days: 90)),
@@ -83,7 +71,7 @@ class _ManualValidationFormBuilderBookingPane extends ConsumerWidget {
           ),
           Text(LocaleKeys.specialOffer_description.tr()),
           FormBuilderDateTimePicker(
-            name: 'specialOfferDate',
+            name: 'specialOfferDate', //!macro fieldInit specialOfferDate
             initialDate: state.specialOfferDate,
             inputType: InputType.date,
             decoration: InputDecoration(
@@ -92,7 +80,7 @@ class _ManualValidationFormBuilderBookingPane extends ConsumerWidget {
             ),
           ),
           FormBuilderRadioGroup(
-            name: 'roomType',
+            name: 'roomType', //!macro fieldInit roomType
             initialValue: state.roomType,
             options: [
               FormBuilderFieldOption(
@@ -120,7 +108,7 @@ class _ManualValidationFormBuilderBookingPane extends ConsumerWidget {
             ),
           ),
           FormBuilderFilterChip(
-            name: 'mealOffers',
+            name: 'mealOffers', //!macro fieldInit mealOffers
             initialValue: state.mealOffers,
             options: [
               FormBuilderFieldOption(
@@ -142,7 +130,7 @@ class _ManualValidationFormBuilderBookingPane extends ConsumerWidget {
             ),
           ),
           FormBuilderSwitch(
-            name: 'smoking',
+            name: 'smoking', //!macro fieldInit smoking
             initialValue: state.smoking,
             title: Text(
               LocaleKeys.smoking_title.tr(),
@@ -152,7 +140,7 @@ class _ManualValidationFormBuilderBookingPane extends ConsumerWidget {
             ),
           ),
           FormBuilderSlider(
-            name: 'persons',
+            name: 'persons', //!macro fieldInit persons
             initialValue: (state.persons).toDouble(),
             min: 1,
             max: 4,
@@ -163,7 +151,7 @@ class _ManualValidationFormBuilderBookingPane extends ConsumerWidget {
             ),
           ),
           FormBuilderSegmentedControl(
-            name: 'babyBeds',
+            name: 'babyBeds', //!macro fieldInit babyBeds
             initialValue: state.babyBeds,
             options: const [
               FormBuilderFieldOption(
@@ -186,7 +174,7 @@ class _ManualValidationFormBuilderBookingPane extends ConsumerWidget {
           ),
           // I know this example does not consider L10N.
           FormBuilderRangeSlider(
-            name: 'preferredPrice',
+            name: 'preferredPrice', //!macro fieldInit preferredPrice
             initialValue: RangeValues((state.price ?? 100).toDouble(),
                 (state.price ?? 100).toDouble()),
             min: 0,
@@ -197,7 +185,7 @@ class _ManualValidationFormBuilderBookingPane extends ConsumerWidget {
             ),
           ),
           FormBuilderTextField(
-            name: 'note',
+            name: 'note', //!macro fieldInit note
             initialValue: state.note,
             maxLines: null,
             textInputAction: TextInputAction.newline,
@@ -209,7 +197,7 @@ class _ManualValidationFormBuilderBookingPane extends ConsumerWidget {
           ),
           // Inline validation example
           FormBuilderCheckbox(
-            name: 'acceptsTermsOfUse',
+            name: 'acceptsTermsOfUse', //!macro fieldInit acceptsTermsOfUse
             initialValue: false,
             validator: (accepts) => (accepts ?? false)
                 ? null
@@ -232,13 +220,13 @@ class _ManualValidationFormBuilderBookingPane extends ConsumerWidget {
 
 /// Testable presenter.
 @visibleForTesting
-class ManualValidationFormBuilderBookingPresenter extends StateNotifier<Booking>
+class BookingPresenterTemplate extends StateNotifier<Booking>
     with CompanionPresenterMixin, FormBuilderCompanionMixin {
   final Account _account;
   final Reader _read;
 
-  /// Creates new [ManualValidationFormBuilderBookingPresenter].
-  ManualValidationFormBuilderBookingPresenter(
+  /// Creates new [BookingPresenterTemplate].
+  BookingPresenterTemplate(
     Booking initialState,
     this._account,
     this._read,
@@ -277,11 +265,7 @@ class ManualValidationFormBuilderBookingPresenter extends StateNotifier<Booking>
 
   @override
   FutureOr<void> doSubmit(BuildContext context) async {
-    // Manually do validate and save.
-    if (!(await validateAndSave(maybeFormStateOf(context)!))) {
-      return;
-    }
-
+    //!macro doSubmitPrologue
     // Get saved values here to call business logic.
     final userId = _account.id ?? 'Dummy User';
     final stay = getSavedPropertyValue<DateTimeRange>('stay')!;
@@ -368,9 +352,8 @@ class _BookingResult {
   );
 }
 
-final _presenter =
-    StateNotifierProvider<ManualValidationFormBuilderBookingPresenter, Booking>(
-  (ref) => ManualValidationFormBuilderBookingPresenter(
+final _presenter = StateNotifierProvider<BookingPresenterTemplate, Booking>(
+  (ref) => BookingPresenterTemplate(
     ref.watch(booking).state,
     ref.watch(account).state,
     ref.read,

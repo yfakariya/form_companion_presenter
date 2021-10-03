@@ -29,7 +29,7 @@ class AutoValidationFormBuilderBookingPage extends Screen {
   const AutoValidationFormBuilderBookingPage({Key? key}) : super(key: key);
 
   @override
-  String get title => LocaleKeys.auto_flutterFormBuilderAccount_title.tr();
+  String get title => LocaleKeys.auto_flutterFormBuilderBooking_title.tr();
 
   @override
   Widget buildPage(BuildContext context, ScopedReader watch) => FormBuilder(
@@ -240,8 +240,12 @@ class AutoValidationFormBuilderBookingPresenter extends StateNotifier<Booking>
   ) : super(initialState) {
     initializeCompanionMixin(
       PropertyDescriptorsBuilder()
-        ..add<DateTimeRange>(name: 'stay')
-        ..add<DateTime>(name: 'specialOfferDate')
+        ..add<DateTimeRange>(
+          name: 'stay',
+        )
+        ..add<DateTime>(
+          name: 'specialOfferDate',
+        )
         ..add<RoomType>(
           name: 'roomType',
         )

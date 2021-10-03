@@ -74,6 +74,9 @@ class _ManualValidationFormBuilderAccountPane extends ConsumerWidget {
           FormBuilderDropdown<Gender>(
             name: 'gender',
             initialValue: state.gender,
+            onSaved: presenter.savePropertyValue('gender'),
+            // Tip: required to work
+            onChanged: (_) {},
             decoration: InputDecoration(
               labelText: LocaleKeys.gender_label.tr(),
               hintText: LocaleKeys.gender_hint.tr(),
@@ -177,8 +180,12 @@ class ManualValidationFormBuilderAccountPresenter extends StateNotifier<Account>
   ) : super(initialState) {
     initializeCompanionMixin(
       PropertyDescriptorsBuilder()
-        ..add<String>(name: 'id')
-        ..add<String>(name: 'name')
+        ..add<String>(
+          name: 'id',
+        )
+        ..add<String>(
+          name: 'name',
+        )
         ..add<Gender>(
           name: 'gender',
         )

@@ -3,7 +3,6 @@
 import 'dart:async';
 
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:form_companion_presenter/form_companion_presenter.dart';
@@ -19,17 +18,17 @@ import 'screen.dart';
 //      in `Form` constructor.
 //   2. The override of `doSubmit` calls `validateAndSave()` and returns
 //      immediately when the validation is failed.
-// Note that vanilla FormFields requires settings onSaved callbacks.
+// Note that vanilla FormFields requires settings key and onSaved callbacks.
 //------------------------------------------------------------------------------
 
-/// Page for [Booking] input which just declares [Form].
+/// Page for [Account] input which just declares [Form].
 ///
 /// This class is required to work [CompanionPresenterMixin] correctly
 /// because it uses [Form.of] to access form state which requires
 /// [Form] exists in ancestor of element tree ([BuildContext]).
-class ManualValidationVanillaFormPage extends Screen {
+class ManualValidationVanillaFormAccountPage extends Screen {
   /// Constructor.
-  const ManualValidationVanillaFormPage({Key? key}) : super(key: key);
+  const ManualValidationVanillaFormAccountPage({Key? key}) : super(key: key);
 
   @override
   String get title => LocaleKeys.manual_vanilla_title.tr();
@@ -37,11 +36,11 @@ class ManualValidationVanillaFormPage extends Screen {
   @override
   Widget buildPage(BuildContext context, ScopedReader watch) => Form(
         autovalidateMode: AutovalidateMode.disabled,
-        child: _ManualValidationVanillaFormPane(),
+        child: _ManualValidationVanillaFormAccountPane(),
       );
 }
 
-class _ManualValidationVanillaFormPane extends ConsumerWidget {
+class _ManualValidationVanillaFormAccountPane extends ConsumerWidget {
   @override
   Widget build(BuildContext context, ScopedReader watch) {
     final state = watch(_presenter);
@@ -51,6 +50,7 @@ class _ManualValidationVanillaFormPane extends ConsumerWidget {
       child: Column(
         children: [
           TextFormField(
+            key: presenter.getKey('id', context),
             initialValue: state.id,
             validator: presenter.getPropertyValidator('id', context),
             onSaved: presenter.savePropertyValue('id'),
@@ -61,6 +61,7 @@ class _ManualValidationVanillaFormPane extends ConsumerWidget {
             ),
           ),
           TextFormField(
+            key: presenter.getKey('name', context),
             initialValue: state.name,
             validator: presenter.getPropertyValidator('name', context),
             onSaved: presenter.savePropertyValue('name'),
@@ -70,6 +71,7 @@ class _ManualValidationVanillaFormPane extends ConsumerWidget {
             ),
           ),
           DropdownButtonFormField<Gender>(
+            key: presenter.getKey('gender', context),
             value: state.gender,
             onSaved: presenter.savePropertyValue('gender'),
             // Tip: required to work
@@ -98,6 +100,7 @@ class _ManualValidationVanillaFormPane extends ConsumerWidget {
             ],
           ),
           TextFormField(
+            key: presenter.getKey('age', context),
             initialValue: state.age.toString(),
             validator: presenter.getPropertyValidator('age', context),
             onSaved: presenter.savePropertyValue('age'),
@@ -120,19 +123,23 @@ class _ManualValidationVanillaFormPane extends ConsumerWidget {
 
 /// Testable presenter.
 @visibleForTesting
-class ManualValidationVanillaFormPresenter extends StateNotifier<Account>
+class ManualValidationVanillaFormAccountPresenter extends StateNotifier<Account>
     with CompanionPresenterMixin, FormCompanionMixin {
   final Reader _read;
 
-  /// Creates new [ManualValidationVanillaFormPresenter].
-  ManualValidationVanillaFormPresenter(
+  /// Creates new [ManualValidationVanillaFormAccountPresenter].
+  ManualValidationVanillaFormAccountPresenter(
     Account initialState,
     this._read,
   ) : super(initialState) {
     initializeCompanionMixin(
       PropertyDescriptorsBuilder()
-        ..add<String>(name: 'id')
-        ..add<String>(name: 'name')
+        ..add<String>(
+          name: 'id',
+        )
+        ..add<String>(
+          name: 'name',
+        )
         ..add<Gender>(
           name: 'gender',
         )
@@ -193,8 +200,8 @@ class ManualValidationVanillaFormPresenter extends StateNotifier<Account>
 }
 
 final _presenter =
-    StateNotifierProvider<ManualValidationVanillaFormPresenter, Account>(
-  (ref) => ManualValidationVanillaFormPresenter(
+    StateNotifierProvider<ManualValidationVanillaFormAccountPresenter, Account>(
+  (ref) => ManualValidationVanillaFormAccountPresenter(
     ref.watch(account).state,
     ref.read,
   ),

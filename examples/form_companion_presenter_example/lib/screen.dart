@@ -51,7 +51,7 @@ abstract class Screen extends ConsumerWidget {
                 ),
                 onTap: () => pages.state = [
                   const MaterialPage<dynamic>(
-                    child: ManualValidationVanillaFormPage(),
+                    child: ManualValidationVanillaFormAccountPage(),
                   )
                 ],
               ),
@@ -61,7 +61,7 @@ abstract class Screen extends ConsumerWidget {
                 ),
                 onTap: () => pages.state = [
                   const MaterialPage<dynamic>(
-                    child: AutoValidationVanillaFormPage(),
+                    child: AutoValidationVanillaFormAccountPage(),
                   )
                 ],
               ),

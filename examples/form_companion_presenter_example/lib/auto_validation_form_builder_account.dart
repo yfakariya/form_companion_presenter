@@ -44,115 +44,120 @@ class _AutoValidationFormBuilderAccountPane extends ConsumerWidget {
     final state = watch(_presenter);
     final presenter = watch(_presenter.notifier);
 
-    return Column(
-      children: [
-        FormBuilderTextField(
-          name: 'id',
-          initialValue: state.id,
-          validator: presenter.getPropertyValidator('id', context),
-          keyboardType: TextInputType.emailAddress,
-          decoration: InputDecoration(
-            labelText: LocaleKeys.id_label.tr(),
-            hintText: LocaleKeys.id_hint.tr(),
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          FormBuilderTextField(
+            name: 'id',
+            initialValue: state.id,
+            validator: presenter.getPropertyValidator('id', context),
+            keyboardType: TextInputType.emailAddress,
+            decoration: InputDecoration(
+              labelText: LocaleKeys.id_label.tr(),
+              hintText: LocaleKeys.id_hint.tr(),
+            ),
           ),
-        ),
-        FormBuilderTextField(
-          name: 'name',
-          initialValue: state.name,
-          validator: presenter.getPropertyValidator('name', context),
-          decoration: InputDecoration(
-            labelText: LocaleKeys.name_label.tr(),
-            hintText: LocaleKeys.name_hint.tr(),
+          FormBuilderTextField(
+            name: 'name',
+            initialValue: state.name,
+            validator: presenter.getPropertyValidator('name', context),
+            decoration: InputDecoration(
+              labelText: LocaleKeys.name_label.tr(),
+              hintText: LocaleKeys.name_hint.tr(),
+            ),
           ),
-        ),
-        FormBuilderDropdown<Gender>(
-          name: 'gender',
-          initialValue: state.gender,
-          decoration: InputDecoration(
-            labelText: LocaleKeys.gender_label.tr(),
-            hintText: LocaleKeys.gender_hint.tr(),
+          FormBuilderDropdown<Gender>(
+            name: 'gender',
+            initialValue: state.gender,
+            onSaved: presenter.savePropertyValue('gender'),
+            // Tip: required to work
+            onChanged: (_) {},
+            decoration: InputDecoration(
+              labelText: LocaleKeys.gender_label.tr(),
+              hintText: LocaleKeys.gender_hint.tr(),
+            ),
+            items: [
+              DropdownMenuItem(
+                value: Gender.notKnown,
+                child: Text(LocaleKeys.gender_enumNotKnown.tr()),
+              ),
+              DropdownMenuItem(
+                value: Gender.male,
+                child: Text(LocaleKeys.gender_enumMale.tr()),
+              ),
+              DropdownMenuItem(
+                value: Gender.female,
+                child: Text(LocaleKeys.gender_enumFemale.tr()),
+              ),
+              DropdownMenuItem(
+                value: Gender.notApplicable,
+                child: Text(LocaleKeys.gender_enumNotApplicable.tr()),
+              ),
+            ],
           ),
-          items: [
-            DropdownMenuItem(
-              value: Gender.notKnown,
-              child: Text(LocaleKeys.gender_enumNotKnown.tr()),
+          FormBuilderTextField(
+            name: 'age',
+            initialValue: state.age.toString(),
+            validator: presenter.getPropertyValidator('age', context),
+            decoration: InputDecoration(
+              labelText: LocaleKeys.age_label.tr(),
+              hintText: LocaleKeys.age_hint.tr(),
             ),
-            DropdownMenuItem(
-              value: Gender.male,
-              child: Text(LocaleKeys.gender_enumMale.tr()),
-            ),
-            DropdownMenuItem(
-              value: Gender.female,
-              child: Text(LocaleKeys.gender_enumFemale.tr()),
-            ),
-            DropdownMenuItem(
-              value: Gender.notApplicable,
-              child: Text(LocaleKeys.gender_enumNotApplicable.tr()),
-            ),
-          ],
-        ),
-        FormBuilderTextField(
-          name: 'age',
-          initialValue: state.age.toString(),
-          validator: presenter.getPropertyValidator('age', context),
-          decoration: InputDecoration(
-            labelText: LocaleKeys.age_label.tr(),
-            hintText: LocaleKeys.age_hint.tr(),
           ),
-        ),
-        FormBuilderCheckboxGroup<Region>(
-          name: 'preferredRegions',
-          initialValue: state.preferredRegsions,
-          decoration: InputDecoration(
-            labelText: LocaleKeys.preferredRegions_label.tr(),
-            hintText: LocaleKeys.preferredRegions_hint.tr(),
+          FormBuilderCheckboxGroup<Region>(
+            name: 'preferredRegions',
+            initialValue: state.preferredRegsions,
+            decoration: InputDecoration(
+              labelText: LocaleKeys.preferredRegions_label.tr(),
+              hintText: LocaleKeys.preferredRegions_hint.tr(),
+            ),
+            options: [
+              FormBuilderFieldOption(
+                value: Region.afurika,
+                child: Text(
+                  LocaleKeys.region_afurika.tr(),
+                ),
+              ),
+              FormBuilderFieldOption(
+                value: Region.asia,
+                child: Text(
+                  LocaleKeys.region_asia.tr(),
+                ),
+              ),
+              FormBuilderFieldOption(
+                value: Region.australia,
+                child: Text(
+                  LocaleKeys.region_australia.tr(),
+                ),
+              ),
+              FormBuilderFieldOption(
+                value: Region.europe,
+                child: Text(
+                  LocaleKeys.region_europe.tr(),
+                ),
+              ),
+              FormBuilderFieldOption(
+                value: Region.northAmelica,
+                child: Text(
+                  LocaleKeys.region_northAmelica.tr(),
+                ),
+              ),
+              FormBuilderFieldOption(
+                value: Region.southAmelica,
+                child: Text(
+                  LocaleKeys.region_southAmelica.tr(),
+                ),
+              ),
+            ],
           ),
-          options: [
-            FormBuilderFieldOption(
-              value: Region.afurika,
-              child: Text(
-                LocaleKeys.region_afurika.tr(),
-              ),
+          ElevatedButton(
+            onPressed: presenter.submit(context),
+            child: Text(
+              LocaleKeys.submit.tr(),
             ),
-            FormBuilderFieldOption(
-              value: Region.asia,
-              child: Text(
-                LocaleKeys.region_asia.tr(),
-              ),
-            ),
-            FormBuilderFieldOption(
-              value: Region.australia,
-              child: Text(
-                LocaleKeys.region_australia.tr(),
-              ),
-            ),
-            FormBuilderFieldOption(
-              value: Region.europe,
-              child: Text(
-                LocaleKeys.region_europe.tr(),
-              ),
-            ),
-            FormBuilderFieldOption(
-              value: Region.northAmelica,
-              child: Text(
-                LocaleKeys.region_northAmelica.tr(),
-              ),
-            ),
-            FormBuilderFieldOption(
-              value: Region.southAmelica,
-              child: Text(
-                LocaleKeys.region_southAmelica.tr(),
-              ),
-            ),
-          ],
-        ),
-        ElevatedButton(
-          onPressed: presenter.submit(context),
-          child: Text(
-            LocaleKeys.submit.tr(),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -170,8 +175,12 @@ class AutoValidationFormBuilderAccountPresenter extends StateNotifier<Account>
   ) : super(initialState) {
     initializeCompanionMixin(
       PropertyDescriptorsBuilder()
-        ..add<String>(name: 'id')
-        ..add<String>(name: 'name')
+        ..add<String>(
+          name: 'id',
+        )
+        ..add<String>(
+          name: 'name',
+        )
         ..add<Gender>(
           name: 'gender',
         )

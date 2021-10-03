@@ -31,7 +31,7 @@ class _App extends ConsumerWidget {
           pages.state.clear();
           pages.state.add(
             const MaterialPage<dynamic>(
-              child: ManualValidationVanillaFormPage(),
+              child: ManualValidationVanillaFormAccountPage(),
             ),
           );
           return true;

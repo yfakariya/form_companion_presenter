@@ -17,8 +17,9 @@ This project depends on [melos](https://melos.invertase.dev/) and [fvm](https://
 1. Setup `fvm` as [official docs](https://fvm.app/docs/getting_started/installation).
     * Note that `PATH` order is important on Windows. See [issue #227](https://github.com/leoafarias/fvm/issues/227#issuecomment-811592228) for details.
 2. Setup `melos` as [official docs](https://melos.invertase.dev/getting-started#installation).
-3. Run `melos bootstrap` in this (repository root) directory.
-4. Open this (repository root) directory in your favorite IDE.
+3. Setup `grinder` with `fvm flutter pub global activate grinder`.
+4. Run `melos bootstrap` in this (repository root) directory.
+5. Open this (repository root) directory in your favorite IDE.
 
 ### Lint
 
