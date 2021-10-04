@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_print
+// See LICENCE file in the root.
 
 import 'dart:io';
 
@@ -102,7 +102,7 @@ Future<void> assembleCore(
   String sourceDirectory,
   String destinationDirectory,
 ) async {
-  print(
+  log(
     'Assembly example source from "${canonicalize(sourceDirectory)}" '
     'to "${canonicalize(destinationDirectory)}"',
   );
@@ -185,7 +185,7 @@ Future<void> assembleCore(
 
           await destination.flush();
 
-          print('Generated "${canonicalize(destinationFile.path)}".');
+          log('Generated "${canonicalize(destinationFile.path)}".');
         } finally {
           await destination.close();
         }
