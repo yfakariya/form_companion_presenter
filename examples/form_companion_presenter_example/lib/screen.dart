@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'auto_validation_form_builder_account.dart';
 import 'auto_validation_form_builder_booking.dart';
 import 'auto_validation_vanilla_form.dart';
+import 'home.dart';
 import 'l10n/locale_keys.g.dart';
 import 'manual_validation_form_builder_account.dart';
 import 'manual_validation_form_builder_booking.dart';
@@ -45,6 +46,16 @@ abstract class Screen extends ConsumerWidget {
         child: Drawer(
           child: ListView(
             children: [
+              ListTile(
+                title: Text(
+                  LocaleKeys.home_title.tr(),
+                ),
+                onTap: () => pages.state = [
+                  const MaterialPage<dynamic>(
+                    child: HomePage(),
+                  )
+                ],
+              ),
               ListTile(
                 title: Text(
                   LocaleKeys.manual_vanilla_title.tr(),

@@ -1,5 +1,10 @@
 {
     "titleTemplate": "form_companion_presenter の例：{screenName}",
+    "home": {
+        "title": "ホーム",
+        "accountHeader": "最後に入力した Account モデル:",
+        "bookingHeader": "最後に入力した Booking モデル:"
+    },
     "manual": {
         "vanilla": {
             "title": "手動バリデーション、Account 用の素の Form"

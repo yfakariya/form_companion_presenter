@@ -1,5 +1,10 @@
 {
     "titleTemplate": "Example of form_companion_presenter: {screenName}",
+    "home": {
+        "title": "Home",
+        "accountHeader": "Your last input Account model:",
+        "bookingHeader": "Your last input Booking model:"
+    },
     "manual": {
         "vanilla": {
             "title": "Manual validation, vanilla Form for Account"

@@ -16,6 +16,11 @@ class CodegenLoader extends AssetLoader{
 
   static const Map<String,dynamic> en = {
   "titleTemplate": "Example of form_companion_presenter: {screenName}",
+  "home": {
+    "title": "Home",
+    "accountHeader": "Your last input Account model:",
+    "bookingHeader": "Your last input Booking model:"
+  },
   "manual": {
     "vanilla": {
       "title": "Manual validation, vanilla Form for Account"
@@ -129,6 +134,11 @@ class CodegenLoader extends AssetLoader{
 };
 static const Map<String,dynamic> ja = {
   "titleTemplate": "form_companion_presenter の例：{screenName}",
+  "home": {
+    "title": "ホーム",
+    "accountHeader": "最後に入力した Account モデル:",
+    "bookingHeader": "最後に入力した Booking モデル:"
+  },
   "manual": {
     "vanilla": {
       "title": "手動バリデーション、Account 用の素の Form"

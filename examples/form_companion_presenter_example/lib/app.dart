@@ -4,8 +4,8 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'home.dart';
 import 'l10n/codegen_loader.g.dart';
-import 'manual_validation_vanilla_form.dart';
 import 'routes.dart';
 
 /// This is required to work
@@ -31,7 +31,7 @@ class _App extends ConsumerWidget {
           pages.state.clear();
           pages.state.add(
             const MaterialPage<dynamic>(
-              child: ManualValidationVanillaFormAccountPage(),
+              child: HomePage(),
             ),
           );
           return true;

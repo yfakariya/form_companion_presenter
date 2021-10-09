@@ -2,6 +2,10 @@
 
 abstract class  LocaleKeys {
   static const titleTemplate = 'titleTemplate';
+  static const home_title = 'home.title';
+  static const home_accountHeader = 'home.accountHeader';
+  static const home_bookingHeader = 'home.bookingHeader';
+  static const home = 'home';
   static const manual_vanilla_title = 'manual.vanilla.title';
   static const manual_vanilla = 'manual.vanilla';
   static const manual_flutterFormBuilderAccount_title = 'manual.flutterFormBuilderAccount.title';
