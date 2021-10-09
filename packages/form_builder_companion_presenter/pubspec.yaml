@@ -23,10 +23,3 @@ dev_dependencies:
   flutter_lints: ^1.0.0
   flutter_test:
     sdk: flutter
-
-flutter:
-
-# Required for widget testing
-dependency_overrides:
-  form_companion_presenter:
-    path: ../../packages/form_companion_presenter
