@@ -428,7 +428,7 @@ mixin FormCompanionMixin on CompanionPresenterMixin {
       return key;
     }
 
-    return key = _fieldKeys[name] = GlobalObjectKey(context);
+    return key = _fieldKeys[name] = GlobalObjectKey(name);
   }
 
   @override
