@@ -177,15 +177,29 @@ class AutoValidationFormBuilderAccountPresenter extends StateNotifier<Account>
       PropertyDescriptorsBuilder()
         ..add<String>(
           name: 'id',
+          validatorFactories: [
+            FormBuilderValidators.required,
+            FormBuilderValidators.email,
+          ],
+          asyncValidatorFactories: [
+            // TODO: impl
+          ],
         )
         ..add<String>(
           name: 'name',
+          validatorFactories: [
+            FormBuilderValidators.required,
+          ],
         )
         ..add<Gender>(
           name: 'gender',
         )
         ..add<String>(
           name: 'age',
+          validatorFactories: [
+            FormBuilderValidators.required,
+            (context) => FormBuilderValidators.min(context, 0),
+          ],
         )
         ..add<List<Region>>(name: 'preferredRegions'),
     );

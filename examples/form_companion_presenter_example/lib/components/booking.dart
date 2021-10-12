@@ -60,7 +60,7 @@ class _BookingPaneTemplate extends ConsumerWidget {
             style: Theme.of(context).textTheme.bodyText1,
           ),
           FormBuilderDateRangePicker(
-            name: 'stay', //!macro fieldInit stay
+            name: 'stay',
             initialValue: state.stay,
             firstDate: state.stay.start,
             lastDate: today.add(const Duration(days: 90)),
@@ -71,7 +71,7 @@ class _BookingPaneTemplate extends ConsumerWidget {
           ),
           Text(LocaleKeys.specialOffer_description.tr()),
           FormBuilderDateTimePicker(
-            name: 'specialOfferDate', //!macro fieldInit specialOfferDate
+            name: 'specialOfferDate',
             initialDate: state.specialOfferDate,
             inputType: InputType.date,
             decoration: InputDecoration(
@@ -80,7 +80,7 @@ class _BookingPaneTemplate extends ConsumerWidget {
             ),
           ),
           FormBuilderRadioGroup(
-            name: 'roomType', //!macro fieldInit roomType
+            name: 'roomType',
             initialValue: state.roomType,
             options: [
               FormBuilderFieldOption(
@@ -108,7 +108,7 @@ class _BookingPaneTemplate extends ConsumerWidget {
             ),
           ),
           FormBuilderFilterChip(
-            name: 'mealOffers', //!macro fieldInit mealOffers
+            name: 'mealOffers',
             initialValue: state.mealOffers,
             options: [
               FormBuilderFieldOption(
@@ -130,7 +130,7 @@ class _BookingPaneTemplate extends ConsumerWidget {
             ),
           ),
           FormBuilderSwitch(
-            name: 'smoking', //!macro fieldInit smoking
+            name: 'smoking',
             initialValue: state.smoking,
             title: Text(
               LocaleKeys.smoking_title.tr(),
@@ -140,7 +140,7 @@ class _BookingPaneTemplate extends ConsumerWidget {
             ),
           ),
           FormBuilderSlider(
-            name: 'persons', //!macro fieldInit persons
+            name: 'persons',
             initialValue: (state.persons).toDouble(),
             min: 1,
             max: 4,
@@ -151,7 +151,7 @@ class _BookingPaneTemplate extends ConsumerWidget {
             ),
           ),
           FormBuilderSegmentedControl(
-            name: 'babyBeds', //!macro fieldInit babyBeds
+            name: 'babyBeds',
             initialValue: state.babyBeds,
             options: const [
               FormBuilderFieldOption(
@@ -174,7 +174,7 @@ class _BookingPaneTemplate extends ConsumerWidget {
           ),
           // I know this example does not consider L10N.
           FormBuilderRangeSlider(
-            name: 'preferredPrice', //!macro fieldInit preferredPrice
+            name: 'preferredPrice',
             initialValue: RangeValues((state.price ?? 100).toDouble(),
                 (state.price ?? 100).toDouble()),
             min: 0,
@@ -185,7 +185,7 @@ class _BookingPaneTemplate extends ConsumerWidget {
             ),
           ),
           FormBuilderTextField(
-            name: 'note', //!macro fieldInit note
+            name: 'note',
             initialValue: state.note,
             maxLines: null,
             textInputAction: TextInputAction.newline,
@@ -197,7 +197,7 @@ class _BookingPaneTemplate extends ConsumerWidget {
           ),
           // Inline validation example
           FormBuilderCheckbox(
-            name: 'acceptsTermsOfUse', //!macro fieldInit acceptsTermsOfUse
+            name: 'acceptsTermsOfUse',
             initialValue: false,
             validator: (accepts) => (accepts ?? false)
                 ? null

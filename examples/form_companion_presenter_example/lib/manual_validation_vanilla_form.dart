@@ -11,6 +11,7 @@ import 'package:meta/meta.dart';
 import 'l10n/locale_keys.g.dart';
 import 'models.dart';
 import 'screen.dart';
+import 'validators.dart';
 
 //------------------------------------------------------------------------------
 // There are 2 differences from Auto* variant:
@@ -136,15 +137,29 @@ class ManualValidationVanillaFormAccountPresenter extends StateNotifier<Account>
       PropertyDescriptorsBuilder()
         ..add<String>(
           name: 'id',
+          validatorFactories: [
+            Validator.required,
+            Validator.email,
+          ],
+          asyncValidatorFactories: [
+            // TODO: impl
+          ],
         )
         ..add<String>(
           name: 'name',
+          validatorFactories: [
+            Validator.required,
+          ],
         )
         ..add<Gender>(
           name: 'gender',
         )
         ..add<String>(
           name: 'age',
+          validatorFactories: [
+            Validator.required,
+            Validator.min(0),
+          ],
         ),
     );
   }

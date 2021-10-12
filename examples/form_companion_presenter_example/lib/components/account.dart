@@ -13,6 +13,9 @@ import 'package:meta/meta.dart';
 import '../l10n/locale_keys.g.dart';
 import '../models.dart';
 import '../screen.dart';
+//!macro beginVanillaOnly
+import '../validators.dart';
+//!macro endVanillaOnly
 
 //!macro headerNote
 
@@ -182,15 +185,46 @@ class AccountPresenterTemplate extends StateNotifier<Account>
       PropertyDescriptorsBuilder()
         ..add<String>(
           name: 'id',
+          validatorFactories: [
+            //!macro beginVanillaOnly
+            Validator.required,
+            Validator.email,
+            //!macro endVanillaOnly
+            //!macro beginBuilderOnly
+            FormBuilderValidators.required,
+            FormBuilderValidators.email,
+            //!macro endBuilderOnly
+          ],
+          asyncValidatorFactories: [
+            // TODO: impl
+          ],
         )
         ..add<String>(
           name: 'name',
+          validatorFactories: [
+            //!macro beginVanillaOnly
+            Validator.required,
+            //!macro endVanillaOnly
+            //!macro beginBuilderOnly
+            FormBuilderValidators.required,
+            //!macro endBuilderOnly
+          ],
         )
         ..add<Gender>(
           name: 'gender',
         )
         ..add<String>(
           name: 'age',
+          validatorFactories: [
+            //!macro beginVanillaOnly
+            Validator.required,
+            Validator.min(0),
+            //!macro endVanillaOnly
+            //!macro beginBuilderOnly
+            FormBuilderValidators.required,
+            (context) => FormBuilderValidators.min(context, 0),
+            //!macro endBuilderOnly
+          ],
         )
         //!macro beginBuilderOnly
         ..add<List<Region>>(name: 'preferredRegions')
