@@ -3,7 +3,11 @@
 library form_companion_presenter;
 
 export 'src/async_validator_executor.dart'
-    show AsyncValidator, AsyncValidatorExecutor, ValidationInvocation;
+    show
+        AsyncValidationCompletionCallback,
+        AsyncValidator,
+        AsyncValidatorExecutor,
+        ValidationInvocation;
 export 'src/form_companion_mixin.dart'
     show
         FormFieldValidatorFactory,

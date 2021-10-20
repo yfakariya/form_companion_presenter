@@ -530,7 +530,8 @@ void main() {
         );
 
         final context = DummyBuildContext();
-        final notifier = target.buildOnAsyncValidationCompleted(context);
+        final notifier =
+            target.buildOnAsyncValidationCompleted('prop', context);
         notifier(null, null);
         expect(isValidatorCalled, isTrue);
       });

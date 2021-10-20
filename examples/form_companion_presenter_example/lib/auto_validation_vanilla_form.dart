@@ -14,6 +14,18 @@ import 'screen.dart';
 import 'validators.dart';
 
 //------------------------------------------------------------------------------
+// In this example, [AutovalidateMode] of the form is disabled (default value)
+// and [AutovalidateMode] of fields are set to [AutovalidateMode.onUserInteraction].
+// In this case, [CompanionPresenterMixin.canSubmit] returns `false` when any
+// invalid inputs exist.
+// Note that users can tap "submit" button in initial state, so
+// [CompanionPresenterMixin.validateAndSave()] is still automatically called
+// in [CompanionPresenterMixin.submit] method,
+// and [CompanionPresenterMixin.duSubmit] is only called when no validation errors.
+//
+// This mode is predictable for users by "submit" button is shown and enabled initially,
+// and users can recognize their error after input. It looks ideal but some situation
+// needs "bulk auto" or "manual" mode.
 // Note that vanilla FormFields requires settings key and onSaved callbacks.
 //------------------------------------------------------------------------------
 
@@ -31,7 +43,7 @@ class AutoValidationVanillaFormAccountPage extends Screen {
 
   @override
   Widget buildPage(BuildContext context, ScopedReader watch) => Form(
-        autovalidateMode: AutovalidateMode.onUserInteraction,
+        autovalidateMode: AutovalidateMode.disabled,
         child: _AutoValidationVanillaFormAccountPane(),
       );
 }
@@ -48,6 +60,7 @@ class _AutoValidationVanillaFormAccountPane extends ConsumerWidget {
           TextFormField(
             key: presenter.getKey('id', context),
             initialValue: state.id,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
             validator: presenter.getPropertyValidator('id', context),
             onSaved: presenter.savePropertyValue('id'),
             keyboardType: TextInputType.emailAddress,
@@ -59,6 +72,7 @@ class _AutoValidationVanillaFormAccountPane extends ConsumerWidget {
           TextFormField(
             key: presenter.getKey('name', context),
             initialValue: state.name,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
             validator: presenter.getPropertyValidator('name', context),
             onSaved: presenter.savePropertyValue('name'),
             decoration: InputDecoration(
@@ -98,6 +112,7 @@ class _AutoValidationVanillaFormAccountPane extends ConsumerWidget {
           TextFormField(
             key: presenter.getKey('age', context),
             initialValue: state.age.toString(),
+            autovalidateMode: AutovalidateMode.onUserInteraction,
             validator: presenter.getPropertyValidator('age', context),
             onSaved: presenter.savePropertyValue('age'),
             decoration: InputDecoration(

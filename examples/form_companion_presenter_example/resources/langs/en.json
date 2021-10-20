@@ -27,6 +27,17 @@
             "title": "Auto validation, Flutter Form Builder for Booking"
         }
     },
+    "bulk_auto": {
+        "vanilla": {
+            "title": "Bulk-Auto validation, vanilla Form for Account"
+        },
+        "flutterFormBuilderAccount": {
+            "title": "Bulk-Auto validation, Flutter Form Builder for Account"
+        },
+        "flutterFormBuilderBooking": {
+            "title": "Bulk-Auto validation, Flutter Form Builder for Booking"
+        }
+    },
     "id": {
         "label": "User ID *",
         "hint": "Enter your user ID which should be unique."

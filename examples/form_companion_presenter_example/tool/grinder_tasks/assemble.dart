@@ -6,11 +6,30 @@ import 'package:format/format.dart';
 import 'package:grinder/grinder.dart';
 import 'package:path/path.dart';
 
-enum _Mode { auto, manual }
+enum _Mode { auto, bulkAuto, manual }
 
 extension _ModeExtension on _Mode {
-  String toTitleCase() => this == _Mode.auto ? 'Auto' : 'Manual';
-  String toLowerCase() => this == _Mode.auto ? 'auto' : 'manual';
+  String toTitleCase() {
+    switch (this) {
+      case _Mode.auto:
+        return 'Auto';
+      case _Mode.manual:
+        return 'Manual';
+      case _Mode.bulkAuto:
+        return 'BulkAuto';
+    }
+  }
+
+  String toLowerCase() {
+    switch (this) {
+      case _Mode.auto:
+        return 'auto';
+      case _Mode.manual:
+        return 'manual';
+      case _Mode.bulkAuto:
+        return 'bulk_auto';
+    }
+  }
 }
 
 enum _Flavor { vanillaForm, formBuilder }
@@ -48,11 +67,49 @@ const _headerNoteVanilla =
     '''// Note that vanilla FormFields requires settings key and onSaved callbacks.
 ''';
 
-const _headerNoteManual = '''// There are 2 differences from Auto* variant:
-//   1. Of cource, `autoValidateMode` is set to `AutovalidateMode.disabled`
-//      in `Form` constructor.
-//   2. The override of `doSubmit` calls `validateAndSave()` and returns
-//      immediately when the validation is failed.
+const _headerNoteAuto =
+    '''// In this example, [AutovalidateMode] of the form is disabled (default value)
+// and [AutovalidateMode] of fields are set to [AutovalidateMode.onUserInteraction].
+// In this case, [CompanionPresenterMixin.canSubmit] returns `false` when any
+// invalid inputs exist.
+// Note that users can tap "submit" button in initial state, so 
+// [CompanionPresenterMixin.validateAndSave()] is still automatically called
+// in [CompanionPresenterMixin.submit] method,
+// and [CompanionPresenterMixin.duSubmit] is only called when no validation errors.
+//
+// This mode is predictable for users by "submit" button is shown and enabled initially,
+// and users can recognize their error after input. It looks ideal but some situation
+// needs "bulk auto" or "manual" mode.
+''';
+
+const _headerNoteBulkAuto =
+    '''// In this example, [AutovalidateMode] of the form and fields are set to
+// [AutovalidateMode.onUserInteraction].
+// In this case, [CompanionPresenterMixin.canSubmit] returns `false` when any
+// invalid inputs exist.
+// Note that users can tap "submit" button in initial state, so 
+// [CompanionPresenterMixin.validateAndSave()] is still automatically called
+// in [CompanionPresenterMixin.submit] method,
+// and [CompanionPresenterMixin.duSubmit] is only called when no validation errors.
+//
+// This mode is predictable for users by "submit" button is shown and enabled initially,
+// and users can recognize their error after input, but it is frastrated because
+// some field's error causes displaying all fields error even if the fields are
+// not input anything by the user. It might be helpful for some situation,
+// but it might be just annoying on many cases.
+''';
+
+const _headerNoteManual =
+    '''// In this example, [AutovalidateMode] of the form and fields are disabled (default value).
+// In this case, [CompanionPresenterMixin.canSubmit] always returns `true`,
+// so users always tap "submit" button.
+// Note that [CompanionPresenterMixin.validateAndSave()] is automatically called
+// in [CompanionPresenterMixin.submit] method,
+// and [CompanionPresenterMixin.duSubmit] is only called when no validation errors.
+//
+// This mode is predictable for users by "submit" button is always shown and enabled,
+// but it might be frastrated in long form because users cannot recognize their
+// error until tapping "submit" button.
 ''';
 
 const _pageDocumentTemplate =
@@ -201,9 +258,18 @@ typedef _Macro = void Function(
 
 Map<String, _Macro> _setupMacro(_Mode mode, _Model model, _Flavor flavor) {
   final headerNote = StringBuffer()..write(_headerNoteSeparator);
-  if (mode == _Mode.manual) {
-    headerNote.write(_headerNoteManual);
+  switch (mode) {
+    case _Mode.auto:
+      headerNote.write(_headerNoteAuto);
+      break;
+    case _Mode.bulkAuto:
+      headerNote.write(_headerNoteBulkAuto);
+      break;
+    case _Mode.manual:
+      headerNote.write(_headerNoteManual);
+      break;
   }
+
   switch (flavor) {
     case _Flavor.formBuilder:
       headerNote.write(_headerNoteBuilder);
@@ -228,8 +294,8 @@ Map<String, _Macro> _setupMacro(_Mode mode, _Model model, _Flavor flavor) {
     'dropDownInit': flavor == _Flavor.vanillaForm
         ? _dropDownInitVanilla
         : _dropDownInitBuilder,
-    'validateMode':
-        mode == _Mode.auto ? _validateModeAuto : _validateModeManual,
+    'formValidateMode':
+        mode == _Mode.bulkAuto ? _validateModeAuto : _validateModeManual,
     'preferredRegionsAssignment': flavor == _Flavor.vanillaForm
         ? _preferredRegionsAssignmentVanilla
         : _preferredRegionsAssignmentBuilder,
@@ -266,6 +332,18 @@ Map<String, _Macro> _setupMacro(_Mode mode, _Model model, _Flavor flavor) {
     }
     ..['endVanillaOnly'] = (line, match, arg, output) {
       if (flavor != _Flavor.vanillaForm) {
+        output.enable = true;
+      }
+      // Line itself is not written.
+    }
+    ..['beginAutoOnly'] = (line, match, arg, output) {
+      if (mode != _Mode.auto) {
+        output.enable = false;
+      }
+      // Line itself is not written.
+    }
+    ..['endAutoOnly'] = (line, match, arg, output) {
+      if (mode != _Mode.auto) {
         output.enable = true;
       }
       // Line itself is not written.

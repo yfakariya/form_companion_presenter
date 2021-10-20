@@ -8,6 +8,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'auto_validation_form_builder_account.dart';
 import 'auto_validation_form_builder_booking.dart';
 import 'auto_validation_vanilla_form.dart';
+import 'bulk_auto_validation_form_builder_account.dart';
+import 'bulk_auto_validation_form_builder_booking.dart';
+import 'bulk_auto_validation_vanilla_form.dart';
 import 'home.dart';
 import 'l10n/locale_keys.g.dart';
 import 'manual_validation_form_builder_account.dart';
@@ -68,6 +71,16 @@ abstract class Screen extends ConsumerWidget {
               ),
               ListTile(
                 title: Text(
+                  LocaleKeys.bulk_auto_vanilla_title.tr(),
+                ),
+                onTap: () => pages.state = [
+                  const MaterialPage<dynamic>(
+                    child: BulkAutoValidationVanillaFormAccountPage(),
+                  )
+                ],
+              ),
+              ListTile(
+                title: Text(
                   LocaleKeys.auto_vanilla_title.tr(),
                 ),
                 onTap: () => pages.state = [
@@ -93,6 +106,26 @@ abstract class Screen extends ConsumerWidget {
                 onTap: () => pages.state = [
                   const MaterialPage<dynamic>(
                     child: ManualValidationFormBuilderBookingPage(),
+                  )
+                ],
+              ),
+              ListTile(
+                title: Text(
+                  LocaleKeys.bulk_auto_flutterFormBuilderAccount_title.tr(),
+                ),
+                onTap: () => pages.state = [
+                  const MaterialPage<dynamic>(
+                    child: BulkAutoValidationFormBuilderAccountPage(),
+                  )
+                ],
+              ),
+              ListTile(
+                title: Text(
+                  LocaleKeys.bulk_auto_flutterFormBuilderBooking_title.tr(),
+                ),
+                onTap: () => pages.state = [
+                  const MaterialPage<dynamic>(
+                    child: BulkAutoValidationFormBuilderBookingPage(),
                   )
                 ],
               ),

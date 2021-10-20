@@ -26,7 +26,7 @@ class BookingPageTemplate extends Screen {
 
   @override
   Widget buildPage(BuildContext context, ScopedReader watch) => FormBuilder(
-        //!macro validateMode
+        //!macro formValidateMode
         child: _BookingPaneTemplate(),
       );
 }
@@ -199,6 +199,9 @@ class _BookingPaneTemplate extends ConsumerWidget {
           FormBuilderCheckbox(
             name: 'acceptsTermsOfUse',
             initialValue: false,
+            //!macro beginAutoOnly
+            autovalidateMode: AutovalidateMode.onUserInteraction,
+            //!macro endAutoOnly
             validator: (accepts) => (accepts ?? false)
                 ? null
                 : LocaleKeys.acceptsTermsOfUse_message.tr(),

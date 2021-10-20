@@ -29,7 +29,7 @@ class AccountPageTemplate extends Screen {
 
   @override
   Widget buildPage(BuildContext context, ScopedReader watch) => FormBuilder(
-        //!macro validateMode
+        //!macro formValidateMode
         child: _AccountPaneTemplate(),
       );
 }
@@ -46,6 +46,9 @@ class _AccountPaneTemplate extends ConsumerWidget {
           FormBuilderTextField(
             name: 'id', //!macro fieldInit id
             initialValue: state.id,
+            //!macro beginAutoOnly
+            autovalidateMode: AutovalidateMode.onUserInteraction,
+            //!macro endAutoOnly
             validator: presenter.getPropertyValidator('id', context),
             //!macro beginVanillaOnly
             onSaved: presenter.savePropertyValue('id'),
@@ -59,6 +62,9 @@ class _AccountPaneTemplate extends ConsumerWidget {
           FormBuilderTextField(
             name: 'name', //!macro fieldInit name
             initialValue: state.name,
+            //!macro beginAutoOnly
+            autovalidateMode: AutovalidateMode.onUserInteraction,
+            //!macro endAutoOnly
             validator: presenter.getPropertyValidator('name', context),
             //!macro beginVanillaOnly
             onSaved: presenter.savePropertyValue('name'),
@@ -101,6 +107,9 @@ class _AccountPaneTemplate extends ConsumerWidget {
           FormBuilderTextField(
             name: 'age', //!macro fieldInit age
             initialValue: state.age.toString(),
+            //!macro beginAutoOnly
+            autovalidateMode: AutovalidateMode.onUserInteraction,
+            //!macro endAutoOnly
             validator: presenter.getPropertyValidator('age', context),
             //!macro beginVanillaOnly
             onSaved: presenter.savePropertyValue('age'),

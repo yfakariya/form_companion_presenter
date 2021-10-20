@@ -66,6 +66,22 @@ mixin FormBuilderCompanionMixin on CompanionPresenterMixin {
   }
 
   @override
+  AsyncValidationCompletionCallback buildOnAsyncValidationCompleted(
+    String name,
+    BuildContext context,
+  ) {
+    final formState = formStateOf(context);
+    if (formState.autovalidateMode == AutovalidateMode.disabled) {
+      // Only re-evaluate target field.
+      final fieldState = _maybeFormStateOf(context)?._state.fields[name];
+      return (result, error) => fieldState?.validate();
+    } else {
+      // Re-evaluate all fields including submit button availability.
+      return (result, error) => formState.validate();
+    }
+  }
+
+  @override
   @protected
   @nonVirtual
   @visibleForTesting

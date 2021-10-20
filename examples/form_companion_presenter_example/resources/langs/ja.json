@@ -27,6 +27,17 @@
             "title": "自動バリデーション、Booking 用の Flutter Form Builder"
         }
     },
+    "bulk_auto": {
+        "vanilla": {
+            "title": "一括自動バリデーション、Account 用の素の Form"
+        },
+        "flutterFormBuilderAccount": {
+            "title": "一括自動バリデーション、Account 用の Flutter Form Builder"
+        },
+        "flutterFormBuilderBooking": {
+            "title": "一括自動バリデーション、Booking 用の Flutter Form Builder"
+        }
+    },
     "id": {
         "label": "ユーザーID *",
         "hint": "他の人とは異なるであろうユーザーIDを入力してください。"

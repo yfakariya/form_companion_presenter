@@ -14,11 +14,16 @@ import 'screen.dart';
 import 'validators.dart';
 
 //------------------------------------------------------------------------------
-// There are 2 differences from Auto* variant:
-//   1. Of cource, `autoValidateMode` is set to `AutovalidateMode.disabled`
-//      in `Form` constructor.
-//   2. The override of `doSubmit` calls `validateAndSave()` and returns
-//      immediately when the validation is failed.
+// In this example, [AutovalidateMode] of the form and fields are disabled (default value).
+// In this case, [CompanionPresenterMixin.canSubmit] always returns `true`,
+// so users always tap "submit" button.
+// Note that [CompanionPresenterMixin.validateAndSave()] is automatically called
+// in [CompanionPresenterMixin.submit] method,
+// and [CompanionPresenterMixin.duSubmit] is only called when no validation errors.
+//
+// This mode is predictable for users by "submit" button is always shown and enabled,
+// but it might be frastrated in long form because users cannot recognize their
+// error until tapping "submit" button.
 // Note that vanilla FormFields requires settings key and onSaved callbacks.
 //------------------------------------------------------------------------------
 
