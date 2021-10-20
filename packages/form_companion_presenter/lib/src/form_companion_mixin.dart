@@ -60,6 +60,7 @@ abstract class FormStateAdapter {
 ///   results of [FormField]s and existance of pending async validations.
 mixin CompanionPresenterMixin {
   late final Map<String, PropertyDescriptor<Object>> _properties;
+  late final bool _hasAsyncValidators;
 
   /// Map of [PropertyDescriptor]. Key is [PropertyDescriptor.name].
   @nonVirtual
@@ -100,6 +101,8 @@ mixin CompanionPresenterMixin {
     PropertyDescriptorsBuilder properties,
   ) {
     _properties = properties._build(this);
+    _hasAsyncValidators =
+        _properties.values.any((p) => p._asynvValidatorEntries.isNotEmpty);
   }
 
   /// This method will be called when pending async validation is canceled
@@ -319,7 +322,7 @@ mixin CompanionPresenterMixin {
   /// registered.
   @nonVirtual
   FutureOr<bool> validateAll(FormStateAdapter formState) {
-    if (properties.values.every((p) => p._asynvValidatorEntries.isEmpty)) {
+    if (!_hasAsyncValidators) {
       // just validate.
       return formState.validate();
     }
