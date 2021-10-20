@@ -65,8 +65,9 @@ class ValidationInvocation<T> implements AsyncOperationNotifier<String?, void> {
 
   @Deprecated('ValidationInvocation does not support onProgress')
   @nonVirtual
-  @protected
   @override
+  @protected
+  @visibleForTesting
   final AsyncOperationProgressCallback<void> onProgress;
 
   /// Creates a new [ValidationInvocation].

@@ -160,8 +160,9 @@ mixin CompanionPresenterMixin {
   /// The value should be set from `FormField` via [savePropertyValue].
   /// This getter should be called in [doSubmit] implementation to get saved
   /// valid values.
-  @protected
   @nonVirtual
+  @protected
+  @visibleForTesting
   T? getSavedPropertyValue<T extends Object>(String name) =>
       getProperty<T>(name).savedValue;
 
@@ -212,8 +213,9 @@ mixin CompanionPresenterMixin {
   ///
   /// This method shall be implemented in the concrete class which is mix-ined
   /// [CompanionPresenterMixin].
-  @protected
   @nonVirtual
+  @protected
+  @visibleForTesting
   FormStateAdapter formStateOf(BuildContext context) {
     final state = maybeFormStateOf(context);
     if (state == null) {
@@ -302,6 +304,8 @@ mixin CompanionPresenterMixin {
 
   /// Performs saving of form fields.
   @protected
+  @visibleForOverriding
+  @visibleForTesting
   void saveFields(FormStateAdapter formState) {
     formState.save();
   }
