@@ -264,8 +264,7 @@ class BookingPresenterTemplate extends StateNotifier<Booking>
   }
 
   @override
-  FutureOr<void> doSubmit(BuildContext context) async {
-    //!macro doSubmitPrologue
+  FutureOr<void> doSubmit() async {
     // Get saved values here to call business logic.
     final userId = _account.id ?? 'Dummy User';
     final stay = getSavedPropertyValue<DateTimeRange>('stay')!;

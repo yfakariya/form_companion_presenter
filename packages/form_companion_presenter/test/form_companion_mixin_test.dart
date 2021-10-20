@@ -99,17 +99,17 @@ class HierarchicalForm extends StatelessWidget {
 Widget _app(Widget child) => MaterialApp(home: Scaffold(body: child));
 
 class Presenter with CompanionPresenterMixin, FormCompanionMixin {
-  final FutureOr<void> Function(BuildContext) _doSubmitCalled;
+  final FutureOr<void> Function() _doSubmitCalled;
 
   Presenter(
       {required PropertyDescriptorsBuilder properties,
-      FutureOr<void> Function(BuildContext)? doSubmitCalled})
-      : _doSubmitCalled = (doSubmitCalled ?? (_) {}) {
+      FutureOr<void> Function()? doSubmitCalled})
+      : _doSubmitCalled = (doSubmitCalled ?? () {}) {
     initializeCompanionMixin(properties);
   }
 
   @override
-  FutureOr<void> doSubmit(BuildContext context) => _doSubmitCalled(context);
+  FutureOr<void> doSubmit() => _doSubmitCalled();
 }
 
 void main() {

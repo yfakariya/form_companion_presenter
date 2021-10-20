@@ -82,16 +82,6 @@ const _validateModeAuto =
 const _validateModeManual = '''autovalidateMode: AutovalidateMode.disabled,
 ''';
 
-// empty.
-const _doSubmitPrologueAuto = '';
-
-const _doSubmitPrologueManual = '''    // Manually do validate and save.
-    if (!(await validateAndSave(maybeFormStateOf(context)!))) {
-      return;
-    }
-
-''';
-
 const _preferredRegionsAssignmentVanilla = '''preferredRegions: [],
 ''';
 const _preferredRegionsAssignmentBuilder =
@@ -240,8 +230,6 @@ Map<String, _Macro> _setupMacro(_Mode mode, _Model model, _Flavor flavor) {
         : _dropDownInitBuilder,
     'validateMode':
         mode == _Mode.auto ? _validateModeAuto : _validateModeManual,
-    'doSubmitPrologue':
-        mode == _Mode.auto ? _doSubmitPrologueAuto : _doSubmitPrologueManual,
     'preferredRegionsAssignment': flavor == _Flavor.vanillaForm
         ? _preferredRegionsAssignmentVanilla
         : _preferredRegionsAssignmentBuilder,

@@ -54,7 +54,9 @@ mixin FormBuilderCompanionMixin on CompanionPresenterMixin {
     final formState = _maybeFormStateOf(context);
     if (formState == null ||
         formState.autovalidateMode == AutovalidateMode.disabled) {
-      // Should be manual validation in doSubmit(), so returns true here.
+      // submit button re-evaluation is only done in Form wide auto validation
+      // is enabled, so if Form-wide auto validation is not enabled we always
+      // enables submit button.
       return true;
     }
 

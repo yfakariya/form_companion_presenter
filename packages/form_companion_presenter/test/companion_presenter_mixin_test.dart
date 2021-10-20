@@ -13,18 +13,18 @@ import 'package:form_companion_presenter/src/form_companion_mixin.dart';
 import 'package:form_companion_presenter/src/internal_utils.dart';
 
 class TestPresenter with CompanionPresenterMixin {
-  final void Function(BuildContext) _doSubmitCalled;
+  final void Function() _doSubmitCalled;
   final FormStateAdapter? Function(BuildContext) _maybeFormStateOfCalled;
   final void Function(AsyncError)? _onHandleCanceledAsyncValidationError;
   final bool Function(BuildContext) _canSubmitCalled;
 
   TestPresenter({
     required PropertyDescriptorsBuilder properties,
-    void Function(BuildContext)? doSubmitCalled,
+    void Function()? doSubmitCalled,
     FormStateAdapter? Function(BuildContext)? maybeFormStateOfCalled,
     void Function(AsyncError)? onHandleCanceledAsyncValidationError,
     bool Function(BuildContext)? canSubmitCalled,
-  })  : _doSubmitCalled = (doSubmitCalled ?? (_) {}),
+  })  : _doSubmitCalled = (doSubmitCalled ?? () {}),
         _maybeFormStateOfCalled = (maybeFormStateOfCalled ?? (_) => null),
         _onHandleCanceledAsyncValidationError =
             onHandleCanceledAsyncValidationError,
@@ -43,8 +43,8 @@ class TestPresenter with CompanionPresenterMixin {
   }
 
   @override
-  FutureOr<void> doSubmit(BuildContext context) async {
-    _doSubmitCalled(context);
+  FutureOr<void> doSubmit() async {
+    _doSubmitCalled();
   }
 
   @override
@@ -307,7 +307,7 @@ void main() {
       TestPresenter? target;
       target = TestPresenter(
         properties: PropertyDescriptorsBuilder(),
-        doSubmitCalled: (_) {},
+        doSubmitCalled: () {},
         maybeFormStateOfCalled: (_) => FixedFormStateAdapter(
           autovalidateMode: AutovalidateMode.onUserInteraction,
           onValidate: () => target!.properties.values.every(
@@ -322,8 +322,8 @@ void main() {
       expect(target.submit(DummyBuildContext()), isNull);
     });
 
-    test('returns doSubmit when canSubmit() is true.', () {
-      BuildContext? passedContext;
+    test('returns doSubmit when canSubmit() is true.', () async {
+      final doSubmitCalled = Completer<void>();
       final context = DummyBuildContext();
       TestPresenter? target;
       target = TestPresenter(
@@ -331,9 +331,7 @@ void main() {
           ..add(name: 'valid', validatorFactories: [
             (_) => (v) => null,
           ]),
-        doSubmitCalled: (x) {
-          passedContext = x;
-        },
+        doSubmitCalled: doSubmitCalled.complete,
         maybeFormStateOfCalled: (_) => FixedFormStateAdapter(
           autovalidateMode: AutovalidateMode.onUserInteraction,
           onValidate: () => target!.properties.values.every(
@@ -348,7 +346,8 @@ void main() {
       final submit = target.submit(context);
       expect(submit, isNotNull);
       submit!();
-      expect(passedContext, same(context));
+      await doSubmitCalled.future;
+      expect(doSubmitCalled.isCompleted, isTrue);
     });
   });
 

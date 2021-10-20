@@ -204,6 +204,25 @@ mixin CompanionPresenterMixin {
   @protected
   FormStateAdapter? maybeFormStateOf(BuildContext context);
 
+  /// Gets the ancestor [FormState] like state from specified [BuildContext],
+  /// and wraps it to [FormStateAdapter].
+  ///
+  /// This method throws [StateError] when there is no ancestor [Form] like widget.
+  /// Indeed, this method just calls [maybeFormStateOf] and check its result.
+  ///
+  /// This method shall be implemented in the concrete class which is mix-ined
+  /// [CompanionPresenterMixin].
+  @protected
+  @nonVirtual
+  FormStateAdapter formStateOf(BuildContext context) {
+    final state = maybeFormStateOf(context);
+    if (state == null) {
+      throw StateError('Ancestor Form is required.');
+    }
+
+    return state;
+  }
+
   /// Returns whether the state of this presenter is "completed" or not.
   ///
   /// "Completed" means that:
@@ -273,16 +292,11 @@ mixin CompanionPresenterMixin {
   /// to coordinate [FormField]s. If so, this method effectively returns a
   /// closure which just call and await [doSubmit].
   VoidCallback _buildDoSubmit(BuildContext context) {
-    final formState = maybeFormStateOf(context);
+    final formState = formStateOf(context);
 
     return () async {
-      if (formState != null) {
-        if (formState.autovalidateMode != AutovalidateMode.disabled) {
-          saveFields(formState);
-        }
-      }
-
-      await doSubmit(context);
+      await validateAndSave(formState);
+      await doSubmit();
     };
   }
 
@@ -374,9 +388,7 @@ mixin CompanionPresenterMixin {
   /// [CompanionPresenterMixin].
   @protected
   @visibleForOverriding
-  FutureOr<void> doSubmit(
-    BuildContext context,
-  );
+  FutureOr<void> doSubmit();
 }
 
 /// [FormStateAdapter] implementation for [FormState].
@@ -453,7 +465,9 @@ mixin FormCompanionMixin on CompanionPresenterMixin {
     final formState = maybeFormStateOf(context);
     if (formState == null ||
         formState.autovalidateMode == AutovalidateMode.disabled) {
-      // Should be manual validation in doSubmit(), so returns true here.
+      // submit button re-evaluation is only done in Form wide auto validation
+      // is enabled, so if Form-wide auto validation is not enabled we always
+      // enables submit button.
       return true;
     }
 
