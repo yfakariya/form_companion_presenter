@@ -86,17 +86,16 @@ mixin FormBuilderCompanionMixin on CompanionPresenterMixin {
   @protected
   @visibleForTesting
   void saveFields(FormStateAdapter formState) {
+    assert(
+      formState is _FormBuilderStateAdapter,
+      'formState should be _FormBuilderStateAdapter but ${formState.runtimeType}',
+    );
+
     if (formState is _FormBuilderStateAdapter) {
       formState.save();
       for (final field in formState._state.value.entries) {
         properties[field.key]?.saveValue(field.value);
       }
-    } else {
-      assert(
-        false,
-        'formState should be _FormBuilderStateAdapter but ${formState.runtimeType}',
-      );
-      super.saveFields(formState);
     }
   }
 }
