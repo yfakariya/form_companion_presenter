@@ -90,7 +90,7 @@ class HierarchicalForm extends StatelessWidget {
   final void Function(BuildContext) _onBuilding;
   final List<Widget> Function(BuildContext)? _childrenFactory;
 
-  const HierarchicalForm({
+  const HierarchicalForm._({
     Key? key,
     required void Function(BuildContext) onBuilding,
     required AutovalidateMode autovalidateMode,
@@ -105,6 +105,35 @@ class HierarchicalForm extends StatelessWidget {
         _validatorFactory = validatorFactory,
         _childrenFactory = childrenFactory,
         super(key: key);
+
+  // ignore: sort_unnamed_constructors_first
+  factory HierarchicalForm({
+    Key? key,
+    required void Function(BuildContext) onBuilding,
+    required AutovalidateMode autovalidateMode,
+    Key Function(BuildContext)? fieldKeyFactory,
+    FormFieldSetter<String>? onSaved,
+    FormFieldValidator<String> Function(BuildContext)? validatorFactory,
+  }) =>
+      HierarchicalForm._(
+        key: key,
+        onBuilding: onBuilding,
+        autovalidateMode: autovalidateMode,
+        fieldKeyFactory: fieldKeyFactory,
+        onSaved: onSaved,
+        validatorFactory: validatorFactory,
+      );
+
+  factory HierarchicalForm.dynamic({
+    required void Function(BuildContext) onBuilding,
+    required AutovalidateMode autovalidateMode,
+    required List<Widget> Function(BuildContext) childrenFactory,
+  }) =>
+      HierarchicalForm._(
+        onBuilding: onBuilding,
+        autovalidateMode: autovalidateMode,
+        childrenFactory: childrenFactory,
+      );
 
   @override
   Widget build(BuildContext context) => Form(
@@ -571,7 +600,7 @@ void main() {
       late BuildContext lastContext;
       await tester.pumpWidget(
         _app(
-          HierarchicalForm(
+          HierarchicalForm.dynamic(
             onBuilding: (context) {
               lastContext = context;
               entireFormBuilt++;
