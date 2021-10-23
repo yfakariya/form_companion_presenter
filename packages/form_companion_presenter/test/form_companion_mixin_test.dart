@@ -63,12 +63,31 @@ class _InlineChildren extends StatelessWidget {
   }
 }
 
+class _DynamicChildren extends StatelessWidget {
+  final void Function(BuildContext) _onBuilding;
+  final List<Widget> Function(BuildContext) _widgetsFactory;
+  const _DynamicChildren(
+    this._widgetsFactory,
+    this._onBuilding, {
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    _onBuilding(context);
+    return Column(
+      children: _widgetsFactory(context),
+    );
+  }
+}
+
 class HierarchicalForm extends StatelessWidget {
   final AutovalidateMode _autovalidateMode;
   final Key Function(BuildContext)? _fieldKeyFactory;
   final FormFieldSetter<String>? _onSaved;
   final FormFieldValidator<String> Function(BuildContext)? _validatorFactory;
   final void Function(BuildContext) _onBuilding;
+  final List<Widget> Function(BuildContext)? _childrenFactory;
 
   const HierarchicalForm({
     Key? key,
@@ -77,22 +96,26 @@ class HierarchicalForm extends StatelessWidget {
     Key Function(BuildContext)? fieldKeyFactory,
     FormFieldSetter<String>? onSaved,
     FormFieldValidator<String> Function(BuildContext)? validatorFactory,
+    List<Widget> Function(BuildContext)? childrenFactory,
   })  : _onBuilding = onBuilding,
         _autovalidateMode = autovalidateMode,
         _fieldKeyFactory = fieldKeyFactory,
         _onSaved = onSaved,
         _validatorFactory = validatorFactory,
+        _childrenFactory = childrenFactory,
         super(key: key);
 
   @override
   Widget build(BuildContext context) => Form(
         autovalidateMode: _autovalidateMode,
-        child: _InlineChildren(
-          fieldKeyFactory: _fieldKeyFactory,
-          onBuilding: _onBuilding,
-          onSaved: _onSaved,
-          validatorFactory: _validatorFactory,
-        ),
+        child: _childrenFactory != null
+            ? _DynamicChildren(_childrenFactory!, _onBuilding)
+            : _InlineChildren(
+                fieldKeyFactory: _fieldKeyFactory,
+                onBuilding: _onBuilding,
+                onSaved: _onSaved,
+                validatorFactory: _validatorFactory,
+              ),
       );
 }
 
@@ -505,5 +528,171 @@ void main() {
       await testAutoValidateMode(tester, AutovalidateMode.disabled);
       await testAutoValidateMode(tester, AutovalidateMode.onUserInteraction);
     });
+  });
+
+  group('async validation completion behavor', () {
+    Future<void> testRebuildBehavior(
+      WidgetTester tester,
+      AutovalidateMode formValidateMode,
+    ) async {
+      var targetValidatorCalled = 0;
+      var anotherValidatorCalled = 0;
+      final completer = Completer<void>();
+      final presenter = Presenter(
+        properties: PropertyDescriptorsBuilder()
+          ..add<String>(
+            name: 'target',
+            validatorFactories: [
+              (_) => (value) {
+                    targetValidatorCalled++;
+                    return null;
+                  },
+            ],
+            asyncValidatorFactories: [
+              (_) => (value, options) async {
+                    await completer.future;
+                    return null;
+                  },
+            ],
+          )
+          ..add<String>(
+            name: 'another',
+            validatorFactories: [
+              (_) => (value) {
+                    anotherValidatorCalled++;
+                    return null;
+                  },
+            ],
+          ),
+      );
+
+      var entireFormBuilt = 0;
+      late BuildContext lastContext;
+      await tester.pumpWidget(
+        _app(
+          HierarchicalForm(
+            onBuilding: (context) {
+              lastContext = context;
+              entireFormBuilt++;
+            },
+            autovalidateMode: formValidateMode,
+            childrenFactory: (context) => [
+              TextFormField(
+                key: presenter.getKey('target', context),
+                initialValue: 'target',
+                validator: presenter.getPropertyValidator('target', context),
+                autovalidateMode: AutovalidateMode.onUserInteraction,
+              ),
+              TextFormField(
+                key: presenter.getKey('another', context),
+                initialValue: 'another',
+                validator: presenter.getPropertyValidator('another', context),
+                autovalidateMode: AutovalidateMode.onUserInteraction,
+              ),
+            ],
+          ),
+        ),
+      );
+
+      var formBuilt = 1;
+      var fieldShouldBeReevaluated = 0;
+      var formShouldBeReevaluated = fieldShouldBeReevaluated;
+
+      expect(entireFormBuilt, equals(formBuilt));
+      expect(targetValidatorCalled, equals(fieldShouldBeReevaluated));
+      expect(anotherValidatorCalled, equals(formShouldBeReevaluated));
+
+      // kick target validation
+      await tester.enterText(
+        find.byWidgetPredicate(
+          (widget) =>
+              widget is TextFormField && widget.initialValue == 'target',
+        ),
+        'A',
+      );
+      await tester.pump();
+
+      // Target field should be validated.
+      fieldShouldBeReevaluated++;
+      if (formValidateMode != AutovalidateMode.disabled) {
+        // Caused more because of Form level auto validation.
+        fieldShouldBeReevaluated++;
+
+        // Another field should be validated because of Form level auto validation.
+        formShouldBeReevaluated++;
+      }
+
+      // Input causes form level rebuild.
+      formBuilt++;
+
+      // should be re-evaulated by text input
+      expect(entireFormBuilt, equals(formBuilt));
+      expect(targetValidatorCalled, equals(fieldShouldBeReevaluated));
+      expect(anotherValidatorCalled, equals(formShouldBeReevaluated));
+
+      // completes async and pump
+      completer.complete();
+      await tester.pump();
+
+      // Async validation completion explicitly calls validate(), so +1.
+      // In addition, validate() causes rebuild, so +1 (consequently, +2)
+      fieldShouldBeReevaluated += 2;
+      if (formValidateMode != AutovalidateMode.disabled) {
+        // Caused more because of Form level auto validation.
+        fieldShouldBeReevaluated++;
+        // Another field should be validated because of Form level auto validation.
+        // Async validation completion explicitly calls validate(), so +1.
+        // In addition, validate() causes rebuild, so +1 (consequently, +2)
+        formShouldBeReevaluated += 2;
+        // But, rebuild is only once, which is caused by validate() call
+        formBuilt++;
+      }
+
+      // should be re-evaulated by async validation completion
+      expect(entireFormBuilt, equals(formBuilt));
+      expect(targetValidatorCalled, equals(fieldShouldBeReevaluated));
+      expect(anotherValidatorCalled, equals(formShouldBeReevaluated));
+
+      // reset causes validation only AutovalidateMode.always
+      Form.of(lastContext)!.reset();
+      await tester.pump();
+
+      // By resetting form
+      formBuilt++;
+      if (formValidateMode == AutovalidateMode.always) {
+        // A diffrence between always and onUserInteraction is reaction for
+        // reset() (or unclear reasons Form is requested rebuilding other than
+        // its fields manipulation)
+
+        // Reset caused validation, it caused async validation without blocking
+        // because we already had been completed the Completer, so re-evaluation
+        // was occurred and ultimately all validators called twice.
+        fieldShouldBeReevaluated += 2;
+        formShouldBeReevaluated += 2;
+      }
+
+      // should be re-evaulated by async validation completion
+      expect(entireFormBuilt, equals(formBuilt));
+      expect(targetValidatorCalled, equals(fieldShouldBeReevaluated));
+      expect(anotherValidatorCalled, equals(formShouldBeReevaluated));
+    }
+
+    testWidgets(
+      'all fields are re-validated when Form.autiValidateMode is always.',
+      (widgetTester) =>
+          testRebuildBehavior(widgetTester, AutovalidateMode.always),
+    );
+
+    testWidgets(
+      'all fields are re-validated when Form.autiValidateMode is onUserInteraction.',
+      (widgetTester) =>
+          testRebuildBehavior(widgetTester, AutovalidateMode.onUserInteraction),
+    );
+
+    testWidgets(
+      'only the field is re-validated when Form.autiValidateMode is disable.',
+      (widgetTester) =>
+          testRebuildBehavior(widgetTester, AutovalidateMode.disabled),
+    );
   });
 }

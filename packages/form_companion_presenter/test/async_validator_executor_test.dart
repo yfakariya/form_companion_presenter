@@ -328,6 +328,14 @@ void main() {
         );
 
         expect(target.onFailed, isNotNull);
+        // no effect
+        target.onFailed(AsyncError(Object(), null));
+
+        // ignore: deprecated_member_use_from_same_package
+        expect(target.onProgress, isNotNull);
+        // no effect
+        // ignore: deprecated_member_use_from_same_package
+        target.onProgress(null);
       });
     });
   });

@@ -266,31 +266,132 @@ void main() {
       });
     });
 
-    group('PropertyDescriptor', () {
-      test('can be get / set typed value.', () {
-        final target = TestPresenter(
-          properties: PropertyDescriptorsBuilder()..add<int>(name: 'int'),
-        );
-
-        final property = target.getProperty<int>('int');
-        // ignore: cascade_invocations
-        property.saveValue(123);
-        expect(property.savedValue, equals(123));
-      });
-
-      test('can be get / set dynamic value.', () {
-        final target = TestPresenter(
-          properties: PropertyDescriptorsBuilder()..add<int>(name: 'int'),
-        );
-
-        final property = target.getProperty<int>('int');
-        // ignore: cascade_invocations
-        property.saveValue(123);
-        expect(property.savedValue, equals(123));
-      });
-
-      test('throws ArgumentError from setDynamicValue for incompatible type.',
+    group('savePropertyValue', () {
+      test('non-null for never-registered property but throws ArgumentError.',
           () {
+        final presenter = TestPresenter(
+          properties: PropertyDescriptorsBuilder()..add<int>(name: 'int'),
+        );
+
+        final target = presenter.savePropertyValue('long');
+        expect(target, isNotNull);
+        expect(() => target(0), throwsArgumentError);
+      });
+
+      test(
+          'non-null for registered property and passes through to PropertyDescriptor.saveValue.',
+          () {
+        final presenter = TestPresenter(
+          properties: PropertyDescriptorsBuilder()..add<int>(name: 'int'),
+        );
+
+        final target = presenter.savePropertyValue('int');
+        expect(target, isNotNull);
+        final value = DateTime.now().microsecondsSinceEpoch;
+        target(value);
+
+        // Check pass through
+        expect(presenter.getProperty('int').savedValue, equals(value));
+      });
+    });
+
+    group('getSavedPropertyValue', () {
+      test('assertion error when never saved.', () {
+        final target = TestPresenter(
+          properties: PropertyDescriptorsBuilder()..add<int>(name: 'int'),
+        );
+
+        expect(() => target.getSavedPropertyValue('int'), throwsAssertionError);
+      });
+
+      test('can get saved value.', () {
+        final target = TestPresenter(
+          properties: PropertyDescriptorsBuilder()..add<int>(name: 'int'),
+        );
+
+        final value = DateTime.now().microsecondsSinceEpoch;
+        target.savePropertyValue('int')(value);
+        expect(target.getSavedPropertyValue('int'), equals(value));
+      });
+    });
+
+    group('hasPendingAsyncValidations', () {
+      test('ArgumentError for never-registered property.', () {
+        final target = TestPresenter(
+          properties: PropertyDescriptorsBuilder()..add<int>(name: 'int'),
+        );
+
+        expect(
+          () => target.hasPendingAsyncValidations('long'),
+          throwsArgumentError,
+        );
+      });
+
+      test('false for any async validations have never run.', () {
+        final completer = Completer<void>();
+        final target = TestPresenter(
+          properties: PropertyDescriptorsBuilder()
+            ..add<int>(name: 'int', asyncValidatorFactories: [
+              (_) => (value, options) async {
+                    await completer.future;
+                    return null;
+                  }
+            ]),
+        );
+
+        expect(target.hasPendingAsyncValidations('int'), isFalse);
+      });
+
+      test('true for any async validations are running.', () {
+        final completer = Completer<void>();
+        final target = TestPresenter(
+          properties: PropertyDescriptorsBuilder()
+            ..add<int>(name: 'int', asyncValidatorFactories: [
+              (_) => (value, options) async {
+                    await completer.future;
+                    return null;
+                  }
+            ]),
+        );
+
+        target.getProperty<int>('int').getValidator(DummyBuildContext())(123);
+        expect(target.hasPendingAsyncValidations('int'), isTrue);
+        completer.complete();
+      });
+
+      test('false for all async validations are finished.', () async {
+        final completer = Completer<void>();
+        final target = TestPresenter(
+          properties: PropertyDescriptorsBuilder()
+            ..add<int>(name: 'int', asyncValidatorFactories: [
+              (_) => (value, options) async {
+                    completer.complete();
+                    return null;
+                  }
+            ]),
+        );
+
+        target.getProperty<int>('int').getValidator(DummyBuildContext())(123);
+        await completer.future;
+        // pump
+        await Future<void>.delayed(Duration.zero);
+        expect(target.hasPendingAsyncValidations('int'), isFalse);
+      });
+    });
+
+    group('PropertyDescriptor', () {
+      test('can be get / save value.', () {
+        final target = TestPresenter(
+          properties: PropertyDescriptorsBuilder()..add<int>(name: 'int'),
+        );
+
+        final property = target.getProperty<int>('int');
+        // ignore: cascade_invocations
+        property.saveValue(123);
+        expect(property.savedValue, equals(123));
+      });
+
+      test('throws ArgumentError from saveValue for incompatible type.', () {
         final target = TestPresenter(
           properties: PropertyDescriptorsBuilder()..add<int>(name: 'int'),
         );
@@ -554,31 +655,114 @@ void main() {
         expect(isStateValidateCalled, isTrue);
       });
 
-      test('calls asyncValidators and wait when any asyncs exist', () async {
+      test('just call state.validate() once when no asyncs', () async {
+        Future<void> testCore(
+          TestPresenter presenter,
+          // ignore: avoid_positional_boolean_parameters
+          bool dummyValidateResult,
+        ) async {
+          var stateValidateCalled = false;
+          final state = FixedFormStateAdapter(onValidate: () {
+            stateValidateCalled = true;
+            return dummyValidateResult;
+          });
+
+          expect(
+              await presenter.validateAll(state), equals(dummyValidateResult));
+          expect(stateValidateCalled, isTrue);
+        }
+
+        final target = TestPresenter(
+          properties: PropertyDescriptorsBuilder()..add<int>(name: 'int'),
+        );
+        await testCore(target, true);
+        await testCore(target, false);
+      });
+
+      test(
+          'call state.validate() twice with waiting async completion when any asyncs',
+          () async {
+        Future<void> testCore({
+          bool? expectedResult,
+        }) async {
+          var asyncValidatorCalled = false;
+          final target = TestPresenter(
+            properties: PropertyDescriptorsBuilder()
+              ..add<int>(name: 'int', asyncValidatorFactories: [
+                (_) => (value, options) async {
+                      final result = await Future.delayed(
+                        Duration.zero,
+                        () {
+                          return (expectedResult ?? false) ? null : 'ERROR';
+                        },
+                      );
+                      asyncValidatorCalled = true;
+                      return result;
+                    }
+              ]),
+          );
+          final validationResults = <bool>[];
+          final state = FixedFormStateAdapter(
+            onValidate: () {
+              // dummy logic
+              final context = DummyBuildContext();
+              final validator =
+                  target.getProperty<int>('int').getValidator(context);
+              final result = validator(1) == null;
+              validationResults.add(result);
+              return result;
+            },
+          );
+
+          expect(
+            await target.validateAll(state),
+            equals(expectedResult ?? false),
+          );
+          expect(validationResults.length, equals(2));
+          expect(validationResults, equals([true, expectedResult ?? false]));
+          expect(asyncValidatorCalled, isTrue);
+        }
+
+        await testCore(expectedResult: true);
+        await testCore(expectedResult: false);
+      });
+
+      test(
+          'call state.validate() twice and throws propagated error from async validator.',
+          () async {
         final target = TestPresenter(
           properties: PropertyDescriptorsBuilder()
-            ..add<int>(
-              name: 'property',
-              validatorFactories: [
-                (context) => (value) => null,
-              ],
-              asyncValidatorFactories: [
-                (context) => (value, options) => null,
-              ],
-            ),
+            ..add<int>(name: 'int', asyncValidatorFactories: [
+              (_) => (value, options) async {
+                    await Future.delayed(
+                      Duration.zero,
+                      () {
+                        throw Exception('Dummy error');
+                      },
+                    );
+                  }
+            ]),
         );
-
-        var stateValidateCalled = 0;
+        final validationResults = <bool>[];
         final state = FixedFormStateAdapter(
           onValidate: () {
-            stateValidateCalled++;
-            return true;
+            // dummy logic
+            final context = DummyBuildContext();
+            final validator =
+                target.getProperty<int>('int').getValidator(context);
+            final result = validator(1) == null;
+            validationResults.add(result);
+            return result;
           },
         );
-        await target.validateAll(state);
-        // FormState.validate() is called twice --
-        //   1st is initiation, 2nd is getting (cached) results.
-        expect(stateValidateCalled, equals(2));
+
+        expect(
+          () async => await target.validateAll(state),
+          throwsA(isA<AsyncError>()),
+        );
+        // 2nd call fails with error, so only first call was recorded.
+        expect(validationResults.length, equals(1));
+        expect(validationResults, equals([true]));
       });
     });
 
@@ -695,6 +879,27 @@ void main() {
       expect(locale.languageCode, equals('en'));
       expect(locale.countryCode, equals('US'));
       expect(locale.scriptCode, isNull);
+    });
+
+    group('formStateOf', () {
+      test('returns state when maybeFormStateOf returns non-null state.', () {
+        final expectedState = FixedFormStateAdapter();
+        final target = TestPresenter(
+          properties: PropertyDescriptorsBuilder(),
+          maybeFormStateOfCalled: (_) => expectedState,
+        );
+
+        expect(target.formStateOf(DummyBuildContext()), same(expectedState));
+      });
+
+      test('throws StateError when maybeFormStateOf returns null state.', () {
+        final target = TestPresenter(
+          properties: PropertyDescriptorsBuilder(),
+          maybeFormStateOfCalled: (_) => null,
+        );
+
+        expect(() => target.formStateOf(DummyBuildContext()), throwsStateError);
+      });
     });
   });
 }
