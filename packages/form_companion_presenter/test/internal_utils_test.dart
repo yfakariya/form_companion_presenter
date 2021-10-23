@@ -3,6 +3,7 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
+
 import 'package:form_companion_presenter/src/internal_utils.dart';
 
 void main() {
