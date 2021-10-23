@@ -628,11 +628,11 @@ class PropertyDescriptor<T extends Object> {
   PropertyDescriptor._({
     required this.name,
     required this.presenter,
-    List<FormFieldValidatorFactory<T>>? validatorFactories,
-    List<AsyncValidatorFactory<T>>? asyncValidatorFactories,
+    required List<FormFieldValidatorFactory<T>> validatorFactories,
+    required List<AsyncValidatorFactory<T>> asyncValidatorFactories,
     Equality<T?>? equality,
-  })  : _validatorFactories = validatorFactories ?? [],
-        _asynvValidatorEntries = (asyncValidatorFactories ?? [])
+  })  : _validatorFactories = validatorFactories,
+        _asynvValidatorEntries = asyncValidatorFactories
             .map(
               (v) => _AsyncValidatorEntry<T>(
                 v,
