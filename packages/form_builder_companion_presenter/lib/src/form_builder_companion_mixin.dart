@@ -46,8 +46,8 @@ mixin FormBuilderCompanionMixin on CompanionPresenterMixin {
   }
 
   @override
-  @protected
   @nonVirtual
+  @protected
   @visibleForOverriding
   @visibleForTesting
   bool canSubmit(BuildContext context) {
@@ -82,8 +82,8 @@ mixin FormBuilderCompanionMixin on CompanionPresenterMixin {
   }
 
   @override
-  @protected
   @nonVirtual
+  @protected
   @visibleForTesting
   void saveFields(FormStateAdapter formState) {
     if (formState is _FormBuilderStateAdapter) {
