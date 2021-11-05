@@ -63,6 +63,9 @@ class ValidationInvocation<T> implements AsyncOperationNotifier<String?, void> {
   @override
   final AsyncOperationFailedCallback onFailed;
 
+  @override
+  final AsyncOperationFailureHandler<String?> failureHandler;
+
   @Deprecated('ValidationInvocation does not support onProgress')
   @nonVirtual
   @override
@@ -79,8 +82,9 @@ class ValidationInvocation<T> implements AsyncOperationNotifier<String?, void> {
     required this.value,
     required this.locale,
     required this.onCompleted,
-    AsyncOperationFailedCallback? onFailed,
-  })  : onFailed = onFailed ?? ((_) {}),
+    required this.onFailed,
+    required this.failureHandler,
+  }) :
         // ignore: deprecated_member_use_from_same_package
         onProgress = ((_) {});
 
@@ -88,15 +92,16 @@ class ValidationInvocation<T> implements AsyncOperationNotifier<String?, void> {
   String toString() => "Instance of 'ValidationInvocation<$T>' ($value)";
 }
 
-/// Callback of complection of [AsyncValidatorExecutor.validate].
-/// [error] will be `null` when the validation is complected successfully
-/// regardless its (validation) result, and [error] will not be `null` when the
-/// validation is not completed with unexpected error.
-/// Note that the value of [result] is string representation of the [error]
-/// when [error] is not `null`.
+/// Callback of completion of [AsyncValidator].
 typedef AsyncValidationCompletionCallback = void Function(
   String? result,
   AsyncError? error,
+);
+
+/// Callback of exceptional completion of [AsyncValidatorExecutor.validate].
+/// You can change the exception or error via [AsyncInvocationFailureContext.overrideError].
+typedef AsyncValidationFailureHandler = void Function(
+  AsyncInvocationFailureContext<String?> context,
 );
 
 /// Handles asynchronous ([Future] based) validation logic.
@@ -162,6 +167,7 @@ class AsyncValidatorExecutor<T extends Object>
     required T? value,
     required Locale locale,
     required AsyncValidationCompletionCallback onCompleted,
+    required AsyncValidationFailureHandler failureHandler,
   }) =>
       execute(
         ValidationInvocation<T?>(
@@ -169,7 +175,8 @@ class AsyncValidatorExecutor<T extends Object>
           value: value,
           locale: locale,
           onCompleted: (v) => onCompleted(v, null),
-          onFailed: (e) => onCompleted(e.toString(), e),
+          onFailed: (e) => onCompleted(null, e),
+          failureHandler: failureHandler,
         ),
       );
 }

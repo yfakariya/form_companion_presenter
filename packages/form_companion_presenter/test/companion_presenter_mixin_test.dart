@@ -589,8 +589,8 @@ void main() {
 
         expect(handledError, isNotNull);
       });
-      test('calls Zone\'s handler by default.', () async {
-        Object? handledError;
+      test('just call print().', () async {
+        String? handledErrorToString;
         Zone? unhandledZone;
 
         await runZoned(
@@ -599,19 +599,15 @@ void main() {
 
             // Default implementation of handleCanceledAsyncValidationError()
             // calles current zone's handleUncaughtError()
-            expect(handledError, isNotNull);
+            expect(handledErrorToString, isNotNull);
             expect(unhandledZone, same(Zone.current));
           },
-          zoneSpecification: ZoneSpecification(handleUncaughtError: (
-            self,
-            parent,
-            zone,
-            error,
-            stackTrace,
-          ) {
-            handledError = error;
-            unhandledZone = zone;
-          }),
+          zoneSpecification: ZoneSpecification(
+            print: (self, parent, zone, line) {
+              handledErrorToString = line;
+              unhandledZone = zone;
+            },
+          ),
         );
       });
     });
@@ -725,44 +721,6 @@ void main() {
 
         await testCore(expectedResult: true);
         await testCore(expectedResult: false);
-      });
-
-      test(
-          'call state.validate() twice and throws propagated error from async validator.',
-          () async {
-        final target = TestPresenter(
-          properties: PropertyDescriptorsBuilder()
-            ..add<int>(name: 'int', asyncValidatorFactories: [
-              (_) => (value, options) async {
-                    await Future.delayed(
-                      Duration.zero,
-                      () {
-                        throw Exception('Dummy error');
-                      },
-                    );
-                  }
-            ]),
-        );
-        final validationResults = <bool>[];
-        final state = FixedFormStateAdapter(
-          onValidate: () {
-            // dummy logic
-            final context = DummyBuildContext();
-            final validator =
-                target.getProperty<int>('int').getValidator(context);
-            final result = validator(1) == null;
-            validationResults.add(result);
-            return result;
-          },
-        );
-
-        expect(
-          () async => await target.validateAll(state),
-          throwsA(isA<AsyncError>()),
-        );
-        // 2nd call fails with error, so only first call was recorded.
-        expect(validationResults.length, equals(1));
-        expect(validationResults, equals([true]));
       });
     });
 

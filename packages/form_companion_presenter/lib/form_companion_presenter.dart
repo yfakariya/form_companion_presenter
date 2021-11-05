@@ -4,8 +4,10 @@ library form_companion_presenter;
 
 export 'src/async_validator_executor.dart'
     show
-        AsyncValidationCompletionCallback,
         AsyncValidator,
+        AsyncValidatorOptions,
+        AsyncValidationCompletionCallback,
+        AsyncValidationFailureHandler,
         AsyncValidatorExecutor,
         ValidationInvocation;
 export 'src/form_companion_mixin.dart'
@@ -20,9 +22,11 @@ export 'src/form_companion_mixin.dart'
 export 'src/future_invoker.dart'
     show
         AsyncErrorHandler,
+        AsyncInvocationFailureContext,
         AsyncOperationCompletedCallback,
         AsyncOperationFailedCallback,
         AsyncOperationProgressCallback,
+        AsyncOperationFailureHandler,
         AsyncOperationNotifier,
         AsyncOperationStatus,
         FutureInvoker;

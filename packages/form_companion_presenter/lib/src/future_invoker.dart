@@ -115,18 +115,40 @@ class _AsyncOperationState<P, R> {
       );
 }
 
+/// Context information of [AsyncOperationFailedCallback] to handle failed
+/// asynchronous execution result.
+@sealed
+class AsyncInvocationFailureContext<T> {
+  /// An [AsyncError] caused asynchronously.
+  final AsyncError error;
+  bool _isReplaced = false;
+  late T _replacedResult;
+
+  AsyncInvocationFailureContext._(this.error);
+
+  /// Initializes a new instance of [AsyncInvocationFailureContext] with
+  /// actually thrown [AsyncError].
+  factory AsyncInvocationFailureContext.withError(AsyncError error) =>
+      AsyncInvocationFailureContext._(error);
+
+  /// Overrides this asynchronous error result with specified result.
+  void overrideError(T result) {
+    _isReplaced = true;
+    _replacedResult = result;
+  }
+}
+
 /// Callback for [AsyncError] handling.
 /// The parameter is [AsyncError] which is thrown by asynchronous operation.
 typedef AsyncErrorHandler = void Function(AsyncError error);
-
-/// Callback which called when async operation is failed with error.
-/// The parameter is [AsyncError] which is thrown by asynchronous operation.
-typedef AsyncOperationFailedCallback = void Function(AsyncError error);
 
 /// Callback which called when async operation is completed successfully
 /// The parameter is [T] which is asynchronous operation result.
 @optionalTypeArgs
 typedef AsyncOperationCompletedCallback<T> = void Function(T result);
+
+/// Callback which called when async operation is failed with error.
+typedef AsyncOperationFailedCallback = void Function(AsyncError failure);
 
 /// Callback which called periodically in the implementation specific frequency
 /// when async operation is progress some degree.
@@ -138,6 +160,11 @@ typedef AsyncOperationCompletedCallback<T> = void Function(T result);
 @optionalTypeArgs
 typedef AsyncOperationProgressCallback<P> = void Function(P progress);
 
+/// Callback which called when async operation is failed with error.
+/// The parameter is [AsyncInvocationFailureContext] to handle the error.
+typedef AsyncOperationFailureHandler<T> = void Function(
+    AsyncInvocationFailureContext<T> failure);
+
 /// Defines interface which is the parameter of [FutureInvoker.execute] method
 /// must implement to notify asynchronous operation status.
 @optionalTypeArgs
@@ -147,7 +174,7 @@ abstract class AsyncOperationNotifier<R, P> {
   /// so the asynchronous operation should not call this callback.
   AsyncOperationCompletedCallback<R> get onCompleted;
 
-  /// Called when the asynchronous operation failed with error.
+  /// Called when the asynchronous operation completed with failure.
   /// This call back will be called by [FutureInvoker],
   /// so the asynchronous operation should not call this callback.
   AsyncOperationFailedCallback get onFailed;
@@ -161,6 +188,14 @@ abstract class AsyncOperationNotifier<R, P> {
   /// and any extra information including the label to distinguish among
   /// concurrent asynchronous operations by caller (that is, callback receiver).
   AsyncOperationProgressCallback<P> get onProgress;
+
+  /// Called when the asynchronous operation failed with error.
+  /// This call back will be called by [FutureInvoker],
+  /// so the asynchronous operation should not call this callback.
+  ///
+  /// This handler can override the error with complemental result via
+  /// [AsyncInvocationFailureContext.overrideError].
+  AsyncOperationFailureHandler<R> get failureHandler;
 }
 
 /// A simple pair of parameter and result.
@@ -409,13 +444,32 @@ abstract class FutureInvoker<T extends AsyncOperationNotifier<R, P>, R, P> {
             error: error,
             stackTrace: stackTrace,
           );
-          _state = _AsyncOperationState.failed(
-            parameter.value,
-            asyncError,
-          );
+
+          final context =
+              AsyncInvocationFailureContext<R>.withError(asyncError);
+          parameter.value.failureHandler(context);
+          if (context._isReplaced) {
+            _log.fine(
+              () =>
+                  'Asynchronous failure has been overriden: ${context._replacedResult}',
+            );
+            _state = _AsyncOperationState.completed(
+              parameter.value,
+              context._replacedResult,
+            );
+          } else {
+            _state = _AsyncOperationState.failed(
+              parameter.value,
+              asyncError,
+            );
+          }
           _lastState = _state;
 
-          parameter.value.onFailed(asyncError);
+          if (context._isReplaced) {
+            parameter.value.onCompleted(context._replacedResult);
+          } else {
+            parameter.value.onFailed(asyncError);
+          }
         }
       }
     }

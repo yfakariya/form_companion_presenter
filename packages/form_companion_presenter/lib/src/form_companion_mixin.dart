@@ -18,6 +18,12 @@ typedef AsyncValidatorFactory<T> = AsyncValidator<T> Function(
   BuildContext context,
 );
 
+enum _ValidationContext {
+  unspecified,
+  doValidationOnSubmit,
+  confirmingResult,
+}
+
 /// Defines interface between [CompanionPresenterMixin] and actual state of `Form`.
 abstract class FormStateAdapter {
   /// Gets a current [AutovalidateMode] of the `Form`.
@@ -61,6 +67,7 @@ abstract class FormStateAdapter {
 mixin CompanionPresenterMixin {
   late final Map<String, PropertyDescriptor<Object>> _properties;
   late final bool _hasAsyncValidators;
+  _ValidationContext _validationContext = _ValidationContext.unspecified;
 
   /// Map of [PropertyDescriptor]. Key is [PropertyDescriptor.name].
   @nonVirtual
@@ -111,11 +118,13 @@ mixin CompanionPresenterMixin {
   /// You can handles the error by overriding this method. For example, you
   /// record the error with your logger or APM library.
   ///
-  /// Default implementation delegates the error handling to
-  /// [Zone.handleUncaughtError] method by throwing the error.
+  /// Default implementation just calls [print] to log the error.
   @protected
   @visibleForOverriding
-  void handleCanceledAsyncValidationError(AsyncError error) => throw error;
+  void handleCanceledAsyncValidationError(AsyncError error) {
+    // ignore: avoid_print
+    print(error);
+  }
 
   PropertyDescriptor<Object> _getProperty(String name) {
     final property = properties[name];
@@ -286,7 +295,20 @@ mixin CompanionPresenterMixin {
     String name,
     BuildContext context,
   ) =>
-      (_result, _error) => maybeFormStateOf(context)?.validate();
+      (result, error) => maybeFormStateOf(context)?.validate();
+
+  /// Returns a validation error message which is shown when the async validator
+  /// failed to complete with an exception or an error.
+  ///
+  /// This implementation just return an English message
+  /// "Failed to check value. Try input again later."
+  /// You can override this method and provide your preferred message such as
+  /// user friendly, localized message with [error] parameter which is actual
+  /// [AsyncError].
+  @visibleForOverriding
+  @visibleForTesting
+  String getAsyncValidationFailureMessage(AsyncError error) =>
+      'Failed to check value. Try input again later.';
 
   /// Builds and returns [VoidCallback] which prepares and calls [doSubmit].
   ///
@@ -301,7 +323,14 @@ mixin CompanionPresenterMixin {
     final formState = formStateOf(context);
 
     return () async {
-      await validateAndSave(formState);
+      _validationContext = _ValidationContext.doValidationOnSubmit;
+      try {
+        if (!await validateAndSave(formState)) {
+          return;
+        }
+      } finally {
+        _validationContext = _ValidationContext.unspecified;
+      }
       await doSubmit();
     };
   }
@@ -332,7 +361,7 @@ mixin CompanionPresenterMixin {
 
   Future<bool> _validateAllWithAsync(FormStateAdapter formState) async {
     // Kick async validators.
-    formState.validate();
+    final allSynchronousValidationsAreSucceeded = formState.validate();
 
     // Creates completers to wait pending async validations.
     final completers = properties.values
@@ -341,23 +370,25 @@ mixin CompanionPresenterMixin {
             ))
         .map(
       (property) {
-        final completer = Completer<void>();
+        final completer = Completer<bool>();
         property._asyncValidationCompletion = completer;
         return completer;
       },
     ).toList();
 
+    late List<bool> asyncValidationResults;
     try {
       // wait completions of asynchronous validations.
-      await Future.wait(completers.map((f) => f.future));
-
-      // Returns result.
-      return formState.validate();
+      asyncValidationResults =
+          await Future.wait(completers.map((f) => f.future));
     } finally {
       for (final property in properties.values) {
         property._asyncValidationCompletion = null;
       }
     }
+
+    return allSynchronousValidationsAreSucceeded &&
+        asyncValidationResults.every((element) => element);
   }
 
   /// Validates all fields' values and then saves them if there is no validation
@@ -518,20 +549,219 @@ class _AsyncValidatorEntry<T extends Object> {
   AsyncValidator<T> createValidator(BuildContext context) => _factory(context);
 }
 
-// The idea is borrowed from FormBuilderValidators.composite()
-FormFieldValidator<T> _chainValidators<T>(
-  List<FormFieldValidator<T?>> validators,
-) =>
-    (value) {
-      for (final validator in validators) {
-        final validationError = validator(value);
-        if (validationError != null) {
-          return validationError;
-        }
-      }
+typedef _ChainedAsyncValidation<T extends Object> = String? Function(
+  T? value,
+  String? result,
+  AsyncError? error, {
+  required bool isSync,
+});
 
-      return null;
+class _AsyncPropertyValidator<T extends Object> {
+  final AsyncValidatorExecutor<T> executor;
+  final AsyncValidator<T> validator;
+
+  _AsyncPropertyValidator(this.executor, this.validator);
+}
+
+typedef _AsyncValidationFailureMessageProvider = String Function(
+    AsyncError error);
+
+typedef _ValidationContextProvider = _ValidationContext Function();
+typedef _ValidationContextSupplier = void Function(_ValidationContext context);
+
+class _AsyncValidatorChain<T extends Object> {
+  final Locale _locale;
+  final AsyncValidationCompletionCallback _transitToAsyncValidationConfirmation;
+  final Completer<bool>? _asyncValidationChainCompletionNotifier;
+  final _AsyncValidationFailureMessageProvider
+      _asyncValidationFailureMessageProvider;
+  final _ValidationContextProvider _presenterValidationContextProvider;
+  final _ValidationContextProvider _propertyValidationContextProvider;
+  final _ValidationContextSupplier _propertyValidationContextSupplier;
+
+  late final FormFieldValidator<T> _first;
+
+  _ValidationContext get _validationContext =>
+      _propertyValidationContextProvider();
+  set _validationContext(_ValidationContext value) =>
+      _propertyValidationContextSupplier(value);
+
+  _AsyncValidatorChain(
+    this._locale,
+    List<_AsyncPropertyValidator<T>> validators,
+    this._transitToAsyncValidationConfirmation,
+    this._asyncValidationChainCompletionNotifier,
+    this._asyncValidationFailureMessageProvider,
+    this._presenterValidationContextProvider,
+    this._propertyValidationContextProvider,
+    this._propertyValidationContextSupplier,
+  ) {
+    _first = _buildChain(validators);
+  }
+
+  FormFieldValidator<T> _buildChain(
+    List<_AsyncPropertyValidator<T>> validators,
+  ) {
+    // ignore: omit_local_variable_types
+    _ChainedAsyncValidation<T> callNext =
+        (_, result, error, {required isSync}) {
+      _notifyOnChainCompleted(result, error, isSync: isSync);
+      return result;
     };
+
+    for (final current in validators.reversed.take(validators.length - 1)) {
+      final theCurrent = current;
+      final theCallNext = callNext;
+      callNext = (value, result, error, {required isSync}) {
+        if (result != null) {
+          // report validation error and abort chain with error.
+          _notifyOnChainCompleted(result, error, isSync: isSync);
+          return result;
+        }
+
+        // chain to next.
+        return _callAsyncValidator(
+          value,
+          theCurrent.executor,
+          theCurrent.validator,
+          theCallNext,
+        );
+      };
+    }
+
+    final firstExecutor = validators.first.executor;
+    final firstValidator = validators.first.validator;
+    return (value) => _callAsyncValidator(
+          value,
+          firstExecutor,
+          firstValidator,
+          callNext,
+        );
+  }
+
+  void _notifyOnChainCompleted(
+    String? result,
+    AsyncError? error, {
+    required bool isSync,
+  }) {
+    if (_validationContext == _ValidationContext.confirmingResult) {
+      // This line refers current late initialized field rather than the field value when getValidator is called.
+      // Note that "error" is not handled here -- error handling should be implemented in the handler
+      // returned from buildOnAsyncValidationCompleted (thus, notifyCompletion variable).
+      _asyncValidationChainCompletionNotifier?.complete(result == null);
+      _validationContext = _ValidationContext.unspecified;
+      // Do not call notifyCompletion here to avoid recusrive call.
+    } else {
+      // Transit to confirmingResultOnSubmit and call notifyCompletion
+      _validationContext = _ValidationContext.confirmingResult;
+
+      if (!isSync) {
+        // Async only -- it may cause validate() on widget tree build,
+        // which eventually leads assertion error.
+        _transitToAsyncValidationConfirmation(result, error);
+      }
+    }
+  }
+
+  void _handleFailure(AsyncInvocationFailureContext<String?> context) {
+    // Converts async validator failure to error message when submitting.
+    // Else, ignore failure to avoid user's dead end caused by transient
+    // error such as temporary bad network condition.
+    final message =
+        _presenterValidationContextProvider() != _ValidationContext.unspecified
+            ? _asyncValidationFailureMessageProvider(context.error)
+            : null;
+    context.overrideError(message);
+  }
+
+  String? _callAsyncValidator(
+    T? value,
+    AsyncValidatorExecutor<T> executor,
+    AsyncValidator<T> validator,
+    _ChainedAsyncValidation<T> callNext,
+  ) {
+    // Cancels previous validation -- it might be hanged-up
+    executor.cancel();
+
+    if (_validationContext == _ValidationContext.doValidationOnSubmit) {
+      // Clears cached error to ensure new async invocation is initiated.
+      executor.reset(null);
+    }
+    // invoke next validator
+    final validationResult = executor.validate(
+      validator: validator,
+      value: value,
+      locale: _locale,
+      onCompleted: (r, e) => callNext(value, r, e, isSync: false),
+      failureHandler: _handleFailure,
+    );
+
+    if (validationResult != null) {
+      // synchrnous failure
+      _notifyOnChainCompleted(validationResult, null, isSync: true);
+      return validationResult;
+    }
+
+    if (!executor.validating) {
+      // synchronous success
+      return callNext(value, null, null, isSync: true);
+    }
+
+    // return default 'null', which means that async invocation is in-progress.
+    return null;
+  }
+
+  String? callValidator(T? value) {
+    final presenterContext = _presenterValidationContextProvider();
+    if (presenterContext == _ValidationContext.doValidationOnSubmit &&
+        _validationContext == _ValidationContext.unspecified) {
+      _validationContext = _ValidationContext.doValidationOnSubmit;
+    }
+
+    return _first(value);
+  }
+}
+
+class _PropertyValidator<T extends Object> {
+  final List<FormFieldValidator<T>> _validators;
+  final _AsyncValidatorChain<T>? _asyncValidatorChain;
+
+  _PropertyValidator(
+    this._validators,
+    List<_AsyncPropertyValidator<T>> asyncValidators,
+    Locale locale,
+    AsyncValidationCompletionCallback transitToAsyncValidationConfirmation,
+    Completer<bool>? asyncValidationChainCompletionNotifier,
+    _AsyncValidationFailureMessageProvider
+        asyncValidationFailureMessageProvider,
+    _ValidationContextProvider presenterValidationContextProvider,
+    _ValidationContextProvider propertyValidationContextProvider,
+    _ValidationContextSupplier propertyValidationContextSupplier,
+  ) : _asyncValidatorChain = asyncValidators.isNotEmpty
+            ? _AsyncValidatorChain(
+                locale,
+                asyncValidators,
+                transitToAsyncValidationConfirmation,
+                asyncValidationChainCompletionNotifier,
+                asyncValidationFailureMessageProvider,
+                presenterValidationContextProvider,
+                propertyValidationContextProvider,
+                propertyValidationContextSupplier,
+              )
+            : null;
+
+  FormFieldValidator<T> asValidtor() => (value) {
+        // The idea is borrowed from FormBuilderValidators.composite()
+        for (final validator in _validators) {
+          final validationError = validator(value);
+          if (validationError != null) {
+            return validationError;
+          }
+        }
+
+        return _asyncValidatorChain?.callValidator(value);
+      };
+}
 
 /// Represents "property" of view model which uses [CompanionPresenterMixin].
 ///
@@ -581,12 +811,14 @@ class PropertyDescriptor<T extends Object> {
   /// Saved property value. This value can be `null`.
   T? _value;
 
-  bool _isValueSet = false;
+  var _isValueSet = false;
 
   /// [Completer] to notify [CompanionPresenterMixin] with
   /// non-autovalidation mode which should run and wait asynchronous validators
   /// in its submit method.
-  Completer<void>? _asyncValidationCompletion;
+  Completer<bool>? _asyncValidationCompletion;
+
+  _ValidationContext _validationContext = _ValidationContext.unspecified;
 
   /// Saved property value. This value can be `null`.
   ///
@@ -644,42 +876,23 @@ class PropertyDescriptor<T extends Object> {
 
   /// Returns a composite validator which contains synchronous (normal)
   /// validators and asynchronous validators.
-  FormFieldValidator<T> getValidator(BuildContext context) {
-    final locale = presenter.getLocale(context);
-    final notifyCompletion =
-        presenter.buildOnAsyncValidationCompleted(name, context);
-    // ignore: prefer_function_declarations_over_variables, avoid_types_on_closure_parameters
-    final onCompleted = (String? result, AsyncError? error) {
-      // This line refers lates field instead of the time when getValidator is called.
-      if (error == null) {
-        _asyncValidationCompletion?.complete();
-      } else {
-        _asyncValidationCompletion?.completeError(error);
-      }
-
-      notifyCompletion(result, error);
-    };
-    return _chainValidators([
-      ..._validatorFactories.map((f) => f(context)),
-      ..._asynvValidatorEntries.map(
-        (e) {
-          final asyncValidator = e.createValidator(context);
-          final executor = e._executor;
-
-          return (v) {
-            // Cancels previous validation -- it might hang
-            executor.cancel();
-            return executor.validate(
-              validator: asyncValidator,
-              value: v,
-              locale: locale,
-              onCompleted: onCompleted,
-            );
-          };
-        },
-      ),
-    ]);
-  }
+  FormFieldValidator<T> getValidator(BuildContext context) =>
+      _PropertyValidator<T>(
+        [
+          ..._validatorFactories.map((f) => f(context)),
+        ],
+        [
+          ..._asynvValidatorEntries.map((e) =>
+              _AsyncPropertyValidator(e._executor, e.createValidator(context))),
+        ],
+        presenter.getLocale(context),
+        presenter.buildOnAsyncValidationCompleted(name, context),
+        _asyncValidationCompletion,
+        presenter.getAsyncValidationFailureMessage,
+        () => presenter._validationContext,
+        () => _validationContext,
+        (v) => _validationContext = v,
+      ).asValidtor();
 }
 
 /// Required values to create [PropertyDescriptor].

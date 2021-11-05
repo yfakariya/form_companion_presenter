@@ -725,4 +725,1061 @@ void main() {
           testRebuildBehavior(widgetTester, AutovalidateMode.disabled),
     );
   });
+
+  group('Async validator error handling', () {
+    testWidgets('async exception is ignored on auto field validation',
+        (widgetTester) async {
+      final validationStopper = Completer<void>();
+      final validationCompletion = Completer<void>();
+      var validatorCalled = 0;
+      final presenter = Presenter(
+          properties: PropertyDescriptorsBuilder()
+            ..add<String>(
+              name: 'prop',
+              asyncValidatorFactories: [
+                (context) => (value, options) async {
+                      validatorCalled++;
+                      await validationStopper.future;
+                      if (!validationCompletion.isCompleted) {
+                        validationCompletion.complete();
+                      }
+                      throw Exception(validatorCalled);
+                    }
+              ],
+            ));
+      late BuildContext lastContext;
+      await widgetTester.pumpWidget(
+        _app(
+          HierarchicalForm(
+            onBuilding: (context) {
+              lastContext = context;
+            },
+            autovalidateMode: AutovalidateMode.onUserInteraction,
+            fieldKeyFactory: (context) => presenter.getKey('prop', context),
+            validatorFactory: (context) =>
+                presenter.getPropertyValidator('prop', context),
+          ),
+        ),
+      );
+
+      final key = presenter.getKey('prop', lastContext)
+          as GlobalObjectKey<FormFieldState<dynamic>>;
+
+      await widgetTester.enterText(
+        find.byType(TextFormField),
+        'A',
+      );
+
+      await widgetTester.pump();
+      expect(presenter.getProperty('prop').hasPendingAsyncValidations, isTrue);
+
+      validationStopper.complete();
+      await validationCompletion.future;
+
+      expect(presenter.getProperty('prop').hasPendingAsyncValidations, isFalse);
+
+      expect(key.currentState?.hasError, isFalse);
+      expect(key.currentState?.errorText, isNull);
+      expect(validatorCalled, equals(1));
+    });
+
+    testWidgets('async exception in auto field validation uses cached result',
+        (widgetTester) async {
+      final validationStopper = Completer<void>();
+      final validationCompletion = Completer<void>();
+      var validatorCalled = 0;
+      final presenter = Presenter(
+          properties: PropertyDescriptorsBuilder()
+            ..add<String>(
+              name: 'prop',
+              asyncValidatorFactories: [
+                (context) => (value, options) async {
+                      validatorCalled++;
+                      await validationStopper.future;
+                      validationCompletion.complete();
+                      throw Exception(validatorCalled);
+                    }
+              ],
+            ));
+      late BuildContext lastContext;
+      await widgetTester.pumpWidget(
+        _app(
+          HierarchicalForm(
+            onBuilding: (context) {
+              lastContext = context;
+            },
+            autovalidateMode: AutovalidateMode.onUserInteraction,
+            fieldKeyFactory: (context) => presenter.getKey('prop', context),
+            validatorFactory: (context) =>
+                presenter.getPropertyValidator('prop', context),
+          ),
+        ),
+      );
+
+      final key = presenter.getKey('prop', lastContext)
+          as GlobalObjectKey<FormFieldState<dynamic>>;
+
+      await widgetTester.enterText(
+        find.byType(TextFormField),
+        'A',
+      );
+      await widgetTester.pump();
+      expect(presenter.getProperty('prop').hasPendingAsyncValidations, isTrue);
+
+      validationStopper.complete();
+      await validationCompletion.future;
+
+      expect(presenter.getProperty('prop').hasPendingAsyncValidations, isFalse);
+
+      expect(key.currentState?.hasError, isFalse);
+      expect(key.currentState?.errorText, isNull);
+
+      await widgetTester.enterText(
+        find.byType(TextFormField),
+        'A',
+      );
+      await widgetTester.pump();
+      // If we use cache, no pending async validation exist.
+      expect(presenter.getProperty('prop').hasPendingAsyncValidations, isFalse);
+      expect(validatorCalled, equals(1));
+    });
+
+    testWidgets('async exception is translated to error message on submit',
+        (widgetTester) async {
+      final validationStopper = Completer<void>();
+      final validationCompletion = Completer<void>();
+      var validatorCalled = 0;
+      final presenter = Presenter(
+          properties: PropertyDescriptorsBuilder()
+            ..add<String>(
+              name: 'prop',
+              asyncValidatorFactories: [
+                (context) => (value, options) async {
+                      validatorCalled++;
+                      await validationStopper.future;
+                      if (!validationCompletion.isCompleted) {
+                        validationCompletion.complete();
+                      }
+                      throw Exception(validatorCalled);
+                    }
+              ],
+            ));
+      late BuildContext lastContext;
+      await widgetTester.pumpWidget(
+        _app(
+          HierarchicalForm(
+            onBuilding: (context) {
+              lastContext = context;
+            },
+            autovalidateMode: AutovalidateMode.onUserInteraction,
+            fieldKeyFactory: (context) => presenter.getKey('prop', context),
+            validatorFactory: (context) =>
+                presenter.getPropertyValidator('prop', context),
+          ),
+        ),
+      );
+
+      final key = presenter.getKey('prop', lastContext)
+          as GlobalObjectKey<FormFieldState<dynamic>>;
+
+      presenter.submit(lastContext)!();
+      expect(presenter.getProperty('prop').hasPendingAsyncValidations, isTrue);
+
+      validationStopper.complete();
+      await validationCompletion.future;
+
+      expect(presenter.getProperty('prop').hasPendingAsyncValidations, isFalse);
+
+      expect(key.currentState?.hasError, isTrue);
+      expect(
+        key.currentState?.errorText,
+        equals(
+          presenter.getAsyncValidationFailureMessage(
+            AsyncError(Object(), null),
+          ),
+        ),
+      );
+      expect(validatorCalled, equals(1));
+    });
+
+    testWidgets(
+        'async exception is ignored on auto field validation but be translated to error message on submit',
+        (widgetTester) async {
+      final validationStoppers = [
+        Completer<void>(),
+        Completer<void>(),
+      ];
+      final validationCompletions = [
+        Completer<void>(),
+        Completer<void>(),
+      ];
+      var validatorCalled = 0;
+      final presenter = Presenter(
+          properties: PropertyDescriptorsBuilder()
+            ..add<String>(
+              name: 'prop',
+              asyncValidatorFactories: [
+                (context) => (value, options) async {
+                      final i = validatorCalled;
+                      validatorCalled++;
+                      if (i < validationStoppers.length) {
+                        await validationStoppers[i].future;
+                        validationCompletions[i].complete();
+                      }
+                      throw Exception(validatorCalled);
+                    }
+              ],
+            ));
+      late BuildContext lastContext;
+      await widgetTester.pumpWidget(
+        _app(
+          HierarchicalForm(
+            onBuilding: (context) {
+              lastContext = context;
+            },
+            autovalidateMode: AutovalidateMode.onUserInteraction,
+            fieldKeyFactory: (context) => presenter.getKey('prop', context),
+            validatorFactory: (context) =>
+                presenter.getPropertyValidator('prop', context),
+          ),
+        ),
+      );
+
+      final key = presenter.getKey('prop', lastContext)
+          as GlobalObjectKey<FormFieldState<dynamic>>;
+      final submit = presenter.submit(lastContext);
+      expect(submit, isNotNull);
+
+      await widgetTester.enterText(
+        find.byType(TextFormField),
+        'A',
+      );
+      await widgetTester.pump();
+      expect(presenter.getProperty('prop').hasPendingAsyncValidations, isTrue);
+
+      validationStoppers[0].complete();
+      await validationCompletions[0].future;
+
+      expect(presenter.getProperty('prop').hasPendingAsyncValidations, isFalse);
+
+      expect(key.currentState?.hasError, isFalse);
+      expect(key.currentState?.errorText, isNull);
+
+      expect(validatorCalled, equals(1));
+
+      submit!();
+      expect(presenter.getProperty('prop').hasPendingAsyncValidations, isTrue);
+
+      validationStoppers[1].complete();
+      await validationCompletions[1].future;
+
+      expect(presenter.getProperty('prop').hasPendingAsyncValidations, isFalse);
+
+      // Failure is reported as error.
+      expect(key.currentState?.hasError, isTrue);
+      expect(
+        key.currentState?.errorText,
+        equals(
+          presenter.getAsyncValidationFailureMessage(
+            AsyncError(Object(), null),
+          ),
+        ),
+      );
+      expect(validatorCalled, equals(2));
+    });
+
+    testWidgets(
+      '2 individual field validations are isolated in auto validation.',
+      (widgetTester) async {
+        final validationStopper = Completer<void>();
+        final validationCompletion1 = Completer<void>();
+        final validationCompletion2 = Completer<void>();
+        var validation1Called = 0;
+        var validation2Called = 0;
+        final presenter = Presenter(
+            properties: PropertyDescriptorsBuilder()
+              ..add<String>(
+                name: 'prop1',
+                asyncValidatorFactories: [
+                  (context) => (value, options) async {
+                        validation1Called++;
+                        await validationStopper.future;
+                        validationCompletion1.complete();
+                        throw Exception(validation1Called);
+                      }
+                ],
+              )
+              ..add<String>(
+                name: 'prop2',
+                asyncValidatorFactories: [
+                  (context) => (value, options) async {
+                        validation2Called++;
+                        await validationStopper.future;
+                        validationCompletion2.complete();
+                        throw Exception(validation2Called);
+                      }
+                ],
+              ));
+        late BuildContext lastContext;
+        await widgetTester.pumpWidget(
+          _app(
+            HierarchicalForm.dynamic(
+              onBuilding: (context) {
+                lastContext = context;
+              },
+              autovalidateMode: AutovalidateMode.disabled,
+              childrenFactory: (context) => [
+                TextFormField(
+                  key: presenter.getKey('prop1', context),
+                  validator: presenter.getPropertyValidator('prop1', context),
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                ),
+                TextFormField(
+                  key: presenter.getKey('prop2', context),
+                  validator: presenter.getPropertyValidator('prop2', context),
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                ),
+              ],
+            ),
+          ),
+        );
+
+        final key = presenter.getKey('prop1', lastContext)
+            as GlobalObjectKey<FormFieldState<dynamic>>;
+
+        await widgetTester.enterText(
+          find.byType(TextFormField).first,
+          'A',
+        );
+        await widgetTester.pump();
+        expect(
+            presenter.getProperty('prop1').hasPendingAsyncValidations, isTrue);
+
+        validationStopper.complete();
+        await validationCompletion1.future;
+        // pump for async completion
+        await widgetTester.pump();
+        expect(
+            presenter.getProperty('prop1').hasPendingAsyncValidations, isFalse);
+
+        expect(key.currentState?.hasError, isFalse);
+        expect(key.currentState?.errorText, isNull);
+
+        // check counter
+        expect(validation1Called, equals(1));
+        expect(validation2Called, equals(0));
+      },
+    );
+
+    testWidgets(
+      '2 individual field validations are isolated in submit.',
+      (widgetTester) async {
+        final validationStoppers1 = [
+          Completer<void>(),
+          Completer<void>(),
+        ];
+        final validationStoppers2 = [
+          Completer<void>(),
+          Completer<void>(),
+        ];
+        final validationCompletions1 = [
+          Completer<void>(),
+          Completer<void>(),
+        ];
+        final validationCompletions2 = [
+          Completer<void>(),
+          Completer<void>(),
+        ];
+        var validation1Called = 0;
+        var validation2Called = 0;
+        final presenter = Presenter(
+            properties: PropertyDescriptorsBuilder()
+              ..add<String>(
+                name: 'prop1',
+                asyncValidatorFactories: [
+                  (context) => (value, options) async {
+                        final i = validation1Called;
+                        validation1Called++;
+                        if (i < validationStoppers1.length) {
+                          await validationStoppers1[i].future;
+                          validationCompletions1[i].complete();
+                        }
+                        throw Exception(validation1Called);
+                      }
+                ],
+              )
+              ..add<String>(
+                name: 'prop2',
+                asyncValidatorFactories: [
+                  (context) => (value, options) async {
+                        final i = validation2Called;
+                        validation2Called++;
+                        if (i < validationStoppers2.length) {
+                          await validationStoppers2[i].future;
+                          validationCompletions2[i].complete();
+                        }
+                        throw Exception(validation2Called);
+                      }
+                ],
+              ));
+        late BuildContext lastContext;
+        await widgetTester.pumpWidget(
+          _app(
+            HierarchicalForm.dynamic(
+              onBuilding: (context) {
+                lastContext = context;
+              },
+              autovalidateMode: AutovalidateMode.disabled,
+              childrenFactory: (context) => [
+                TextFormField(
+                  key: presenter.getKey('prop1', context),
+                  validator: presenter.getPropertyValidator('prop1', context),
+                  initialValue: 'prop1',
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                ),
+                TextFormField(
+                  key: presenter.getKey('prop2', context),
+                  validator: presenter.getPropertyValidator('prop2', context),
+                  initialValue: 'prop2',
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                ),
+              ],
+            ),
+          ),
+        );
+
+        final key1 = presenter.getKey('prop1', lastContext)
+            as GlobalObjectKey<FormFieldState<dynamic>>;
+        final key2 = presenter.getKey('prop2', lastContext)
+            as GlobalObjectKey<FormFieldState<dynamic>>;
+        final submit = presenter.submit(lastContext);
+        expect(submit, isNotNull);
+
+        await widgetTester.enterText(
+          find.byWidgetPredicate(
+              (w) => w is TextFormField && w.initialValue == 'prop1'),
+          'A',
+        );
+        await widgetTester.pump();
+        expect(
+            presenter.getProperty('prop1').hasPendingAsyncValidations, isTrue);
+
+        validationStoppers1[0].complete();
+        await validationCompletions1[0].future;
+
+        expect(
+            presenter.getProperty('prop1').hasPendingAsyncValidations, isFalse);
+
+        expect(key1.currentState?.hasError, isFalse);
+        expect(key1.currentState?.errorText, isNull);
+
+        await widgetTester.enterText(
+          find.byWidgetPredicate(
+              (w) => w is TextFormField && w.initialValue == 'prop2'),
+          'B',
+        );
+        await widgetTester.pump();
+        expect(
+            presenter.getProperty('prop2').hasPendingAsyncValidations, isTrue);
+
+        validationStoppers2[0].complete();
+        await validationCompletions2[0].future;
+
+        expect(
+            presenter.getProperty('prop2').hasPendingAsyncValidations, isFalse);
+
+        expect(key2.currentState?.hasError, isFalse);
+        expect(key2.currentState?.errorText, isNull);
+
+        submit!();
+        expect(
+            presenter.getProperty('prop1').hasPendingAsyncValidations, isTrue);
+        validationStoppers1[1].complete();
+        await validationCompletions1[1].future;
+
+        expect(
+            presenter.getProperty('prop2').hasPendingAsyncValidations, isTrue);
+        validationStoppers2[1].complete();
+        await validationCompletions2[1].future;
+
+        expect(
+            presenter.getProperty('prop1').hasPendingAsyncValidations, isFalse);
+        expect(
+            presenter.getProperty('prop2').hasPendingAsyncValidations, isFalse);
+
+        // Failure is reported as error.
+        expect(key1.currentState?.hasError, isTrue);
+        expect(key1.currentState?.errorText, isNotEmpty);
+        expect(key2.currentState?.hasError, isTrue);
+        expect(key2.currentState?.errorText, isNotEmpty);
+        expect(validation1Called, equals(2));
+        expect(validation1Called, equals(2));
+      },
+    );
+
+    Future<void> testMultipleAsyncValidators(
+      WidgetTester widgetTester,
+      FutureOr<String?> Function() first,
+      FutureOr<String?> Function() second,
+      Completer<void>? firstStopper,
+      Completer<void>? secondStopper,
+      FutureOr<void> onFirstExecuted,
+      FutureOr<void> onSecondExecuted,
+      String? expectedFinalResult, {
+      required bool shouldSecondCalled,
+      required bool isSubmitTest,
+    }) async {
+      var firstCalled = 0;
+      var secondCalled = 0;
+      final presenter = Presenter(
+        properties: PropertyDescriptorsBuilder()
+          ..add<String>(
+            name: 'prop',
+            asyncValidatorFactories: [
+              (context) => (value, options) async {
+                    firstCalled++;
+                    if (firstStopper != null) {
+                      await firstStopper.future;
+                    }
+                    return first();
+                  },
+              (context) => (value, options) async {
+                    secondCalled++;
+                    if (secondStopper != null) {
+                      await secondStopper.future;
+                    }
+                    return second();
+                  },
+            ],
+          ),
+      );
+
+      late BuildContext lastContext;
+      await widgetTester.pumpWidget(
+        _app(
+          HierarchicalForm(
+            onBuilding: (context) {
+              lastContext = context;
+            },
+            autovalidateMode: AutovalidateMode.onUserInteraction,
+            fieldKeyFactory: (context) => presenter.getKey('prop', context),
+            validatorFactory: (context) =>
+                presenter.getPropertyValidator('prop', context),
+          ),
+        ),
+      );
+
+      final fieldState = presenter.getKey('prop', lastContext)
+          as GlobalObjectKey<FormFieldState<dynamic>>;
+
+      if (isSubmitTest) {
+        presenter.submit(lastContext)!();
+      } else {
+        await widgetTester.enterText(
+          find.byType(TextFormField),
+          'A',
+        );
+        await widgetTester.pump();
+      }
+
+      firstStopper?.complete();
+      secondStopper?.complete();
+
+      await onFirstExecuted;
+      if (shouldSecondCalled) {
+        await onSecondExecuted;
+      }
+
+      expect(firstCalled, equals(1));
+      expect(secondCalled, equals(shouldSecondCalled ? 1 : 0));
+      expect(fieldState.currentState?.errorText, equals(expectedFinalResult));
+    }
+
+    group(
+      '2 async validators in a single proprety (auto field validation)',
+      () {
+        testWidgets(
+          'sync success -> sync success',
+          (widgetTester) => testMultipleAsyncValidators(
+            widgetTester,
+            () => null,
+            () => null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            shouldSecondCalled: true,
+            isSubmitTest: false,
+          ),
+        );
+
+        testWidgets(
+          'sync success -> async success',
+          (widgetTester) async {
+            final onSecondExecuted = Completer<void>();
+            await testMultipleAsyncValidators(
+              widgetTester,
+              () => null,
+              () {
+                if (!onSecondExecuted.isCompleted) {
+                  onSecondExecuted.complete();
+                }
+
+                return null;
+              },
+              null,
+              Completer<void>(),
+              null,
+              onSecondExecuted.future,
+              null,
+              shouldSecondCalled: true,
+              isSubmitTest: false,
+            );
+          },
+        );
+
+        testWidgets(
+          'sync success -> sync error',
+          (widgetTester) => testMultipleAsyncValidators(
+            widgetTester,
+            () => null,
+            () => 'DUMMY',
+            null,
+            null,
+            null,
+            null,
+            'DUMMY',
+            shouldSecondCalled: true,
+            isSubmitTest: false,
+          ),
+        );
+
+        testWidgets(
+          'sync success -> async error',
+          (widgetTester) async {
+            final onSecondExecuted = Completer<void>();
+            await testMultipleAsyncValidators(
+              widgetTester,
+              () => null,
+              () {
+                if (!onSecondExecuted.isCompleted) {
+                  onSecondExecuted.complete();
+                }
+
+                return 'DUMMY';
+              },
+              null,
+              Completer<void>(),
+              null,
+              onSecondExecuted.future,
+              'DUMMY',
+              shouldSecondCalled: true,
+              isSubmitTest: false,
+            );
+          },
+        );
+
+        testWidgets(
+          'async success -> sync success',
+          (widgetTester) async {
+            final onFirstExecuted = Completer<void>();
+            await testMultipleAsyncValidators(
+              widgetTester,
+              () {
+                if (!onFirstExecuted.isCompleted) {
+                  onFirstExecuted.complete();
+                }
+
+                return null;
+              },
+              () => null,
+              Completer<void>(),
+              null,
+              onFirstExecuted.future,
+              null,
+              null,
+              shouldSecondCalled: true,
+              isSubmitTest: false,
+            );
+          },
+        );
+
+        testWidgets(
+          'async success -> async success',
+          (widgetTester) async {
+            final onFirstExecuted = Completer<void>();
+            final onSecondExecuted = Completer<void>();
+            await testMultipleAsyncValidators(
+              widgetTester,
+              () {
+                if (!onFirstExecuted.isCompleted) {
+                  onFirstExecuted.complete();
+                }
+
+                return null;
+              },
+              () {
+                if (!onSecondExecuted.isCompleted) {
+                  onSecondExecuted.complete();
+                }
+
+                return null;
+              },
+              Completer<void>(),
+              Completer<void>(),
+              onFirstExecuted.future,
+              onSecondExecuted.future,
+              null,
+              shouldSecondCalled: true,
+              isSubmitTest: false,
+            );
+          },
+        );
+
+        testWidgets(
+          'async success -> sync error',
+          (widgetTester) async {
+            final onFirstExecuted = Completer<void>();
+            await testMultipleAsyncValidators(
+              widgetTester,
+              () {
+                if (!onFirstExecuted.isCompleted) {
+                  onFirstExecuted.complete();
+                }
+
+                return null;
+              },
+              () => 'DUMMY',
+              Completer<void>(),
+              null,
+              onFirstExecuted.future,
+              null,
+              'DUMMY',
+              shouldSecondCalled: true,
+              isSubmitTest: false,
+            );
+          },
+        );
+
+        testWidgets(
+          'async success -> async error',
+          (widgetTester) async {
+            final onFirstExecuted = Completer<void>();
+            final onSecondExecuted = Completer<void>();
+            await testMultipleAsyncValidators(
+              widgetTester,
+              () {
+                if (!onFirstExecuted.isCompleted) {
+                  onFirstExecuted.complete();
+                }
+
+                return null;
+              },
+              () {
+                if (!onSecondExecuted.isCompleted) {
+                  onSecondExecuted.complete();
+                }
+
+                return 'DUMMY';
+              },
+              Completer<void>(),
+              Completer<void>(),
+              onFirstExecuted.future,
+              onSecondExecuted.future,
+              'DUMMY',
+              shouldSecondCalled: true,
+              isSubmitTest: false,
+            );
+          },
+        );
+
+        testWidgets(
+          'sync error -> n/a',
+          (widgetTester) async {
+            await testMultipleAsyncValidators(
+              widgetTester,
+              () => 'DUMMY',
+              () => fail('should not be called.'),
+              null,
+              null,
+              null,
+              null,
+              'DUMMY',
+              shouldSecondCalled: false,
+              isSubmitTest: false,
+            );
+          },
+        );
+
+        testWidgets(
+          'async error -> n/a',
+          (widgetTester) async {
+            final onFirstExecuted = Completer<void>();
+            await testMultipleAsyncValidators(
+              widgetTester,
+              () {
+                if (!onFirstExecuted.isCompleted) {
+                  onFirstExecuted.complete();
+                }
+
+                return 'DUMMY';
+              },
+              () => fail('should not be called.'),
+              Completer<void>(),
+              null,
+              onFirstExecuted.future,
+              null,
+              'DUMMY',
+              shouldSecondCalled: false,
+              isSubmitTest: false,
+            );
+          },
+        );
+      },
+    );
+
+    group('2 async validators in a single proprety', () {
+      testWidgets(
+        'sync success -> sync success',
+        (widgetTester) => testMultipleAsyncValidators(
+          widgetTester,
+          () => null,
+          () => null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          shouldSecondCalled: true,
+          isSubmitTest: true,
+        ),
+      );
+
+      testWidgets(
+        'sync success -> async success',
+        (widgetTester) async {
+          final onSecondExecuted = Completer<void>();
+          await testMultipleAsyncValidators(
+            widgetTester,
+            () => null,
+            () {
+              if (!onSecondExecuted.isCompleted) {
+                onSecondExecuted.complete();
+              }
+
+              return null;
+            },
+            null,
+            Completer<void>(),
+            null,
+            onSecondExecuted.future,
+            null,
+            shouldSecondCalled: true,
+            isSubmitTest: true,
+          );
+        },
+      );
+
+      testWidgets(
+        'sync success -> sync error',
+        (widgetTester) async {
+          await testMultipleAsyncValidators(
+            widgetTester,
+            () => null,
+            () => 'DUMMY',
+            null,
+            null,
+            null,
+            null,
+            'DUMMY',
+            shouldSecondCalled: true,
+            isSubmitTest: true,
+          );
+        },
+      );
+
+      testWidgets(
+        'sync success -> async error',
+        (widgetTester) async {
+          final onSecondExecuted = Completer<void>();
+          await testMultipleAsyncValidators(
+            widgetTester,
+            () => null,
+            () {
+              if (!onSecondExecuted.isCompleted) {
+                onSecondExecuted.complete();
+              }
+
+              return 'DUMMY';
+            },
+            null,
+            Completer<void>(),
+            null,
+            onSecondExecuted.future,
+            'DUMMY',
+            shouldSecondCalled: true,
+            isSubmitTest: true,
+          );
+        },
+      );
+
+      testWidgets(
+        'async success -> sync success',
+        (widgetTester) async {
+          final onFirstExecuted = Completer<void>();
+          await testMultipleAsyncValidators(
+            widgetTester,
+            () {
+              if (!onFirstExecuted.isCompleted) {
+                onFirstExecuted.complete();
+              }
+
+              return null;
+            },
+            () => null,
+            Completer<void>(),
+            null,
+            onFirstExecuted.future,
+            null,
+            null,
+            shouldSecondCalled: true,
+            isSubmitTest: true,
+          );
+        },
+      );
+
+      testWidgets(
+        'async success -> async success',
+        (widgetTester) async {
+          final onFirstExecuted = Completer<void>();
+          final onSecondExecuted = Completer<void>();
+          await testMultipleAsyncValidators(
+            widgetTester,
+            () {
+              if (!onFirstExecuted.isCompleted) {
+                onFirstExecuted.complete();
+              }
+
+              return null;
+            },
+            () {
+              if (!onSecondExecuted.isCompleted) {
+                onSecondExecuted.complete();
+              }
+
+              return null;
+            },
+            Completer<void>(),
+            Completer<void>(),
+            onFirstExecuted.future,
+            onSecondExecuted.future,
+            null,
+            shouldSecondCalled: true,
+            isSubmitTest: true,
+          );
+        },
+      );
+
+      testWidgets(
+        'async success -> sync error',
+        (widgetTester) async {
+          final onFirstExecuted = Completer<void>();
+          await testMultipleAsyncValidators(
+            widgetTester,
+            () {
+              if (!onFirstExecuted.isCompleted) {
+                onFirstExecuted.complete();
+              }
+
+              return null;
+            },
+            () => 'DUMMY',
+            Completer<void>(),
+            null,
+            onFirstExecuted.future,
+            null,
+            'DUMMY',
+            shouldSecondCalled: true,
+            isSubmitTest: true,
+          );
+        },
+      );
+
+      testWidgets(
+        'async success -> async error',
+        (widgetTester) async {
+          final onFirstExecuted = Completer<void>();
+          final onSecondExecuted = Completer<void>();
+          await testMultipleAsyncValidators(
+            widgetTester,
+            () {
+              if (!onFirstExecuted.isCompleted) {
+                onFirstExecuted.complete();
+              }
+
+              return null;
+            },
+            () {
+              if (!onSecondExecuted.isCompleted) {
+                onSecondExecuted.complete();
+              }
+
+              return 'DUMMY';
+            },
+            Completer<void>(),
+            Completer<void>(),
+            onFirstExecuted.future,
+            onSecondExecuted.future,
+            'DUMMY',
+            shouldSecondCalled: true,
+            isSubmitTest: true,
+          );
+        },
+      );
+
+      testWidgets(
+        'sync error -> n/a',
+        (widgetTester) async {
+          await testMultipleAsyncValidators(
+            widgetTester,
+            () => 'DUMMY',
+            () => fail('should not be called.'),
+            null,
+            null,
+            null,
+            null,
+            'DUMMY',
+            shouldSecondCalled: false,
+            isSubmitTest: true,
+          );
+        },
+      );
+
+      testWidgets(
+        'async error -> n/a',
+        (widgetTester) async {
+          final onFirstExecuted = Completer<void>();
+          await testMultipleAsyncValidators(
+            widgetTester,
+            () {
+              if (!onFirstExecuted.isCompleted) {
+                onFirstExecuted.complete();
+              }
+
+              return 'DUMMY';
+            },
+            () => fail('should not be called.'),
+            Completer<void>(),
+            null,
+            onFirstExecuted.future,
+            null,
+            'DUMMY',
+            shouldSecondCalled: false,
+            isSubmitTest: true,
+          );
+        },
+      );
+    });
+  });
 }

@@ -43,14 +43,19 @@ class Parameter<T, P> implements AsyncOperationNotifier<T, P> {
         _onProgress(p);
       };
 
+  @override
+  AsyncOperationFailureHandler<T> failureHandler;
+
   Parameter({
     required this.value,
     AsyncOperationCompletedCallback<T>? onCompleted,
     AsyncOperationFailedCallback? onFailed,
     AsyncOperationProgressCallback<P>? onProgress,
+    AsyncOperationFailureHandler<T>? failureHandler,
   })  : _onCompleted = onCompleted ?? ((_) {}),
         _onFailed = onFailed ?? print,
-        _onProgress = onProgress ?? ((_) {});
+        _onProgress = onProgress ?? ((_) {}),
+        failureHandler = failureHandler ?? ((_) {});
 
   @override
   String toString() => value;
@@ -261,8 +266,10 @@ Future<void> doThenFailTest(
 ) async {
   final error = Exception('DUMMY');
   AsyncError? failure;
-  final parameter =
-      Parameter<String, void>(value: 'FAIL', onFailed: (e) => failure = e);
+  final parameter = Parameter<String, void>(
+    value: 'FAIL',
+    onFailed: (e) => failure = e,
+  );
   await doTest(
     (
       target,
@@ -573,7 +580,9 @@ void main() {
                 Future<String> Function(Exception) future) async {
               AsyncError? failure1;
               final parameter = Parameter<String, void>(
-                  value: 'input', onFailed: (f) => failure1 = f);
+                value: 'input',
+                onFailed: (e) => failure1 = e,
+              );
               const defaultResult = 'default';
               final error = Exception('DUMMY');
 
@@ -627,9 +636,13 @@ void main() {
               AsyncError? failure1;
               AsyncError? failure2;
               final parameter1 = Parameter<String, void>(
-                  value: 'input1', onFailed: (f) => failure1 = f);
+                value: 'input1',
+                onFailed: (e) => failure1 = e,
+              );
               final parameter2 = Parameter<String, void>(
-                  value: 'input2', onFailed: (f) => failure2 = f);
+                value: 'input2',
+                onFailed: (e) => failure2 = e,
+              );
               const defaultResult = 'default';
               final error1 = Exception('DUMMY1');
               final error2 = Exception('DUMMY2');
@@ -762,9 +775,13 @@ void main() {
               AsyncError? failure1;
               String? result2;
               final parameter1 = Parameter<String, void>(
-                  value: 'input1', onFailed: (f) => failure1 = f);
+                value: 'input1',
+                onFailed: (e) => failure1 = e,
+              );
               final parameter2 = Parameter<String, void>(
-                  value: 'input2', onCompleted: (r) => result2 = r);
+                value: 'input2',
+                onCompleted: (r) => result2 = r,
+              );
               const defaultResult = 'default';
               final error1 = Exception('DUMMY1');
               const expected = 'result';
@@ -838,9 +855,13 @@ void main() {
               String? result1;
               AsyncError? failure2;
               final parameter1 = Parameter<String, void>(
-                  value: 'input1', onCompleted: (r) => result1 = r);
+                value: 'input1',
+                onCompleted: (r) => result1 = r,
+              );
               final parameter2 = Parameter<String, void>(
-                  value: 'input2', onFailed: (f) => failure2 = f);
+                value: 'input2',
+                onFailed: (e) => failure2 = e,
+              );
               const defaultResult = 'default';
               final error2 = Exception('DUMMY2');
               const expected = 'result';
@@ -1932,6 +1953,7 @@ void main() {
           expect(onFailedParameter, isNull);
           expect(reported, orderedEquals(<int>[3, 1, 2]));
         });
+
         test('failed', () async {
           final error = Exception('DUMMY');
           const defaultResult = 'DEFAULT';
@@ -1976,6 +1998,59 @@ void main() {
           expect(onCompletedParameter, isNull);
           expect(onFailedParameter, isNotNull);
           expect(onFailedParameter?.error, same(error));
+          expect(reported, orderedEquals(<int>[3, 1, 2]));
+        });
+
+        test('failure override', () async {
+          final error = Exception('DUMMY');
+          const defaultResult = 'DEFAULT';
+
+          const replacement = 'REPLACED FAILURE';
+
+          // should be 3, 1, 2
+          final reported = <int>[];
+          String? onCompletedParameter;
+          AsyncError? onFailedParameter;
+          final parameter = Parameter<String, int>(
+            value: 'VALUE1',
+            onCompleted: (p) {
+              onCompletedParameter = p;
+            },
+            onFailed: (e) {
+              onFailedParameter = e;
+            },
+            failureHandler: (x) {
+              x.overrideError(replacement);
+            },
+            onProgress: reported.add,
+          );
+
+          final target = TestTarget<String, int>(
+            callback: (p) async {
+              p.onProgress(3);
+              await Future<void>.delayed(Duration.zero);
+              p.onProgress(1);
+              await Future<void>.delayed(Duration.zero);
+              p.onProgress(2);
+              await Future<void>.delayed(Duration.zero);
+              throw error;
+            },
+            defaultResult: defaultResult,
+          );
+
+          expect(target.execute(parameter), equals(defaultResult));
+          try {
+            await parameter.completer.future;
+          }
+          // ignore: avoid_catches_without_on_clauses
+          catch (e) {
+            expect(e, same(error));
+          }
+
+          expect(target.execute(parameter), equals(replacement));
+
+          expect(onCompletedParameter, equals(replacement));
+          expect(onFailedParameter, isNull);
           expect(reported, orderedEquals(<int>[3, 1, 2]));
         });
       });

@@ -26,6 +26,7 @@ void main() {
             value: 1,
             locale: const Locale('en', 'US'),
             onCompleted: (v, e) => completer1.complete(v),
+            failureHandler: (_) {},
           ),
           isNull,
         );
@@ -45,6 +46,7 @@ void main() {
             value: 1,
             locale: const Locale('en', 'US'),
             onCompleted: (v, e) => completer2.complete(v),
+            failureHandler: (_) {},
           ),
           // Cached result
           equals(result),
@@ -64,6 +66,7 @@ void main() {
             value: 2,
             locale: const Locale('en', 'US'),
             onCompleted: (v, e) => completer3.complete(v),
+            failureHandler: (_) {},
           ),
           isNull,
         );
@@ -96,6 +99,7 @@ void main() {
             value: theValue,
             locale: theLocale,
             onCompleted: (v, e) => completer.complete(v),
+            failureHandler: (_) {},
           ),
           isNull,
         );
@@ -123,6 +127,7 @@ void main() {
             locale: const Locale('en', 'US'),
             onCompleted: (v, e) =>
                 e == null ? completer.complete(v) : completer.completeError(e),
+            failureHandler: (_) {},
           ),
           isNull,
         );
@@ -163,6 +168,7 @@ void main() {
                   completer.completeError(e);
                 }
               },
+              failureHandler: (_) {},
             ),
             isNull,
           );
@@ -220,7 +226,7 @@ void main() {
       );
 
       test(
-        'Immediately error',
+        'Immediately failed',
         () async {
           final theError = Exception('DUMMY');
           var onCompletedCalled = false;
@@ -229,7 +235,7 @@ void main() {
               throw theError;
             },
             onCompleted: (r, e) {
-              expect(r, equals(e.toString()));
+              expect(r, isNull);
               expect(e, isNotNull);
               expect(e!.error.toString(), equals(theError.toString()));
               onCompletedCalled = true;
@@ -255,7 +261,7 @@ void main() {
       );
 
       test(
-        'Asynchronously validation failure',
+        'Asynchronously validation error',
         () async {
           const result = 'required.';
           await doTest<int>(
@@ -272,7 +278,7 @@ void main() {
       );
 
       test(
-        'Asynchronous error',
+        'Asynchronous failure',
         () async {
           final theError = Exception('DUMMY');
           var onCompletedCalled = false;
@@ -281,7 +287,7 @@ void main() {
               return Future.delayed(Duration.zero, () => throw theError);
             },
             onCompleted: (r, e) {
-              expect(r, equals(e.toString()));
+              expect(r, isNull);
               expect(e, isNotNull);
               expect(e!.error.toString(), equals(theError.toString()));
               onCompletedCalled = true;
@@ -310,6 +316,7 @@ void main() {
           locale: const Locale('en', 'US'),
           onCompleted: onCompleted,
           onFailed: onFailed,
+          failureHandler: (_) {},
         );
 
         expect(target.onCompleted, same(onCompleted));
@@ -326,11 +333,13 @@ void main() {
           onCompleted: (value) {
             // nop
           },
+          onFailed: (error) {
+            // nop
+          },
+          failureHandler: (context) {
+            // nop
+          },
         );
-
-        expect(target.onFailed, isNotNull);
-        // no effect
-        target.onFailed(AsyncError(Object(), null));
 
         // ignore: deprecated_member_use_from_same_package
         expect(target.onProgress, isNotNull);
