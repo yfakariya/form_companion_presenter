@@ -621,11 +621,17 @@ void main() {
                 name: 'target',
                 validator: presenter.getPropertyValidator('target', context),
                 autovalidateMode: AutovalidateMode.onUserInteraction,
+                // TODO(yfakariya): This work around should be removed
+                // Work around to avoid double invocation of validation in first entry.
+                initialValue: '',
               ),
               FormBuilderTextField(
                 name: 'another',
                 validator: presenter.getPropertyValidator('another', context),
                 autovalidateMode: AutovalidateMode.onUserInteraction,
+                // TODO(yfakariya): This work around should be removed
+                // Work around to avoid double invocation of validation in first entry.
+                initialValue: '',
               ),
             ],
           ),
@@ -650,21 +656,17 @@ void main() {
       await tester.pump();
 
       // Target field should be validated.
-      // It is twice for FormBuilder
-      fieldShouldBeReevaluated += 2;
+      fieldShouldBeReevaluated++;
       if (formValidateMode != AutovalidateMode.disabled) {
         // Caused more because of Form level auto validation.
-        // It is twice for FormBuilder
-        fieldShouldBeReevaluated += 2;
+        fieldShouldBeReevaluated++;
 
         // Another field should be validated because of Form level auto validation.
-        // It is twice for FormBuilder
-        formShouldBeReevaluated += 2;
+        formShouldBeReevaluated++;
       }
 
       // Input causes form level rebuild.
-      // It is twice for FormBuilder
-      formBuilt += 2;
+      formBuilt++;
 
       // should be re-evaulated by text input
       expect(entireFormBuilt, equals(formBuilt));
@@ -673,21 +675,21 @@ void main() {
 
       // completes async and pump
       completer.complete();
+      // Note: do pump again for run rebuild caused by explicit validate() call
+      // even if we do not use complter to stop async validation.
       await tester.pump();
 
-      // Async validation completion explicitly calls validate(), so +2
-      // (it is twice for FormBuilder)
+      // Async validation completion explicitly calls validate(), so +1
       // In addition, validate() causes rebuild, so +1 (consequently, +3)
-      fieldShouldBeReevaluated += 3;
+      fieldShouldBeReevaluated += 2;
       if (formValidateMode != AutovalidateMode.disabled) {
-        // Caused more because of Form level auto validation.
-        // It is twice for FormBuilder
-        fieldShouldBeReevaluated += 2;
+        // Caused more because of Form level auto validation,
+        // but validation completion was not called twice because async cache was used.
+        fieldShouldBeReevaluated++;
         // Another field should be validated because of Form level auto validation.
         // Async validation completion explicitly calls validate(), so +1.
         // In addition, validate() causes rebuild, so +1 (consequently, +2)
-        // They are twice for FormBuilder, so finally +4
-        formShouldBeReevaluated += 4;
+        formShouldBeReevaluated += 2;
         // But, rebuild is only once, which is caused by validate() call
         formBuilt++;
       }
@@ -703,21 +705,16 @@ void main() {
 
       // By resetting form
       formBuilt++;
-      // TODO(yfakariya): This should be fixed.
-      // FormBuilder re-run field validation on reset when its value is changed.
-      fieldShouldBeReevaluated += 2;
-      if (formValidateMode != AutovalidateMode.disabled) {
-        // TODO(yfakariya): This should be fixed.
-        // FormBuilder causes validation even when reset() is called on
-        // AutovalidateMode.onUserInteraction.
+      if (formValidateMode == AutovalidateMode.always) {
+        // A diffrence between always and onUserInteraction is reaction for
+        // reset() (or unclear reasons Form is requested rebuilding other than
+        // its fields manipulation)
 
         // Reset caused validation, it caused async validation without blocking
         // because we already had been completed the Completer, so re-evaluation
         // was occurred and ultimately all validators called twice.
+        fieldShouldBeReevaluated += 2;
         formShouldBeReevaluated += 2;
-
-        // ...But FormBuilder only call once for field...
-        fieldShouldBeReevaluated++;
       }
 
       // should be re-evaulated by async validation completion

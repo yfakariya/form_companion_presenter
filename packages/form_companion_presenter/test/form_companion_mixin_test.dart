@@ -662,13 +662,16 @@ void main() {
 
       // completes async and pump
       completer.complete();
+      // Note: do pump again for run rebuild caused by explicit validate() call
+      // even if we do not use complter to stop async validation.
       await tester.pump();
 
       // Async validation completion explicitly calls validate(), so +1.
       // In addition, validate() causes rebuild, so +1 (consequently, +2)
       fieldShouldBeReevaluated += 2;
       if (formValidateMode != AutovalidateMode.disabled) {
-        // Caused more because of Form level auto validation.
+        // Caused more because of Form level auto validation,
+        // but validation completion was not called twice because async cache was used.
         fieldShouldBeReevaluated++;
         // Another field should be validated because of Form level auto validation.
         // Async validation completion explicitly calls validate(), so +1.
