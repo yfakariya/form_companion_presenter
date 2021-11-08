@@ -12,6 +12,7 @@ import 'package:meta/meta.dart';
 
 import '../l10n/locale_keys.g.dart';
 import '../models.dart';
+import '../routes.dart';
 import '../screen.dart';
 //!macro beginVanillaOnly
 import '../validators.dart';
@@ -280,6 +281,7 @@ class AccountPresenterTemplate extends StateNotifier<Account>
 
     // Propagate to global state.
     _read(account).state = state;
+    _read(pagesProvider).state = home;
   }
 
   /// Example of business logic of submit.
