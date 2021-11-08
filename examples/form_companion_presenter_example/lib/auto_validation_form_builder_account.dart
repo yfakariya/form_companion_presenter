@@ -198,7 +198,7 @@ class AutoValidationFormBuilderAccountPresenter extends StateNotifier<Account>
             FormBuilderValidators.email,
           ],
           asyncValidatorFactories: [
-            // TODO: impl
+            (context) => validateId,
           ],
         )
         ..add<String>(
@@ -219,6 +219,32 @@ class AutoValidationFormBuilderAccountPresenter extends StateNotifier<Account>
         )
         ..add<List<Region>>(name: 'preferredRegions'),
     );
+  }
+
+  FutureOr<String?> validateId(
+      String? value, AsyncValidatorOptions options) async {
+    if (value == null || value.isEmpty) {
+      return 'ID is required.';
+    }
+
+    // Dummy actions to check async validator behavior.
+    switch (value) {
+      case 'john@example.com':
+        return await Future.delayed(
+          const Duration(seconds: 5),
+          () => throw Exception('Server is temporary unavailable.'),
+        );
+      case 'jane@example.com':
+        return await Future.delayed(
+          const Duration(seconds: 5),
+          () => '$value is already used.',
+        );
+      default:
+        return await Future.delayed(
+          const Duration(seconds: 5),
+          () => null,
+        );
+    }
   }
 
   @override
