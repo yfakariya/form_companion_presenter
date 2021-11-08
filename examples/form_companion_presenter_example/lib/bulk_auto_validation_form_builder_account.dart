@@ -10,6 +10,7 @@ import 'package:form_builder_companion_presenter/form_builder_companion_presente
 import 'package:form_companion_presenter/form_companion_presenter.dart';
 import 'package:meta/meta.dart';
 
+import 'async_validation_indicator.dart';
 import 'l10n/locale_keys.g.dart';
 import 'models.dart';
 import 'routes.dart';
@@ -70,6 +71,10 @@ class _BulkAutoValidationFormBuilderAccountPane extends ConsumerWidget {
             decoration: InputDecoration(
               labelText: LocaleKeys.id_label.tr(),
               hintText: LocaleKeys.id_hint.tr(),
+              suffix: AsyncValidationIndicator(
+                presenter: presenter,
+                propertyName: 'id',
+              ),
             ),
           ),
           FormBuilderTextField(
