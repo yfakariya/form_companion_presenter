@@ -169,12 +169,13 @@ class _AsyncValidatorChain<T extends Object> {
       _validationContext = _ValidationContext.unspecified;
       // Do not call notifyCompletion here to avoid recusrive call.
     } else {
-      // Transit to confirmingResultOnSubmit and call notifyCompletion
-      _validationContext = _ValidationContext.confirmingResult;
 
       if (!isSync) {
         // Async only -- it may cause validate() on widget tree build,
         // which eventually leads assertion error.
+
+        // Transit to confirmingResultOnSubmit and call notifyCompletion
+        _validationContext = _ValidationContext.confirmingResult;
         _transitToAsyncValidationConfirmation(result, error);
       }
     }
