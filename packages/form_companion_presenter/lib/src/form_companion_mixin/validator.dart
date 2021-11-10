@@ -206,7 +206,10 @@ class _AsyncValidatorChain<T extends Object> {
     _ChainedAsyncValidation<T> callNext,
   ) {
     // Cancels previous validation -- it might be hanged-up
-    executor.cancel();
+    if (executor.validating) {
+      executor.cancel();
+      _onAsyncValidationCompleted();
+    }
 
     if (_validationContext == _ValidationContext.doValidationOnSubmit) {
       // Clears cached error to ensure new async invocation is initiated.
