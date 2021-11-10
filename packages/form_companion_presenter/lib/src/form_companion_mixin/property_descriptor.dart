@@ -90,9 +90,11 @@ class PropertyDescriptor<T extends Object> {
     _isValueSet = true;
   }
 
+  /// State of pending async validations.
+  final _PendingAsyncValidations _pendingAsyncValidations;
+
   /// Whether any asynchronous validations is running now.
-  bool get hasPendingAsyncValidations =>
-      _asynvValidatorEntries.any((e) => e.validating);
+  bool get hasPendingAsyncValidations => _pendingAsyncValidations.value;
 
   /// Constructor.
   ///
@@ -113,7 +115,8 @@ class PropertyDescriptor<T extends Object> {
                 presenter.handleCanceledAsyncValidationError,
               ),
             )
-            .toList();
+            .toList(),
+        _pendingAsyncValidations = _PendingAsyncValidations();
 
   /// Returns a composite validator which contains synchronous (normal)
   /// validators and asynchronous validators.
@@ -128,10 +131,32 @@ class PropertyDescriptor<T extends Object> {
         ],
         presenter.getLocale(context),
         presenter.buildOnAsyncValidationCompleted(name, context),
+        _pendingAsyncValidations.increment,
+        _pendingAsyncValidations.decrement,
         _asyncValidationCompletion,
         presenter.getAsyncValidationFailureMessage,
         () => presenter._validationContext,
         () => _validationContext,
         (v) => _validationContext = v,
       ).asValidtor();
+}
+
+/// Represents state of pending async validations.
+///
+/// [value] indicates whether any async operations are in progress or not.
+class _PendingAsyncValidations extends ValueNotifier<bool> {
+  int _count = 0;
+  _PendingAsyncValidations() : super(false);
+
+  /// Increments pending operation count.
+  void increment() {
+    _count++;
+    value = true;
+  }
+
+  /// Decrement pending operation count.
+  void decrement() {
+    value = --_count > 0;
+    assert(_count >= 0);
+  }
 }

@@ -47,6 +47,8 @@ class _PropertyValidator<T extends Object> {
     List<_AsyncValidatorEntry<T>> asyncValidators,
     Locale locale,
     AsyncValidationCompletionCallback transitToAsyncValidationConfirmation,
+    VoidCallback onAsyncValidationStarted,
+    VoidCallback onAsyncValidationCompleted,
     Completer<bool>? asyncValidationChainCompletionNotifier,
     _AsyncValidationFailureMessageProvider
         asyncValidationFailureMessageProvider,
@@ -58,6 +60,8 @@ class _PropertyValidator<T extends Object> {
                 locale,
                 asyncValidators,
                 transitToAsyncValidationConfirmation,
+                onAsyncValidationStarted,
+                onAsyncValidationCompleted,
                 asyncValidationChainCompletionNotifier,
                 asyncValidationFailureMessageProvider,
                 presenterValidationContextProvider,
@@ -86,6 +90,8 @@ class _PropertyValidator<T extends Object> {
 class _AsyncValidatorChain<T extends Object> {
   final Locale _locale;
   final AsyncValidationCompletionCallback _transitToAsyncValidationConfirmation;
+  final VoidCallback _onAsyncValidationStarted;
+  final VoidCallback _onAsyncValidationCompleted;
   final Completer<bool>? _asyncValidationChainCompletionNotifier;
   final _AsyncValidationFailureMessageProvider
       _asyncValidationFailureMessageProvider;
@@ -104,6 +110,8 @@ class _AsyncValidatorChain<T extends Object> {
     this._locale,
     List<_AsyncValidatorEntry<T>> validators,
     this._transitToAsyncValidationConfirmation,
+    this._onAsyncValidationStarted,
+    this._onAsyncValidationCompleted,
     this._asyncValidationChainCompletionNotifier,
     this._asyncValidationFailureMessageProvider,
     this._presenterValidationContextProvider,
@@ -169,7 +177,6 @@ class _AsyncValidatorChain<T extends Object> {
       _validationContext = _ValidationContext.unspecified;
       // Do not call notifyCompletion here to avoid recusrive call.
     } else {
-
       if (!isSync) {
         // Async only -- it may cause validate() on widget tree build,
         // which eventually leads assertion error.
@@ -178,6 +185,10 @@ class _AsyncValidatorChain<T extends Object> {
         _validationContext = _ValidationContext.confirmingResult;
         _transitToAsyncValidationConfirmation(result, error);
       }
+    }
+
+    if (!isSync) {
+      _onAsyncValidationCompleted();
     }
   }
 
@@ -236,6 +247,8 @@ class _AsyncValidatorChain<T extends Object> {
       return callNext(value, null, null, isSync: true);
     }
 
+    assert(executor.validating);
+    _onAsyncValidationStarted();
     // Return default 'null', which means that async invocation is in-progress.
     // The async invocation should call "onCompleted" callback in future.
     return null;

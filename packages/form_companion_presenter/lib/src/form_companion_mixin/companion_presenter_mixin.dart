@@ -2,6 +2,8 @@
 
 part of '../form_companion_mixin.dart';
 
+// TODO(yfakariya): declare "final CompanionPresenterMixinVirtuals virtual" to ensure API backward compatibility in future -- only allowed public API should be properties, submit, canSubmit. All other APIs should be in "virtuals" or should belong to an extension.
+
 /// Provides base implementation of presenters which cooporate with correspond
 /// [Form] and [FormField]s to handle user inputs, their transitive states,
 /// validations, and submission.
@@ -159,11 +161,19 @@ mixin CompanionPresenterMixin {
   /// Gets a value which indicates that specified property has pencing
   /// asynchronous validation or not.
   ///
-  /// Note that pencing validation complection causes re-evaluation of validity
+  /// Note that pending validation complection causes re-evaluation of validity
   /// of the form field, so rebuild will be caused from the field.
   @nonVirtual
   bool hasPendingAsyncValidations(String name) =>
       _getProperty(name).hasPendingAsyncValidations;
+
+  /// Gets a [ValueListenable] which indicates there are any pending async
+  /// validations in a property specified by [name].
+  @nonVirtual
+  ValueListenable<bool> getPropertyPendingAsyncValidationsListener(
+    String name,
+  ) =>
+      _getProperty(name)._pendingAsyncValidations;
 
   // TODO(yfakariya): converter: ConversionResult Function(T? inputValue) ; class ConversionResult { final String? error; final dynamic value; }; PropertyDescriptor<T, P>.getConvertedValue()
   //       The converter should be "final" validator of validator chain because it is convinient and general that conversion error indicates validation error.
