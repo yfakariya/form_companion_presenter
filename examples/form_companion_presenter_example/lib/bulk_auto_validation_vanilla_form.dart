@@ -5,10 +5,10 @@ import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:form_companion_presenter/async_validation_indicator.dart';
 import 'package:form_companion_presenter/form_companion_presenter.dart';
 import 'package:meta/meta.dart';
 
-import 'async_validation_indicator.dart';
 import 'l10n/locale_keys.g.dart';
 import 'models.dart';
 import 'routes.dart';
