@@ -3,13 +3,34 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:form_companion_presenter/form_companion_presenter.dart';
 
+import '../form_companion_presenter.dart';
+
+/// Simple indicator to indicate async validation is in progress or not.
 class AsyncValidationIndicator extends StatelessWidget {
   final ValueListenable<bool> _hasPendingAsyncValidationListener;
+
+  /// A text to describe that there is a pending async validation.
+  ///
+  /// If `null`, built-in default message is shown.
   final String? text;
+
+  /// A height of this control.
+  ///
+  /// If `null`, `subtitle1` text theme's height will be used.
+  /// If the theme is not found, `16` is used.
+  /// The intent of the default value is that it should be aligned to default
+  /// height of `FormTextField`, so the logic to determine default height
+  /// subject to change in future.
+  /// If you want to stabilize the height, specify this value explicitly.
   final double? height;
 
+  /// Initializes a new [AsyncValidationIndicator].
+  ///
+  /// Specify [presenter] and [propertyName] to create indicator for the
+  /// specified property in the [presenter].
+  /// The [propertyName] should be used for the form field which handles input
+  /// for the property.
   AsyncValidationIndicator({
     Key? key,
     required CompanionPresenterMixin presenter,
@@ -39,6 +60,7 @@ class AsyncValidationIndicator extends StatelessWidget {
           const SizedBox(
             width: 4,
           ),
+          // TODO(yfakariya): L10N with built-in flutter-localizer.
           Text(text ?? 'Validating...'),
         ],
       ),
