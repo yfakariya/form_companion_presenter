@@ -8,7 +8,7 @@ import 'package:pubspec_parse/pubspec_parse.dart';
 
 Future<bool> internalRunAsync(
   String command, [
-  List<String>? args = null,
+  List<String>? args,
 ]) async =>
     (await Process.run(
       command,

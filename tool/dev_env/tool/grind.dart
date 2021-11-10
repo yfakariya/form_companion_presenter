@@ -1,11 +1,6 @@
 // See LICENCE file in the root.
 
-import 'dart:io';
-
 import 'package:grinder/grinder.dart';
-import 'package:path/path.dart' as path;
-import 'package:pubspec_parse/pubspec_parse.dart';
-import 'package:yaml_edit/yaml_edit.dart';
 
 import 'tasks/check_env.dart';
 import 'tasks/enable_pub_get.dart';
