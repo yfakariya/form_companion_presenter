@@ -407,7 +407,7 @@ abstract class FutureInvoker<T extends AsyncOperationNotifier<R, P>, R, P> {
 
         final result = await executeAsync(parameter.value);
 
-        if (_processingValue == null) {
+        if (_processingValue != parameter) {
           _log.fine(() =>
               'Executed asynchronous operation with parameter "${parameter?.value}" but it was canceled, so discard result "$result".');
           return;
