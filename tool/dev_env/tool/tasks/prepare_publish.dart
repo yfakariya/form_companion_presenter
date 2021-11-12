@@ -7,6 +7,7 @@ import 'package:path/path.dart' as path;
 import 'package:pubspec_parse/pubspec_parse.dart';
 import 'package:yaml_edit/yaml_edit.dart';
 
+import 'run_formats.dart';
 import 'utils.dart';
 
 Future<void> preparePublishCore({
@@ -15,7 +16,7 @@ Future<void> preparePublishCore({
   final examples = await getPackages('../../examples').toList();
   final packages = await getPackages('../../packages').toList();
 
-  await _runFormats(packages: packages, examples: examples);
+  await runFormats(packages: packages, examples: examples);
 
   await _assembleExamples(packages: packages, examples: examples);
 
@@ -27,47 +28,6 @@ Future<void> preparePublishCore({
     await _revertEnablingPubGet(packages);
 
     await runMelosBootstrap();
-  }
-}
-
-Future<void> _runFormats({
-  required List<String> packages,
-  required List<String> examples,
-}) async {
-  // Do manual execution rather than melos
-  // to avoid format genrated sources...
-  Future<void> _runFormat(String directory) async {
-    final sources = await getDir(directory)
-        .list(recursive: true, followLinks: false)
-        .where((f) =>
-            f.path.endsWith('.dart') &&
-            !f.path.endsWith('.freezed.dart') &&
-            !f.path.endsWith('.g.dart'))
-        .map((f) => path.relative(f.path, from: directory))
-        .where((f) => !f.startsWith('.'))
-        .toList();
-    await runAsync(
-      'fvm',
-      arguments: [
-        'flutter',
-        'format',
-        '--set-exit-if-changed',
-        ...sources,
-      ],
-      runOptions: RunOptions(
-        stdoutEncoding: utf8,
-        stderrEncoding: utf8,
-      ),
-      workingDirectory: directory,
-    );
-  }
-
-  for (final example in examples) {
-    await _runFormat('../../examples/$example/');
-  }
-
-  for (final package in packages) {
-    await _runFormat('../../packages/$package/');
   }
 }
 
@@ -108,7 +68,6 @@ Future<void> _runMelosScript(String scriptName) => runAsync(
         'melos',
         'run',
         scriptName,
-        '--no-select',
       ],
       runOptions: RunOptions(
         stdoutEncoding: utf8,

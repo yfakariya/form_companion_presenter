@@ -50,7 +50,7 @@ jobs:
       - name: Setup global version
         run: fvm global 2.5.3
 
-      - name: Setup testing environment
+      - name: Initialize grinder project
         run: fvm flutter pub get
         working-directory: tool/dev_env
 
@@ -58,6 +58,12 @@ jobs:
         run: grind setup-env
         working-directory: tool/dev_env
 
-      - name: Run CI suite
-        run: grind prepare-publish --preserve-env
+      - name: Format sources
+        run: grind format
         working-directory: tool/dev_env
+
+      - name: Analyze sources
+        run: melos run analyze --no-select
+
+      - name: Run tests
+        run: melos run test
