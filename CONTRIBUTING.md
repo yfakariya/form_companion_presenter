@@ -19,7 +19,9 @@ This project depends on [melos](https://melos.invertase.dev/) and [fvm](https://
 2. Setup `melos` as [official docs](https://melos.invertase.dev/getting-started#installation).
 3. Setup `grinder` with `fvm flutter pub global activate grinder`.
 4. Run `melos bootstrap` in this (repository root) directory.
-5. Open this (repository root) directory in your favorite IDE.
+5. Move to `tool/dev_env` directory.
+6. Run `grind` command.
+7. Open this (repository root) directory in your favorite IDE.
 
 ### Lint
 
@@ -36,13 +38,22 @@ Please ensure your contribution does not introduce additional warnings except `T
 
 Ensure you use [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/) in your message. Because we use melos to create changelog, it requires conventional commits format.
 
+### Prepare push
+
+**CAUTION** Before push your change to the origin and make PR, you must revert your local setup made by grinder.
+
+1. Move to `tool/dev_env` directory.
+2. Run `grind prepare-publish` command.
+
 ### Documentation
 
 Many of us are not native English speaker, many of us are not expert of foreign language, and so many of us are not technical writer. So, documents and comments may include many bugs (grammer, spelling, etc) and wrong expressions. So it is welcome to PR to fix them.
 
-### References
+## References
 
 There are some design docs in `/doc` directory.
+
+## Miscs
 
 ### Tips for run pub commands
 
@@ -51,25 +62,6 @@ There are some design docs in `/doc` directory.
 `fvm flutter pub global run <command>` in root directory.
 
 Note that any scripts in `melos.yaml` commands should not include `fvm`, which causes bizzare error like "Could not find a file named 'pubspec.yaml' in...".
-
-#### Pub upgrade
-
-Do not use 'flutter pub upgrade'. Do as following instead:
-
-1. Run `fvm flutter pub global run melos exec -- flutter pub outdated` in the root directory.
-2. Update `pubspec.yaml` manually in each packages and examples as above `flutter pub outdated` results.
-3. Run `fvm flutter pub global run melos bs` in the root directory.
-
-However, sometimes, such as running build_runner, flutter complains that pubspec.lock and pubspec.yaml are not synchronized. In addition, flutter widget tester automatically run `pub get` in target directory, it may cause wrong dependecy resolution.
-So, if you hit synchronization problem, or run widget test in the package, you have to tweak pubspec.yaml termporary and run pub get in **each package**.
-
-1. Move to target package or example project directory.
-2. Add or uncomment `dependency_overrides:` with path reference in `pubspec.yaml`.
-3. Run `fvm flutter pub get` and ensure success.
-4. Run `fvm flutter pub run <anything>` or run widget test.
-    * You can uncomment logging for some widget testing for diagnostics.
-5. Comment `dependency_overrides:` in `pubspec.yaml`
-    * You must comment logging for some widget testing if you uncomment them.
 
 ### Code generation
 
