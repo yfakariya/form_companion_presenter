@@ -11,7 +11,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:form_companion_presenter/async_validation_indicator.dart';
 
 import 'package:form_companion_presenter/form_companion_presenter.dart';
-import 'package:form_companion_presenter/src/internal_utils.dart';
 
 class FormHost extends StatelessWidget {
   final Widget _child;
