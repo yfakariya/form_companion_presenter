@@ -2,11 +2,11 @@ name: ci
 
 on:
   push:
-    paths:
-      - '**.dart'
-      - 'pubspec.*'
-      - 'analysis_options.yaml'
-      - '.github/workflows/ci.yaml'
+    # paths:
+    #   - '**.dart'
+    #   - 'pubspec.*'
+    #   - 'analysis_options.yaml'
+    #   - '.github/workflows/ci.yaml'
   pull_request:
     paths:
       - '**.dart'
