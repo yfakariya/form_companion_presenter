@@ -681,6 +681,7 @@ void main() {
         Future<void> testCore({
           bool? expectedResult,
         }) async {
+          FormStateAdapter? state;
           var asyncValidatorCalled = false;
           final target = TestPresenter(
             properties: PropertyDescriptorsBuilder()
@@ -696,9 +697,10 @@ void main() {
                       return result;
                     }
               ]),
+            maybeFormStateOfCalled: (_) => state,
           );
           final validationResults = <bool>[];
-          final state = FixedFormStateAdapter(
+          state = FixedFormStateAdapter(
             onValidate: () {
               // dummy logic
               final context = DummyBuildContext();
@@ -776,8 +778,11 @@ void main() {
   });
 
   group('PropertyDescriptor', () {
-    test('getValidator() returns validator which wraps syncs and asyncs.', () {
+    test('getValidator() returns validator which wraps syncs and asyncs.',
+        () async {
       const name = 'property';
+      final completer1 = Completer<void>();
+      final completer2 = Completer<void>();
       int? syncValue1;
       int? syncValue2;
       int? asyncValue1;
@@ -800,14 +805,18 @@ void main() {
             ],
             asyncValidatorFactories: [
               (context) => (value, options) {
+                    printOnFailure('async1 with $value');
                     asyncValue1 = value;
                     asyncLocale1 = options.locale;
-                    return Future.value(null);
+                    completer1.complete();
+                    return null;
                   },
               (context) => (value, options) {
+                    printOnFailure('async2 with $value');
                     asyncValue2 = value;
                     asyncLocale2 = options.locale;
-                    return Future.value(null);
+                    completer2.complete();
+                    return null;
                   },
             ],
           ),
@@ -819,6 +828,8 @@ void main() {
       const value = 123;
       // NOTE: We cannot inject Locale, so we just validate default (en-US) or not.
       final result = property.getValidator(context)(value);
+      await completer1.future;
+      await completer2.future;
       expect(result, isNull);
       expect(syncValue1, equals(value));
       expect(syncValue2, equals(value));
