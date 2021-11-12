@@ -20,6 +20,13 @@ abstract class  LocaleKeys {
   static const auto_flutterFormBuilderBooking_title = 'auto.flutterFormBuilderBooking.title';
   static const auto_flutterFormBuilderBooking = 'auto.flutterFormBuilderBooking';
   static const auto = 'auto';
+  static const bulk_auto_vanilla_title = 'bulk_auto.vanilla.title';
+  static const bulk_auto_vanilla = 'bulk_auto.vanilla';
+  static const bulk_auto_flutterFormBuilderAccount_title = 'bulk_auto.flutterFormBuilderAccount.title';
+  static const bulk_auto_flutterFormBuilderAccount = 'bulk_auto.flutterFormBuilderAccount';
+  static const bulk_auto_flutterFormBuilderBooking_title = 'bulk_auto.flutterFormBuilderBooking.title';
+  static const bulk_auto_flutterFormBuilderBooking = 'bulk_auto.flutterFormBuilderBooking';
+  static const bulk_auto = 'bulk_auto';
   static const id_label = 'id.label';
   static const id_hint = 'id.hint';
   static const id = 'id';

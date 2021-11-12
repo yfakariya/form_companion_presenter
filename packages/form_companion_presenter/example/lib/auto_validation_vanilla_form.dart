@@ -5,14 +5,29 @@ import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:form_companion_presenter/async_validation_indicator.dart';
 import 'package:form_companion_presenter/form_companion_presenter.dart';
 import 'package:meta/meta.dart';
 
 import 'l10n/locale_keys.g.dart';
 import 'models.dart';
+import 'routes.dart';
 import 'screen.dart';
+import 'validators.dart';
 
 //------------------------------------------------------------------------------
+// In this example, [AutovalidateMode] of the form is disabled (default value)
+// and [AutovalidateMode] of fields are set to [AutovalidateMode.onUserInteraction].
+// In this case, [CompanionPresenterMixin.canSubmit] returns `false` when any
+// invalid inputs exist.
+// Note that users can tap "submit" button in initial state, so
+// [CompanionPresenterMixin.validateAndSave()] is still automatically called
+// in [CompanionPresenterMixin.submit] method,
+// and [CompanionPresenterMixin.duSubmit] is only called when no validation errors.
+//
+// This mode is predictable for users by "submit" button is shown and enabled initially,
+// and users can recognize their error after input. It looks ideal but some situation
+// needs "bulk auto" or "manual" mode.
 // Note that vanilla FormFields requires settings key and onSaved callbacks.
 //------------------------------------------------------------------------------
 
@@ -30,7 +45,7 @@ class AutoValidationVanillaFormAccountPage extends Screen {
 
   @override
   Widget buildPage(BuildContext context, ScopedReader watch) => Form(
-        autovalidateMode: AutovalidateMode.onUserInteraction,
+        autovalidateMode: AutovalidateMode.disabled,
         child: _AutoValidationVanillaFormAccountPane(),
       );
 }
@@ -47,17 +62,23 @@ class _AutoValidationVanillaFormAccountPane extends ConsumerWidget {
           TextFormField(
             key: presenter.getKey('id', context),
             initialValue: state.id,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
             validator: presenter.getPropertyValidator('id', context),
             onSaved: presenter.savePropertyValue('id'),
             keyboardType: TextInputType.emailAddress,
             decoration: InputDecoration(
               labelText: LocaleKeys.id_label.tr(),
               hintText: LocaleKeys.id_hint.tr(),
+              suffix: AsyncValidationIndicator(
+                presenter: presenter,
+                propertyName: 'id',
+              ),
             ),
           ),
           TextFormField(
             key: presenter.getKey('name', context),
             initialValue: state.name,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
             validator: presenter.getPropertyValidator('name', context),
             onSaved: presenter.savePropertyValue('name'),
             decoration: InputDecoration(
@@ -97,6 +118,7 @@ class _AutoValidationVanillaFormAccountPane extends ConsumerWidget {
           TextFormField(
             key: presenter.getKey('age', context),
             initialValue: state.age.toString(),
+            autovalidateMode: AutovalidateMode.onUserInteraction,
             validator: presenter.getPropertyValidator('age', context),
             onSaved: presenter.savePropertyValue('age'),
             decoration: InputDecoration(
@@ -131,17 +153,57 @@ class AutoValidationVanillaFormAccountPresenter extends StateNotifier<Account>
       PropertyDescriptorsBuilder()
         ..add<String>(
           name: 'id',
+          validatorFactories: [
+            Validator.required,
+            Validator.email,
+          ],
+          asyncValidatorFactories: [
+            (context) => validateId,
+          ],
         )
         ..add<String>(
           name: 'name',
+          validatorFactories: [
+            Validator.required,
+          ],
         )
         ..add<Gender>(
           name: 'gender',
         )
         ..add<String>(
           name: 'age',
+          validatorFactories: [
+            Validator.required,
+            Validator.min(0),
+          ],
         ),
     );
+  }
+
+  FutureOr<String?> validateId(
+      String? value, AsyncValidatorOptions options) async {
+    if (value == null || value.isEmpty) {
+      return 'ID is required.';
+    }
+
+    // Dummy actions to check async validator behavior.
+    switch (value) {
+      case 'john@example.com':
+        return await Future.delayed(
+          const Duration(seconds: 5),
+          () => throw Exception('Server is temporary unavailable.'),
+        );
+      case 'jane@example.com':
+        return await Future.delayed(
+          const Duration(seconds: 5),
+          () => '$value is already used.',
+        );
+      default:
+        return await Future.delayed(
+          const Duration(seconds: 5),
+          () => null,
+        );
+    }
   }
 
   @override
@@ -169,6 +231,7 @@ class AutoValidationVanillaFormAccountPresenter extends StateNotifier<Account>
 
     // Propagate to global state.
     _read(account).state = state;
+    _read(pagesProvider).state = home;
   }
 
   /// Example of business logic of submit.

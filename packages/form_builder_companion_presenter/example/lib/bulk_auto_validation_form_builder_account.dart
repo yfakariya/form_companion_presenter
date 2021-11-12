@@ -17,16 +17,20 @@ import 'routes.dart';
 import 'screen.dart';
 
 //------------------------------------------------------------------------------
-// In this example, [AutovalidateMode] of the form and fields are disabled (default value).
-// In this case, [CompanionPresenterMixin.canSubmit] always returns `true`,
-// so users always tap "submit" button.
-// Note that [CompanionPresenterMixin.validateAndSave()] is automatically called
+// In this example, [AutovalidateMode] of the form and fields are set to
+// [AutovalidateMode.onUserInteraction].
+// In this case, [CompanionPresenterMixin.canSubmit] returns `false` when any
+// invalid inputs exist.
+// Note that users can tap "submit" button in initial state, so
+// [CompanionPresenterMixin.validateAndSave()] is still automatically called
 // in [CompanionPresenterMixin.submit] method,
 // and [CompanionPresenterMixin.duSubmit] is only called when no validation errors.
 //
-// This mode is predictable for users by "submit" button is always shown and enabled,
-// but it might be frastrated in long form because users cannot recognize their
-// error until tapping "submit" button.
+// This mode is predictable for users by "submit" button is shown and enabled initially,
+// and users can recognize their error after input, but it is frastrated because
+// some field's error causes displaying all fields error even if the fields are
+// not input anything by the user. It might be helpful for some situation,
+// but it might be just annoying on many cases.
 // Note that FormBuilderFields requires unique names and they must be identical
 // to names for `PropertyDescriptor`s.
 //------------------------------------------------------------------------------
@@ -36,21 +40,21 @@ import 'screen.dart';
 /// This class is required to work [CompanionPresenterMixin] correctly
 /// because it uses [FormBuilder.of] to access form state which requires
 /// [FormBuilder] exists in ancestor of element tree ([BuildContext]).
-class ManualValidationFormBuilderAccountPage extends Screen {
+class BulkAutoValidationFormBuilderAccountPage extends Screen {
   /// Constructor.
-  const ManualValidationFormBuilderAccountPage({Key? key}) : super(key: key);
+  const BulkAutoValidationFormBuilderAccountPage({Key? key}) : super(key: key);
 
   @override
-  String get title => LocaleKeys.manual_flutterFormBuilderAccount_title.tr();
+  String get title => LocaleKeys.bulk_auto_flutterFormBuilderAccount_title.tr();
 
   @override
   Widget buildPage(BuildContext context, ScopedReader watch) => FormBuilder(
-        autovalidateMode: AutovalidateMode.disabled,
-        child: _ManualValidationFormBuilderAccountPane(),
+        autovalidateMode: AutovalidateMode.onUserInteraction,
+        child: _BulkAutoValidationFormBuilderAccountPane(),
       );
 }
 
-class _ManualValidationFormBuilderAccountPane extends ConsumerWidget {
+class _BulkAutoValidationFormBuilderAccountPane extends ConsumerWidget {
   @override
   Widget build(BuildContext context, ScopedReader watch) {
     final state = watch(_presenter);
@@ -180,12 +184,13 @@ class _ManualValidationFormBuilderAccountPane extends ConsumerWidget {
 
 /// Testable presenter.
 @visibleForTesting
-class ManualValidationFormBuilderAccountPresenter extends StateNotifier<Account>
+class BulkAutoValidationFormBuilderAccountPresenter
+    extends StateNotifier<Account>
     with CompanionPresenterMixin, FormBuilderCompanionMixin {
   final Reader _read;
 
-  /// Creates new [ManualValidationFormBuilderAccountPresenter].
-  ManualValidationFormBuilderAccountPresenter(
+  /// Creates new [BulkAutoValidationFormBuilderAccountPresenter].
+  BulkAutoValidationFormBuilderAccountPresenter(
     Account initialState,
     this._read,
   ) : super(initialState) {
@@ -296,9 +301,9 @@ class ManualValidationFormBuilderAccountPresenter extends StateNotifier<Account>
   }
 }
 
-final _presenter =
-    StateNotifierProvider<ManualValidationFormBuilderAccountPresenter, Account>(
-  (ref) => ManualValidationFormBuilderAccountPresenter(
+final _presenter = StateNotifierProvider<
+    BulkAutoValidationFormBuilderAccountPresenter, Account>(
+  (ref) => BulkAutoValidationFormBuilderAccountPresenter(
     ref.watch(account).state,
     ref.read,
   ),

@@ -4,9 +4,7 @@ import 'dart:async';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:form_builder_companion_presenter/form_builder_companion_presenter.dart';
 import 'package:form_companion_presenter/async_validation_indicator.dart';
 import 'package:form_companion_presenter/form_companion_presenter.dart';
 import 'package:meta/meta.dart';
@@ -15,42 +13,46 @@ import 'l10n/locale_keys.g.dart';
 import 'models.dart';
 import 'routes.dart';
 import 'screen.dart';
+import 'validators.dart';
 
 //------------------------------------------------------------------------------
-// In this example, [AutovalidateMode] of the form and fields are disabled (default value).
-// In this case, [CompanionPresenterMixin.canSubmit] always returns `true`,
-// so users always tap "submit" button.
-// Note that [CompanionPresenterMixin.validateAndSave()] is automatically called
+// In this example, [AutovalidateMode] of the form and fields are set to
+// [AutovalidateMode.onUserInteraction].
+// In this case, [CompanionPresenterMixin.canSubmit] returns `false` when any
+// invalid inputs exist.
+// Note that users can tap "submit" button in initial state, so
+// [CompanionPresenterMixin.validateAndSave()] is still automatically called
 // in [CompanionPresenterMixin.submit] method,
 // and [CompanionPresenterMixin.duSubmit] is only called when no validation errors.
 //
-// This mode is predictable for users by "submit" button is always shown and enabled,
-// but it might be frastrated in long form because users cannot recognize their
-// error until tapping "submit" button.
-// Note that FormBuilderFields requires unique names and they must be identical
-// to names for `PropertyDescriptor`s.
+// This mode is predictable for users by "submit" button is shown and enabled initially,
+// and users can recognize their error after input, but it is frastrated because
+// some field's error causes displaying all fields error even if the fields are
+// not input anything by the user. It might be helpful for some situation,
+// but it might be just annoying on many cases.
+// Note that vanilla FormFields requires settings key and onSaved callbacks.
 //------------------------------------------------------------------------------
 
-/// Page for [Account] input which just declares [FormBuilder].
+/// Page for [Account] input which just declares [Form].
 ///
 /// This class is required to work [CompanionPresenterMixin] correctly
-/// because it uses [FormBuilder.of] to access form state which requires
-/// [FormBuilder] exists in ancestor of element tree ([BuildContext]).
-class ManualValidationFormBuilderAccountPage extends Screen {
+/// because it uses [Form.of] to access form state which requires
+/// [Form] exists in ancestor of element tree ([BuildContext]).
+class BulkAutoValidationVanillaFormAccountPage extends Screen {
   /// Constructor.
-  const ManualValidationFormBuilderAccountPage({Key? key}) : super(key: key);
+  const BulkAutoValidationVanillaFormAccountPage({Key? key}) : super(key: key);
 
   @override
-  String get title => LocaleKeys.manual_flutterFormBuilderAccount_title.tr();
+  String get title => LocaleKeys.bulk_auto_vanilla_title.tr();
 
   @override
-  Widget buildPage(BuildContext context, ScopedReader watch) => FormBuilder(
-        autovalidateMode: AutovalidateMode.disabled,
-        child: _ManualValidationFormBuilderAccountPane(),
+  Widget buildPage(BuildContext context, ScopedReader watch) => Form(
+        autovalidateMode: AutovalidateMode.onUserInteraction,
+        child: _BulkAutoValidationVanillaFormAccountPane(),
       );
 }
 
-class _ManualValidationFormBuilderAccountPane extends ConsumerWidget {
+class _BulkAutoValidationVanillaFormAccountPane extends ConsumerWidget {
   @override
   Widget build(BuildContext context, ScopedReader watch) {
     final state = watch(_presenter);
@@ -59,10 +61,11 @@ class _ManualValidationFormBuilderAccountPane extends ConsumerWidget {
     return SingleChildScrollView(
       child: Column(
         children: [
-          FormBuilderTextField(
-            name: 'id',
+          TextFormField(
+            key: presenter.getKey('id', context),
             initialValue: state.id,
             validator: presenter.getPropertyValidator('id', context),
+            onSaved: presenter.savePropertyValue('id'),
             keyboardType: TextInputType.emailAddress,
             decoration: InputDecoration(
               labelText: LocaleKeys.id_label.tr(),
@@ -73,18 +76,19 @@ class _ManualValidationFormBuilderAccountPane extends ConsumerWidget {
               ),
             ),
           ),
-          FormBuilderTextField(
-            name: 'name',
+          TextFormField(
+            key: presenter.getKey('name', context),
             initialValue: state.name,
             validator: presenter.getPropertyValidator('name', context),
+            onSaved: presenter.savePropertyValue('name'),
             decoration: InputDecoration(
               labelText: LocaleKeys.name_label.tr(),
               hintText: LocaleKeys.name_hint.tr(),
             ),
           ),
-          FormBuilderDropdown<Gender>(
-            name: 'gender',
-            initialValue: state.gender,
+          DropdownButtonFormField<Gender>(
+            key: presenter.getKey('gender', context),
+            value: state.gender,
             onSaved: presenter.savePropertyValue('gender'),
             // Tip: required to work
             onChanged: (_) {},
@@ -111,60 +115,15 @@ class _ManualValidationFormBuilderAccountPane extends ConsumerWidget {
               ),
             ],
           ),
-          FormBuilderTextField(
-            name: 'age',
+          TextFormField(
+            key: presenter.getKey('age', context),
             initialValue: state.age.toString(),
             validator: presenter.getPropertyValidator('age', context),
+            onSaved: presenter.savePropertyValue('age'),
             decoration: InputDecoration(
               labelText: LocaleKeys.age_label.tr(),
               hintText: LocaleKeys.age_hint.tr(),
             ),
-          ),
-          FormBuilderCheckboxGroup<Region>(
-            name: 'preferredRegions',
-            initialValue: state.preferredRegsions,
-            decoration: InputDecoration(
-              labelText: LocaleKeys.preferredRegions_label.tr(),
-              hintText: LocaleKeys.preferredRegions_hint.tr(),
-            ),
-            options: [
-              FormBuilderFieldOption(
-                value: Region.afurika,
-                child: Text(
-                  LocaleKeys.region_afurika.tr(),
-                ),
-              ),
-              FormBuilderFieldOption(
-                value: Region.asia,
-                child: Text(
-                  LocaleKeys.region_asia.tr(),
-                ),
-              ),
-              FormBuilderFieldOption(
-                value: Region.australia,
-                child: Text(
-                  LocaleKeys.region_australia.tr(),
-                ),
-              ),
-              FormBuilderFieldOption(
-                value: Region.europe,
-                child: Text(
-                  LocaleKeys.region_europe.tr(),
-                ),
-              ),
-              FormBuilderFieldOption(
-                value: Region.northAmelica,
-                child: Text(
-                  LocaleKeys.region_northAmelica.tr(),
-                ),
-              ),
-              FormBuilderFieldOption(
-                value: Region.southAmelica,
-                child: Text(
-                  LocaleKeys.region_southAmelica.tr(),
-                ),
-              ),
-            ],
           ),
           ElevatedButton(
             onPressed: presenter.submit(context),
@@ -180,12 +139,13 @@ class _ManualValidationFormBuilderAccountPane extends ConsumerWidget {
 
 /// Testable presenter.
 @visibleForTesting
-class ManualValidationFormBuilderAccountPresenter extends StateNotifier<Account>
-    with CompanionPresenterMixin, FormBuilderCompanionMixin {
+class BulkAutoValidationVanillaFormAccountPresenter
+    extends StateNotifier<Account>
+    with CompanionPresenterMixin, FormCompanionMixin {
   final Reader _read;
 
-  /// Creates new [ManualValidationFormBuilderAccountPresenter].
-  ManualValidationFormBuilderAccountPresenter(
+  /// Creates new [BulkAutoValidationVanillaFormAccountPresenter].
+  BulkAutoValidationVanillaFormAccountPresenter(
     Account initialState,
     this._read,
   ) : super(initialState) {
@@ -194,8 +154,8 @@ class ManualValidationFormBuilderAccountPresenter extends StateNotifier<Account>
         ..add<String>(
           name: 'id',
           validatorFactories: [
-            FormBuilderValidators.required,
-            FormBuilderValidators.email,
+            Validator.required,
+            Validator.email,
           ],
           asyncValidatorFactories: [
             (context) => validateId,
@@ -204,7 +164,7 @@ class ManualValidationFormBuilderAccountPresenter extends StateNotifier<Account>
         ..add<String>(
           name: 'name',
           validatorFactories: [
-            FormBuilderValidators.required,
+            Validator.required,
           ],
         )
         ..add<Gender>(
@@ -213,11 +173,10 @@ class ManualValidationFormBuilderAccountPresenter extends StateNotifier<Account>
         ..add<String>(
           name: 'age',
           validatorFactories: [
-            FormBuilderValidators.required,
-            (context) => FormBuilderValidators.min(context, 0),
+            Validator.required,
+            Validator.min(0),
           ],
-        )
-        ..add<List<Region>>(name: 'preferredRegions'),
+        ),
     );
   }
 
@@ -255,11 +214,9 @@ class ManualValidationFormBuilderAccountPresenter extends StateNotifier<Account>
     final gender = getSavedPropertyValue<Gender>('gender')!;
     // You can omit generic type argument occasionally.
     final age = int.parse(getSavedPropertyValue('age')!);
-    final preferredRegions =
-        getSavedPropertyValue<List<Region>>('preferredRegions')!;
 
     // Call business logic.
-    if (!(await doSubmitLogic(id, name, gender, age, preferredRegions))) {
+    if (!(await doSubmitLogic(id, name, gender, age))) {
       return;
     }
 
@@ -269,7 +226,7 @@ class ManualValidationFormBuilderAccountPresenter extends StateNotifier<Account>
       name: name,
       gender: gender,
       age: age,
-      preferredRegions: preferredRegions,
+      preferredRegions: [],
     );
 
     // Propagate to global state.
@@ -289,16 +246,15 @@ class ManualValidationFormBuilderAccountPresenter extends StateNotifier<Account>
     String name,
     Gender gender,
     int age,
-    List<Region> preferredRegions,
   ) async {
     // Write actual registration logic via API here.
     return true;
   }
 }
 
-final _presenter =
-    StateNotifierProvider<ManualValidationFormBuilderAccountPresenter, Account>(
-  (ref) => ManualValidationFormBuilderAccountPresenter(
+final _presenter = StateNotifierProvider<
+    BulkAutoValidationVanillaFormAccountPresenter, Account>(
+  (ref) => BulkAutoValidationVanillaFormAccountPresenter(
     ref.watch(account).state,
     ref.read,
   ),

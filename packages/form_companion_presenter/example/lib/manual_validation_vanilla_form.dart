@@ -5,19 +5,27 @@ import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:form_companion_presenter/async_validation_indicator.dart';
 import 'package:form_companion_presenter/form_companion_presenter.dart';
 import 'package:meta/meta.dart';
 
 import 'l10n/locale_keys.g.dart';
 import 'models.dart';
+import 'routes.dart';
 import 'screen.dart';
+import 'validators.dart';
 
 //------------------------------------------------------------------------------
-// There are 2 differences from Auto* variant:
-//   1. Of cource, `autoValidateMode` is set to `AutovalidateMode.disabled`
-//      in `Form` constructor.
-//   2. The override of `doSubmit` calls `validateAndSave()` and returns
-//      immediately when the validation is failed.
+// In this example, [AutovalidateMode] of the form and fields are disabled (default value).
+// In this case, [CompanionPresenterMixin.canSubmit] always returns `true`,
+// so users always tap "submit" button.
+// Note that [CompanionPresenterMixin.validateAndSave()] is automatically called
+// in [CompanionPresenterMixin.submit] method,
+// and [CompanionPresenterMixin.duSubmit] is only called when no validation errors.
+//
+// This mode is predictable for users by "submit" button is always shown and enabled,
+// but it might be frastrated in long form because users cannot recognize their
+// error until tapping "submit" button.
 // Note that vanilla FormFields requires settings key and onSaved callbacks.
 //------------------------------------------------------------------------------
 
@@ -58,6 +66,10 @@ class _ManualValidationVanillaFormAccountPane extends ConsumerWidget {
             decoration: InputDecoration(
               labelText: LocaleKeys.id_label.tr(),
               hintText: LocaleKeys.id_hint.tr(),
+              suffix: AsyncValidationIndicator(
+                presenter: presenter,
+                propertyName: 'id',
+              ),
             ),
           ),
           TextFormField(
@@ -136,17 +148,57 @@ class ManualValidationVanillaFormAccountPresenter extends StateNotifier<Account>
       PropertyDescriptorsBuilder()
         ..add<String>(
           name: 'id',
+          validatorFactories: [
+            Validator.required,
+            Validator.email,
+          ],
+          asyncValidatorFactories: [
+            (context) => validateId,
+          ],
         )
         ..add<String>(
           name: 'name',
+          validatorFactories: [
+            Validator.required,
+          ],
         )
         ..add<Gender>(
           name: 'gender',
         )
         ..add<String>(
           name: 'age',
+          validatorFactories: [
+            Validator.required,
+            Validator.min(0),
+          ],
         ),
     );
+  }
+
+  FutureOr<String?> validateId(
+      String? value, AsyncValidatorOptions options) async {
+    if (value == null || value.isEmpty) {
+      return 'ID is required.';
+    }
+
+    // Dummy actions to check async validator behavior.
+    switch (value) {
+      case 'john@example.com':
+        return await Future.delayed(
+          const Duration(seconds: 5),
+          () => throw Exception('Server is temporary unavailable.'),
+        );
+      case 'jane@example.com':
+        return await Future.delayed(
+          const Duration(seconds: 5),
+          () => '$value is already used.',
+        );
+      default:
+        return await Future.delayed(
+          const Duration(seconds: 5),
+          () => null,
+        );
+    }
   }
 
   @override
@@ -174,6 +226,7 @@ class ManualValidationVanillaFormAccountPresenter extends StateNotifier<Account>
 
     // Propagate to global state.
     _read(account).state = state;
+    _read(pagesProvider).state = home;
   }
 
   /// Example of business logic of submit.

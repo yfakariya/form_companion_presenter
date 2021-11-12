@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'app.dart';
 
 // TODO(yfakariya): converter usage
-// TODO(yfakariya): validators, submit, and submitted data viewer (home page)
 
 // ignore: avoid_void_async
 void main() async {

@@ -43,6 +43,17 @@ class CodegenLoader extends AssetLoader{
       "title": "Auto validation, Flutter Form Builder for Booking"
     }
   },
+  "bulk_auto": {
+    "vanilla": {
+      "title": "Bulk-Auto validation, vanilla Form for Account"
+    },
+    "flutterFormBuilderAccount": {
+      "title": "Bulk-Auto validation, Flutter Form Builder for Account"
+    },
+    "flutterFormBuilderBooking": {
+      "title": "Bulk-Auto validation, Flutter Form Builder for Booking"
+    }
+  },
   "id": {
     "label": "User ID *",
     "hint": "Enter your user ID which should be unique."
@@ -159,6 +170,17 @@ static const Map<String,dynamic> ja = {
     },
     "flutterFormBuilderBooking": {
       "title": "自動バリデーション、Booking 用の Flutter Form Builder"
+    }
+  },
+  "bulk_auto": {
+    "vanilla": {
+      "title": "一括自動バリデーション、Account 用の素の Form"
+    },
+    "flutterFormBuilderAccount": {
+      "title": "一括自動バリデーション、Account 用の Flutter Form Builder"
+    },
+    "flutterFormBuilderBooking": {
+      "title": "一括自動バリデーション、Booking 用の Flutter Form Builder"
     }
   },
   "id": {
