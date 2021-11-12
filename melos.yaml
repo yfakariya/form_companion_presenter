@@ -42,10 +42,12 @@ scripts:
     run: melos exec -c 1 --fail-fast -- fvm flutter pub run easy_localization:generate -O lib/l10n -f json
     select-package:
       flutter: true
+      dir-exists: resources/langs
       depends-on: easy_localization
 
   easy_localization:keys:
     run: melos exec -c 1 --fail-fast -- fvm flutter pub run easy_localization:generate -O lib/l10n -f keys -o locale_keys.g.dart
     select-package:
       flutter: true
+      dir-exists: resources/langs
       depends-on: easy_localization
