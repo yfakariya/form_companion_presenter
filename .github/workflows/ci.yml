@@ -1,0 +1,37 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # actions/checkout@v2.4.0
+      - uses: actions/checkout@ec3a7ce113134d7a93b817d10a8272cb61118579
+
+      # subosito/flutter-action@v1.5.3
+      - uses: subosito/flutter-action@4389e6cbc6cb8a4b18c628ff96ff90be0e926aa8
+        with:
+          channel: stable
+
+      - name: Add pub cache bin to PATH
+        run: echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
+
+      - name: Add pub cache to PATH
+        run: echo "PUB_CACHE="$HOME/.pub-cache"" >> $GITHUB_ENV
+
+      - run: dart pub global activate melos
+
+      - run: dart pub global activate fvm
+
+      - run: dart pub global activate grinder
+
+      - name: Setup
+        run: fvm flutter pub global run grind
+        working-directory: tools/dev_env
+      
+      - name: CI Suite
+        run: fvm flutter pub global run grind prepare-publish --preserve-env
