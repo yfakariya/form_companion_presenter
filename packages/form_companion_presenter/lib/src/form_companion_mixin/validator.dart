@@ -11,8 +11,6 @@ class _AsyncValidatorFactoryEntry<T extends Object> {
   final AsyncValidatorFactory<T> _factory;
   final AsyncValidatorExecutor<T> _executor;
 
-  bool get validating => _executor.validating;
-
   _AsyncValidatorFactoryEntry(
     this._factory,
     Equality<T?>? equality,
