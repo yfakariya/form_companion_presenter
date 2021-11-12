@@ -31,7 +31,8 @@ jobs:
 
       - name: Setup
         run: fvm flutter pub global run grind
-        working-directory: tools/dev_env
+        working-directory: tool/dev_env
       
       - name: CI Suite
         run: fvm flutter pub global run grind prepare-publish --preserve-env
+        working-directory: tool/dev_env
