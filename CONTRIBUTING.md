@@ -44,6 +44,15 @@ Ensure you use [conventional commits](https://www.conventionalcommits.org/en/v1.
 
 1. Move to `tool/dev_env` directory.
 2. Run `grind prepare-publish` command.
+    * This script runs following tasks:
+        1. Code formatting for `*.dart` files except `*.g.dart`, `*.freezed.dart`, and `.**/**/*.dart`.
+        2. Run `grind assemble` in projects under `examples/`.
+        3. Run `grind distrubute` in projects under `examples/`.
+        4. Run code analysis with `melos run analyze` for all projects.
+        5. Run unit testings and widget testings with `melos run test` for all projects.
+        6. Reverts `pubspec.yaml` tweaks done by `grind` in bootstrap.
+        7. Re-run `melos bootstrap` to verify reverted configuration.
+
 
 ### Documentation
 
@@ -73,6 +82,12 @@ We use [freezed](https://pub.dev/packages/freezed) to help state management of e
 
 ```shell
 fvm flutter pub run build_runner build --delete-conflicting-outputs
+```
+
+or just run following melos script in repository root:
+
+```shell
+fvm flutter pub global run melos run build_runner
 ```
 
 You can run `build_runner` in background as following:
@@ -106,6 +121,12 @@ Run following command to generate `locale_keys.g.dart`.
 
 ```shell
 fvm flutter pub run easy_localization:generate -O lib/l10n -f keys -o locale_keys.g.dart
+```
+
+or just run following melos script in repository root, this script generates both of  `codegen_loader.g.dart` and `locale_keys.g.dart`:
+
+```shell
+fvm flutter pub global run melos run easy_localization
 ```
 
 #### libraries in example
