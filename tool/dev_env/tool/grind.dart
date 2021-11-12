@@ -22,5 +22,9 @@ Future<void> enablePubGet() => enablePubGetCore(
       runPubGet: context.invocation.arguments.getFlag('run'),
     );
 
-@Task('Prepare publish. Assemble examples, revert `enable-pub-get`, and so on.')
-Future<void> preparePublish() => preparePublishCore();
+@Task(
+  'Prepare publish. Assemble examples, revert `enable-pub-get`, and so on. Pass --preserve-env to skip reverting enable-pub-get.',
+)
+Future<void> preparePublish() => preparePublishCore(
+      revertsEnvironment: !context.invocation.arguments.getFlag('preserve-env'),
+    );

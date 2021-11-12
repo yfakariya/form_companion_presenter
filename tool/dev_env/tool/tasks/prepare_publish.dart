@@ -1,6 +1,7 @@
 // See LICENCE file in the root.
 
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:grinder/grinder.dart';
 import 'package:path/path.dart' as path;
@@ -9,36 +10,121 @@ import 'package:yaml_edit/yaml_edit.dart';
 
 import 'utils.dart';
 
-Future<void> preparePublishCore() async {
+Future<void> preparePublishCore({
+  required bool revertsEnvironment,
+}) async {
+  final examples = await getPackages('../../examples').toList();
   final packages = await getPackages('../../packages').toList();
 
-  await _assembleExamples(packages);
+  await _runFormats(packages: packages, examples: examples);
 
-  await _testProjects(packages);
+  await _assembleExamples(packages: packages, examples: examples);
 
-  await _revertEnablingPubGet();
+  await _runMelosScript('analyze');
 
-  await runMelosBootstrap();
+  await _runMelosScript('test');
+
+  // await _testProjects(packages: packages, examples: examples);
+
+  if (revertsEnvironment) {
+    await _revertEnablingPubGet(packages);
+
+    await runMelosBootstrap();
+  }
 }
 
-Future<void> _assembleExamples(List<String> packages) async {
-  await for (final example in getPackages('../../examples')) {
+Future<void> _runFormats({
+  required List<String> packages,
+  required List<String> examples,
+}) async {
+  // Do manual execution rather than melos
+  // to avoid format genrated sources...
+  Future<void> _runFormat(String directory) async {
+    final sources = await getDir(directory)
+        .list(recursive: true, followLinks: false)
+        .where((f) =>
+            f.path.endsWith('.dart') &&
+            !f.path.endsWith('.freezed.dart') &&
+            !f.path.endsWith('.g.dart'))
+        .map((f) => path.relative(f.path, from: directory))
+        .where((f) => !f.startsWith('.'))
+        .toList();
+    await runAsync(
+      'fvm',
+      arguments: [
+        'flutter',
+        'format',
+        '--set-exit-if-changed',
+        ...sources,
+      ],
+      runOptions: RunOptions(
+        stdoutEncoding: utf8,
+        stderrEncoding: utf8,
+      ),
+      workingDirectory: directory,
+    );
+  }
+
+  for (final example in examples) {
+    await _runFormat('../../examples/$example/');
+  }
+
+  for (final package in packages) {
+    await _runFormat('../../packages/$package/');
+  }
+}
+
+Future<void> _assembleExamples({
+  required List<String> packages,
+  required List<String> examples,
+}) async {
+  for (final example in examples) {
     await runAsync(
       'grind',
       arguments: ['assemble'],
+      runOptions: RunOptions(
+        stdoutEncoding: utf8,
+        stderrEncoding: utf8,
+      ),
       workingDirectory: '../../examples/$example',
     );
 
     await runAsync(
       'grind',
       arguments: ['distribute'],
+      runOptions: RunOptions(
+        stdoutEncoding: utf8,
+        stderrEncoding: utf8,
+      ),
       workingDirectory: '../../examples/$example',
     );
   }
 }
 
-Future<void> _testProjects(List<String> packages) async {
-  await for (final example in getPackages('../../examples')) {
+Future<void> _runMelosScript(String scriptName) => runAsync(
+      'fvm',
+      arguments: [
+        'flutter',
+        'pub',
+        'global',
+        'run',
+        'melos',
+        'run',
+        scriptName,
+        '--no-select',
+      ],
+      runOptions: RunOptions(
+        stdoutEncoding: utf8,
+        stderrEncoding: utf8,
+      ),
+      workingDirectory: '../../',
+    );
+
+Future<void> _testProjects({
+  required List<String> packages,
+  required List<String> examples,
+}) async {
+  for (final example in examples) {
     await _runTests('../../examples/$example/');
   }
 
@@ -50,19 +136,20 @@ Future<void> _testProjects(List<String> packages) async {
 Future<void> _runTests(
   String projectDirectory,
 ) async =>
-    runAsync('fvm',
-        // We omit escape of `files` because it should be
-        // "../../packages/$package/test/" and $package should not contain
-        // any whitespaces.
-        arguments: ['flutter', 'test', '--reporter=expanded'],
-        runOptions: RunOptions(
-          stdoutEncoding: utf8,
-          stderrEncoding: utf8,
-        ),
-        workingDirectory: projectDirectory);
+    runAsync(
+      'fvm',
+      // We omit escape of `files` because it should be
+      // "../../packages/$package/test/" and $package should not contain
+      // any whitespaces.
+      arguments: ['flutter', 'test', '--reporter=expanded'],
+      runOptions: RunOptions(
+        stdoutEncoding: utf8,
+        stderrEncoding: utf8,
+      ),
+      workingDirectory: projectDirectory,
+    );
 
-Future<void> _revertEnablingPubGet() async {
-  final packages = await getPackages('../../packages').toList();
+Future<void> _revertEnablingPubGet(List<String> packages) async {
   for (final package in packages) {
     await _restoreEnablePubGetCore(
       '../../packages/$package',
