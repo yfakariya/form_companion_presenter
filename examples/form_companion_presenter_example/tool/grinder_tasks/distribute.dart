@@ -16,18 +16,22 @@ List<String> _commonItems = [
   _path('models.dart'),
   _path('models.freezed.dart'),
   _path('routes.dart'),
+  _path('validators.dart'),
 ];
 
 final Map<String, Set<String>> _itemSets = {
   'form_companion_presenter': {
     ..._commonItems,
     _path('auto_validation_vanilla_form.dart'),
+    _path('bulk_auto_validation_vanilla_form.dart'),
     _path('manual_validation_vanilla_form.dart'),
   },
   'form_builder_companion_presenter': {
     ..._commonItems,
     _path('auto_validation_form_builder_account.dart'),
     _path('auto_validation_form_builder_booking.dart'),
+    _path('bulk_auto_validation_form_builder_account.dart'),
+    _path('bulk_auto_validation_form_builder_booking.dart'),
     _path('manual_validation_form_builder_account.dart'),
     _path('manual_validation_form_builder_booking.dart'),
   },
