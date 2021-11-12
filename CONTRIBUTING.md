@@ -16,11 +16,12 @@ This project depends on [melos](https://melos.invertase.dev/) and [fvm](https://
 
 1. Setup `fvm` as [official docs](https://fvm.app/docs/getting_started/installation).
     * Note that `PATH` order is important on Windows. See [issue #227](https://github.com/leoafarias/fvm/issues/227#issuecomment-811592228) for details.
+    * You can run `fvm global` to omit following `fvm flutter pub global run` prefix of `melos` and `grinder`.
 2. Setup `melos` as [official docs](https://melos.invertase.dev/getting-started#installation).
 3. Setup `grinder` with `fvm flutter pub global activate grinder`.
-4. Run `melos bootstrap` in this (repository root) directory.
-5. Move to `tool/dev_env` directory.
-6. Run `grind` command.
+4. Move to `tool/dev_env` directory.
+5. Run `fvm flutter pub get`.
+6. Run `fvm flutter pub global run grinder setup-env` (or `grind setup-env` if you ran `fvm global`).
 7. Open this (repository root) directory in your favorite IDE.
 
 ### Lint
@@ -43,7 +44,7 @@ Ensure you use [conventional commits](https://www.conventionalcommits.org/en/v1.
 **CAUTION** Before push your change to the origin and make PR, you must revert your local setup made by grinder.
 
 1. Move to `tool/dev_env` directory.
-2. Run `grind prepare-publish` command.
+2. Run `fvm flutter pub global run grinder prepare-publish` (or `grind prepare-publish` if you ran `fvm global`).
     * This script runs following tasks:
         1. Code formatting for `*.dart` files except `*.g.dart`, `*.freezed.dart`, and `.**/**/*.dart`.
         2. Run `grind assemble` in projects under `examples/`.
@@ -52,7 +53,6 @@ Ensure you use [conventional commits](https://www.conventionalcommits.org/en/v1.
         5. Run unit testings and widget testings with `melos run test` for all projects.
         6. Reverts `pubspec.yaml` tweaks done by `grind` in bootstrap.
         7. Re-run `melos bootstrap` to verify reverted configuration.
-
 
 ### Documentation
 
