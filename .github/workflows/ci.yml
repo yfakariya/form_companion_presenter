@@ -46,9 +46,9 @@ jobs:
         run: fvm install 
 
       - name: Setup testing environment
-        run: fvm flutter pub global run grind
+        run: fvm flutter pub global run grinder
         working-directory: tool/dev_env
 
       - name: Run CI suite
-        run: fvm flutter pub global run grind prepare-publish --preserve-env
+        run: fvm flutter pub global run grinder prepare-publish --preserve-env
         working-directory: tool/dev_env
