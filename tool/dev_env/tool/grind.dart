@@ -5,6 +5,8 @@ import 'package:grinder/grinder.dart';
 import 'tasks/check_env.dart';
 import 'tasks/enable_pub_get.dart';
 import 'tasks/prepare_publish.dart';
+import 'tasks/run_formats.dart';
+import 'tasks/utils.dart';
 
 Future<dynamic> main(List<String> args) => grind(args);
 
@@ -21,6 +23,10 @@ void setupEnv() => enablePubGetCore(runPubGet: true);
 Future<void> enablePubGet() => enablePubGetCore(
       runPubGet: context.invocation.arguments.getFlag('run'),
     );
+
+@Task(
+    'Run `flutter format` for all project but except *.g.dart, *.freezed.dart, and .dart_tools/**/*.dart')
+Future<void> format() => formatCore();
 
 @Task(
   'Prepare publish. Assemble examples, revert `enable-pub-get`, and so on. Pass --preserve-env to skip reverting enable-pub-get.',

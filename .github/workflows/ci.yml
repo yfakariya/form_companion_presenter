@@ -1,0 +1,74 @@
+name: ci
+
+on:
+  push:
+    paths:
+      - '**.dart'
+      - 'pubspec.*'
+      - 'analysis_options.yaml'
+      - '.github/workflows/ci.yaml'
+  pull_request:
+    paths:
+      - '**.dart'
+      - 'pubspec.*'
+      - 'analysis_options.yaml'
+      - '.github/workflows/ci.yaml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    timeout-minutes: 10
+
+    steps:
+      # actions/checkout@v2.4.0
+      - uses: actions/checkout@ec3a7ce113134d7a93b817d10a8272cb61118579
+
+      # subosito/flutter-action@v1.5.3
+      - uses: subosito/flutter-action@4389e6cbc6cb8a4b18c628ff96ff90be0e926aa8
+        with:
+          channel: stable
+
+      - name: Add pub cache bin to PATH
+        run: echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
+
+      - name: Add pub cache to PATH
+        run: echo "PUB_CACHE="$HOME/.pub-cache"" >> $GITHUB_ENV
+
+      - name: Install melos
+        run: dart pub global activate melos
+
+      - name: Install fvm
+        run: dart pub global activate fvm
+
+      - name: Install grinder
+        run: dart pub global activate grinder
+
+      - name: Setup fvm
+        run: fvm install
+
+      - name: Setup global version
+        run: fvm global 2.5.3
+
+      - name: Initialize grinder project
+        run: fvm flutter pub get
+        working-directory: tool/dev_env
+
+      - name: Setup testing environment
+        run: grind setup-env
+        working-directory: tool/dev_env
+
+      - name: Format sources
+        run: grind format
+        working-directory: tool/dev_env
+
+      - name: Analyze sources
+        run: melos run analyze --no-select
+
+      # "melos run test" is hang on github actions, so run each test explicitly
+
+      - run: fvm flutter test --reporter=expanded --coverage
+        working-directory: packages/form_builder_companion_presenter
+
+      - run: fvm flutter test --reporter=expanded --coverage
+        working-directory: packages/form_companion_presenter

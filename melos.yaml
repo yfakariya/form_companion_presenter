@@ -7,8 +7,12 @@ packages:
 
 scripts:
   analyze:
+    run: melos run analyze:core --no-select
+    description: Run `flutter analyze` in all packages.
+
+  analyze:core:
     run: melos exec -c 1 -- flutter analyze .
-    description: Run `dart analyze` in all packages.
+    description: Run `flutter analyze` in all packages.
     select-package:
       flutter: true
       scope: '*'
