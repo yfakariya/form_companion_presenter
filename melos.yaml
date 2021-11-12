@@ -15,13 +15,17 @@ scripts:
       ignore: dev_env
 
   test:
+    run: melos run test:core --no-select
+    description: Run Flutter tests for a specific package in this project.
+
+  test:core:
     run: melos exec -c 1 --fail-fast -- fvm flutter test --reporter=expanded --coverage
     description: Run Flutter tests for a specific package in this project.
     select-package:
       flutter: true
       dir-exists: test
       # TEMP
-      ignore: example
+      ignore: '*examples'
 
   build_runner:
     run: melos run freezed:generate --no-select
