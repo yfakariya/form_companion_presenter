@@ -43,12 +43,15 @@ jobs:
         run: dart pub global activate grinder
 
       - name: Setup fvm
-        run: fvm install 
+        run: fvm install
+
+      - name: Setup global version
+        run: fvm global 
 
       - name: Setup testing environment
-        run: fvm flutter pub global run grinder
+        run: grind setup-env
         working-directory: tool/dev_env
 
       - name: Run CI suite
-        run: fvm flutter pub global run grinder prepare-publish --preserve-env
+        run: grind prepare-publish --preserve-env
         working-directory: tool/dev_env
