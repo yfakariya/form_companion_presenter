@@ -1,7 +1,6 @@
 // See LICENCE file in the root.
 
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:grinder/grinder.dart';
 import 'package:path/path.dart' as path;
@@ -23,8 +22,6 @@ Future<void> preparePublishCore({
   await _runMelosScript('analyze');
 
   await _runMelosScript('test');
-
-  // await _testProjects(packages: packages, examples: examples);
 
   if (revertsEnvironment) {
     await _revertEnablingPubGet(packages);
@@ -118,35 +115,6 @@ Future<void> _runMelosScript(String scriptName) => runAsync(
         stderrEncoding: utf8,
       ),
       workingDirectory: '../../',
-    );
-
-Future<void> _testProjects({
-  required List<String> packages,
-  required List<String> examples,
-}) async {
-  for (final example in examples) {
-    await _runTests('../../examples/$example/');
-  }
-
-  for (final package in packages) {
-    await _runTests('../../packages/$package/');
-  }
-}
-
-Future<void> _runTests(
-  String projectDirectory,
-) async =>
-    runAsync(
-      'fvm',
-      // We omit escape of `files` because it should be
-      // "../../packages/$package/test/" and $package should not contain
-      // any whitespaces.
-      arguments: ['flutter', 'test', '--reporter=expanded'],
-      runOptions: RunOptions(
-        stdoutEncoding: utf8,
-        stderrEncoding: utf8,
-      ),
-      workingDirectory: projectDirectory,
     );
 
 Future<void> _revertEnablingPubGet(List<String> packages) async {
