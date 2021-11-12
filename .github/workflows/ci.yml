@@ -2,7 +2,17 @@ name: ci
 
 on:
   push:
+    paths:
+      - '**.dart'
+      - 'pubspec.*'
+      - 'analysis_options.yaml'
+      - '.github/workflows/ci.yaml'
   pull_request:
+    paths:
+      - '**.dart'
+      - 'pubspec.*'
+      - 'analysis_options.yaml'
+      - '.github/workflows/ci.yaml'
 
 jobs:
   build:
@@ -23,16 +33,22 @@ jobs:
       - name: Add pub cache to PATH
         run: echo "PUB_CACHE="$HOME/.pub-cache"" >> $GITHUB_ENV
 
-      - run: dart pub global activate melos
+      - name: Install melos
+        run: dart pub global activate melos
 
-      - run: dart pub global activate fvm
+      - name: Install fvm
+        run: dart pub global activate fvm
 
-      - run: dart pub global activate grinder
+      - name: Install grinder
+        run: dart pub global activate grinder
 
-      - name: Setup
+      - name: Setup fvm
+        run: fvm install 
+
+      - name: Setup testing environment
         run: fvm flutter pub global run grind
         working-directory: tool/dev_env
-      
-      - name: CI Suite
+
+      - name: Run CI suite
         run: fvm flutter pub global run grind prepare-publish --preserve-env
         working-directory: tool/dev_env
