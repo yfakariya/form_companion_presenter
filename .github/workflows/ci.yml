@@ -46,7 +46,11 @@ jobs:
         run: fvm install
 
       - name: Setup global version
-        run: fvm global 
+        run: fvm global 2.5.3
+
+      - name: Setup testing environment
+        run: fvm flutter pub get
+        working-directory: tool/dev_env
 
       - name: Setup testing environment
         run: grind setup-env
