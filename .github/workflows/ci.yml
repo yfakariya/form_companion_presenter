@@ -65,5 +65,11 @@ jobs:
       - name: Analyze sources
         run: melos run analyze --no-select
 
-      - name: Run tests
-        run: melos run test
+      # - name: Run tests
+      #   run: melos run test
+
+      - run: fvm flutter test --reporter=expanded --coverage
+        working-directory: packages/form_builder_companion_presenter
+
+      - run: fvm flutter test --reporter=expanded --coverage
+        working-directory: packages/form_companion_presenter
