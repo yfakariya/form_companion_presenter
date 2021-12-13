@@ -26,7 +26,7 @@ class BookingPageTemplate extends Screen {
   String get title => 'TITLE_TEMPLATE';
 
   @override
-  Widget buildPage(BuildContext context, ScopedReader watch) => FormBuilder(
+  Widget buildPage(BuildContext context, WidgetRef ref) => FormBuilder(
         //!macro formValidateMode
         child: _BookingPaneTemplate(),
       );
@@ -34,12 +34,12 @@ class BookingPageTemplate extends Screen {
 
 class _BookingPaneTemplate extends ConsumerWidget {
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final today = DateTime.now();
-    final userState = watch(account).state;
-    final bookingState = watch(booking).state;
-    final state = watch(_presenter);
-    final presenter = watch(_presenter.notifier);
+    final userState = ref.watch(account);
+    final bookingState = ref.watch(booking);
+    final state = ref.watch(_presenter);
+    final presenter = ref.watch(_presenter.notifier);
 
     return SingleChildScrollView(
       child: Column(
@@ -316,8 +316,8 @@ class BookingPresenterTemplate extends StateNotifier<Booking>
     );
 
     // Propagate to global state.
-    _read(booking).state = state;
-    _read(pagesProvider).state = home;
+    _read(booking.state).state = state;
+    transitToHome(_read);
   }
 
   /// Example of business logic of submit.
@@ -358,8 +358,8 @@ class _BookingResult {
 
 final _presenter = StateNotifierProvider<BookingPresenterTemplate, Booking>(
   (ref) => BookingPresenterTemplate(
-    ref.watch(booking).state,
-    ref.watch(account).state,
+    ref.watch(booking),
+    ref.watch(account),
     ref.read,
   ),
 );

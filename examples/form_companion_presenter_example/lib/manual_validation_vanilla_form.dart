@@ -42,7 +42,7 @@ class ManualValidationVanillaFormAccountPage extends Screen {
   String get title => LocaleKeys.manual_vanilla_title.tr();
 
   @override
-  Widget buildPage(BuildContext context, ScopedReader watch) => Form(
+  Widget buildPage(BuildContext context, WidgetRef ref) => Form(
         autovalidateMode: AutovalidateMode.disabled,
         child: _ManualValidationVanillaFormAccountPane(),
       );
@@ -50,9 +50,9 @@ class ManualValidationVanillaFormAccountPage extends Screen {
 
 class _ManualValidationVanillaFormAccountPane extends ConsumerWidget {
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final state = watch(_presenter);
-    final presenter = watch(_presenter.notifier);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(_presenter);
+    final presenter = ref.watch(_presenter.notifier);
 
     return SingleChildScrollView(
       child: Column(
@@ -199,8 +199,8 @@ class ManualValidationVanillaFormAccountPresenter extends StateNotifier<Account>
     );
 
     // Propagate to global state.
-    _read(account).state = state;
-    _read(pagesProvider).state = home;
+    _read(account.state).state = state;
+    transitToHome(_read);
   }
 
   /// Example of business logic of submit.
@@ -224,7 +224,7 @@ class ManualValidationVanillaFormAccountPresenter extends StateNotifier<Account>
 final _presenter =
     StateNotifierProvider<ManualValidationVanillaFormAccountPresenter, Account>(
   (ref) => ManualValidationVanillaFormAccountPresenter(
-    ref.watch(account).state,
+    ref.watch(account),
     ref.read,
   ),
 );

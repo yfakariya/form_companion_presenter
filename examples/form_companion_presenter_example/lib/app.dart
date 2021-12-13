@@ -14,8 +14,8 @@ class _App extends ConsumerWidget {
   const _App({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final pages = watch(pagesProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final pages = ref.watch(pagesProvider.state);
     return MaterialApp(
       localizationsDelegates: [
         ...context.localizationDelegates,

@@ -28,7 +28,7 @@ class AccountPageTemplate extends Screen {
   String get title => 'TITLE_TEMPLATE';
 
   @override
-  Widget buildPage(BuildContext context, ScopedReader watch) => FormBuilder(
+  Widget buildPage(BuildContext context, WidgetRef ref) => FormBuilder(
         //!macro formValidateMode
         child: _AccountPaneTemplate(),
       );
@@ -36,9 +36,9 @@ class AccountPageTemplate extends Screen {
 
 class _AccountPaneTemplate extends ConsumerWidget {
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final state = watch(_presenter);
-    final presenter = watch(_presenter.notifier);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(_presenter);
+    final presenter = ref.watch(_presenter.notifier);
 
     return SingleChildScrollView(
       child: Column(
@@ -283,8 +283,8 @@ class AccountPresenterTemplate extends StateNotifier<Account>
     );
 
     // Propagate to global state.
-    _read(account).state = state;
-    _read(pagesProvider).state = home;
+    _read(account.state).state = state;
+    transitToHome(_read);
   }
 
   /// Example of business logic of submit.
@@ -310,7 +310,7 @@ class AccountPresenterTemplate extends StateNotifier<Account>
 
 final _presenter = StateNotifierProvider<AccountPresenterTemplate, Account>(
   (ref) => AccountPresenterTemplate(
-    ref.watch(account).state,
+    ref.watch(account),
     ref.read,
   ),
 );

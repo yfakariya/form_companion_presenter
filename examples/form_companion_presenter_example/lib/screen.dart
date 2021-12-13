@@ -29,11 +29,11 @@ abstract class Screen extends ConsumerWidget {
   String get title;
 
   /// Builds page content.
-  Widget buildPage(BuildContext context, ScopedReader watch);
+  Widget buildPage(BuildContext context, WidgetRef ref);
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final pages = watch(pagesProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final pages = ref.watch(pagesProvider.state);
 
     return Scaffold(
       appBar: AppBar(
@@ -156,7 +156,7 @@ abstract class Screen extends ConsumerWidget {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(8),
-          child: buildPage(context, watch),
+          child: buildPage(context, ref),
         ),
       ),
     );

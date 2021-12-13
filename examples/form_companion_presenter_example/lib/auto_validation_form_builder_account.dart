@@ -47,7 +47,7 @@ class AutoValidationFormBuilderAccountPage extends Screen {
   String get title => LocaleKeys.auto_flutterFormBuilderAccount_title.tr();
 
   @override
-  Widget buildPage(BuildContext context, ScopedReader watch) => FormBuilder(
+  Widget buildPage(BuildContext context, WidgetRef ref) => FormBuilder(
         autovalidateMode: AutovalidateMode.disabled,
         child: _AutoValidationFormBuilderAccountPane(),
       );
@@ -55,9 +55,9 @@ class AutoValidationFormBuilderAccountPage extends Screen {
 
 class _AutoValidationFormBuilderAccountPane extends ConsumerWidget {
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final state = watch(_presenter);
-    final presenter = watch(_presenter.notifier);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(_presenter);
+    final presenter = ref.watch(_presenter.notifier);
 
     return SingleChildScrollView(
       child: Column(
@@ -253,8 +253,8 @@ class AutoValidationFormBuilderAccountPresenter extends StateNotifier<Account>
     );
 
     // Propagate to global state.
-    _read(account).state = state;
-    _read(pagesProvider).state = home;
+    _read(account.state).state = state;
+    transitToHome(_read);
   }
 
   /// Example of business logic of submit.
@@ -279,7 +279,7 @@ class AutoValidationFormBuilderAccountPresenter extends StateNotifier<Account>
 final _presenter =
     StateNotifierProvider<AutoValidationFormBuilderAccountPresenter, Account>(
   (ref) => AutoValidationFormBuilderAccountPresenter(
-    ref.watch(account).state,
+    ref.watch(account),
     ref.read,
   ),
 );
