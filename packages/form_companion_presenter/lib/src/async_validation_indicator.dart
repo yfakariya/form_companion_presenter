@@ -47,8 +47,10 @@ class AsyncValidationIndicator extends StatelessWidget {
         height ?? Theme.of(context).textTheme.subtitle1?.height ?? 16;
     return ValueListenableBuilder<bool>(
       valueListenable: _hasPendingAsyncValidationListener,
-      builder: (_, hasPendingAsyncValidation, indicator) =>
-          hasPendingAsyncValidation ? indicator! : const SizedBox(width: 0),
+      builder: (_, hasPendingAsyncValidation, child) => Visibility(
+        visible: hasPendingAsyncValidation,
+        child: child!,
+      ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
