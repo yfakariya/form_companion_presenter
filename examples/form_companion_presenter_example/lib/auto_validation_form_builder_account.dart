@@ -15,6 +15,7 @@ import 'l10n/locale_keys.g.dart';
 import 'models.dart';
 import 'routes.dart';
 import 'screen.dart';
+import 'validators.dart';
 
 //------------------------------------------------------------------------------
 // In this example, [AutovalidateMode] of the form is disabled (default value)
@@ -203,7 +204,7 @@ class AutoValidationFormBuilderAccountPresenter extends StateNotifier<Account>
             FormBuilderValidators.email,
           ],
           asyncValidatorFactories: [
-            (context) => validateId,
+            Validator.id,
           ],
         )
         ..add<String>(
@@ -224,32 +225,6 @@ class AutoValidationFormBuilderAccountPresenter extends StateNotifier<Account>
         )
         ..add<List<Region>>(name: 'preferredRegions'),
     );
-  }
-
-  FutureOr<String?> validateId(
-      String? value, AsyncValidatorOptions options) async {
-    if (value == null || value.isEmpty) {
-      return 'ID is required.';
-    }
-
-    // Dummy actions to check async validator behavior.
-    switch (value) {
-      case 'john@example.com':
-        return await Future.delayed(
-          const Duration(seconds: 5),
-          () => throw Exception('Server is temporary unavailable.'),
-        );
-      case 'jane@example.com':
-        return await Future.delayed(
-          const Duration(seconds: 5),
-          () => '$value is already used.',
-        );
-      default:
-        return await Future.delayed(
-          const Duration(seconds: 5),
-          () => null,
-        );
-    }
   }
 
   @override

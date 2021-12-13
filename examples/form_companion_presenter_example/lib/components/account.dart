@@ -15,9 +15,7 @@ import '../l10n/locale_keys.g.dart';
 import '../models.dart';
 import '../routes.dart';
 import '../screen.dart';
-//!macro beginVanillaOnly
 import '../validators.dart';
-//!macro endVanillaOnly
 
 //!macro headerNote
 
@@ -211,7 +209,7 @@ class AccountPresenterTemplate extends StateNotifier<Account>
             //!macro endBuilderOnly
           ],
           asyncValidatorFactories: [
-            (context) => validateId,
+            Validator.id,
           ],
         )
         ..add<String>(
@@ -246,32 +244,6 @@ class AccountPresenterTemplate extends StateNotifier<Account>
       //!macro endBuilderOnly
       ,
     );
-  }
-
-  FutureOr<String?> validateId(
-      String? value, AsyncValidatorOptions options) async {
-    if (value == null || value.isEmpty) {
-      return 'ID is required.';
-    }
-
-    // Dummy actions to check async validator behavior.
-    switch (value) {
-      case 'john@example.com':
-        return await Future.delayed(
-          const Duration(seconds: 5),
-          () => throw Exception('Server is temporary unavailable.'),
-        );
-      case 'jane@example.com':
-        return await Future.delayed(
-          const Duration(seconds: 5),
-          () => '$value is already used.',
-        );
-      default:
-        return await Future.delayed(
-          const Duration(seconds: 5),
-          () => null,
-        );
-    }
   }
 
   @override
