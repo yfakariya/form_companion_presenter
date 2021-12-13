@@ -302,6 +302,7 @@ mixin CompanionPresenterMixin {
       } finally {
         _validationContext = _ValidationContext.unspecified;
       }
+
       await doSubmit();
     };
   }
