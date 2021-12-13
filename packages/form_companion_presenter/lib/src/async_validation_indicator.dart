@@ -62,7 +62,8 @@ class AsyncValidationIndicator extends StatelessWidget {
           const SizedBox(
             width: 4,
           ),
-          // TODO(yfakariya): L10N with built-in flutter-localizer.
+          // Currently, there is no L10N here... it is not so good to bring
+          // additional dependency for intl package just for this simple message.
           Text(text ?? 'Validating...'),
         ],
       ),
