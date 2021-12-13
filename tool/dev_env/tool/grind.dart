@@ -6,7 +6,6 @@ import 'tasks/check_env.dart';
 import 'tasks/enable_pub_get.dart';
 import 'tasks/prepare_publish.dart';
 import 'tasks/run_formats.dart';
-import 'tasks/utils.dart';
 
 Future<dynamic> main(List<String> args) => grind(args);
 
