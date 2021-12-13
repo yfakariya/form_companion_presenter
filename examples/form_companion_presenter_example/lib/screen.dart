@@ -5,17 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'auto_validation_form_builder_account.dart';
-import 'auto_validation_form_builder_booking.dart';
-import 'auto_validation_vanilla_form.dart';
-import 'bulk_auto_validation_form_builder_account.dart';
-import 'bulk_auto_validation_form_builder_booking.dart';
-import 'bulk_auto_validation_vanilla_form.dart';
-import 'home.dart';
 import 'l10n/locale_keys.g.dart';
-import 'manual_validation_form_builder_account.dart';
-import 'manual_validation_form_builder_booking.dart';
-import 'manual_validation_vanilla_form.dart';
 import 'routes.dart';
 
 /// Base class of all example widgets.
@@ -53,101 +43,61 @@ abstract class Screen extends ConsumerWidget {
                 title: Text(
                   LocaleKeys.home_title.tr(),
                 ),
-                onTap: () => pages.state = [
-                  const MaterialPage<dynamic>(
-                    child: HomePage(),
-                  )
-                ],
+                onTap: () => pages.state = homeRoute,
               ),
               ListTile(
                 title: Text(
                   LocaleKeys.manual_vanilla_title.tr(),
                 ),
-                onTap: () => pages.state = [
-                  const MaterialPage<dynamic>(
-                    child: ManualValidationVanillaFormAccountPage(),
-                  )
-                ],
+                onTap: () => pages.state = manualVanillaAccountRoute,
               ),
               ListTile(
                 title: Text(
                   LocaleKeys.bulk_auto_vanilla_title.tr(),
                 ),
-                onTap: () => pages.state = [
-                  const MaterialPage<dynamic>(
-                    child: BulkAutoValidationVanillaFormAccountPage(),
-                  )
-                ],
+                onTap: () => pages.state = bulkAutoVanillaAccountRoute,
               ),
               ListTile(
                 title: Text(
                   LocaleKeys.auto_vanilla_title.tr(),
                 ),
-                onTap: () => pages.state = [
-                  const MaterialPage<dynamic>(
-                    child: AutoValidationVanillaFormAccountPage(),
-                  )
-                ],
+                onTap: () => pages.state = autoVanillaAccountRoute,
               ),
               ListTile(
                 title: Text(
                   LocaleKeys.manual_flutterFormBuilderAccount_title.tr(),
                 ),
-                onTap: () => pages.state = [
-                  const MaterialPage<dynamic>(
-                    child: ManualValidationFormBuilderAccountPage(),
-                  )
-                ],
+                onTap: () => pages.state = manualFormBuilderAccountRoute,
               ),
               ListTile(
                 title: Text(
                   LocaleKeys.manual_flutterFormBuilderBooking_title.tr(),
                 ),
-                onTap: () => pages.state = [
-                  const MaterialPage<dynamic>(
-                    child: ManualValidationFormBuilderBookingPage(),
-                  )
-                ],
+                onTap: () => pages.state = manualFormBuilderBookingRoute,
               ),
               ListTile(
                 title: Text(
                   LocaleKeys.bulk_auto_flutterFormBuilderAccount_title.tr(),
                 ),
-                onTap: () => pages.state = [
-                  const MaterialPage<dynamic>(
-                    child: BulkAutoValidationFormBuilderAccountPage(),
-                  )
-                ],
+                onTap: () => pages.state = bulkAutoFormBuilderAccountRoute,
               ),
               ListTile(
                 title: Text(
                   LocaleKeys.bulk_auto_flutterFormBuilderBooking_title.tr(),
                 ),
-                onTap: () => pages.state = [
-                  const MaterialPage<dynamic>(
-                    child: BulkAutoValidationFormBuilderBookingPage(),
-                  )
-                ],
+                onTap: () => pages.state = bulkAutoFormBuilderBookingRoute,
               ),
               ListTile(
                 title: Text(
                   LocaleKeys.auto_flutterFormBuilderAccount_title.tr(),
                 ),
-                onTap: () => pages.state = [
-                  const MaterialPage<dynamic>(
-                    child: AutoValidationFormBuilderAccountPage(),
-                  )
-                ],
+                onTap: () => pages.state = autoFormBuilderAccountRoute,
               ),
               ListTile(
                 title: Text(
                   LocaleKeys.auto_flutterFormBuilderBooking_title.tr(),
                 ),
-                onTap: () => pages.state = [
-                  const MaterialPage<dynamic>(
-                    child: AutoValidationFormBuilderBookingPage(),
-                  )
-                ],
+                onTap: () => pages.state = autoFormBuilderBookingRoute,
               ),
             ],
           ),
