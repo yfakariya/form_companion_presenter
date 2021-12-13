@@ -46,7 +46,7 @@ class BulkAutoValidationVanillaFormAccountPage extends Screen {
   String get title => LocaleKeys.bulk_auto_vanilla_title.tr();
 
   @override
-  Widget buildPage(BuildContext context, ScopedReader watch) => Form(
+  Widget buildPage(BuildContext context, WidgetRef ref) => Form(
         autovalidateMode: AutovalidateMode.onUserInteraction,
         child: _BulkAutoValidationVanillaFormAccountPane(),
       );
@@ -54,9 +54,9 @@ class BulkAutoValidationVanillaFormAccountPage extends Screen {
 
 class _BulkAutoValidationVanillaFormAccountPane extends ConsumerWidget {
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final state = watch(_presenter);
-    final presenter = watch(_presenter.notifier);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(_presenter);
+    final presenter = ref.watch(_presenter.notifier);
 
     return SingleChildScrollView(
       child: Column(
@@ -158,7 +158,7 @@ class BulkAutoValidationVanillaFormAccountPresenter
             Validator.email,
           ],
           asyncValidatorFactories: [
-            (context) => validateId,
+            Validator.id,
           ],
         )
         ..add<String>(
@@ -178,32 +178,6 @@ class BulkAutoValidationVanillaFormAccountPresenter
           ],
         ),
     );
-  }
-
-  FutureOr<String?> validateId(
-      String? value, AsyncValidatorOptions options) async {
-    if (value == null || value.isEmpty) {
-      return 'ID is required.';
-    }
-
-    // Dummy actions to check async validator behavior.
-    switch (value) {
-      case 'john@example.com':
-        return await Future.delayed(
-          const Duration(seconds: 5),
-          () => throw Exception('Server is temporary unavailable.'),
-        );
-      case 'jane@example.com':
-        return await Future.delayed(
-          const Duration(seconds: 5),
-          () => '$value is already used.',
-        );
-      default:
-        return await Future.delayed(
-          const Duration(seconds: 5),
-          () => null,
-        );
-    }
   }
 
   @override
@@ -230,8 +204,8 @@ class BulkAutoValidationVanillaFormAccountPresenter
     );
 
     // Propagate to global state.
-    _read(account).state = state;
-    _read(pagesProvider).state = home;
+    _read(account.state).state = state;
+    transitToHome(_read);
   }
 
   /// Example of business logic of submit.
@@ -255,7 +229,7 @@ class BulkAutoValidationVanillaFormAccountPresenter
 final _presenter = StateNotifierProvider<
     BulkAutoValidationVanillaFormAccountPresenter, Account>(
   (ref) => BulkAutoValidationVanillaFormAccountPresenter(
-    ref.watch(account).state,
+    ref.watch(account),
     ref.read,
   ),
 );

@@ -115,7 +115,7 @@ packages:
       name: flutter_riverpod
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.14.0+3"
+    version: "1.0.2"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -146,7 +146,7 @@ packages:
       name: freezed_annotation
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.14.3"
+    version: "1.1.0"
   intl:
     dependency: transitive
     description:
@@ -167,7 +167,7 @@ packages:
       name: json_annotation
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "4.1.0"
+    version: "4.4.0"
   lints:
     dependency: transitive
     description:
@@ -244,7 +244,7 @@ packages:
       name: riverpod
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.14.0+3"
+    version: "1.0.2"
   shared_preferences:
     dependency: transitive
     description:

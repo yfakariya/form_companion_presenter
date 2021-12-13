@@ -1,5 +1,6 @@
 // See LICENCE file in the root.
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:form_companion_presenter/form_companion_presenter.dart';
 
 // ignore: avoid_classes_with_only_static_members
@@ -26,4 +27,44 @@ class Validator {
 
         return 'Input must be a number.';
       };
+
+  static AsyncValidatorFactory<String> get id => (context) {
+        final container = ProviderScope.containerOf(context);
+        return (value, options) {
+          if (value == null || value.isEmpty) {
+            return 'ID is required.';
+          }
+
+          late final String? Function() validation;
+          // Dummy actions to check async validator behavior.
+          // john and jane can be used to demonstrate async validation error or
+          // failure.
+          switch (value) {
+            case 'john@example.com':
+              // Demonstrate failure.
+              validation =
+                  () => throw Exception('Server is temporary unavailable.');
+              break;
+            case 'jane@example.com':
+              // Demonstrate validation error.
+              validation = () => '$value is already used.';
+              break;
+            default:
+              validation = () => null;
+              break;
+          }
+
+          // Injects hooks for widget testing.
+          // Default factory just wait 5 seconds and call validation to show
+          // behavior of async validation.
+          return container.read(asyncValidationFutureFactory)(
+            const Duration(seconds: 5),
+            validation,
+          );
+        };
+      };
 }
+
+final asyncValidationFutureFactory =
+    StateProvider<Future<String?> Function(Duration, String? Function())>((_) =>
+        (delay, validation) => Future<String?>.delayed(delay, validation));

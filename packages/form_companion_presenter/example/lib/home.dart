@@ -13,9 +13,9 @@ class HomePage extends Screen {
   const HomePage({Key? key}) : super(key: key);
 
   @override
-  Widget buildPage(BuildContext context, ScopedReader watch) {
-    final accountState = watch(account).state;
-    final bookingState = watch(booking).state;
+  Widget buildPage(BuildContext context, WidgetRef ref) {
+    final accountState = ref.watch(account);
+    final bookingState = ref.watch(booking);
     return SingleChildScrollView(
       padding: const EdgeInsets.all(8),
       child: Column(

@@ -15,6 +15,7 @@ import 'l10n/locale_keys.g.dart';
 import 'models.dart';
 import 'routes.dart';
 import 'screen.dart';
+import 'validators.dart';
 
 //------------------------------------------------------------------------------
 // In this example, [AutovalidateMode] of the form and fields are disabled (default value).
@@ -44,7 +45,7 @@ class ManualValidationFormBuilderAccountPage extends Screen {
   String get title => LocaleKeys.manual_flutterFormBuilderAccount_title.tr();
 
   @override
-  Widget buildPage(BuildContext context, ScopedReader watch) => FormBuilder(
+  Widget buildPage(BuildContext context, WidgetRef ref) => FormBuilder(
         autovalidateMode: AutovalidateMode.disabled,
         child: _ManualValidationFormBuilderAccountPane(),
       );
@@ -52,9 +53,9 @@ class ManualValidationFormBuilderAccountPage extends Screen {
 
 class _ManualValidationFormBuilderAccountPane extends ConsumerWidget {
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final state = watch(_presenter);
-    final presenter = watch(_presenter.notifier);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(_presenter);
+    final presenter = ref.watch(_presenter.notifier);
 
     return SingleChildScrollView(
       child: Column(
@@ -198,7 +199,7 @@ class ManualValidationFormBuilderAccountPresenter extends StateNotifier<Account>
             FormBuilderValidators.email,
           ],
           asyncValidatorFactories: [
-            (context) => validateId,
+            Validator.id,
           ],
         )
         ..add<String>(
@@ -219,32 +220,6 @@ class ManualValidationFormBuilderAccountPresenter extends StateNotifier<Account>
         )
         ..add<List<Region>>(name: 'preferredRegions'),
     );
-  }
-
-  FutureOr<String?> validateId(
-      String? value, AsyncValidatorOptions options) async {
-    if (value == null || value.isEmpty) {
-      return 'ID is required.';
-    }
-
-    // Dummy actions to check async validator behavior.
-    switch (value) {
-      case 'john@example.com':
-        return await Future.delayed(
-          const Duration(seconds: 5),
-          () => throw Exception('Server is temporary unavailable.'),
-        );
-      case 'jane@example.com':
-        return await Future.delayed(
-          const Duration(seconds: 5),
-          () => '$value is already used.',
-        );
-      default:
-        return await Future.delayed(
-          const Duration(seconds: 5),
-          () => null,
-        );
-    }
   }
 
   @override
@@ -273,8 +248,8 @@ class ManualValidationFormBuilderAccountPresenter extends StateNotifier<Account>
     );
 
     // Propagate to global state.
-    _read(account).state = state;
-    _read(pagesProvider).state = home;
+    _read(account.state).state = state;
+    transitToHome(_read);
   }
 
   /// Example of business logic of submit.
@@ -299,7 +274,7 @@ class ManualValidationFormBuilderAccountPresenter extends StateNotifier<Account>
 final _presenter =
     StateNotifierProvider<ManualValidationFormBuilderAccountPresenter, Account>(
   (ref) => ManualValidationFormBuilderAccountPresenter(
-    ref.watch(account).state,
+    ref.watch(account),
     ref.read,
   ),
 );

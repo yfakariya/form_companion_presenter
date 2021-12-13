@@ -15,7 +15,6 @@ List<String> _commonItems = [
   _path('main.dart'),
   _path('models.dart'),
   _path('models.freezed.dart'),
-  _path('routes.dart'),
   _path('validators.dart'),
 ];
 
