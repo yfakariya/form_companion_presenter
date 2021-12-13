@@ -47,7 +47,7 @@ class _PropertyValidator<T extends Object> {
     AsyncValidationCompletionCallback transitToAsyncValidationConfirmation,
     VoidCallback onAsyncValidationStarted,
     VoidCallback onAsyncValidationCompleted,
-    Completer<bool>? asyncValidationChainCompletionNotifier,
+    Completer<bool>? Function() asyncValidationChainCompletionNotifierProvider,
     _AsyncValidationFailureMessageProvider
         asyncValidationFailureMessageProvider,
     _ValidationContextProvider presenterValidationContextProvider,
@@ -60,7 +60,7 @@ class _PropertyValidator<T extends Object> {
                 transitToAsyncValidationConfirmation,
                 onAsyncValidationStarted,
                 onAsyncValidationCompleted,
-                asyncValidationChainCompletionNotifier,
+                asyncValidationChainCompletionNotifierProvider,
                 asyncValidationFailureMessageProvider,
                 presenterValidationContextProvider,
                 propertyValidationContextProvider,
@@ -90,7 +90,8 @@ class _AsyncValidatorChain<T extends Object> {
   final AsyncValidationCompletionCallback _transitToAsyncValidationConfirmation;
   final VoidCallback _onAsyncValidationStarted;
   final VoidCallback _onAsyncValidationCompleted;
-  final Completer<bool>? _asyncValidationChainCompletionNotifier;
+  final Completer<bool>? Function()
+      _asyncValidationChainCompletionNotifierProvider;
   final _AsyncValidationFailureMessageProvider
       _asyncValidationFailureMessageProvider;
   final _ValidationContextProvider _presenterValidationContextProvider;
@@ -110,7 +111,7 @@ class _AsyncValidatorChain<T extends Object> {
     this._transitToAsyncValidationConfirmation,
     this._onAsyncValidationStarted,
     this._onAsyncValidationCompleted,
-    this._asyncValidationChainCompletionNotifier,
+    this._asyncValidationChainCompletionNotifierProvider,
     this._asyncValidationFailureMessageProvider,
     this._presenterValidationContextProvider,
     this._propertyValidationContextProvider,
@@ -171,7 +172,8 @@ class _AsyncValidatorChain<T extends Object> {
       // This line refers current late initialized field rather than the field value when getValidator is called.
       // Note that "error" is not handled here -- error handling should be implemented in the handler
       // returned from buildOnAsyncValidationCompleted (thus, notifyCompletion variable).
-      _asyncValidationChainCompletionNotifier?.complete(result == null);
+      _asyncValidationChainCompletionNotifierProvider()
+          ?.complete(result == null);
       _validationContext = _ValidationContext.unspecified;
       // Do not call notifyCompletion here to avoid recusrive call.
     } else {

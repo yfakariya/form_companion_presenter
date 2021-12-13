@@ -133,7 +133,7 @@ class PropertyDescriptor<T extends Object> {
         presenter.buildOnAsyncValidationCompleted(name, context),
         _pendingAsyncValidations.increment,
         _pendingAsyncValidations.decrement,
-        _asyncValidationCompletion,
+        () => _asyncValidationCompletion,
         presenter.getAsyncValidationFailureMessage,
         () => presenter._validationContext,
         () => _validationContext,
