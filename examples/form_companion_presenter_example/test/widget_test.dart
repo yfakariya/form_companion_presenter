@@ -75,16 +75,7 @@ class InputPatternDescription {
 }
 
 final Map<String, PageId> _pageIds = {
-  'home': PageId.home,
-  'autoVanilla': PageId.autoVanilla,
-  'bulkAutoVanilla': PageId.bulkAutoVanilla,
-  'manualVanilla': PageId.manualVanilla,
-  'autoAccount': PageId.autoAccount,
-  'bulkAutoAccount': PageId.bulkAutoAccount,
-  'manualAccount': PageId.manualAccount,
-  'autoBooking': PageId.autoBooking,
-  'bulkAutoBooking': PageId.bulkAutoBooking,
-  'manualBooking': PageId.manualBooking,
+  for (final e in PageId.values.map((e) => MapEntry(e.name, e))) e.key: e.value
 };
 
 final Map<PageId, List<MaterialPage<dynamic>>> _routeMap = {

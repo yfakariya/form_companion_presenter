@@ -66,5 +66,5 @@ class Validator {
 }
 
 final asyncValidationFutureFactory =
-    StateProvider<Future<String?> Function(Duration, String? Function())>((_) =>
-        (delay, validation) => Future<String?>.delayed(delay, validation));
+    StateProvider<Future<String?> Function(Duration, String? Function())>(
+        (_) => Future<String?>.delayed);

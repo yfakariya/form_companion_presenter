@@ -9,8 +9,6 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:form_companion_presenter/form_companion_presenter.dart';
-import 'package:form_companion_presenter/src/form_companion_mixin.dart';
-import 'package:form_companion_presenter/src/internal_utils.dart';
 
 class TestPresenter with CompanionPresenterMixin {
   final void Function() _doSubmitCalled;

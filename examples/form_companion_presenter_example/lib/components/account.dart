@@ -10,7 +10,6 @@ import 'package:form_builder_companion_presenter/form_builder_companion_presente
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:form_companion_presenter/async_validation_indicator.dart';
 import 'package:form_companion_presenter/form_companion_presenter.dart';
-import 'package:meta/meta.dart';
 
 import '../l10n/locale_keys.g.dart';
 import '../models.dart';

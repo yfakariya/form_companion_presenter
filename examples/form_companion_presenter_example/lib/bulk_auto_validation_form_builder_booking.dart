@@ -8,7 +8,6 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:form_builder_companion_presenter/form_builder_companion_presenter.dart';
 import 'package:form_companion_presenter/form_companion_presenter.dart';
-import 'package:meta/meta.dart';
 
 import 'l10n/locale_keys.g.dart';
 import 'models.dart';
@@ -197,8 +196,7 @@ class _BulkAutoValidationFormBuilderBookingPane extends ConsumerWidget {
           // I know this example does not consider L10N.
           FormBuilderRangeSlider(
             name: 'preferredPrice',
-            initialValue: RangeValues((state.price ?? 100).toDouble(),
-                (state.price ?? 100).toDouble()),
+            initialValue: RangeValues(state.price ?? 100, state.price ?? 100),
             min: 0,
             max: 1000,
             decoration: InputDecoration(
