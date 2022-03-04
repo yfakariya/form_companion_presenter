@@ -10,6 +10,7 @@ export 'src/async_validator_executor.dart'
         AsyncValidationFailureHandler,
         AsyncValidatorExecutor,
         ValidationInvocation;
+export 'src/form_companion_annotation.dart' show FormCompanion, formCompanion;
 export 'src/form_companion_mixin.dart'
     show
         FormFieldValidatorFactory,
