@@ -19,6 +19,13 @@ dependencies:
   meta: ^1.3.0
 
 dev_dependencies:
+  analyzer: ^3.0.0
   flutter_lints: ^1.0.0
   flutter_test:
     sdk: flutter
+  form_field_builder_emitter:
+    path: ../../tool/form_field_builder_emitter
+  grinder: ^0.9.0
+  path: ^1.8.0
+
+dependency_overrides: {form_companion_presenter: {path: ../../packages/form_companion_presenter}}
