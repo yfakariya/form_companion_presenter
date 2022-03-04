@@ -20,6 +20,8 @@ export 'src/form_companion_mixin.dart'
         PropertyDescriptorsBuilder,
         CompanionPresenterMixin,
         FormCompanionMixin;
+export 'src/form_field_builder.dart'
+    show TextFormFieldBuilder, DropdownButtonFormFieldBuilder;
 export 'src/future_invoker.dart'
     show
         AsyncErrorHandler,

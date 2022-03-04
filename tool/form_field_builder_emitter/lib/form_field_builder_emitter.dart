@@ -23,15 +23,17 @@ Future<void> emit(
   Set<String> targetClassNames,
   Iterable<String> headers,
   Iterable<String> importPackages,
-  String? outputFilePath,
-) async {
+  String? outputFilePath, [
+  String? Function(String?)? typeNameAdjuster,
+]) async {
   final collection = AnalysisContextCollection(
     includedPaths: targetFiles
         .map((e) => path.canonicalize('$libraryRootPath/$e.dart'))
         .toList(),
   );
 
-  final visitor = _ConstructorParametersScanner(targetClassNames);
+  final visitor =
+      _ConstructorParametersScanner(targetClassNames, typeNameAdjuster);
 
   for (final context in collection.contexts) {
     stderr.writeln('Analyzing ${context.contextRoot.root.path} ...');
@@ -41,8 +43,8 @@ Future<void> emit(
         continue;
       }
 
-      final library = context.currentSession.getParsedLibrary(filePath);
-      if (library is! ParsedLibraryResult) {
+      final library = await context.currentSession.getResolvedLibrary(filePath);
+      if (library is! ResolvedLibraryResult) {
         continue;
       }
 
@@ -89,7 +91,11 @@ void _emitFormFieldBuilder(
   }
 
   for (final importPackage in importPackages) {
-    sink.writeln("import 'package:$importPackage';");
+    if (importPackage.isEmpty) {
+      sink.writeln();
+    } else {
+      sink.writeln('$importPackage;');
+    }
   }
   for (final spec in specs) {
     final builderTypeName = spec.typeParameters.isEmpty
@@ -97,7 +103,7 @@ void _emitFormFieldBuilder(
         : '${spec.name}Builder<${spec.typeParameters.join(', ')}>';
     final formFieldTypeName = spec.typeParameters.isEmpty
         ? spec.name
-        : '${spec.name}<${spec.typeParameters.join(' ,')}>';
+        : '${spec.name}<${spec.typeParameters.map((e) => e.name).join(' ,')}>';
 
     sink
       ..writeln()
@@ -112,17 +118,31 @@ void _emitFormFieldBuilder(
     sink
       ..writeln()
       ..writeln('  /// Build [${spec.name}] instance from this builder.')
-      ..writeln('  $formFieldTypeName build() =>')
-      ..writeln('    $formFieldTypeName(');
+      ..writeln('  $formFieldTypeName build() {');
+    for (final requiredParameter
+        in spec.parameters.where((p) => p.isRequired)) {
+      sink.writeln(
+        '    assert(${requiredParameter.name} != null, "\'${requiredParameter.name}\' is required.");',
+      );
+    }
+    sink.writeln('    return $formFieldTypeName(');
 
     for (final parameter in spec.parameters) {
-      sink.writeln(
-        '      ${parameter.name}: ${parameter.name},',
-      );
+      if (parameter.isRequired) {
+        // Emit as non-null forcing.
+        sink.writeln(
+          '      ${parameter.name}: ${parameter.name}!,',
+        );
+      } else {
+        sink.writeln(
+          '      ${parameter.name}: ${parameter.name},',
+        );
+      }
     }
 
     sink
       ..writeln('    );')
+      ..writeln('  }')
       ..writeln('}');
   }
 }
@@ -132,9 +152,16 @@ void _emitProperty(_ParameterSpec parameter, StringSink sink) {
     sink.writeln('  /// ${parameter.docComment}');
   }
 
-  sink.write(
-    '  ${parameter.type} ${parameter.name}',
-  );
+  if (parameter.isRequired) {
+    // Define fields as nullable.
+    sink.write(
+      '  ${parameter.type}? ${parameter.name}',
+    );
+  } else {
+    sink.write(
+      '  ${parameter.type} ${parameter.name}',
+    );
+  }
 
   if (parameter.defaultValue != null) {
     sink.write(' = ${parameter.defaultValue}');
@@ -145,7 +172,7 @@ void _emitProperty(_ParameterSpec parameter, StringSink sink) {
 
 class _ClassSpec {
   final String name;
-  final List<String> typeParameters;
+  final List<TypeParameter> typeParameters;
   final List<_ParameterSpec> parameters;
 
   _ClassSpec(this.name, this.typeParameters, this.parameters);
@@ -156,6 +183,9 @@ class _ParameterSpec {
   final String? type;
   final String? defaultValue;
   final String? docComment;
+
+  bool get isRequired =>
+      defaultValue == null && !(type?.endsWith('?') ?? false);
 
   _ParameterSpec(this.name, this.type, this.defaultValue, this.docComment);
 }
@@ -172,10 +202,11 @@ class _ConstructorParametersScanner extends RecursiveAstVisitor<void> {
   final Set<String> _targets;
   final List<_ParameterSpec> _parameters = [];
   final Map<String, _FieldSpec> _fields = {};
+  final String? Function(String?)? _typeNameAdjuster;
 
   final List<_ClassSpec> classes = [];
 
-  _ConstructorParametersScanner(this._targets);
+  _ConstructorParametersScanner(this._targets, this._typeNameAdjuster);
 
   @override
   void visitClassDeclaration(ClassDeclaration node) {
@@ -190,8 +221,7 @@ class _ConstructorParametersScanner extends RecursiveAstVisitor<void> {
     classes.add(
       _ClassSpec(
         node.name.name,
-        node.typeParameters?.typeParameters.map((e) => e.toString()).toList() ??
-            [],
+        node.typeParameters?.typeParameters.toList() ?? [],
         _parameters
             .map(
               (e) => _ParameterSpec(
@@ -223,13 +253,13 @@ class _ConstructorParametersScanner extends RecursiveAstVisitor<void> {
       for (final c in parameter.childEntities) {
         if (c is SimpleFormalParameter) {
           name = c.identifier.toString();
-          type = c.type?.toString();
+          type = _getTypeName(c.type, _typeNameAdjuster);
           docComment = c.documentationComment?.toString();
         } else if (c is FieldFormalParameter) {
           name = c.identifier.toString();
-          type = c.type?.toString();
+          type = _getTypeName(c.type, _typeNameAdjuster);
           docComment = c.documentationComment?.toString();
-        } else if (c is Expression) {
+        } else {
           defaultValue = c.toString();
         }
       }
@@ -252,10 +282,18 @@ class _ConstructorParametersScanner extends RecursiveAstVisitor<void> {
     for (final field in node.fields.variables) {
       _fields[field.name.toString()] = _FieldSpec(
         field.name.toString(),
-        node.fields.type.toString(),
+        _getTypeName(node.fields.type, _typeNameAdjuster)!,
         node.fields.documentationComment?.toString(),
       );
     }
     super.visitFieldDeclaration(node);
   }
 }
+
+String? _getTypeName(
+  TypeAnnotation? typeAnnotation,
+  String? Function(String?)? typeNameAdjuster,
+) =>
+    typeNameAdjuster != null
+        ? typeNameAdjuster(typeAnnotation?.toString())
+        : typeAnnotation?.toString();

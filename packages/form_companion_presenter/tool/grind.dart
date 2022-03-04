@@ -26,9 +26,9 @@ Future<dynamic> generateFactorySpecs(GrinderContext context) => emit(
         'GENERATED CODE - DO NOT MODIFY BY HAND',
       ],
       [
-        'flutter/material.dart',
-        'flutter/services.dart',
-        'meta/meta.dart',
+        "import 'package:flutter/material.dart'",
+        "import 'package:flutter/services.dart'",
+        "import 'package:meta/meta.dart'",
       ],
       context.invocation.arguments.getOption('out') ??
           'lib/src/form_field_builder.dart',

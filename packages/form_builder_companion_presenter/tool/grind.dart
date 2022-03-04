@@ -61,12 +61,23 @@ Future<dynamic> generateFactorySpecs(GrinderContext context) {
       'GENERATED CODE - DO NOT MODIFY BY HAND',
     ],
     [
-      'flutter/material.dart',
-      'flutter_form_builder/flutter_form_builder.dart',
-      // 'flutter/services.dart',
-      // 'meta/meta.dart',
+      "import 'dart:ui' as ui",
+      '',
+      "import 'package:flutter_form_builder/flutter_form_builder.dart'",
+      "import 'package:flutter/gestures.dart'",
+      "import 'package:flutter/material.dart'",
+      "import 'package:flutter/services.dart'",
+      "import 'package:intl/intl.dart' as intl",
+      "import 'package:meta/meta.dart'",
     ],
     context.invocation.arguments.getOption('out') ??
         'lib/src/form_builder_field_builder.dart',
+    (typeName) => typeName == 'NumberFormat'
+        ? 'intl.NumberFormat'
+        : typeName == 'NumberFormat?'
+            ? 'intl.NumberFormat?'
+            : typeName == 'DateFormat?'
+                ? 'intl.DateFormat?'
+                : typeName,
   );
 }
