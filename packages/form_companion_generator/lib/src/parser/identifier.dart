@@ -26,7 +26,8 @@ FutureOr<PropertyDescriptorsBuilding> _parseIdentifierAsync(
       ? identifier.identifier.name
       : identifier.name;
 
-  final getter = _getClass(lookupContextElement)
+  final getter = lookupContextElement
+          .thisOrAncestorOfType<ClassElement>()
           ?.lookUpGetter(lookupId, contextElement.library!) ??
       contextElement.library!.scope.lookup(lookupId).getter;
 
@@ -34,8 +35,10 @@ FutureOr<PropertyDescriptorsBuilding> _parseIdentifierAsync(
       getter is FieldElement ||
       getter is PropertyAccessorElement) {
     // return fieldOrTopLevelVariable
-    final property =
-        VariableNode.fromNode(await _getAstNodeAsync(getter!), getter);
+    final property = VariableNode(
+      await context.nodeProvider.getElementDeclarationAsync(getter!),
+      getter,
+    );
     final initializer = property.initializer;
     if (initializer == null) {
       throwError(

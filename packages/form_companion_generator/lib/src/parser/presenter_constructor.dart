@@ -31,6 +31,7 @@ FutureOr<Object> _detectArgumentOfLastInitializeCompanionMixinInvocationAsync(
   return finder.invocations.last.argumentList.arguments.first;
 }
 
+@sealed
 class _InitializeCompanionMixinFinder extends RecursiveAstVisitor<void> {
   final _invocations = <MethodInvocation>[];
   List<MethodInvocation> get invocations => _invocations;

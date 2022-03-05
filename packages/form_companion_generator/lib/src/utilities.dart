@@ -1,5 +1,7 @@
 // See LICENCE file in the root.
 
+import 'dart:async';
+
 import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
@@ -12,6 +14,36 @@ const initializeCompanionMixinMethodName = 'initializeCompanionMixin';
 
 /// A type name of `PropertyDescriptorsBuilder`.
 const pdbTypeName = 'PropertyDescriptorsBuilder';
+
+/// Defines extensions for [Iterable] of [Future].
+extension FutureIterableExtensions<T> on Iterable<Future<T>> {
+  /// Awaits each element of specified [Iterable] and returns as list asynchronously.
+  /// This function is different from [Stream.fromFutures] in point of guarantee
+  /// of source orders. This ensures returned items order are same as this.
+  Future<List<T>> toListAsync() async {
+    final result = <T>[];
+    for (final item in this) {
+      result.add(await item);
+    }
+
+    return result;
+  }
+}
+
+/// Defines extensions for [Iterable] of [FutureOr].
+extension FutureOrIterableExtensions<T> on Iterable<FutureOr<T>> {
+  /// Awaits each element of specified [Iterable] and returns as list asynchronously.
+  /// This function is different from [Stream.fromFutures] in point of guarantee
+  /// of source orders. This ensures returned items order are same as this.
+  FutureOr<List<T>> toListAsync() async {
+    final result = <T>[];
+    for (final item in this) {
+      result.add(await item);
+    }
+
+    return result;
+  }
+}
 
 /// Throws [InvalidGenerationSourceError].
 Never throwError({

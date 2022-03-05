@@ -21,27 +21,5 @@ DartType? _getVariableType(VariableDeclarationStatement statement) {
   return null;
 }
 
-FutureOr<AstNode> _getAstNodeAsync(Element element) async {
-  final resolvedLibrary =
-      await element.session!.getResolvedLibraryByElement(element.library!);
-  if (resolvedLibrary is! ResolvedLibraryResult) {
-    throwError(message: resolvedLibrary.toString(), element: element);
-  }
-
-  return resolvedLibrary.getElementDeclaration(element.nonSynthetic)!.node;
-}
-
-ClassElement? _getClass(Element element) {
-  for (Element? current = element;
-      current != null;
-      current = current.enclosingElement) {
-    if (current is ClassElement) {
-      return current;
-    }
-  }
-
-  return null;
-}
-
 ClassElement? _getTargetClass(MethodInvocation method) =>
     method.realTarget?.staticType?.element as ClassElement?;

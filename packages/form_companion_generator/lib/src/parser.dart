@@ -2,23 +2,26 @@
 
 import 'dart:async';
 
-import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
-import 'package:build/build.dart';
 import 'package:logging/logging.dart' show Logger;
 import 'package:meta/meta.dart';
 import 'package:source_gen/source_gen.dart';
 
+import 'dependency.dart';
+import 'form_field_locator.dart';
 import 'model.dart';
+import 'node_provider.dart';
 import 'parser_data.dart';
 import 'parser_node.dart';
-import 'parser_utilities.dart';
+import 'type_instantiation.dart';
+import 'utilities.dart';
 
 part 'parser/assignment.dart';
 part 'parser/expression.dart';
+part 'parser/form_field.dart';
 part 'parser/helpers.dart';
 part 'parser/identifier.dart';
 part 'parser/invocation_analysis.dart';
@@ -27,8 +30,8 @@ part 'parser/statement.dart';
 
 /// Parses specified [ClassElement] of the presenter.
 FutureOr<PresenterDefinition> parseElementAsync(
-  BuildStep buildStep,
-  LibraryReader libraryReader,
+  NodeProvider nodeProvider,
+  FormFieldLocator formFieldLocator,
   ClassElement element,
   FormCompanionAnnotation annotation,
   Logger logger,
@@ -43,22 +46,30 @@ FutureOr<PresenterDefinition> parseElementAsync(
     );
   }
 
+  final isFormBuilder = mixinType == MixinType.formBuilderCompanionMixin;
   final warnings = <String>[];
   final properties = await getPropertiesAsync(
-    libraryReader,
+    nodeProvider,
+    formFieldLocator,
     constructor,
     warnings,
     logger,
+    isFormBuilder: isFormBuilder,
   );
 
-  final result = PresenterDefinition(
+  return PresenterDefinition(
     name: element.name,
-    isFormBuilder: mixinType == MixinType.formBuilderCompanionMixin,
+    isFormBuilder: isFormBuilder,
     doAutovalidate: annotation.autovalidate,
     warnings: warnings,
+    imports: await collectDependenciesAsync(
+      element.library,
+      properties.values,
+      nodeProvider,
+      logger,
+    ),
+    properties: properties,
   );
-  result.properties.addAll(properties);
-  return result;
 }
 
 /// Detects mixin type of the presenter
@@ -142,16 +153,26 @@ ConstructorElement findConstructor(
 /// Extracts unorderd map of [PropertyDefinition] where keys are names of the
 /// properties from specified presenter's [ConstructorElement].
 ///
-/// If any global warnings is issued, the message will be added to [warnings].
+/// If any global warnings is issued, the message will be added to [globalWarnings].
 @visibleForTesting
-FutureOr<Map<String, PropertyDefinition>> getPropertiesAsync(
-  LibraryReader libraryReader,
+FutureOr<Map<String, PropertyAndFormFieldDefinition>> getPropertiesAsync(
+  NodeProvider nodeProvider,
+  FormFieldLocator formFieldLocator,
   ConstructorElement constructor,
-  List<String> warnings,
-  Logger logger,
-) async {
-  final context = ParseContext(logger);
-  final ast = await _getAstNodeAsync(constructor) as ConstructorDeclaration;
+  List<String> globalWarnings,
+  Logger logger, {
+  required bool isFormBuilder,
+}) async {
+  final context = ParseContext(
+    logger,
+    nodeProvider,
+    formFieldLocator,
+    constructor.library.typeProvider,
+    constructor.library.typeSystem,
+    globalWarnings,
+  );
+  final ast = await context.nodeProvider
+      .getElementDeclarationAsync<ConstructorDeclaration>(constructor);
 
   final pdbArgument =
       await _detectArgumentOfLastInitializeCompanionMixinInvocationAsync(
@@ -183,16 +204,53 @@ FutureOr<Map<String, PropertyDefinition>> getPropertiesAsync(
 
   if (building.isEmpty) {
     // Constructor without inline initialization means empty
-    warnings.add(
+    context.addGlobalWarning(
       "initializeCompanionMixin($pdbTypeName) is called with empty $pdbTypeName in class '${constructor.enclosingElement.name}'.",
     );
   }
 
-  return _parseMethodInvocations(
-    libraryReader,
+  final result = <String, PropertyAndFormFieldDefinition>{};
+
+  for (final source in _parseMethodInvocations(
+    context,
     building.buildings,
     constructor,
-    warnings,
-    logger,
-  );
+    isFormBuilder: isFormBuilder,
+  )) {
+    result[source.name] = await resolveFormFieldAsync(
+      context,
+      source,
+      isFormBuilder: isFormBuilder,
+    );
+  }
+
+  return result;
+}
+
+/// Collects dependencies as a list of [LibraryImport] from `FormField`s
+/// constructor parameters in [properties].
+///
+/// Of course, dependency for the library which declares the presenter, that is,
+/// dependency for [thisLibrary] will be ignored.
+FutureOr<List<LibraryImport>> collectDependenciesAsync(
+  LibraryElement thisLibrary,
+  Iterable<PropertyAndFormFieldDefinition> properties,
+  NodeProvider nodeProvider,
+  Logger logger,
+) async {
+  final collector =
+      DependentLibraryCollector(nodeProvider, logger, thisLibrary);
+  for (final property in properties) {
+    final fieldConstructor = property.fieldConstructor;
+    if (fieldConstructor != null) {
+      collector.reset(
+        fieldConstructor.declaredElement!.enclosingElement,
+        property.warnings,
+      );
+      fieldConstructor.accept(collector);
+      await collector.endAsync();
+    }
+  }
+
+  return collector.imports.toList();
 }

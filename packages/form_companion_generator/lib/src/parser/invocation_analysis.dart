@@ -4,31 +4,36 @@ part of '../parser.dart';
 
 // Defines _parseMethodInvocations and its sub functions.
 
-Map<String, PropertyDefinition> _parseMethodInvocations(
-  LibraryReader libraryReader,
+Iterable<PropertyDefinition> _parseMethodInvocations(
+  ParseContext context,
   Iterable<MethodInvocation> invocations,
-  Element contextElement,
-  List<String> warnings,
-  Logger logger,
-) {
+  Element contextElement, {
+  required bool isFormBuilder,
+}) {
   final result = <String, PropertyDefinition>{};
-  for (final p in invocations
-      .map((m) => _parseBuilderMethodCall(
-          libraryReader, m, contextElement, warnings, logger))
-      .where((p) => p != null)) {
-    if (result.containsKey(p!.name)) {
+  for (final parameter in invocations.map((m) => _parseBuilderMethodCall(
+        context,
+        m,
+        contextElement,
+        isFormBuilder: isFormBuilder,
+      ))) {
+    if (parameter == null) {
+      continue;
+    }
+
+    if (result.containsKey(parameter.name)) {
       throwError(
         message:
-            "Property '${p.name}' is defined more than once ${getNodeLocation(p.node, p.element)}.",
+            "Property '${parameter.name}' is defined more than once ${getNodeLocation(parameter.node, parameter.element)}.",
         todo: 'Fix to define each properties only once for given $pdbTypeName.',
-        element: p.element,
+        element: parameter.element,
       );
     }
 
-    result[p.name] = p.property;
+    result[parameter.name] = parameter.property;
   }
 
-  return result;
+  return result.values;
 }
 
 /// Packs [PropertyDefinition] and diagnostic informations ([AstNode] and [Element]).
@@ -42,12 +47,11 @@ class _PropertyDefinitionWithSource {
 }
 
 _PropertyDefinitionWithSource? _parseBuilderMethodCall(
-  LibraryReader libraryReader,
+  ParseContext context,
   MethodInvocation methodInvocation,
-  Element contextElement,
-  List<String> globalWarnings,
-  Logger logger,
-) {
+  Element contextElement, {
+  required bool isFormBuilder,
+}) {
   switch (methodInvocation.methodName.name) {
     case 'add':
       final namedArguments = {
@@ -61,60 +65,37 @@ _PropertyDefinitionWithSource? _parseBuilderMethodCall(
         'name',
         methodInvocation,
         contextElement,
-        globalWarnings,
-        logger,
       )!;
 
-      late final String typeName;
-      late final bool isEnum;
+      late final InterfaceType type;
 
       final warnings = <String>[];
       final typeArguments = methodInvocation.typeArguments;
       if (typeArguments == null) {
         // Because add method is declared as add<T extends Object>,
         // so raw type will be Object rather than dynamic here.
-        typeName = 'Object';
-        isEnum = false;
+        type = context.typeProvider.objectType;
       } else {
-        final typeArgument = typeArguments.arguments.single.type!.element;
-        if (typeArgument?.name != null) {
-          typeName = typeArgument!.name!;
-
-          if (typeArgument is! ClassElement) {
-            isEnum = false;
-            final failedToResolveTypeMessage =
-                "Failed to resolve type arguments of $pdbTypeName.add<T>(): '$typeArgument'.";
-            warnings.add(failedToResolveTypeMessage);
-            logger.warning(failedToResolveTypeMessage);
-          } else {
-            isEnum = typeArgument.isEnum;
-          }
+        final typeArgument = typeArguments.arguments.single.type?.element;
+        if (typeArgument is ClassElement) {
+          type = typeArgument.thisType;
         } else {
-          typeName = 'Object';
+          type = context.typeProvider.objectType;
           final failedToResolveTypeMessage =
               "Failed to resolve type arguments of $pdbTypeName.add<T>(): '$typeArgument'.";
           warnings.add(failedToResolveTypeMessage);
-          logger.warning(failedToResolveTypeMessage);
-          isEnum = false;
+          context.logger.warning(failedToResolveTypeMessage);
         }
       }
-
-      final preferredFieldType = _extractLiteralStringValue(
-        namedArguments,
-        'preferredFieldType',
-        methodInvocation,
-        contextElement,
-        warnings,
-        logger,
-        mayNotExist: true,
-      );
 
       return _PropertyDefinitionWithSource(
         PropertyDefinition(
           name: name,
-          type: typeName,
-          isEnum: isEnum,
-          preferredFieldType: preferredFieldType,
+          type: type,
+          preferredFieldType:
+              (namedArguments['preferredFieldType'] as SymbolLiteral?)
+                  ?.staticType
+                  ?.getDisplayString(withNullability: false),
           warnings: warnings,
         ),
         methodInvocation,
@@ -125,8 +106,7 @@ _PropertyDefinitionWithSource? _parseBuilderMethodCall(
   // Unknown method.
   final unexpectedMethodWarning =
       "Unexpected method: '${methodInvocation.methodName.name}'.";
-  globalWarnings.add(unexpectedMethodWarning);
-  logger.warning(unexpectedMethodWarning);
+  context.addGlobalWarning(unexpectedMethodWarning);
   return null;
 }
 
@@ -161,9 +141,7 @@ String? _extractLiteralStringValue(
   Map<String, Expression> arguments,
   String argumentName,
   MethodInvocation methodInvocation,
-  Element contextElement,
-  List<String> globalWarnings,
-  Logger logger, {
+  Element contextElement, {
   bool mayNotExist = false,
 }) {
   final expression = arguments[argumentName];

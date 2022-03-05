@@ -5,6 +5,7 @@ import 'src/generator.dart';
 
 /// Generator entry point.
 Builder formCompanionPresenterGenerator(BuilderOptions options) {
+  // TODO(yfakariya): Use standard builder instead of part builder to handle complex import handling of factroies for FormBuilderField<T>
   return PartBuilder(
     [CompanionGenerator(options.config)],
     '.fcp.dart',

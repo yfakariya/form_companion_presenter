@@ -135,8 +135,11 @@ FutureOr<PropertyDescriptorsBuilding?> _parseExpressionAsync(
       final localFunction =
           context.localFunctions[unParenthesized.methodName.name];
       if (localFunction != null) {
-        method = ExecutableNode.fromNode(
-            localFunction, localFunction.declaredElement!);
+        method = ExecutableNode(
+          context.nodeProvider,
+          localFunction,
+          localFunction.declaredElement!,
+        );
       } else {
         final methodElement = targetClass?.lookUpMethod(
                 unParenthesized.methodName.name, contextElement.library!) ??
@@ -144,8 +147,10 @@ FutureOr<PropertyDescriptorsBuilding?> _parseExpressionAsync(
                 .lookup(unParenthesized.methodName.name)
                 .getter;
         if (methodElement != null) {
-          method = ExecutableNode.fromNode(
-            await _getAstNodeAsync(methodElement),
+          method = ExecutableNode(
+            context.nodeProvider,
+            await context.nodeProvider
+                .getElementDeclarationAsync(methodElement),
             methodElement,
           );
         } else {
@@ -161,11 +166,9 @@ FutureOr<PropertyDescriptorsBuilding?> _parseExpressionAsync(
         );
       }
 
-      // if (method.returnTypeName != pdbTypeName &&
-      //     !method.parameters.any((p) => p.typeName == pdbTypeName)) {
+      final parameters = await method.getParametersAsync();
       if (!_isPropertyDescriptorsBuilder(method.returnType) &&
-          !method.parameters
-              .any((p) => _isPropertyDescriptorsBuilder(p.type))) {
+          !parameters.any((p) => _isPropertyDescriptorsBuilder(p.type))) {
         context.logger.fine(
           "Skip trivial method or function call '$unParenthesized' at ${getNodeLocation(unParenthesized, contextElement)}.",
         );
@@ -174,7 +177,6 @@ FutureOr<PropertyDescriptorsBuilding?> _parseExpressionAsync(
 
       // initialize arguments
       Map<String, PropertyDescriptorsBuilding>? arguments;
-      final parameters = method.parameters;
       if (parameters.isNotEmpty) {
         arguments = {};
         for (var i = 0; i < parameters.length; i++) {

@@ -1,11 +1,14 @@
 // See LICENCE file in the root.
 
+import 'dart:async';
+
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
-import 'package:meta/meta.dart';
 
-import 'parser_utilities.dart';
+import 'node_provider.dart';
+import 'parameter.dart';
+import 'utilities.dart';
 
 /// Represents an any kind variable.
 abstract class VariableNode {
@@ -18,12 +21,10 @@ abstract class VariableNode {
   /// Gets an [Element] which is associated to underlying [AstNode] of this.
   Element get element;
 
-  VariableNode._();
-
   /// Creates an appropriate [VariableNode] instance for specified [AstNode].
   ///
   /// [Element] is source element which is used to get [node].
-  factory VariableNode.fromNode(AstNode node, Element sourceElement) {
+  factory VariableNode(AstNode node, Element sourceElement) {
     if (node is TopLevelVariableDeclaration) {
       if (node.variables.variables.length != 1) {
         throwError(
@@ -61,6 +62,8 @@ abstract class VariableNode {
       );
     }
   }
+
+  VariableNode._();
 }
 
 class _TopLevelVariableNode extends VariableNode {
@@ -143,23 +146,13 @@ class _GetterFunctionNode extends VariableNode {
   _GetterFunctionNode(this._declaration) : super._();
 }
 
-/// Represents a parameter.
-@sealed
-class ParameterInfo {
-  /// Gets a name of this parameter.
-  String name;
-
-  /// Gets a static [DartType] of this parameter.
-  DartType type;
-
-  ParameterInfo._(this.name, this.type);
-}
-
 /// Represents an any kind executable (method, function, or property accessor).
 ///
 /// Note that this object never represents native or external method or function,
 /// so underlying node always have [FunctionBody].
 abstract class ExecutableNode {
+  final NodeProvider _nodeProvider;
+
   /// Gets a name of this executable.
   String get name;
 
@@ -167,7 +160,7 @@ abstract class ExecutableNode {
   FunctionBody get body;
 
   /// Gets a list of parameters of this executable.
-  List<ParameterInfo> get parameters;
+  FutureOr<List<ParameterInfo>> getParametersAsync();
 
   /// Gets a [DartType] of the return value of this executable.
   DartType get returnType;
@@ -175,16 +168,18 @@ abstract class ExecutableNode {
   /// Gets a [Element] of target executable node declaration.
   ExecutableElement get element;
 
-  ExecutableNode._();
-
   /// Creates an appropriate [ExecutableNode] instance for specified [AstNode].
   ///
   /// [Element] is source element which is used to get [node].
-  factory ExecutableNode.fromNode(AstNode node, Element sourceElement) {
+  factory ExecutableNode(
+    NodeProvider nodeProvider,
+    AstNode node,
+    Element sourceElement,
+  ) {
     if (node is FunctionDeclaration) {
-      return _FunctionNode(node);
+      return _FunctionNode(nodeProvider, node);
     } else if (node is MethodDeclaration) {
-      return _MethodNode(node);
+      return _MethodNode(nodeProvider, node);
     } else {
       throwError(
         message:
@@ -194,16 +189,19 @@ abstract class ExecutableNode {
     }
   }
 
-  Iterable<ParameterInfo> _iterateParameterInfo(
-      FormalParameterList? parameters) sync* {
+  ExecutableNode._(this._nodeProvider);
+
+  FutureOr<List<ParameterInfo>> _iterateParameterInfoAsync(
+    FormalParameterList? parameters,
+  ) async {
     if (parameters != null) {
-      for (final parameter in parameters.parameterElements) {
-        yield ParameterInfo._(
-          parameter!.name,
-          parameter.type,
-        );
-      }
+      return await parameters.parameters
+          .where((p) => !p.declaredElement!.hasDeprecated)
+          .map((p) => ParameterInfo.fromNodeAsync(_nodeProvider, p))
+          .toListAsync();
     }
+
+    return [];
   }
 }
 
@@ -217,9 +215,8 @@ class _FunctionNode extends ExecutableNode {
   FunctionBody get body => _declaration.functionExpression.body;
 
   @override
-  List<ParameterInfo> get parameters =>
-      _iterateParameterInfo(_declaration.functionExpression.parameters)
-          .toList();
+  FutureOr<List<ParameterInfo>> getParametersAsync() =>
+      _iterateParameterInfoAsync(_declaration.functionExpression.parameters);
 
   @override
   DartType get returnType => _declaration.returnType!.type!;
@@ -227,7 +224,8 @@ class _FunctionNode extends ExecutableNode {
   @override
   ExecutableElement get element => _declaration.declaredElement!;
 
-  _FunctionNode(this._declaration) : super._();
+  _FunctionNode(NodeProvider nodeProvider, this._declaration)
+      : super._(nodeProvider);
 }
 
 class _MethodNode extends ExecutableNode {
@@ -240,8 +238,8 @@ class _MethodNode extends ExecutableNode {
   FunctionBody get body => _declaration.body;
 
   @override
-  List<ParameterInfo> get parameters =>
-      _iterateParameterInfo(_declaration.parameters).toList();
+  FutureOr<List<ParameterInfo>> getParametersAsync() =>
+      _iterateParameterInfoAsync(_declaration.parameters);
 
   @override
   DartType get returnType => _declaration.returnType!.type!;
@@ -249,5 +247,6 @@ class _MethodNode extends ExecutableNode {
   @override
   ExecutableElement get element => _declaration.declaredElement!;
 
-  _MethodNode(this._declaration) : super._();
+  _MethodNode(NodeProvider nodeProvider, this._declaration)
+      : super._(nodeProvider);
 }

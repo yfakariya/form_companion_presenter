@@ -2,21 +2,37 @@
 
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/type_provider.dart';
+import 'package:analyzer/dart/element/type_system.dart';
 import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
 import 'package:source_gen/source_gen.dart';
 
-import 'parser_utilities.dart';
+import 'form_field_locator.dart';
+import 'node_provider.dart';
+import 'utilities.dart';
 
 /// Represents a context information of parsing.
 @sealed
 class ParseContext {
-  /// Gets a [Logger] to record trace log for debugging.
+  /// A [Logger] to record trace log for debugging.
   final Logger logger;
+
+  /// A [NodeProvider] to get [AstNode] for [Element].
+  final NodeProvider nodeProvider;
+
+  /// A [FormFieldLocator] to find `FormField` class from dependent packages.
+  final FormFieldLocator formFieldLocator;
+
+  /// A [TypeProvider] to get or build wellknown types.
+  final TypeProvider typeProvider;
+
+  /// A [TypeSystem] which provides standard type system operations.
+  final TypeSystem typeSystem;
 
   final List<_Scope> _scopes = [];
 
-  final List<String> _warnings = [];
+  final List<String> _warnings;
 
   /// Gets a recorded [PropertyDescriptorsBuilding] mapping,
   /// where keys are name of parameters and/or local variables
@@ -47,7 +63,14 @@ class ParseContext {
   PropertyDescriptorsBuilding? initializeCompanionMixinArgument;
 
   /// Initialize a new [ParseContext] instance.
-  ParseContext(this.logger);
+  ParseContext(
+    this.logger,
+    this.nodeProvider,
+    this.formFieldLocator,
+    this.typeProvider,
+    this.typeSystem,
+    this._warnings,
+  );
 
   /// Marks that current executable is returned.
   ///
@@ -61,6 +84,7 @@ class ParseContext {
   /// Adds specified warning message as global warning.
   void addGlobalWarning(String warning) {
     _warnings.add(warning);
+    logger.warning(warning);
   }
 
   /// Coordinates internal information to handle beginning of new block scope.

@@ -2,23 +2,53 @@
 
 import 'dart:async';
 
+import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/type.dart';
+import 'package:analyzer/source/error_processor.dart';
+import 'package:form_companion_generator/src/dependency.dart';
+import 'package:form_companion_generator/src/form_field_locator.dart';
 import 'package:form_companion_generator/src/model.dart';
+import 'package:form_companion_generator/src/node_provider.dart';
 import 'package:form_companion_generator/src/parser.dart';
 import 'package:logging/logging.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:test/test.dart';
+import 'package:tuple/tuple.dart';
 
 import 'test_helpers.dart';
 
-// TODO(yfakariya): preferredFieldType support.
+typedef FieldNameAndValueType = Tuple2<String, InterfaceType>;
+
+class ExpectedImport {
+  final String identifier;
+  final List<String> shows;
+  final List<MapEntry<String, List<String>>> prefixes;
+
+  const ExpectedImport(
+    this.identifier, {
+    this.shows = const [],
+    this.prefixes = const [],
+  });
+}
 
 Future<void> main() async {
+  final nodeProvider = NodeProvider();
   final presenterLibrary = LibraryReader(
     (await getElement('presenter.dart')).element,
   );
-  final logger = Logger('test');
-  Logger.root.level = Level.FINEST;
+  final typeProvider = presenterLibrary.element.typeProvider;
+  final formFieldLocator =
+      await FormFieldLocator.createAsync(presenterLibrary.element.session, []);
+  final myEnumType = await getMyEnumType();
+  final dateTimeType = await getDateTimeType();
+  final dateTimeRangeType = await getDateTimeRangeType();
+  final rangeValuesType = await getRangeValuesType();
+  final dependencyHolder =
+      (await getParametersLibrary()).lookupClass('DependencyHolder');
+
+  final logger = Logger('parser_test');
+  Logger.root.level = Level.INFO;
   logger.onRecord.listen(print);
 
   ClassElement findType(String name) {
@@ -126,16 +156,19 @@ Future<void> main() async {
   group('getProperties', () {
     FutureOr<void> testGetProperties(
       String name,
-      void Function(Map<String, PropertyDefinition>) propertiesAssertion, {
+      void Function(Map<String, PropertyAndFormFieldDefinition>)
+          propertiesAssertion, {
       void Function(List<String>)? warningsAssertion,
     }) async {
       final targetClass = findType(name);
       final warnings = <String>[];
       final result = await getPropertiesAsync(
-        presenterLibrary,
+        nodeProvider,
+        formFieldLocator,
         findConstructor(targetClass),
         warnings,
         logger,
+        isFormBuilder: false,
       );
 
       propertiesAssertion(result);
@@ -159,10 +192,12 @@ Future<void> main() async {
       final warnings = <String>[];
       try {
         final result = await getPropertiesAsync(
-          presenterLibrary,
+          nodeProvider,
+          formFieldLocator,
           findConstructor(targetClass),
           warnings,
           logger,
+          isFormBuilder: false,
         );
         fail('No error occurred. Properties: $result');
       }
@@ -177,40 +212,99 @@ Future<void> main() async {
       }
     }
 
+    void testBasicProperties(
+      Map<String, PropertyAndFormFieldDefinition> props,
+    ) {
+      expect(props['propInt'], isNotNull);
+      expect(props['propInt']!.name, 'propInt');
+      expect(props['propInt']!.type, typeProvider.intType);
+      expect(props['propInt']!.fieldConstructor, isNotNull);
+      expect(props['propInt']!.fieldConstructor!.name, isNull);
+      expect(props['propInt']!.fieldType, isNotNull);
+      expect(
+        props['propInt']!.fieldType!.getDisplayString(withNullability: true),
+        equals('TextFormField'),
+      );
+      expect(props['propInt']!.fieldTypeName, 'TextFormField');
+      expect(props['propInt']!.warnings, isEmpty);
+      expect(props['propInt']!.instantiationContext, isNotNull);
+      expect(props['propString'], isNotNull);
+      expect(props['propString']!.name, 'propString');
+      expect(props['propString']!.type, typeProvider.stringType);
+      expect(props['propString']!.fieldConstructor, isNotNull);
+      expect(props['propString']!.fieldConstructor!.name, isNull);
+      expect(props['propString']!.fieldType, isNotNull);
+      expect(
+        props['propString']!.fieldType!.getDisplayString(withNullability: true),
+        'TextFormField',
+      );
+      expect(props['propString']!.fieldTypeName, 'TextFormField');
+      expect(props['propString']!.warnings, isEmpty);
+      expect(props['propString']!.instantiationContext, isNotNull);
+      expect(props['propBool'], isNotNull);
+      expect(props['propBool']!.type, typeProvider.boolType);
+      expect(props['propBool']!.fieldConstructor, isNotNull);
+      expect(props['propBool']!.fieldConstructor!.name, isNull);
+      expect(props['propBool']!.fieldType, isNotNull);
+      expect(
+        props['propBool']!.fieldType!.getDisplayString(withNullability: true),
+        'DropdownButtonFormField<T>',
+      );
+      expect(props['propBool']!.fieldTypeName, 'DropdownButtonFormField');
+      expect(props['propBool']!.warnings, isEmpty);
+      expect(props['propBool']!.instantiationContext, isNotNull);
+      expect(props['propEnum'], isNotNull);
+      expect(
+        props['propEnum']!.type.getDisplayString(withNullability: true),
+        'MyEnum',
+      );
+      expect(props['propEnum']!.fieldConstructor, isNotNull);
+      expect(props['propEnum']!.fieldConstructor!.name, isNull);
+      expect(props['propEnum']!.fieldType, isNotNull);
+      expect(
+        props['propEnum']!.fieldType!.getDisplayString(withNullability: true),
+        'DropdownButtonFormField<T>',
+      );
+      expect(props['propEnum']!.fieldTypeName, 'DropdownButtonFormField');
+      expect(props['propEnum']!.warnings, isEmpty);
+      expect(props['propEnum']!.instantiationContext, isNotNull);
+      expect(props['propRaw'], isNotNull);
+      expect(props['propRaw']!.type, typeProvider.objectType);
+      expect(props['propRaw']!.fieldConstructor, isNotNull);
+      expect(props['propRaw']!.fieldConstructor!.name, isNull);
+      expect(props['propRaw']!.fieldType, isNotNull);
+      expect(
+        props['propRaw']!.fieldType!.getDisplayString(withNullability: true),
+        equals('TextFormField'),
+      );
+      expect(props['propRaw']!.fieldTypeName, 'TextFormField');
+      expect(props['propRaw']!.warnings, isEmpty);
+      expect(props['propRaw']!.instantiationContext, isNotNull);
+    }
+
+    void testExtraProperties(
+      Map<String, PropertyAndFormFieldDefinition> props,
+    ) {
+      expect(props['extra'], isNotNull);
+      expect(props['extra']!.name, 'extra');
+      expect(props['extra']!.type, typeProvider.stringType);
+      expect(props['extra']!.fieldConstructor, isNotNull);
+      expect(props['extra']!.fieldConstructor!.name, isNull);
+      expect(props['extra']!.fieldType, isNotNull);
+      expect(
+        props['extra']!.fieldType!.getDisplayString(withNullability: true),
+        'TextFormField',
+      );
+      expect(props['extra']!.fieldTypeName, 'TextFormField');
+      expect(props['extra']!.warnings, isEmpty);
+      expect(props['extra']!.instantiationContext, isNotNull);
+    }
+
     FutureOr<void> testGetPropertiesSuccess(String name) => testGetProperties(
           name,
           (props) {
-            expect(props.length, equals(5));
-            expect(props['propInt'], isNotNull);
-            expect(props['propInt']!.isEnum, isFalse);
-            expect(props['propInt']!.name, equals('propInt'));
-            expect(props['propInt']!.preferredFieldType, isNull);
-            expect(props['propInt']!.type, equals('int'));
-            expect(props['propInt']!.warnings, isEmpty);
-            expect(props['propString'], isNotNull);
-            expect(props['propString']!.isEnum, isFalse);
-            expect(props['propString']!.name, equals('propString'));
-            expect(props['propString']!.preferredFieldType, isNull);
-            expect(props['propString']!.type, equals('String'));
-            expect(props['propString']!.warnings, isEmpty);
-            expect(props['propBool'], isNotNull);
-            expect(props['propBool']!.isEnum, isFalse);
-            expect(props['propBool']!.name, equals('propBool'));
-            expect(props['propBool']!.preferredFieldType, isNull);
-            expect(props['propBool']!.type, equals('bool'));
-            expect(props['propBool']!.warnings, isEmpty);
-            expect(props['propEnum'], isNotNull);
-            expect(props['propEnum']!.isEnum, isTrue);
-            expect(props['propEnum']!.name, equals('propEnum'));
-            expect(props['propEnum']!.preferredFieldType, isNull);
-            expect(props['propEnum']!.type, equals('MyEnum'));
-            expect(props['propEnum']!.warnings, isEmpty);
-            expect(props['propRaw'], isNotNull);
-            expect(props['propRaw']!.isEnum, isFalse);
-            expect(props['propRaw']!.name, equals('propRaw'));
-            expect(props['propRaw']!.preferredFieldType, isNull);
-            expect(props['propRaw']!.type, equals('Object'));
-            expect(props['propRaw']!.warnings, isEmpty);
+            expect(props.length, 5);
+            testBasicProperties(props);
           },
         );
 
@@ -219,7 +313,7 @@ Future<void> main() async {
           'InlineWithNoAddition',
           (props) => expect(props, isEmpty),
           warningsAssertion: (warnings) {
-            expect(warnings.length, equals(1));
+            expect(warnings.length, 1);
             expect(
               warnings[0],
               equals(
@@ -379,42 +473,8 @@ Future<void> main() async {
           'LocalVariableRefersAlwaysNewGetterWithModification',
           (props) {
             expect(props.length, equals(6));
-            expect(props['propInt'], isNotNull);
-            expect(props['propInt']!.isEnum, isFalse);
-            expect(props['propInt']!.name, equals('propInt'));
-            expect(props['propInt']!.preferredFieldType, isNull);
-            expect(props['propInt']!.type, equals('int'));
-            expect(props['propInt']!.warnings, isEmpty);
-            expect(props['propString'], isNotNull);
-            expect(props['propString']!.isEnum, isFalse);
-            expect(props['propString']!.name, equals('propString'));
-            expect(props['propString']!.preferredFieldType, isNull);
-            expect(props['propString']!.type, equals('String'));
-            expect(props['propString']!.warnings, isEmpty);
-            expect(props['propBool'], isNotNull);
-            expect(props['propBool']!.isEnum, isFalse);
-            expect(props['propBool']!.name, equals('propBool'));
-            expect(props['propBool']!.preferredFieldType, isNull);
-            expect(props['propBool']!.type, equals('bool'));
-            expect(props['propBool']!.warnings, isEmpty);
-            expect(props['propEnum'], isNotNull);
-            expect(props['propEnum']!.isEnum, isTrue);
-            expect(props['propEnum']!.name, equals('propEnum'));
-            expect(props['propEnum']!.preferredFieldType, isNull);
-            expect(props['propEnum']!.type, equals('MyEnum'));
-            expect(props['propEnum']!.warnings, isEmpty);
-            expect(props['propRaw'], isNotNull);
-            expect(props['propRaw']!.isEnum, isFalse);
-            expect(props['propRaw']!.name, equals('propRaw'));
-            expect(props['propRaw']!.preferredFieldType, isNull);
-            expect(props['propRaw']!.type, equals('Object'));
-            expect(props['propRaw']!.warnings, isEmpty);
-            expect(props['extra'], isNotNull);
-            expect(props['extra']!.isEnum, isFalse);
-            expect(props['extra']!.name, equals('extra'));
-            expect(props['extra']!.preferredFieldType, isNull);
-            expect(props['extra']!.type, equals('String'));
-            expect(props['extra']!.warnings, isEmpty);
+            testBasicProperties(props);
+            testExtraProperties(props);
           },
         ),
       );
@@ -442,42 +502,8 @@ Future<void> main() async {
           'LocalVariableRefersAlwaysNewFactoryMethodWithMofidication',
           (props) {
             expect(props.length, equals(6));
-            expect(props['propInt'], isNotNull);
-            expect(props['propInt']!.isEnum, isFalse);
-            expect(props['propInt']!.name, equals('propInt'));
-            expect(props['propInt']!.preferredFieldType, isNull);
-            expect(props['propInt']!.type, equals('int'));
-            expect(props['propInt']!.warnings, isEmpty);
-            expect(props['propString'], isNotNull);
-            expect(props['propString']!.isEnum, isFalse);
-            expect(props['propString']!.name, equals('propString'));
-            expect(props['propString']!.preferredFieldType, isNull);
-            expect(props['propString']!.type, equals('String'));
-            expect(props['propString']!.warnings, isEmpty);
-            expect(props['propBool'], isNotNull);
-            expect(props['propBool']!.isEnum, isFalse);
-            expect(props['propBool']!.name, equals('propBool'));
-            expect(props['propBool']!.preferredFieldType, isNull);
-            expect(props['propBool']!.type, equals('bool'));
-            expect(props['propBool']!.warnings, isEmpty);
-            expect(props['propEnum'], isNotNull);
-            expect(props['propEnum']!.isEnum, isTrue);
-            expect(props['propEnum']!.name, equals('propEnum'));
-            expect(props['propEnum']!.preferredFieldType, isNull);
-            expect(props['propEnum']!.type, equals('MyEnum'));
-            expect(props['propEnum']!.warnings, isEmpty);
-            expect(props['propRaw'], isNotNull);
-            expect(props['propRaw']!.isEnum, isFalse);
-            expect(props['propRaw']!.name, equals('propRaw'));
-            expect(props['propRaw']!.preferredFieldType, isNull);
-            expect(props['propRaw']!.type, equals('Object'));
-            expect(props['propRaw']!.warnings, isEmpty);
-            expect(props['extra'], isNotNull);
-            expect(props['extra']!.isEnum, isFalse);
-            expect(props['extra']!.name, equals('extra'));
-            expect(props['extra']!.preferredFieldType, isNull);
-            expect(props['extra']!.type, equals('String'));
-            expect(props['extra']!.warnings, isEmpty);
+            testBasicProperties(props);
+            testExtraProperties(props);
           },
         ),
       );
@@ -531,7 +557,7 @@ Future<void> main() async {
       );
 
       test(
-        'multiple initializeCompanionMixin invocation - last one is adapted and warning',
+        'multiple initializeCompanionMixin invocation - last one is adopted and warning',
         () => testGetProperties(
           'MultipleInitializeCompanionMixin',
           (props) {
@@ -624,5 +650,755 @@ Future<void> main() async {
     });
   });
 
-  // TODO(yfakariya): parseElement (integrated)
+  group('collectDependencies', () {
+    FutureOr<PropertyAndFormFieldDefinition> makeProperty(
+      String formFieldTypeName,
+      InterfaceType valueType,
+    ) async {
+      final property = PropertyDefinition(
+        name: 'prop',
+        type: valueType,
+        preferredFieldType: formFieldTypeName,
+        warnings: [],
+      );
+
+      final formFieldType =
+          formFieldLocator.resolveFormFieldType(formFieldTypeName)!;
+
+      return PropertyAndFormFieldDefinition(
+        property: property,
+        fieldType: formFieldType,
+        fieldTypeName: formFieldTypeName,
+        fieldConstructor: await nodeProvider.getElementDeclarationAsync(
+            formFieldType.element.unnamedConstructor!),
+        instantiationContext: null, // This is OK
+      );
+    }
+
+    void assertImports(
+      List<LibraryImport> result,
+      List<ExpectedImport> expected,
+    ) {
+      result.sort((l, r) => l.library.compareTo(r.library));
+      expect(
+        result.map((e) => e.library).toList(),
+        expected.map((e) => e.identifier).toList(),
+      );
+      for (var i = 0; i < expected.length; i++) {
+        expect(result[i].library, expected[i].identifier);
+        expect(
+          result[i].showingTypes.toList()..sort(),
+          expected[i].shows,
+          reason: result[i].library,
+        );
+        expect(
+          result[i].prefixes.length,
+          expected[i].prefixes.length,
+          reason:
+              '${result[i].library}: ${result[i].prefixes.toList()} != ${expected[i].prefixes.toList()}',
+        );
+        final prefixes = result[i].prefixes.toList()
+          ..sort((l, r) => l.key.compareTo(r.key));
+        for (var j = 0; j < expected[i].prefixes.length; j++) {
+          expect(prefixes[j].key, expected[i].prefixes[j].key);
+          expect(
+            prefixes[j].value.toList()..sort(),
+            expected[i].prefixes[j].value,
+            reason: prefixes[j].key,
+          );
+        }
+      }
+    }
+
+    for (final spec in [
+      Tuple2(
+        'normal',
+        ExpectedImport('dart:ui', shows: ['Color']),
+      ),
+      Tuple2(
+        'alias',
+        ExpectedImport('dart:ui', shows: ['VoidCallback']),
+      ),
+      Tuple2(
+        'prefixed',
+        ExpectedImport(
+          'dart:ui',
+          prefixes: [
+            MapEntry('ui', ['VoidCallback']),
+          ],
+        ),
+      ),
+      Tuple2(
+        'function',
+        ExpectedImport(
+          'dart:ui',
+          shows: ['Color'],
+          prefixes: [
+            MapEntry('ui', ['VoidCallback'])
+          ],
+        ),
+      ),
+    ]) {
+      final kind = spec.item1;
+      final expected = spec.item2;
+
+      test('unit test: $kind', () async {
+        final property = PropertyDefinition(
+          name: 'prop',
+          type: typeProvider.stringType,
+          preferredFieldType: null,
+          warnings: [],
+        );
+
+        final propertyAndField = PropertyAndFormFieldDefinition(
+          property: property,
+          fieldType: null, // This is OK
+          fieldTypeName: '', // This is OK
+          fieldConstructor: await nodeProvider
+              .getElementDeclarationAsync<ConstructorDeclaration>(
+            dependencyHolder.constructors.singleWhere((c) => c.name == kind),
+          ),
+          instantiationContext: null,
+        );
+
+        final result = await collectDependenciesAsync(
+          dependencyHolder.library,
+          [propertyAndField],
+          nodeProvider,
+          logger,
+        );
+
+        assertImports(result, [expected]);
+
+        // expect(result.length, 1, reason: result.toString());
+        // expect(result[0].library, expected.identifier);
+        // expect(result[0].showingTypes, expected.shows);
+        // expect(
+        //   result[0].prefixes.length,
+        //   expected.prefixes.length,
+        //   reason: '${result[0].prefixes} != ${expected.prefixes}',
+        // );
+        // final prefixes = result[0].prefixes.toList();
+        // for (var i = 0; i < expected.prefixes.length; i++) {
+        //   expect(prefixes[i].key, expected.prefixes[i].key);
+        //   expect(
+        //     prefixes[i].value,
+        //     expected.prefixes[i].value,
+        //     reason: expected.prefixes[i].key,
+        //   );
+        // }
+      });
+    }
+
+    Future<void> testCollectDependenciesAsync(
+      String fieldName,
+      InterfaceType valueType,
+    ) async {
+      final result = await collectDependenciesAsync(
+        presenterLibrary.element,
+        [await makeProperty(fieldName, valueType)],
+        nodeProvider,
+        logger,
+      );
+
+      final expected = _expectedImports[fieldName]!;
+
+      assertImports(result, expected);
+    }
+
+    for (final spec in [
+      FieldNameAndValueType('TextFormField', typeProvider.stringType),
+      FieldNameAndValueType('DropdownButtonFormField', typeProvider.boolType),
+    ]) {
+      final fieldName = spec.item1;
+      final valueType = spec.item2;
+      test('vanilla form: $fieldName', () async {
+        await testCollectDependenciesAsync(fieldName, valueType);
+      });
+    }
+
+    for (final spec in [
+      FieldNameAndValueType('FormBuilderCheckbox', typeProvider.boolType),
+      FieldNameAndValueType(
+        'FormBuilderCheckboxGroup',
+        typeProvider.listType(typeProvider.boolType),
+      ),
+      FieldNameAndValueType('FormBuilderChoiceChip', myEnumType),
+      FieldNameAndValueType('FormBuilderDateRangePicker', dateTimeRangeType),
+      FieldNameAndValueType('FormBuilderDateTimePicker', dateTimeType),
+      FieldNameAndValueType('FormBuilderDropdown', myEnumType),
+      FieldNameAndValueType(
+        'FormBuilderFilterChip',
+        typeProvider.listType(myEnumType),
+      ),
+      FieldNameAndValueType('FormBuilderRadioGroup', myEnumType),
+      FieldNameAndValueType('FormBuilderRangeSlider', rangeValuesType),
+      FieldNameAndValueType('FormBuilderSegmentedControl', myEnumType),
+      FieldNameAndValueType('FormBuilderSlider', typeProvider.doubleType),
+      FieldNameAndValueType('FormBuilderSwitch', typeProvider.boolType),
+      FieldNameAndValueType('FormBuilderTextField', typeProvider.stringType),
+    ]) {
+      final fieldName = spec.item1;
+      final valueType = spec.item2;
+      test('form builder $fieldName', () async {
+        await testCollectDependenciesAsync(fieldName, valueType);
+      });
+    }
+  });
+
+  // TODO(yfakariya): field related tests.
+  // preferredType
+  // resolveFormFieldAsync() - isFormBuilder x types x preferredType
+
+  // TODO(yfakariya): parseElementAsync : isFormBuilder x warnings
+  // TODO(yfakariya): generator integration test.
 }
+
+List<ExpectedImport> _merge(List<ExpectedImport> lists) {
+  final map = <String, Tuple2<Set<String>, Map<String, Set<String>>>>{};
+  for (final import in lists) {
+    final existing = map[import.identifier];
+    if (existing != null) {
+      existing.item1.addAll(import.shows);
+      for (final prefix in import.prefixes) {
+        final existingPrefix = existing.item2[prefix.key];
+        if (existingPrefix != null) {
+          existingPrefix.addAll(prefix.value);
+        } else {
+          existing.item2[prefix.key] = {...prefix.value};
+        }
+      }
+    } else {
+      map[import.identifier] = Tuple2(
+        Set.from(import.shows),
+        {
+          for (final p in import.prefixes) p.key: {...p.value}
+        },
+      );
+    }
+  }
+
+  final sortedKeys = map.keys.toList()..sort();
+  return sortedKeys
+      .map(
+        (k) => ExpectedImport(
+          k,
+          shows: map[k]!.item1.toList()..sort(),
+          prefixes: map[k]!
+              .item2
+              .keys
+              .map((p) => MapEntry(p, [...map[k]!.item2[p]!]..sort()))
+              .toList()
+            ..sort(),
+        ),
+      )
+      .toList();
+}
+
+const _vanillaCommonImports = [
+  ExpectedImport(
+    'dart:ui',
+    shows: ['Color', 'VoidCallback'],
+  ),
+  ExpectedImport(
+    'package:flutter/foundation.dart',
+    shows: ['Key', 'ValueChanged'],
+  ),
+  ExpectedImport(
+    'package:flutter/material.dart',
+    shows: ['InputDecoration'],
+  ),
+  ExpectedImport(
+    'package:flutter/painting.dart',
+    shows: ['TextStyle'],
+  ),
+  ExpectedImport(
+    'package:flutter/widgets.dart',
+    shows: [
+      'AutovalidateMode',
+      'FocusNode',
+      'FormFieldSetter',
+      'FormFieldState',
+      'FormFieldValidator'
+    ],
+  ),
+];
+
+const _builderCommonImports = [
+  ExpectedImport(
+    'dart:ui',
+    shows: ['Color', 'VoidCallback'],
+  ),
+  ExpectedImport(
+    'package:flutter/foundation.dart',
+    shows: ['Key', 'ValueChanged'],
+  ),
+  ExpectedImport(
+    'package:flutter/material.dart',
+    shows: ['InputDecoration'],
+  ),
+  ExpectedImport(
+    'package:flutter/widgets.dart',
+    shows: [
+      'AutovalidateMode',
+      'FocusNode',
+      'FormFieldSetter',
+      'FormFieldState',
+      'FormFieldValidator'
+    ],
+  ),
+  ExpectedImport(
+    'package:flutter_form_builder/flutter_form_builder.dart',
+    shows: ['ValueTransformer'],
+  ),
+];
+
+final _expectedImports = {
+  'TextFormField': _merge([
+    ..._vanillaCommonImports,
+    ExpectedImport(
+      'dart:ui',
+      shows: ['Brightness', 'Radius', 'TextAlign', 'TextDirection'],
+    ),
+    ExpectedImport(
+      'package:flutter/gestures.dart',
+      shows: ['GestureTapCallback'],
+    ),
+    ExpectedImport(
+      'package:flutter/material.dart',
+      shows: ['InputCounterWidgetBuilder', 'TextField'],
+    ),
+    ExpectedImport(
+      'package:flutter/painting.dart',
+      shows: ['EdgeInsets', 'StrutStyle', 'TextAlignVertical'],
+    ),
+    ExpectedImport(
+      'package:flutter/services.dart',
+      shows: [
+        'MaxLengthEnforcement',
+        'SmartDashesType',
+        'SmartQuotesType',
+        'TextCapitalization',
+        'TextInputAction',
+        'TextInputType',
+      ],
+    ),
+    ExpectedImport(
+      'package:flutter/widgets.dart',
+      shows: [
+        'ScrollController',
+        'ScrollPhysics',
+        'TextEditingController',
+        'TextSelectionControls',
+        'ToolbarOptions',
+        'UnmanagedRestorationScope'
+      ],
+    ),
+  ]),
+  'DropdownButtonFormField': _merge([
+    ..._vanillaCommonImports,
+    ExpectedImport(
+      'package:flutter/material.dart',
+      shows: [
+        'DropdownButton',
+        'DropdownButtonBuilder',
+        'DropdownButtonHideUnderline',
+        'DropdownMenuItem',
+        'InputDecorator'
+      ],
+    ),
+    ExpectedImport(
+      'package:flutter/painting.dart',
+      shows: ['AlignmentGeometry'],
+    ),
+    ExpectedImport(
+      'package:flutter/widgets.dart',
+      shows: ['BuildContext', 'Builder', 'Focus', 'Widget'],
+    ),
+  ]),
+  'FormBuilderCheckbox': _merge([
+    ..._builderCommonImports,
+    ExpectedImport(
+      'package:flutter/material.dart',
+      shows: ['CheckboxListTile', 'InputDecorator', 'ListTileControlAffinity'],
+    ),
+    ExpectedImport(
+      'package:flutter/painting.dart',
+      shows: ['EdgeInsets'],
+    ),
+    ExpectedImport(
+      'package:flutter/widgets.dart',
+      shows: ['Widget'],
+    ),
+  ]),
+  'FormBuilderCheckboxGroup': _merge([
+    ..._builderCommonImports,
+    ExpectedImport(
+      'dart:ui',
+      shows: ['TextDirection'],
+    ),
+    ExpectedImport(
+      'package:flutter/material.dart',
+      shows: ['InputDecorator', 'MaterialTapTargetSize'],
+    ),
+    ExpectedImport(
+      'package:flutter/painting.dart',
+      shows: ['Axis', 'VerticalDirection'],
+    ),
+    ExpectedImport(
+      'package:flutter/rendering.dart',
+      shows: ['WrapAlignment', 'WrapCrossAlignment'],
+    ),
+    ExpectedImport(
+      'package:flutter/widgets.dart',
+      shows: ['Widget'],
+    ),
+    ExpectedImport(
+      'package:flutter_form_builder/flutter_form_builder.dart',
+      shows: ['ControlAffinity', 'GroupedCheckbox', 'OptionsOrientation'],
+    ),
+  ]),
+  'FormBuilderChoiceChip': _merge([
+    ..._builderCommonImports,
+    ExpectedImport(
+      'dart:ui',
+      shows: ['TextDirection'],
+    ),
+    ExpectedImport(
+      'package:flutter/material.dart',
+      shows: [
+        'ChoiceChip',
+        'InputDecorator',
+        'MaterialTapTargetSize',
+        'VisualDensity'
+      ],
+    ),
+    ExpectedImport(
+      'package:flutter/painting.dart',
+      shows: [
+        'Axis',
+        'EdgeInsets',
+        'OutlinedBorder',
+        'TextStyle',
+        'VerticalDirection'
+      ],
+    ),
+    ExpectedImport(
+      'package:flutter/rendering.dart',
+      shows: ['WrapAlignment', 'WrapCrossAlignment'],
+    ),
+    ExpectedImport(
+      'package:flutter/widgets.dart',
+      shows: ['Widget', 'Wrap'],
+    ),
+    ExpectedImport(
+      'package:flutter_form_builder/flutter_form_builder.dart',
+      shows: ['FormBuilderFieldOption'],
+    ),
+  ]),
+  'FormBuilderDateRangePicker': _merge([
+    ..._builderCommonImports,
+    ExpectedImport(
+      'dart:ui',
+      shows: ['Brightness', 'Locale', 'Radius', 'TextAlign', 'TextDirection'],
+    ),
+    ExpectedImport(
+      'package:flutter/material.dart',
+      shows: [
+        'DatePickerEntryMode',
+        'DateTimeRange',
+        'InputCounterWidgetBuilder',
+        'TextField'
+      ],
+    ),
+    ExpectedImport(
+      'package:flutter/painting.dart',
+      shows: ['EdgeInsets', 'StrutStyle', 'TextStyle'],
+    ),
+    ExpectedImport(
+      'package:flutter/services.dart',
+      shows: [
+        'MaxLengthEnforcement',
+        'TextCapitalization',
+        'TextInputAction',
+        'TextInputType'
+      ],
+    ),
+    ExpectedImport(
+      'package:flutter/widgets.dart',
+      shows: [
+        'BuildContext',
+        'RouteSettings',
+        'TextEditingController',
+        'Widget'
+      ],
+    ),
+    ExpectedImport(
+      'package:flutter_form_builder/flutter_form_builder.dart',
+      shows: ['FormBuilderDateRangePickerState'],
+    ),
+  ]),
+  'FormBuilderDateTimePicker': _merge([
+    ..._builderCommonImports,
+    ExpectedImport(
+      'dart:ui',
+      shows: ['Brightness', 'Locale', 'Radius', 'TextAlign'],
+      prefixes: [
+        MapEntry('ui', ['TextDirection']),
+      ],
+    ),
+    ExpectedImport(
+      'package:flutter/material.dart',
+      shows: [
+        'DatePickerEntryMode',
+        'DatePickerMode',
+        'InputCounterWidgetBuilder',
+        'SelectableDayPredicate',
+        'TextField',
+        'TimeOfDay',
+        'TimePickerEntryMode'
+      ],
+    ),
+    ExpectedImport(
+      'package:flutter/painting.dart',
+      shows: ['EdgeInsets', 'StrutStyle', 'TextStyle'],
+    ),
+    ExpectedImport(
+      'package:flutter/services.dart',
+      shows: [
+        'MaxLengthEnforcement',
+        'TextCapitalization',
+        'TextInputAction',
+        'TextInputType'
+      ],
+    ),
+    ExpectedImport(
+      'package:flutter/widgets.dart',
+      shows: [
+        'Icon',
+        'RouteSettings',
+        'TextEditingController',
+        'TransitionBuilder'
+      ],
+    ),
+    ExpectedImport(
+      'package:flutter_form_builder/flutter_form_builder.dart',
+      shows: ['InputType'],
+    ),
+  ]),
+  'FormBuilderDropdown': _merge([
+    ..._builderCommonImports,
+    ExpectedImport(
+      'package:flutter/material.dart',
+      shows: [
+        'DropdownButton',
+        'DropdownButtonBuilder',
+        'DropdownButtonHideUnderline',
+        'InkWell',
+        'InputDecorator',
+        'VerticalDivider'
+      ],
+    ),
+    ExpectedImport(
+      'package:flutter/painting.dart',
+      shows: ['TextStyle'],
+    ),
+    ExpectedImport(
+      'package:flutter/widgets.dart',
+      shows: ['Expanded', 'Icon', 'Row', 'Text', 'Widget'],
+    ),
+  ]),
+  'FormBuilderFilterChip': _merge([
+    ..._builderCommonImports,
+    ExpectedImport(
+      'dart:ui',
+      shows: ['Clip', 'TextDirection'],
+    ),
+    ExpectedImport(
+      'package:flutter/material.dart',
+      shows: ['FilterChip', 'InputDecorator', 'MaterialTapTargetSize'],
+    ),
+    ExpectedImport(
+      'package:flutter/painting.dart',
+      shows: [
+        'Axis',
+        'EdgeInsets',
+        'OutlinedBorder',
+        'TextStyle',
+        'VerticalDirection'
+      ],
+    ),
+    ExpectedImport(
+      'package:flutter/rendering.dart',
+      shows: ['WrapAlignment', 'WrapCrossAlignment'],
+    ),
+    ExpectedImport(
+      'package:flutter/widgets.dart',
+      shows: ['Wrap', 'Widget'],
+    ),
+    ExpectedImport(
+      'package:flutter_form_builder/flutter_form_builder.dart',
+      shows: ['FormBuilderFieldOption'],
+    ),
+  ]),
+  'FormBuilderRadioGroup': _merge([
+    ..._builderCommonImports,
+    ExpectedImport(
+      'dart:ui',
+      shows: ['TextDirection'],
+    ),
+    ExpectedImport(
+      'package:flutter/material.dart',
+      shows: ['InputDecorator', 'MaterialTapTargetSize'],
+    ),
+    ExpectedImport(
+      'package:flutter/painting.dart',
+      shows: ['Axis', 'VerticalDirection'],
+    ),
+    ExpectedImport(
+      'package:flutter/rendering.dart',
+      shows: ['WrapAlignment', 'WrapCrossAlignment'],
+    ),
+    ExpectedImport(
+      'package:flutter/widgets.dart',
+      shows: ['Widget'],
+    ),
+    ExpectedImport(
+      'package:flutter_form_builder/flutter_form_builder.dart',
+      shows: ['ControlAffinity', 'GroupedRadio', 'OptionsOrientation'],
+    ),
+  ]),
+  'FormBuilderRangeSlider': _merge([
+    ..._builderCommonImports,
+    ExpectedImport(
+      'package:flutter/material.dart',
+      shows: [
+        'InputDecorator',
+        'RangeLabels',
+        'RangeSlider',
+        'RangeValues',
+        'SemanticFormatterCallback'
+      ],
+    ),
+    ExpectedImport(
+      'package:flutter/painting.dart',
+      shows: ['EdgeInsets', 'TextStyle'],
+    ),
+    ExpectedImport(
+      'package:flutter/widgets.dart',
+      shows: ['Column', 'Container', 'Row', 'Spacer', 'Text', 'Widget'],
+    ),
+    ExpectedImport(
+      'package:flutter_form_builder/flutter_form_builder.dart',
+      shows: ['DisplayValues'],
+    ),
+    ExpectedImport(
+      'package:intl/intl.dart',
+      shows: ['NumberFormat'],
+    ),
+  ]),
+  'FormBuilderSegmentedControl': _merge([
+    ..._builderCommonImports,
+    ExpectedImport(
+      'package:flutter/cupertino.dart',
+      shows: ['CupertinoSegmentedControl'],
+    ),
+    ExpectedImport(
+      'package:flutter/material.dart',
+      shows: ['InputDecorator'],
+    ),
+    ExpectedImport(
+      'package:flutter/painting.dart',
+      shows: ['EdgeInsets', 'EdgeInsetsGeometry'],
+    ),
+    ExpectedImport(
+      'package:flutter/widgets.dart',
+      shows: ['Padding', 'Widget'],
+    ),
+  ]),
+  'FormBuilderSlider': _merge([
+    ..._builderCommonImports,
+    ExpectedImport(
+      'package:flutter/material.dart',
+      shows: ['InputDecorator', 'SemanticFormatterCallback', 'Slider'],
+    ),
+    ExpectedImport(
+      'package:flutter/painting.dart',
+      shows: ['EdgeInsets', 'TextStyle'],
+    ),
+    ExpectedImport(
+      'package:flutter/services.dart',
+      shows: ['MouseCursor'],
+    ),
+    ExpectedImport(
+      'package:flutter/widgets.dart',
+      shows: ['Column', 'Container', 'Row', 'Spacer', 'Text', 'Widget'],
+    ),
+    ExpectedImport(
+      'package:flutter_form_builder/flutter_form_builder.dart',
+      shows: ['DisplayValues'],
+    ),
+    ExpectedImport(
+      'package:intl/intl.dart',
+      shows: ['NumberFormat'],
+    ),
+  ]),
+  'FormBuilderSwitch': _merge([
+    ..._builderCommonImports,
+    ExpectedImport(
+      'package:flutter/material.dart',
+      shows: ['InputDecorator', 'ListTileControlAffinity', 'SwitchListTile'],
+    ),
+    ExpectedImport(
+      'package:flutter/painting.dart',
+      shows: ['EdgeInsets', 'ImageProvider'],
+    ),
+    ExpectedImport(
+      'package:flutter/widgets.dart',
+      shows: ['Widget'],
+    ),
+  ]),
+  'FormBuilderTextField': _merge([
+    ..._builderCommonImports,
+    ExpectedImport(
+      'dart:ui',
+      shows: ['Brightness', 'Radius', 'TextAlign', 'TextDirection'],
+      prefixes: [
+        MapEntry('ui', ['BoxHeightStyle', 'BoxWidthStyle']),
+      ],
+    ),
+    ExpectedImport(
+      'package:flutter/gestures.dart',
+      shows: ['DragStartBehavior', 'GestureTapCallback'],
+    ),
+    ExpectedImport(
+      'package:flutter/material.dart',
+      shows: ['InputCounterWidgetBuilder', 'TextField'],
+    ),
+    ExpectedImport(
+      'package:flutter/painting.dart',
+      shows: ['EdgeInsets', 'StrutStyle', 'TextAlignVertical', 'TextStyle'],
+    ),
+    ExpectedImport(
+      'package:flutter/services.dart',
+      shows: [
+        'MaxLengthEnforcement',
+        'SmartDashesType',
+        'SmartQuotesType',
+        'MouseCursor',
+        'TextCapitalization',
+        'TextInputAction',
+        'TextInputType',
+      ],
+    ),
+    ExpectedImport(
+      'package:flutter/widgets.dart',
+      shows: [
+        'ScrollController',
+        'ScrollPhysics',
+        'TextEditingController',
+        'ToolbarOptions'
+      ],
+    ),
+  ]),
+};

@@ -10,8 +10,14 @@ import 'package:source_gen/source_gen.dart';
 
 import 'config.dart';
 import 'emitter.dart';
+import 'form_field_locator.dart';
 import 'model.dart';
+import 'node_provider.dart';
 import 'parser.dart';
+
+// TODO(yfakariya): Integration testing of generator.
+// TODO(yfakariya): Integration testing via build_runner.
+// TODO(yfakariya): Integration testing which runs generated codes.
 
 /// [Generator] for `@formCompanion`.
 @sealed
@@ -26,6 +32,13 @@ class CompanionGenerator extends Generator {
   FutureOr<String?> generate(
     LibraryReader library,
     BuildStep buildStep,
+  ) =>
+      generateCore(library);
+
+  /// Generate form companion source code from specified library.
+  @visibleForTesting
+  FutureOr<String?> generateCore(
+    LibraryReader library,
   ) async {
     final values = <String>{};
 
@@ -34,32 +47,39 @@ class CompanionGenerator extends Generator {
       final annotation = ConstantReader(classElement.metadata
           .firstWhere(isFormCompanionAnnotation)
           .computeConstantValue());
-      await _generateForAnnotatedElement(
-        library,
+      await generateForAnnotatedElement(
         classElement,
         FormCompanionAnnotation(annotation),
-        buildStep,
       ).forEach(values.add);
     }
 
     return values.join('\n\n');
   }
 
-  Stream<String> _generateForAnnotatedElement(
-    LibraryReader library,
+  /// Generate form companion source code from specified class and its annotation.
+  ///
+  /// It is caller's responsibility to provide [element] which has [annotation].
+  @visibleForTesting
+  Stream<String> generateForAnnotatedElement(
     ClassElement element,
     FormCompanionAnnotation annotation,
-    BuildStep buildStep,
   ) async* {
     final config = Config.withOverride(
       _config,
       suppressFieldFactory: annotation.suppressFieldFactory,
     );
 
-    for (final value in emitFromData(
+    final nodeProvider = NodeProvider();
+    final formFieldLocator = await FormFieldLocator.createAsync(
+      element.session!,
+      _config.extraLibraries,
+    );
+
+    await for (final value in emitFromData(
+      nodeProvider,
       await parseElementAsync(
-        buildStep,
-        library,
+        nodeProvider,
+        formFieldLocator,
         element,
         annotation,
         _logger,
