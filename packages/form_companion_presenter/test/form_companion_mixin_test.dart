@@ -165,36 +165,36 @@ class Presenter with CompanionPresenterMixin, FormCompanionMixin {
 
 void main() {
   // For debugging
-  loggerSink = (
-    name,
-    level,
-    message,
-    zone,
-    error,
-    stackTrace,
-  ) {
-    String messageString;
-    if (message is String Function()) {
-      messageString = message();
-    } else if (message is String) {
-      messageString = message;
-    } else {
-      messageString = message?.toString() ?? '';
-    }
+  // loggerSink = (
+  //   name,
+  //   level,
+  //   message,
+  //   zone,
+  //   error,
+  //   stackTrace,
+  // ) {
+  //   String messageString;
+  //   if (message is String Function()) {
+  //     messageString = message();
+  //   } else if (message is String) {
+  //     messageString = message;
+  //   } else {
+  //     messageString = message?.toString() ?? '';
+  //   }
 
-    String errorString;
-    if (error != null) {
-      if (stackTrace != null) {
-        errorString = ' $error\n$stackTrace';
-      } else {
-        errorString = ' $error';
-      }
-    } else {
-      errorString = '';
-    }
+  //   String errorString;
+  //   if (error != null) {
+  //     if (stackTrace != null) {
+  //       errorString = ' $error\n$stackTrace';
+  //     } else {
+  //       errorString = ' $error';
+  //     }
+  //   } else {
+  //     errorString = '';
+  //   }
 
-    printOnFailure('[${level.name}] $name: $messageString$errorString');
-  };
+  //   printOnFailure('[${level.name}] $name: $messageString$errorString');
+  // };
 
   group('canSubmit()', () {
     testWidgets('returns true when maybeFormStateOf() returns null.',
