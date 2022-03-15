@@ -5,7 +5,6 @@ import 'dart:async';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
-import 'package:build/build.dart';
 import 'package:form_companion_generator/src/config.dart';
 import 'package:form_companion_generator/src/emitter.dart';
 import 'package:form_companion_generator/src/model.dart';
@@ -16,6 +15,7 @@ import 'package:logging/logging.dart';
 import 'package:test/test.dart';
 import 'package:tuple/tuple.dart';
 
+import 'file_resolver.dart';
 import 'test_helpers.dart';
 
 typedef PropertyDefinitionSpec
@@ -29,8 +29,8 @@ const emptyConfig = Config(<String, dynamic>{});
 // \$(\{(<ID>?[_A-Za-z$][_A-Za-z0-9$]*)\}|(<ID>?[_A-Za-z][_A-Za-z0-9]*))
 
 Future<void> main() async {
-  final nodeProvider = NodeProvider();
   final library = await getFormFieldsLibrary();
+  final nodeProvider = NodeProvider(FileResolver(library.library));
   final myEnumType = await getMyEnumType();
   final dateTimeType = await getDateTimeType();
   final dateTimeRangeType = await getDateTimeRangeType();
@@ -64,7 +64,7 @@ Future<void> main() async {
       await lookupFormBuilderClass('FormBuilderTextField');
 
   final logger = Logger('emitter_test');
-  Logger.root.level = Level.FINEST;
+  Logger.root.level = Level.INFO;
   logger.onRecord.listen(print);
 
   FutureOr<Map<String, PropertyAndFormFieldDefinition>> makePropertiesFully(
@@ -141,6 +141,7 @@ Future<void> main() async {
           properties.values,
           nodeProvider,
           logger,
+          isFormBuilder: false,
         ),
         properties: properties,
       );
@@ -167,6 +168,7 @@ Future<void> main() async {
           properties.values,
           nodeProvider,
           logger,
+          isFormBuilder: false,
         ),
         properties: properties,
       );
@@ -181,6 +183,32 @@ Future<void> main() async {
             ],
           ),
         ),
+      );
+    });
+
+    test('1 property of List<Enum>', () async {
+      final properties = await makeProperty(
+        'prop',
+        library.typeProvider.listType(myEnumType),
+        dropdownButtonFormField,
+      );
+      final data = PresenterDefinition(
+        name: 'Test01',
+        isFormBuilder: false,
+        doAutovalidate: false,
+        warnings: [],
+        imports: await collectDependenciesAsync(
+          library,
+          properties.values,
+          nodeProvider,
+          logger,
+          isFormBuilder: false,
+        ),
+        properties: properties,
+      );
+      expect(
+        emitPropertyAccessor(data.name, data.properties.values, emptyConfig),
+        equals(typedProperties('Test01', [MapEntry('prop', 'List<MyEnum>')])),
       );
     });
 
@@ -216,7 +244,14 @@ Future<void> main() async {
           imports: [],
           properties: properties,
         );
-        expect(emitGlobal(data, emptyConfig).isEmpty, isTrue);
+        expect(
+          emitGlobal(library, data, emptyConfig),
+          [
+            "import 'package:form_companion_presenter/form_companion_presenter.dart';",
+            '',
+            "import 'form_fields.dart';",
+          ],
+        );
       });
 
       test('1 warning -- 1 line', () async {
@@ -233,10 +268,16 @@ Future<void> main() async {
           imports: [],
           properties: properties,
         );
-        final lines = emitGlobal(data, emptyConfig).toList();
-        expect(lines.length, equals(1));
+
         expect(
-            lines.first, equals('// TODO(CompanionGenerator): WARNING - AAA'));
+          emitGlobal(library, data, emptyConfig),
+          [
+            '// TODO(CompanionGenerator): WARNING - AAA',
+            "import 'package:form_companion_presenter/form_companion_presenter.dart';",
+            '',
+            "import 'form_fields.dart';",
+          ],
+        );
       });
 
       test('2 warnings -- 2 line', () async {
@@ -253,10 +294,17 @@ Future<void> main() async {
           imports: [],
           properties: properties,
         );
-        final lines = emitGlobal(data, emptyConfig).toList();
-        expect(lines.length, equals(2));
-        expect(lines[0], equals('// TODO(CompanionGenerator): WARNING - AAA'));
-        expect(lines[1], equals('// TODO(CompanionGenerator): WARNING - BBB'));
+
+        expect(
+          emitGlobal(library, data, emptyConfig),
+          [
+            '// TODO(CompanionGenerator): WARNING - AAA',
+            '// TODO(CompanionGenerator): WARNING - BBB',
+            "import 'package:form_companion_presenter/form_companion_presenter.dart';",
+            '',
+            "import 'form_fields.dart';",
+          ],
+        );
       });
     });
 
@@ -277,50 +325,26 @@ Future<void> main() async {
             properties.values,
             nodeProvider,
             logger,
+            isFormBuilder: false,
           ),
           properties: properties,
         );
-        final lines = emitGlobal(data, emptyConfig).toList();
-        expect(lines.length, 8);
+        final lines = emitGlobal(library, data, emptyConfig).toList();
         expect(
-          lines[0],
-          "import 'dart:ui' "
-          'show Brightness, Color, Radius, TextAlign, TextDirection, VoidCallback;',
-        );
-        expect(lines[1], isEmpty);
-        expect(
-          lines[2],
-          "import 'package:flutter/foundation.dart' "
-          'show Key, ValueChanged;',
-        );
-        expect(
-          lines[3],
-          "import 'package:flutter/gestures.dart' "
-          'show GestureTapCallback;',
-        );
-        expect(
-          lines[4],
-          "import 'package:flutter/material.dart' "
-          'show InputCounterWidgetBuilder, InputDecoration, TextField;',
-        );
-        expect(
-          lines[5],
-          "import 'package:flutter/painting.dart' "
-          'show EdgeInsets, StrutStyle, TextAlignVertical, TextStyle;',
-        );
-        expect(
-          lines[6],
-          "import 'package:flutter/services.dart' "
-          'show MaxLengthEnforcement, SmartDashesType, SmartQuotesType, '
-          'TextCapitalization, TextInputAction, TextInputType;',
-        );
-        expect(
-          lines[7],
-          "import 'package:flutter/widgets.dart' "
-          'show AutovalidateMode, FocusNode, FormFieldSetter, FormFieldState, '
-          'FormFieldValidator, ScrollController, ScrollPhysics, '
-          'TextEditingController, TextSelectionControls, ToolbarOptions, '
-          'UnmanagedRestorationScope;',
+          lines,
+          [
+            "import 'dart:ui' show Brightness, Color, Radius, TextAlign, TextDirection, VoidCallback;",
+            '',
+            "import 'package:flutter/foundation.dart' show ValueChanged;",
+            "import 'package:flutter/gestures.dart' show GestureTapCallback;",
+            "import 'package:flutter/material.dart' show InputCounterWidgetBuilder, InputDecoration, TextFormField;",
+            "import 'package:flutter/painting.dart' show EdgeInsets, StrutStyle, TextAlignVertical, TextStyle;",
+            "import 'package:flutter/services.dart' show MaxLengthEnforcement, SmartDashesType, SmartQuotesType, TextCapitalization, TextInputAction, TextInputFormatter, TextInputType;",
+            "import 'package:flutter/widgets.dart' show AutovalidateMode, BuildContext, FocusNode, ScrollController, ScrollPhysics, TextEditingController, TextSelectionControls, ToolbarOptions;",
+            "import 'package:form_companion_presenter/form_companion_presenter.dart';",
+            '',
+            "import 'form_fields.dart';"
+          ],
         );
       });
 
@@ -340,56 +364,28 @@ Future<void> main() async {
             properties.values,
             nodeProvider,
             logger,
+            isFormBuilder: true,
           ),
           properties: properties,
         );
-        final lines = emitGlobal(data, emptyConfig).toList();
-        expect(lines.length, 9);
+        final lines = emitGlobal(library, data, emptyConfig).toList();
         expect(
-          lines[0],
-          "import 'dart:ui' "
-          'show Brightness, Color, Locale, Radius, TextAlign, VoidCallback;',
-        );
-        expect(
-          lines[1],
-          "import 'dart:ui' as ui "
-          'show TextDirection;',
-        );
-        expect(lines[2], isEmpty);
-        expect(
-          lines[3],
-          "import 'package:flutter/foundation.dart' "
-          'show Key, ValueChanged;',
-        );
-        expect(
-          lines[4],
-          "import 'package:flutter/material.dart' "
-          'show DatePickerEntryMode, DatePickerMode, InputCounterWidgetBuilder, '
-          'InputDecoration, SelectableDayPredicate, TextField, TimeOfDay, '
-          'TimePickerEntryMode;',
-        );
-        expect(
-          lines[5],
-          "import 'package:flutter/painting.dart' "
-          'show EdgeInsets, StrutStyle, TextStyle;',
-        );
-        expect(
-          lines[6],
-          "import 'package:flutter/services.dart' "
-          'show MaxLengthEnforcement, TextCapitalization, '
-          'TextInputAction, TextInputType;',
-        );
-        expect(
-          lines[7],
-          "import 'package:flutter/widgets.dart' "
-          'show AutovalidateMode, FocusNode, FormFieldSetter, FormFieldState, '
-          'FormFieldValidator, Icon, RouteSettings, TextEditingController, '
-          'TransitionBuilder;',
-        );
-        expect(
-          lines[8],
-          "import 'package:flutter_form_builder/flutter_form_builder.dart' "
-          'show InputType, ValueTransformer;',
+          lines,
+          [
+            "import 'dart:ui' show Brightness, Color, Locale, Radius, TextAlign, VoidCallback;",
+            "import 'dart:ui' as ui show TextDirection;",
+            '',
+            "import 'package:flutter/foundation.dart' show Key, ValueChanged;",
+            "import 'package:flutter/material.dart' show DatePickerEntryMode, DatePickerMode, InputCounterWidgetBuilder, InputDecoration, SelectableDayPredicate, TimeOfDay, TimePickerEntryMode;",
+            "import 'package:flutter/painting.dart' show EdgeInsets, StrutStyle, TextStyle;",
+            "import 'package:flutter/services.dart' show MaxLengthEnforcement, TextCapitalization, TextInputAction, TextInputFormatter, TextInputType;",
+            "import 'package:flutter/widgets.dart' show AutovalidateMode, BuildContext, FocusNode, Icon, RouteSettings, TextEditingController, TransitionBuilder;",
+            "import 'package:flutter_form_builder/flutter_form_builder.dart' show FormBuilderDateTimePicker, InputType, ValueTransformer;",
+            "import 'package:form_companion_presenter/form_companion_presenter.dart';",
+            "import 'package:intl/intl.dart' show DateFormat;",
+            '',
+            "import 'form_fields.dart';"
+          ],
         );
       });
     });
@@ -411,59 +407,31 @@ Future<void> main() async {
             properties.values,
             nodeProvider,
             logger,
+            isFormBuilder: true,
           ),
           properties: properties,
         );
-        final lines = emitGlobal(data, emptyConfig).toList();
-        expect(lines.length, 12);
-        expect(lines[0], equals('// TODO(CompanionGenerator): WARNING - AAA'));
-        expect(lines[1], equals('// TODO(CompanionGenerator): WARNING - BBB'));
-        expect(lines[2], isEmpty);
+        final lines = emitGlobal(library, data, emptyConfig).toList();
         expect(
-          lines[3],
-          "import 'dart:ui' "
-          'show Brightness, Color, Locale, Radius, TextAlign, VoidCallback;',
-        );
-        expect(
-          lines[4],
-          "import 'dart:ui' as ui "
-          'show TextDirection;',
-        );
-        expect(lines[5], isEmpty);
-        expect(
-          lines[6],
-          "import 'package:flutter/foundation.dart' "
-          'show Key, ValueChanged;',
-        );
-        expect(
-          lines[7],
-          "import 'package:flutter/material.dart' "
-          'show DatePickerEntryMode, DatePickerMode, InputCounterWidgetBuilder, '
-          'InputDecoration, SelectableDayPredicate, TextField, TimeOfDay, '
-          'TimePickerEntryMode;',
-        );
-        expect(
-          lines[8],
-          "import 'package:flutter/painting.dart' "
-          'show EdgeInsets, StrutStyle, TextStyle;',
-        );
-        expect(
-          lines[9],
-          "import 'package:flutter/services.dart' "
-          'show MaxLengthEnforcement, TextCapitalization, '
-          'TextInputAction, TextInputType;',
-        );
-        expect(
-          lines[10],
-          "import 'package:flutter/widgets.dart' "
-          'show AutovalidateMode, FocusNode, FormFieldSetter, FormFieldState, '
-          'FormFieldValidator, Icon, RouteSettings, TextEditingController, '
-          'TransitionBuilder;',
-        );
-        expect(
-          lines[11],
-          "import 'package:flutter_form_builder/flutter_form_builder.dart' "
-          'show InputType, ValueTransformer;',
+          lines,
+          [
+            '// TODO(CompanionGenerator): WARNING - AAA',
+            '// TODO(CompanionGenerator): WARNING - BBB',
+            '',
+            "import 'dart:ui' show Brightness, Color, Locale, Radius, TextAlign, VoidCallback;",
+            "import 'dart:ui' as ui show TextDirection;",
+            '',
+            "import 'package:flutter/foundation.dart' show Key, ValueChanged;",
+            "import 'package:flutter/material.dart' show DatePickerEntryMode, DatePickerMode, InputCounterWidgetBuilder, InputDecoration, SelectableDayPredicate, TimeOfDay, TimePickerEntryMode;",
+            "import 'package:flutter/painting.dart' show EdgeInsets, StrutStyle, TextStyle;",
+            "import 'package:flutter/services.dart' show MaxLengthEnforcement, TextCapitalization, TextInputAction, TextInputFormatter, TextInputType;",
+            "import 'package:flutter/widgets.dart' show AutovalidateMode, BuildContext, FocusNode, Icon, RouteSettings, TextEditingController, TransitionBuilder;",
+            "import 'package:flutter_form_builder/flutter_form_builder.dart' show FormBuilderDateTimePicker, InputType, ValueTransformer;",
+            "import 'package:form_companion_presenter/form_companion_presenter.dart';",
+            "import 'package:intl/intl.dart' show DateFormat;",
+            '',
+            "import 'form_fields.dart';"
+          ],
         );
       });
     });
@@ -486,6 +454,7 @@ Future<void> main() async {
           properties.values,
           nodeProvider,
           logger,
+          isFormBuilder: false,
         ),
         properties: properties,
       );
@@ -516,6 +485,7 @@ Future<void> main() async {
           properties.values,
           nodeProvider,
           logger,
+          isFormBuilder: false,
         ),
         properties: properties,
       );
@@ -553,9 +523,10 @@ Future<void> main() async {
       required ClassElement? formFieldClass,
       String? preferredFieldType,
       bool doAutovalidate = false,
-      List<String> warnings = const <String>[],
+      List<String>? warnings,
       required String expectedBody,
     }) async {
+      final realWarnings = warnings ?? [];
       final properties = await makePropertiesFully(
         [
           PropertyDefinitionSpec(
@@ -563,7 +534,7 @@ Future<void> main() async {
             type,
             formFieldClass,
             preferredFieldType,
-            warnings,
+            realWarnings,
           )
         ],
       );
@@ -577,6 +548,7 @@ Future<void> main() async {
           properties.values,
           nodeProvider,
           logger,
+          isFormBuilder: isFormBuilder,
         ),
         properties: properties,
       );
@@ -590,14 +562,14 @@ Future<void> main() async {
       expect(lines.isNotEmpty, isTrue);
       expect(lines.first.isEmpty, isTrue);
 
-      final warningLines = lines.skip(1).take(warnings.length).toList();
-      final body = lines.skip(warnings.length + 1).join('\n');
+      final warningLines = lines.skip(1).take(realWarnings.length).toList();
+      final body = lines.skip(realWarnings.length + 1).join('\n');
 
-      expect(warningLines.length, equals(warnings.length));
-      for (final i in List.generate(warnings.length, (i) => i)) {
+      expect(warningLines.length, equals(realWarnings.length));
+      for (final i in List.generate(realWarnings.length, (i) => i)) {
         expect(
           warningLines[i],
-          equals('  // TODO(CompanionGenerator): WARNING - ${warnings[i]}'),
+          equals('  // TODO(CompanionGenerator): WARNING - ${realWarnings[i]}'),
           reason: 'warnings[$i]',
         );
       }
@@ -1153,7 +1125,6 @@ String formBuilderCheckboxFactory(
     ValueChanged<bool?>? onChanged,
     ValueTransformer<bool?>? valueTransformer,
     bool enabled = true,
-    FormFieldSetter<bool?>? onSaved,
     AutovalidateMode? autovalidateMode,
     VoidCallback? onReset,
     FocusNode? focusNode,
@@ -1181,7 +1152,6 @@ String formBuilderCheckboxFactory(
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
       valueTransformer: valueTransformer,
       enabled: enabled,
-      onSaved: onSaved,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.${isAutovalidate ? 'onUserInteraction' : 'disabled'},
       onReset: onReset,
       focusNode: focusNode,
@@ -1213,7 +1183,6 @@ String formBuilderCheckboxGroupFactory(
     ValueChanged<List<$propertyElementType>?>? onChanged,
     ValueTransformer<List<$propertyElementType>?>? valueTransformer,
     bool enabled = true,
-    FormFieldSetter<List<$propertyElementType>>? onSaved,
     AutovalidateMode? autovalidateMode,
     VoidCallback? onReset,
     FocusNode? focusNode,
@@ -1250,7 +1219,6 @@ String formBuilderCheckboxGroupFactory(
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
       valueTransformer: valueTransformer,
       enabled: enabled,
-      onSaved: onSaved,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.${isAutovalidate ? 'onUserInteraction' : 'disabled'},
       onReset: onReset,
       focusNode: focusNode,
@@ -1289,7 +1257,6 @@ String formBuilderChoiceChipFactory(
     AutovalidateMode? autovalidateMode,
     bool enabled = true,
     FocusNode? focusNode,
-    FormFieldSetter<$propertyType>? onSaved,
     InputDecoration? decoration,
     Key? key,
     required List<FormBuilderFieldOption<MyEnum>> options,
@@ -1324,7 +1291,6 @@ String formBuilderChoiceChipFactory(
       autovalidateMode: autovalidateMode ?? AutovalidateMode.${isAutovalidate ? 'onUserInteraction' : 'disabled'},
       enabled: enabled,
       focusNode: focusNode,
-      onSaved: onSaved,
       validator: property.getValidator(context),
       decoration: InputDecoration(
         labelText: property.name,
@@ -1374,7 +1340,6 @@ String formBuilderDateRangePickerFactory(
     ValueChanged<DateTimeRange?>? onChanged,
     ValueTransformer<DateTimeRange?>? valueTransformer,
     bool enabled = true,
-    FormFieldSetter<DateTimeRange>? onSaved,
     AutovalidateMode? autovalidateMode,
     VoidCallback? onReset,
     FocusNode? focusNode,
@@ -1438,7 +1403,6 @@ String formBuilderDateRangePickerFactory(
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
       valueTransformer: valueTransformer,
       enabled: enabled,
-      onSaved: onSaved,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.${isAutovalidate ? 'onUserInteraction' : 'disabled'},
       onReset: onReset,
       focusNode: focusNode,
@@ -1505,7 +1469,6 @@ String formBuilderDateTimePickerFactory(
     ValueChanged<DateTime?>? onChanged,
     ValueTransformer<DateTime?>? valueTransformer,
     bool enabled = true,
-    FormFieldSetter<DateTime>? onSaved,
     AutovalidateMode? autovalidateMode,
     VoidCallback? onReset,
     FocusNode? focusNode,
@@ -1573,7 +1536,6 @@ String formBuilderDateTimePickerFactory(
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
       valueTransformer: valueTransformer,
       enabled: enabled,
-      onSaved: onSaved,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.${isAutovalidate ? 'onUserInteraction' : 'disabled'},
       onReset: onReset,
       focusNode: focusNode,
@@ -1645,7 +1607,6 @@ String formBuilderDropdownFactory(
     ValueChanged<$propertyType?>? onChanged,
     ValueTransformer<$propertyType?>? valueTransformer,
     bool enabled = true,
-    FormFieldSetter<$propertyType>? onSaved,
     AutovalidateMode? autovalidateMode,
     VoidCallback? onReset,
     FocusNode? focusNode,
@@ -1683,7 +1644,6 @@ String formBuilderDropdownFactory(
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
       valueTransformer: valueTransformer,
       enabled: enabled,
-      onSaved: onSaved,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.${isAutovalidate ? 'onUserInteraction' : 'disabled'},
       onReset: onReset,
       focusNode: focusNode,
@@ -1723,7 +1683,6 @@ String formBuilderFilterChipFactory(
     AutovalidateMode? autovalidateMode,
     bool enabled = true,
     FocusNode? focusNode,
-    FormFieldSetter<List<$propertyElementType>>? onSaved,
     InputDecoration? decoration,
     Key? key,
     required List<FormBuilderFieldOption<$propertyElementType>> options,
@@ -1761,7 +1720,6 @@ String formBuilderFilterChipFactory(
       autovalidateMode: autovalidateMode ?? AutovalidateMode.${isAutovalidate ? 'onUserInteraction' : 'disabled'},
       enabled: enabled,
       focusNode: focusNode,
-      onSaved: onSaved,
       validator: property.getValidator(context),
       decoration: InputDecoration(
         labelText: property.name,
@@ -1813,7 +1771,6 @@ String formBuilderRadioGroupFactory(
     AutovalidateMode? autovalidateMode,
     bool enabled = true,
     FocusNode? focusNode,
-    FormFieldSetter<$propertyType>? onSaved,
     InputDecoration? decoration,
     Key? key,
     required List<FormBuilderFieldOption<$propertyType>> options,
@@ -1843,7 +1800,6 @@ String formBuilderRadioGroupFactory(
       autovalidateMode: autovalidateMode ?? AutovalidateMode.${isAutovalidate ? 'onUserInteraction' : 'disabled'},
       enabled: enabled,
       focusNode: focusNode,
-      onSaved: onSaved,
       validator: property.getValidator(context),
       decoration: InputDecoration(
         labelText: property.name,
@@ -1888,7 +1844,6 @@ String formBuilderRangeSliderFactory(
     ValueChanged<RangeValues?>? onChanged,
     ValueTransformer<RangeValues?>? valueTransformer,
     bool enabled = true,
-    FormFieldSetter<RangeValues>? onSaved,
     AutovalidateMode? autovalidateMode,
     VoidCallback? onReset,
     FocusNode? focusNode,
@@ -1920,7 +1875,6 @@ String formBuilderRangeSliderFactory(
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
       valueTransformer: valueTransformer,
       enabled: enabled,
-      onSaved: onSaved,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.${isAutovalidate ? 'onUserInteraction' : 'disabled'},
       onReset: onReset,
       focusNode: focusNode,
@@ -1956,7 +1910,6 @@ String formBuilderSegmentedControlFactory(
     ValueChanged<$propertyType?>? onChanged,
     ValueTransformer<$propertyType?>? valueTransformer,
     bool enabled = true,
-    FormFieldSetter<$propertyType>? onSaved,
     AutovalidateMode? autovalidateMode,
     VoidCallback? onReset,
     FocusNode? focusNode,
@@ -1980,7 +1933,6 @@ String formBuilderSegmentedControlFactory(
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
       valueTransformer: valueTransformer,
       enabled: enabled,
-      onSaved: onSaved,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.${isAutovalidate ? 'onUserInteraction' : 'disabled'},
       onReset: onReset,
       focusNode: focusNode,
@@ -2007,7 +1959,6 @@ String formBuilderSliderFactory(
     ValueChanged<double?>? onChanged,
     ValueTransformer<double?>? valueTransformer,
     bool enabled = true,
-    FormFieldSetter<double>? onSaved,
     AutovalidateMode? autovalidateMode,
     VoidCallback? onReset,
     FocusNode? focusNode,
@@ -2041,7 +1992,6 @@ String formBuilderSliderFactory(
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
       valueTransformer: valueTransformer,
       enabled: enabled,
-      onSaved: onSaved,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.${isAutovalidate ? 'onUserInteraction' : 'disabled'},
       onReset: onReset,
       focusNode: focusNode,
@@ -2078,7 +2028,6 @@ String formBuilderSwitchFactory(
     ValueChanged<bool?>? onChanged,
     ValueTransformer<bool?>? valueTransformer,
     bool enabled = true,
-    FormFieldSetter<bool>? onSaved,
     AutovalidateMode? autovalidateMode,
     VoidCallback? onReset,
     FocusNode? focusNode,
@@ -2109,7 +2058,6 @@ String formBuilderSwitchFactory(
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
       valueTransformer: valueTransformer,
       enabled: enabled,
-      onSaved: onSaved,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.${isAutovalidate ? 'onUserInteraction' : 'disabled'},
       onReset: onReset,
       focusNode: focusNode,
@@ -2144,7 +2092,6 @@ String formBuilderTextFieldFactory(
     ValueChanged<String?>? onChanged,
     ValueTransformer<String?>? valueTransformer,
     bool enabled = true,
-    FormFieldSetter<String>? onSaved,
     AutovalidateMode? autovalidateMode,
     VoidCallback? onReset,
     FocusNode? focusNode,
@@ -2203,7 +2150,6 @@ String formBuilderTextFieldFactory(
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
       valueTransformer: valueTransformer,
       enabled: enabled,
-      onSaved: onSaved,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.${isAutovalidate ? 'onUserInteraction' : 'disabled'},
       onReset: onReset,
       focusNode: focusNode,

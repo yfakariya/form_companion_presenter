@@ -61,12 +61,13 @@ Stream<String> emitFieldFactory(
     return;
   }
 
+  // TODO(yfakariya): pass from caller
   final argumentEmitter = ArgumentEmitter(
-    data,
     await formFieldConstructor.parameters.parameters
         .where((p) => !p.declaredElement!.hasDeprecated)
         .map((p) => ParameterInfo.fromNodeAsync(nodeProvider, p))
         .toListAsync(),
+    isFormBuilder: data.isFormBuilder,
   );
 
   for (final warning in property.warnings) {

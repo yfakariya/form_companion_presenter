@@ -15,6 +15,7 @@ class PropertyDescritptors {
     ..add<String>(name: 'propString')
     ..add<bool>(name: 'propBool')
     ..add<MyEnum>(name: 'propEnum')
+    ..add<List<MyEnum>>(name: 'propEnumList')
     ..add(name: 'propRaw');
 
   static final noAddition = PropertyDescriptorsBuilder();
@@ -33,6 +34,7 @@ class PropertyDescritptors {
         ..add<String>(name: 'propString')
         ..add<bool>(name: 'propBool')
         ..add<MyEnum>(name: 'propEnum')
+        ..add<List<MyEnum>>(name: 'propEnumList')
         ..add(name: 'propRaw');
 
   static final withClassicFactory = classicFactory();
@@ -41,8 +43,9 @@ class PropertyDescritptors {
     final builder = PropertyDescriptorsBuilder();
     builder.add<int>(name: 'propInt');
     builder.add<String>(name: 'propString');
-    builder.add<MyEnum>(name: 'propBool');
+    builder.add<bool>(name: 'propBool');
     builder.add<MyEnum>(name: 'propEnum');
+    builder.add<List<MyEnum>>(name: 'propEnumList');
     builder.add(name: 'propRaw');
     return builder;
   }
@@ -65,6 +68,7 @@ final inlineInitialized = PropertyDescriptorsBuilder()
   ..add<String>(name: 'propString')
   ..add<bool>(name: 'propBool')
   ..add<MyEnum>(name: 'propEnum')
+  ..add<List<MyEnum>>(name: 'propEnumList')
   ..add(name: 'propRaw');
 
 final noAddition = PropertyDescriptorsBuilder();
@@ -80,6 +84,7 @@ PropertyDescriptorsBuilder cascadingFactory() => PropertyDescriptorsBuilder()
   ..add<String>(name: 'propString')
   ..add<bool>(name: 'propBool')
   ..add<MyEnum>(name: 'propEnum')
+  ..add<List<MyEnum>>(name: 'propEnumList')
   ..add(name: 'propRaw');
 
 final withClassicFactory = classicFactory();
@@ -90,6 +95,7 @@ PropertyDescriptorsBuilder classicFactory() {
   builder.add<String>(name: 'propString');
   builder.add<bool>(name: 'propBool');
   builder.add<MyEnum>(name: 'propEnum');
+  builder.add<List<MyEnum>>(name: 'propEnumList');
   builder.add(name: 'propRaw');
   return builder;
 }
@@ -108,7 +114,8 @@ void _helper(PropertyDescriptorsBuilder pdb) {
   pdb.add<String>(name: 'propString');
   pdb
     ..add<bool>(name: 'propBool')
-    ..add<MyEnum>(name: 'propEnum');
+    ..add<MyEnum>(name: 'propEnum')
+    ..add<List<MyEnum>>(name: 'propEnumList');
 }
 
 PropertyDescriptorsBuilder singletonFactory() => inlineInitialized;
@@ -159,6 +166,7 @@ PropertyDescriptorsBuilder factoryWithTry() {
   } finally {
     pdb.add<bool>(name: 'propBool');
     pdb.add<MyEnum>(name: 'propEnum');
+    pdb.add<List<MyEnum>>(name: 'propEnumList');
     pdb.add(name: 'propRaw');
   }
   return pdb;
@@ -170,6 +178,7 @@ PropertyDescriptorsBuilder factoryWithDuplication() {
   pdb.add<String>(name: 'propString');
   pdb.add<bool>(name: 'propBool');
   pdb.add<MyEnum>(name: 'propEnum');
+  pdb.add<List<MyEnum>>(name: 'propEnumList');
   pdb.add(name: 'propRaw');
   pdb.add<String>(name: 'propInt');
   return pdb;
@@ -248,6 +257,7 @@ void _helperWithTry(PropertyDescriptorsBuilder pdb) {
   } finally {
     pdb.add<bool>(name: 'propBool');
     pdb.add<MyEnum>(name: 'propEnum');
+    pdb.add<List<MyEnum>>(name: 'propEnumList');
     pdb.add(name: 'propRaw');
   }
 }
@@ -257,6 +267,7 @@ void _helperWithDuplication(PropertyDescriptorsBuilder pdb) {
   pdb.add<String>(name: 'propString');
   pdb.add<bool>(name: 'propBool');
   pdb.add<MyEnum>(name: 'propEnum');
+  pdb.add<List<MyEnum>>(name: 'propEnumList');
   pdb.add(name: 'propRaw');
   pdb.add<String>(name: 'propInt');
 }

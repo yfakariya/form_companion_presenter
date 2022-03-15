@@ -10,10 +10,13 @@ import 'package:logging/logging.dart' show Logger;
 import 'package:meta/meta.dart';
 import 'package:source_gen/source_gen.dart';
 
+import 'config.dart';
 import 'dependency.dart';
+import 'emitter/assignment.dart';
 import 'form_field_locator.dart';
 import 'model.dart';
 import 'node_provider.dart';
+import 'parameter.dart';
 import 'parser_data.dart';
 import 'parser_node.dart';
 import 'type_instantiation.dart';
@@ -30,6 +33,7 @@ part 'parser/statement.dart';
 
 /// Parses specified [ClassElement] of the presenter.
 FutureOr<PresenterDefinition> parseElementAsync(
+  Config config,
   NodeProvider nodeProvider,
   FormFieldLocator formFieldLocator,
   ClassElement element,
@@ -63,10 +67,11 @@ FutureOr<PresenterDefinition> parseElementAsync(
     doAutovalidate: annotation.autovalidate,
     warnings: warnings,
     imports: await collectDependenciesAsync(
-      element.library,
+      config.asPart ? element.library : null,
       properties.values,
       nodeProvider,
       logger,
+      isFormBuilder: isFormBuilder,
     ),
     properties: properties,
   );
@@ -210,7 +215,7 @@ FutureOr<Map<String, PropertyAndFormFieldDefinition>> getPropertiesAsync(
   }
 
   final result = <String, PropertyAndFormFieldDefinition>{};
-
+//test
   for (final source in _parseMethodInvocations(
     context,
     building.buildings,
@@ -233,13 +238,19 @@ FutureOr<Map<String, PropertyAndFormFieldDefinition>> getPropertiesAsync(
 /// Of course, dependency for the library which declares the presenter, that is,
 /// dependency for [thisLibrary] will be ignored.
 FutureOr<List<LibraryImport>> collectDependenciesAsync(
-  LibraryElement thisLibrary,
+  LibraryElement? thisLibrary,
   Iterable<PropertyAndFormFieldDefinition> properties,
   NodeProvider nodeProvider,
-  Logger logger,
-) async {
-  final collector =
-      DependentLibraryCollector(nodeProvider, logger, thisLibrary);
+  Logger logger, {
+  required bool isFormBuilder,
+}) async {
+  final collector = DependentLibraryCollector(
+    nodeProvider,
+    await nodeProvider.libraries.toList(),
+    logger,
+    thisLibrary,
+  );
+
   for (final property in properties) {
     final fieldConstructor = property.fieldConstructor;
     if (fieldConstructor != null) {
@@ -247,10 +258,38 @@ FutureOr<List<LibraryImport>> collectDependenciesAsync(
         fieldConstructor.declaredElement!.enclosingElement,
         property.warnings,
       );
-      fieldConstructor.accept(collector);
+
+      // TODO(yfakariya): Move to PropertyAndField field to avoid reconstruction.
+      final argumentsHandler = ArgumentEmitter(
+        await fieldConstructor.parameters.parameters
+            .map((e) => ParameterInfo.fromNodeAsync(nodeProvider, e))
+            .toListAsync(),
+        isFormBuilder: isFormBuilder,
+      );
+      // Visit only parameters instead of constructor to avoid collecting
+      // types used in super invocation, initializers, and body.
+      // Also, this loop filters verbose import for "intrinsic" parameters.
+      for (final parameter in argumentsHandler.callerSuppliableParameters) {
+        parameter.node.accept(collector);
+      }
+
+      // Add property value
+      collector.processType(property.type);
+
+      // Add form field itself.
+      final classDeclaration = fieldConstructor.parent! as ClassDeclaration;
+      collector.recordTypeId(
+        classDeclaration.declaredElement!,
+        classDeclaration.name,
+      );
+
       await collector.endAsync();
     }
   }
 
-  return collector.imports.toList();
+  collector.recordTypeIdDirect('package:flutter/widgets.dart', 'BuildContext');
+
+  return [
+    ...collector.imports,
+  ];
 }

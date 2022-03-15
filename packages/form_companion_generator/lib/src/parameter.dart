@@ -19,6 +19,9 @@ class ParameterInfo {
   /// Gets a static [DartType] of this parameter.
   final DartType type;
 
+  /// Gets a [FormalParameter] which holds syntax information of this parameter.
+  final FormalParameter node;
+
   /// Gets a declared [TypeAnnotation] of this parameter.
   ///
   /// `null` if parameter is a function type formal parameter like `int foo(String bar)`.
@@ -40,6 +43,7 @@ class ParameterInfo {
 
   /// Initializes a new [ParameterInfo] instance.
   ParameterInfo(
+    this.node,
     this.name,
     this.type,
     this.typeAnnotation,
@@ -54,12 +58,25 @@ class ParameterInfo {
     FormalParameter node,
   ) async {
     if (node is DefaultFormalParameter) {
-      return await ParameterInfo.fromNodeAsync(nodeProvider, node.parameter);
+      // Parse left side with recursive call.
+      final base =
+          await ParameterInfo.fromNodeAsync(nodeProvider, node.parameter);
+      // But, use original DefaultFormatlParameter for node for DependencyCollector.
+      return ParameterInfo(
+        node,
+        base.name,
+        base.type,
+        base.typeAnnotation,
+        base.functionTypedParameter,
+        base.defaultValue,
+        base.requirability,
+      );
     }
 
     if (node is SimpleFormalParameter) {
       final element = node.declaredElement!;
       return ParameterInfo(
+        node,
         node.identifier!.name,
         element.type,
         node.type,
@@ -79,6 +96,7 @@ class ParameterInfo {
         parameterElement,
       );
       return ParameterInfo(
+        node,
         node.identifier.name,
         parameterElement.type,
         fieldType,
@@ -93,6 +111,7 @@ class ParameterInfo {
     if (node is FunctionTypedFormalParameter) {
       final element = node.declaredElement!;
       return ParameterInfo(
+        node,
         node.identifier.name,
         element.type,
         null,

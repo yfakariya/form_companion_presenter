@@ -5,9 +5,8 @@ import 'dart:async';
 import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
+import 'package:build/build.dart';
 import 'package:meta/meta.dart';
-
-import 'utilities.dart';
 
 /// Provides [AstNode] for [Element].
 ///
@@ -22,7 +21,14 @@ import 'utilities.dart';
 @sealed
 class NodeProvider {
   /// Keys are URI of the library.
-  final Map<Uri, _NodeCache> _caches = {};
+  final Map<String, _NodeCache> _caches = {};
+  final Resolver _resolver;
+
+  /// Gets a libraries [Stream] of current builder session.
+  Stream<LibraryElement> get libraries => _resolver.libraries;
+
+  /// Initializes a new [NodeProvider] instance.
+  NodeProvider(this._resolver);
 
   /// Returns a [AstNode] which is associated to specified [element].
   ///
@@ -38,23 +44,7 @@ class NodeProvider {
       throw StateError("Library '${element.library}' is not resolved yet.");
     }
 
-    return cache.getElementDeclaration<T>(element);
-  }
-
-  // TODO(yfakariya): This may not be necessary.
-
-  /// Resolves specified [libraries] and caches it.
-  ///
-  /// This method exists for avoid asynchronous in following tasks.
-  FutureOr<void> resolveLibrariesAsync(
-    Iterable<LibraryElement> libraries,
-  ) async {
-    final asMap = {for (final l in libraries) l.source.uri: l};
-    for (final entry in asMap.entries) {
-      if (!_caches.containsKey(entry.key)) {
-        _caches[entry.key] = await _buildLibraryCacheAsync(entry.value);
-      }
-    }
+    return cache.getElementDeclarationSync<T>(element);
   }
 
   /// Returns a [AstNode] which is associated to specified [element].
@@ -62,49 +52,41 @@ class NodeProvider {
   FutureOr<T> getElementDeclarationAsync<T extends AstNode>(
     Element element,
   ) async {
-    final key = element.nonSynthetic.source!.uri;
+    final key = element.nonSynthetic.library!.identifier;
     var cache = _caches[key];
-    cache ??= _caches[key] = await _buildLibraryCacheAsync(element);
-    return cache.getElementDeclaration<T>(element);
-  }
-
-  Future<_NodeCache> _buildLibraryCacheAsync(Element element) async {
-    final result =
-        await element.session!.getResolvedLibraryByElement(element.library!);
-    if (result is! ResolvedLibraryResult) {
-      throwError(
-        message: "Failed to resolve library '${element.library!}'. $result",
-        element: element.library!,
-      );
-    }
-
-    return _NodeCache(result);
+    cache ??= _caches[key] = _NodeCache(element.library!.identifier, _resolver);
+    return await cache.getElementDeclarationAsync<T>(element);
   }
 }
 
 class _NodeCache {
-  final ResolvedLibraryResult _library;
-
-  Uri get key => _library.element.source.uri;
+  final Resolver _resolver;
+  final String key;
 
   /// Keys are offset fetched via [Element.nameOffset].
   final Map<int, AstNode> _cache = {};
 
-  _NodeCache(this._library);
+  _NodeCache(this.key, this._resolver);
 
   @optionalTypeArgs
-  T getElementDeclaration<T extends AstNode>(Element element) {
+  T getElementDeclarationSync<T extends AstNode>(
+    Element element,
+  ) {
     final realElement = element.nonSynthetic;
-    return _cache.putIfAbsent(
-      realElement.nameOffset,
-      () {
-        final result = _library.getElementDeclaration(realElement);
-        assert(
-          result != null,
-          "Failed to call '${_library.element}'.getElementDeclaration('$realElement').",
-        );
-        return result!.node;
-      },
-    ) as T;
+    final cache = _cache[realElement.nameOffset];
+    if (cache == null) {
+      throw StateError("Node for element '$element' is not resolved yet.");
+    }
+
+    return cache as T;
+  }
+
+  @optionalTypeArgs
+  FutureOr<T> getElementDeclarationAsync<T extends AstNode>(
+    Element element,
+  ) async {
+    final realElement = element.nonSynthetic;
+    return (_cache[realElement.nameOffset] ??=
+        (await _resolver.astNodeFor(realElement, resolve: true))!) as T;
   }
 }

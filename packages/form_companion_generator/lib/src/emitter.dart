@@ -2,6 +2,7 @@
 
 import 'dart:async';
 
+import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:meta/meta.dart';
 
@@ -22,11 +23,12 @@ const _todoHeader = 'TODO(CompanionGenerator):';
 
 /// Emits lines for specified data.
 Stream<Object> emitFromData(
+  LibraryElement sourceLibrary,
   NodeProvider nodeProvider,
   PresenterDefinition data,
   Config config,
 ) async* {
-  for (final global in emitGlobal(data, config)) {
+  for (final global in emitGlobal(sourceLibrary, data, config)) {
     yield global;
   }
 
@@ -36,9 +38,16 @@ Stream<Object> emitFromData(
   }
 }
 
+final _formCompanionPresenterImport = LibraryImport(
+  'package:form_companion_presenter/form_companion_presenter.dart',
+);
+
+// TODO(yfakariya): test `asPart`
+
 /// Emits global parts.
 @visibleForTesting
 Iterable<String> emitGlobal(
+  LibraryElement sourceLibrary,
   PresenterDefinition data,
   Config config,
 ) sync* {
@@ -50,37 +59,62 @@ Iterable<String> emitGlobal(
     yield '';
   }
 
-  final sortedImports = [...data.imports]
+  final sortedImports = [...data.imports, _formCompanionPresenterImport]
     ..sort((l, r) => l.library.compareTo(r.library));
 
   final dartImports =
       sortedImports.where((i) => i.library.startsWith('dart:')).toList();
   final packageImports = sortedImports.skip(dartImports.length).toList();
 
-  for (final import in dartImports) {
-    yield* _emitImport(import);
+  if (config.asPart) {
+    yield "// This file is part of '${sourceLibrary.source.shortName}' file,";
+    yield '// so you have to declare following import directives in it.';
   }
 
-  if (dartImports.isNotEmpty && packageImports.isNotEmpty) {
+  for (final import in dartImports) {
+    yield* _emitImport(import, config.asPart);
+  }
+
+  if (dartImports.isNotEmpty) {
     yield '';
   }
 
   for (final import in packageImports) {
-    yield* _emitImport(import);
+    yield* _emitImport(import, config.asPart);
+  }
+
+  if (packageImports.isNotEmpty) {
+    yield '';
+  }
+
+  if (config.asPart) {
+    yield "// import '${sourceLibrary.source.shortName}';";
+  } else {
+    yield "import '${sourceLibrary.source.shortName}';";
   }
 }
 
-Iterable<String> _emitImport(LibraryImport import) sync* {
+Iterable<String> _emitImport(LibraryImport import, bool mustBeComment) sync* {
+  final prefix = mustBeComment ? '// ' : '';
   final sortedTypes = [...import.showingTypes]..sort();
-  yield "import '${import.library}' show ${sortedTypes.join(', ')};";
+  if (sortedTypes.isEmpty) {
+    yield "${prefix}import '${import.library}';";
+  } else {
+    yield "${prefix}import '${import.library}' show ${sortedTypes.join(', ')};";
+  }
+
   if (import.prefixes.isEmpty) {
     return;
   }
 
   final sortedPrefixes = [...import.prefixes]
     ..sort((l, r) => l.key.compareTo(r.key));
-  for (final prefix in sortedPrefixes) {
-    final sortedPrefixedTypes = [...prefix.value]..sort();
-    yield "import '${import.library}' as ${prefix.key} show ${sortedPrefixedTypes.join(', ')};";
+  for (final prefixed in sortedPrefixes) {
+    final sortedPrefixedTypes = [...prefixed.value]..sort();
+    if (sortedPrefixedTypes.isEmpty) {
+      yield "${prefix}import '${import.library}' as ${prefixed.key};";
+    } else {
+      yield "${prefix}import '${import.library}' as ${prefixed.key} show ${sortedPrefixedTypes.join(', ')};";
+    }
   }
 }

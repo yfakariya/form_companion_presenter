@@ -11,11 +11,12 @@ import 'package:form_companion_generator/src/type_instantiation.dart';
 import 'package:test/expect.dart';
 import 'package:test/scaffolding.dart';
 
+import 'file_resolver.dart';
 import 'test_helpers.dart';
 
 Future<void> main() async {
-  final nodeProvider = NodeProvider();
   final library = await getParametersLibrary();
+  final nodeProvider = NodeProvider(FileResolver(library));
   final holder = library.getType('ParameterHolder')!;
   final holderNode =
       await nodeProvider.getElementDeclarationAsync<ClassDeclaration>(holder);

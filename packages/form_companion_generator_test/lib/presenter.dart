@@ -151,6 +151,7 @@ class InlineWithCascading with CompanionPresenterMixin, FormCompanionMixin {
         ..add<String>(name: 'propString')
         ..add<bool>(name: 'propBool')
         ..add<MyEnum>(name: 'propEnum')
+        ..add<List<MyEnum>>(name: 'propEnumList')
         ..add(name: 'propRaw'),
     );
   }
@@ -456,6 +457,7 @@ class LocalVariableInlineInitialized
       ..add<String>(name: 'propString')
       ..add<bool>(name: 'propBool')
       ..add<MyEnum>(name: 'propEnum')
+      ..add<List<MyEnum>>(name: 'propEnumList')
       ..add(name: 'propRaw');
     initializeCompanionMixin(builder);
   }
@@ -807,6 +809,7 @@ class InvalidInitializationWithDuplication
         ..add<String>(name: 'propString')
         ..add<bool>(name: 'propBool')
         ..add<MyEnum>(name: 'propEnum')
+        ..add<List<MyEnum>>(name: 'propEnumList')
         ..add(name: 'propRaw')
         ..add<String>(name: 'propInt'),
     );

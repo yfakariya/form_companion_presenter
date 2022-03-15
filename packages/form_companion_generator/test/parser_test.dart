@@ -5,7 +5,6 @@ import 'dart:async';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
-import 'package:analyzer/source/error_processor.dart';
 import 'package:form_companion_generator/src/dependency.dart';
 import 'package:form_companion_generator/src/form_field_locator.dart';
 import 'package:form_companion_generator/src/model.dart';
@@ -16,6 +15,7 @@ import 'package:source_gen/source_gen.dart';
 import 'package:test/test.dart';
 import 'package:tuple/tuple.dart';
 
+import 'file_resolver.dart';
 import 'test_helpers.dart';
 
 typedef FieldNameAndValueType = Tuple2<String, InterfaceType>;
@@ -33,23 +33,24 @@ class ExpectedImport {
 }
 
 Future<void> main() async {
-  final nodeProvider = NodeProvider();
+  final logger = Logger('parser_test');
+  Logger.root.level = Level.INFO;
+  logger.onRecord.listen(print);
+
   final presenterLibrary = LibraryReader(
     (await getElement('presenter.dart')).element,
   );
+  final resolver = FileResolver(presenterLibrary.element);
+  final nodeProvider = NodeProvider(FileResolver(presenterLibrary.element));
   final typeProvider = presenterLibrary.element.typeProvider;
   final formFieldLocator =
-      await FormFieldLocator.createAsync(presenterLibrary.element.session, []);
+      await FormFieldLocator.createAsync(resolver, [], logger);
   final myEnumType = await getMyEnumType();
   final dateTimeType = await getDateTimeType();
   final dateTimeRangeType = await getDateTimeRangeType();
   final rangeValuesType = await getRangeValuesType();
   final dependencyHolder =
       (await getParametersLibrary()).lookupClass('DependencyHolder');
-
-  final logger = Logger('parser_test');
-  Logger.root.level = Level.INFO;
-  logger.onRecord.listen(print);
 
   ClassElement findType(String name) {
     final type = presenterLibrary.findType(name);
@@ -268,6 +269,23 @@ Future<void> main() async {
       expect(props['propEnum']!.fieldTypeName, 'DropdownButtonFormField');
       expect(props['propEnum']!.warnings, isEmpty);
       expect(props['propEnum']!.instantiationContext, isNotNull);
+      expect(props['propEnumList'], isNotNull);
+      expect(
+        props['propEnumList']!.type.getDisplayString(withNullability: true),
+        'List<MyEnum>',
+      );
+      expect(props['propEnumList']!.fieldConstructor, isNotNull);
+      expect(props['propEnumList']!.fieldConstructor!.name, isNull);
+      expect(props['propEnumList']!.fieldType, isNotNull);
+      expect(
+        props['propEnumList']!
+            .fieldType!
+            .getDisplayString(withNullability: true),
+        'TextFormField',
+      );
+      expect(props['propEnumList']!.fieldTypeName, 'TextFormField');
+      expect(props['propEnumList']!.warnings, isEmpty);
+      expect(props['propEnumList']!.instantiationContext, isNotNull);
       expect(props['propRaw'], isNotNull);
       expect(props['propRaw']!.type, typeProvider.objectType);
       expect(props['propRaw']!.fieldConstructor, isNotNull);
@@ -303,7 +321,7 @@ Future<void> main() async {
     FutureOr<void> testGetPropertiesSuccess(String name) => testGetProperties(
           name,
           (props) {
-            expect(props.length, 5);
+            expect(props.length, 6);
             testBasicProperties(props);
           },
         );
@@ -472,7 +490,7 @@ Future<void> main() async {
         () => testGetProperties(
           'LocalVariableRefersAlwaysNewGetterWithModification',
           (props) {
-            expect(props.length, equals(6));
+            expect(props.length, equals(7));
             testBasicProperties(props);
             testExtraProperties(props);
           },
@@ -501,7 +519,7 @@ Future<void> main() async {
         () => testGetProperties(
           'LocalVariableRefersAlwaysNewFactoryMethodWithMofidication',
           (props) {
-            expect(props.length, equals(6));
+            expect(props.length, equals(7));
             testBasicProperties(props);
             testExtraProperties(props);
           },
@@ -766,42 +784,45 @@ Future<void> main() async {
           [propertyAndField],
           nodeProvider,
           logger,
+          isFormBuilder: false,
         );
 
-        assertImports(result, [expected]);
-
-        // expect(result.length, 1, reason: result.toString());
-        // expect(result[0].library, expected.identifier);
-        // expect(result[0].showingTypes, expected.shows);
-        // expect(
-        //   result[0].prefixes.length,
-        //   expected.prefixes.length,
-        //   reason: '${result[0].prefixes} != ${expected.prefixes}',
-        // );
-        // final prefixes = result[0].prefixes.toList();
-        // for (var i = 0; i < expected.prefixes.length; i++) {
-        //   expect(prefixes[i].key, expected.prefixes[i].key);
-        //   expect(
-        //     prefixes[i].value,
-        //     expected.prefixes[i].value,
-        //     reason: expected.prefixes[i].key,
-        //   );
-        // }
+        assertImports(
+          result,
+          [
+            expected,
+            ExpectedImport('package:flutter/widgets.dart',
+                shows: ['BuildContext']),
+          ],
+        );
       });
     }
 
     Future<void> testCollectDependenciesAsync(
       String fieldName,
-      InterfaceType valueType,
-    ) async {
+      InterfaceType valueType, {
+      required bool isFormBuilder,
+    }) async {
       final result = await collectDependenciesAsync(
         presenterLibrary.element,
         [await makeProperty(fieldName, valueType)],
         nodeProvider,
         logger,
+        isFormBuilder: isFormBuilder,
       );
 
-      final expected = _expectedImports[fieldName]!;
+      final expected = [..._expectedImports[fieldName]!];
+      if (valueType == myEnumType ||
+          (valueType.isDartCoreList &&
+              valueType.typeArguments.length == 1 &&
+              valueType.typeArguments.first == myEnumType)) {
+        expected.add(
+          ExpectedImport(
+            'package:form_companion_generator_test_targets/properties.dart',
+            shows: ['MyEnum'],
+          ),
+        );
+      }
 
       assertImports(result, expected);
     }
@@ -813,7 +834,11 @@ Future<void> main() async {
       final fieldName = spec.item1;
       final valueType = spec.item2;
       test('vanilla form: $fieldName', () async {
-        await testCollectDependenciesAsync(fieldName, valueType);
+        await testCollectDependenciesAsync(
+          fieldName,
+          valueType,
+          isFormBuilder: false,
+        );
       });
     }
 
@@ -841,7 +866,11 @@ Future<void> main() async {
       final fieldName = spec.item1;
       final valueType = spec.item2;
       test('form builder $fieldName', () async {
-        await testCollectDependenciesAsync(fieldName, valueType);
+        await testCollectDependenciesAsync(
+          fieldName,
+          valueType,
+          isFormBuilder: true,
+        );
       });
     }
   });
@@ -902,7 +931,7 @@ const _vanillaCommonImports = [
   ),
   ExpectedImport(
     'package:flutter/foundation.dart',
-    shows: ['Key', 'ValueChanged'],
+    shows: ['ValueChanged'],
   ),
   ExpectedImport(
     'package:flutter/material.dart',
@@ -916,10 +945,8 @@ const _vanillaCommonImports = [
     'package:flutter/widgets.dart',
     shows: [
       'AutovalidateMode',
+      'BuildContext',
       'FocusNode',
-      'FormFieldSetter',
-      'FormFieldState',
-      'FormFieldValidator'
     ],
   ),
 ];
@@ -941,14 +968,13 @@ const _builderCommonImports = [
     'package:flutter/widgets.dart',
     shows: [
       'AutovalidateMode',
+      'BuildContext',
       'FocusNode',
-      'FormFieldSetter',
-      'FormFieldState',
-      'FormFieldValidator'
     ],
   ),
   ExpectedImport(
     'package:flutter_form_builder/flutter_form_builder.dart',
+    // TODO(yfakariya): This may affects converter
     shows: ['ValueTransformer'],
   ),
 ];
@@ -966,7 +992,7 @@ final _expectedImports = {
     ),
     ExpectedImport(
       'package:flutter/material.dart',
-      shows: ['InputCounterWidgetBuilder', 'TextField'],
+      shows: ['InputCounterWidgetBuilder', 'TextFormField'],
     ),
     ExpectedImport(
       'package:flutter/painting.dart',
@@ -980,6 +1006,7 @@ final _expectedImports = {
         'SmartQuotesType',
         'TextCapitalization',
         'TextInputAction',
+        'TextInputFormatter',
         'TextInputType',
       ],
     ),
@@ -991,7 +1018,6 @@ final _expectedImports = {
         'TextEditingController',
         'TextSelectionControls',
         'ToolbarOptions',
-        'UnmanagedRestorationScope'
       ],
     ),
   ]),
@@ -1000,27 +1026,26 @@ final _expectedImports = {
     ExpectedImport(
       'package:flutter/material.dart',
       shows: [
-        'DropdownButton',
         'DropdownButtonBuilder',
-        'DropdownButtonHideUnderline',
+        'DropdownButtonFormField',
         'DropdownMenuItem',
-        'InputDecorator'
+        'InputDecoration'
       ],
     ),
     ExpectedImport(
       'package:flutter/painting.dart',
-      shows: ['AlignmentGeometry'],
+      shows: ['AlignmentDirectional', 'AlignmentGeometry'],
     ),
     ExpectedImport(
       'package:flutter/widgets.dart',
-      shows: ['BuildContext', 'Builder', 'Focus', 'Widget'],
+      shows: ['Widget'],
     ),
   ]),
   'FormBuilderCheckbox': _merge([
     ..._builderCommonImports,
     ExpectedImport(
       'package:flutter/material.dart',
-      shows: ['CheckboxListTile', 'InputDecorator', 'ListTileControlAffinity'],
+      shows: ['InputBorder', 'ListTileControlAffinity'],
     ),
     ExpectedImport(
       'package:flutter/painting.dart',
@@ -1029,6 +1054,10 @@ final _expectedImports = {
     ExpectedImport(
       'package:flutter/widgets.dart',
       shows: ['Widget'],
+    ),
+    ExpectedImport(
+      'package:flutter_form_builder/flutter_form_builder.dart',
+      shows: ['FormBuilderCheckbox'],
     ),
   ]),
   'FormBuilderCheckboxGroup': _merge([
@@ -1039,7 +1068,7 @@ final _expectedImports = {
     ),
     ExpectedImport(
       'package:flutter/material.dart',
-      shows: ['InputDecorator', 'MaterialTapTargetSize'],
+      shows: ['MaterialTapTargetSize'],
     ),
     ExpectedImport(
       'package:flutter/painting.dart',
@@ -1055,7 +1084,12 @@ final _expectedImports = {
     ),
     ExpectedImport(
       'package:flutter_form_builder/flutter_form_builder.dart',
-      shows: ['ControlAffinity', 'GroupedCheckbox', 'OptionsOrientation'],
+      shows: [
+        'ControlAffinity',
+        'FormBuilderCheckboxGroup',
+        'FormBuilderFieldOption',
+        'OptionsOrientation'
+      ],
     ),
   ]),
   'FormBuilderChoiceChip': _merge([
@@ -1066,12 +1100,7 @@ final _expectedImports = {
     ),
     ExpectedImport(
       'package:flutter/material.dart',
-      shows: [
-        'ChoiceChip',
-        'InputDecorator',
-        'MaterialTapTargetSize',
-        'VisualDensity'
-      ],
+      shows: ['MaterialTapTargetSize', 'VisualDensity'],
     ),
     ExpectedImport(
       'package:flutter/painting.dart',
@@ -1088,12 +1117,8 @@ final _expectedImports = {
       shows: ['WrapAlignment', 'WrapCrossAlignment'],
     ),
     ExpectedImport(
-      'package:flutter/widgets.dart',
-      shows: ['Widget', 'Wrap'],
-    ),
-    ExpectedImport(
       'package:flutter_form_builder/flutter_form_builder.dart',
-      shows: ['FormBuilderFieldOption'],
+      shows: ['FormBuilderChoiceChip', 'FormBuilderFieldOption'],
     ),
   ]),
   'FormBuilderDateRangePicker': _merge([
@@ -1107,8 +1132,7 @@ final _expectedImports = {
       shows: [
         'DatePickerEntryMode',
         'DateTimeRange',
-        'InputCounterWidgetBuilder',
-        'TextField'
+        'InputCounterWidgetBuilder'
       ],
     ),
     ExpectedImport(
@@ -1121,21 +1145,23 @@ final _expectedImports = {
         'MaxLengthEnforcement',
         'TextCapitalization',
         'TextInputAction',
+        'TextInputFormatter',
         'TextInputType'
       ],
     ),
     ExpectedImport(
       'package:flutter/widgets.dart',
-      shows: [
-        'BuildContext',
-        'RouteSettings',
-        'TextEditingController',
-        'Widget'
-      ],
+      shows: ['RouteSettings', 'TextEditingController', 'Widget'],
     ),
     ExpectedImport(
       'package:flutter_form_builder/flutter_form_builder.dart',
-      shows: ['FormBuilderDateRangePickerState'],
+      shows: ['FormBuilderDateRangePicker'],
+    ),
+    ExpectedImport(
+      'package:intl/intl.dart',
+      prefixes: [
+        MapEntry('intl', ['DateFormat']),
+      ],
     ),
   ]),
   'FormBuilderDateTimePicker': _merge([
@@ -1152,9 +1178,9 @@ final _expectedImports = {
       shows: [
         'DatePickerEntryMode',
         'DatePickerMode',
+        'Icons',
         'InputCounterWidgetBuilder',
         'SelectableDayPredicate',
-        'TextField',
         'TimeOfDay',
         'TimePickerEntryMode'
       ],
@@ -1169,6 +1195,7 @@ final _expectedImports = {
         'MaxLengthEnforcement',
         'TextCapitalization',
         'TextInputAction',
+        'TextInputFormatter',
         'TextInputType'
       ],
     ),
@@ -1183,7 +1210,11 @@ final _expectedImports = {
     ),
     ExpectedImport(
       'package:flutter_form_builder/flutter_form_builder.dart',
-      shows: ['InputType'],
+      shows: ['FormBuilderDateTimePicker', 'InputType'],
+    ),
+    ExpectedImport(
+      'package:intl/intl.dart',
+      shows: ['DateFormat'],
     ),
   ]),
   'FormBuilderDropdown': _merge([
@@ -1191,12 +1222,10 @@ final _expectedImports = {
     ExpectedImport(
       'package:flutter/material.dart',
       shows: [
-        'DropdownButton',
         'DropdownButtonBuilder',
-        'DropdownButtonHideUnderline',
-        'InkWell',
-        'InputDecorator',
-        'VerticalDivider'
+        'DropdownMenuItem',
+        'Icons',
+        'kMinInteractiveDimension'
       ],
     ),
     ExpectedImport(
@@ -1205,7 +1234,11 @@ final _expectedImports = {
     ),
     ExpectedImport(
       'package:flutter/widgets.dart',
-      shows: ['Expanded', 'Icon', 'Row', 'Text', 'Widget'],
+      shows: ['Icon', 'Widget'],
+    ),
+    ExpectedImport(
+      'package:flutter_form_builder/flutter_form_builder.dart',
+      shows: ['FormBuilderDropdown'],
     ),
   ]),
   'FormBuilderFilterChip': _merge([
@@ -1216,7 +1249,7 @@ final _expectedImports = {
     ),
     ExpectedImport(
       'package:flutter/material.dart',
-      shows: ['FilterChip', 'InputDecorator', 'MaterialTapTargetSize'],
+      shows: ['MaterialTapTargetSize'],
     ),
     ExpectedImport(
       'package:flutter/painting.dart',
@@ -1233,12 +1266,8 @@ final _expectedImports = {
       shows: ['WrapAlignment', 'WrapCrossAlignment'],
     ),
     ExpectedImport(
-      'package:flutter/widgets.dart',
-      shows: ['Wrap', 'Widget'],
-    ),
-    ExpectedImport(
       'package:flutter_form_builder/flutter_form_builder.dart',
-      shows: ['FormBuilderFieldOption'],
+      shows: ['FormBuilderFieldOption', 'FormBuilderFilterChip'],
     ),
   ]),
   'FormBuilderRadioGroup': _merge([
@@ -1249,7 +1278,7 @@ final _expectedImports = {
     ),
     ExpectedImport(
       'package:flutter/material.dart',
-      shows: ['InputDecorator', 'MaterialTapTargetSize'],
+      shows: ['MaterialTapTargetSize'],
     ),
     ExpectedImport(
       'package:flutter/painting.dart',
@@ -1265,32 +1294,27 @@ final _expectedImports = {
     ),
     ExpectedImport(
       'package:flutter_form_builder/flutter_form_builder.dart',
-      shows: ['ControlAffinity', 'GroupedRadio', 'OptionsOrientation'],
+      shows: [
+        'ControlAffinity',
+        'FormBuilderFieldOption',
+        'FormBuilderRadioGroup',
+        'OptionsOrientation'
+      ],
     ),
   ]),
   'FormBuilderRangeSlider': _merge([
     ..._builderCommonImports,
     ExpectedImport(
       'package:flutter/material.dart',
-      shows: [
-        'InputDecorator',
-        'RangeLabels',
-        'RangeSlider',
-        'RangeValues',
-        'SemanticFormatterCallback'
-      ],
+      shows: ['RangeLabels', 'RangeValues', 'SemanticFormatterCallback'],
     ),
     ExpectedImport(
       'package:flutter/painting.dart',
-      shows: ['EdgeInsets', 'TextStyle'],
-    ),
-    ExpectedImport(
-      'package:flutter/widgets.dart',
-      shows: ['Column', 'Container', 'Row', 'Spacer', 'Text', 'Widget'],
+      shows: ['TextStyle'],
     ),
     ExpectedImport(
       'package:flutter_form_builder/flutter_form_builder.dart',
-      shows: ['DisplayValues'],
+      shows: ['DisplayValues', 'FormBuilderRangeSlider'],
     ),
     ExpectedImport(
       'package:intl/intl.dart',
@@ -1300,43 +1324,31 @@ final _expectedImports = {
   'FormBuilderSegmentedControl': _merge([
     ..._builderCommonImports,
     ExpectedImport(
-      'package:flutter/cupertino.dart',
-      shows: ['CupertinoSegmentedControl'],
-    ),
-    ExpectedImport(
-      'package:flutter/material.dart',
-      shows: ['InputDecorator'],
-    ),
-    ExpectedImport(
       'package:flutter/painting.dart',
-      shows: ['EdgeInsets', 'EdgeInsetsGeometry'],
+      shows: ['EdgeInsetsGeometry'],
     ),
     ExpectedImport(
-      'package:flutter/widgets.dart',
-      shows: ['Padding', 'Widget'],
+      'package:flutter_form_builder/flutter_form_builder.dart',
+      shows: ['FormBuilderFieldOption', 'FormBuilderSegmentedControl'],
     ),
   ]),
   'FormBuilderSlider': _merge([
     ..._builderCommonImports,
     ExpectedImport(
       'package:flutter/material.dart',
-      shows: ['InputDecorator', 'SemanticFormatterCallback', 'Slider'],
+      shows: ['SemanticFormatterCallback'],
     ),
     ExpectedImport(
       'package:flutter/painting.dart',
-      shows: ['EdgeInsets', 'TextStyle'],
+      shows: ['TextStyle'],
     ),
     ExpectedImport(
       'package:flutter/services.dart',
       shows: ['MouseCursor'],
     ),
     ExpectedImport(
-      'package:flutter/widgets.dart',
-      shows: ['Column', 'Container', 'Row', 'Spacer', 'Text', 'Widget'],
-    ),
-    ExpectedImport(
       'package:flutter_form_builder/flutter_form_builder.dart',
-      shows: ['DisplayValues'],
+      shows: ['DisplayValues', 'FormBuilderSlider'],
     ),
     ExpectedImport(
       'package:intl/intl.dart',
@@ -1347,7 +1359,7 @@ final _expectedImports = {
     ..._builderCommonImports,
     ExpectedImport(
       'package:flutter/material.dart',
-      shows: ['InputDecorator', 'ListTileControlAffinity', 'SwitchListTile'],
+      shows: ['ListTileControlAffinity'],
     ),
     ExpectedImport(
       'package:flutter/painting.dart',
@@ -1356,6 +1368,10 @@ final _expectedImports = {
     ExpectedImport(
       'package:flutter/widgets.dart',
       shows: ['Widget'],
+    ),
+    ExpectedImport(
+      'package:flutter_form_builder/flutter_form_builder.dart',
+      shows: ['FormBuilderSwitch'],
     ),
   ]),
   'FormBuilderTextField': _merge([
@@ -1373,7 +1389,7 @@ final _expectedImports = {
     ),
     ExpectedImport(
       'package:flutter/material.dart',
-      shows: ['InputCounterWidgetBuilder', 'TextField'],
+      shows: ['InputCounterWidgetBuilder'],
     ),
     ExpectedImport(
       'package:flutter/painting.dart',
@@ -1383,11 +1399,12 @@ final _expectedImports = {
       'package:flutter/services.dart',
       shows: [
         'MaxLengthEnforcement',
+        'MouseCursor',
         'SmartDashesType',
         'SmartQuotesType',
-        'MouseCursor',
         'TextCapitalization',
         'TextInputAction',
+        'TextInputFormatter',
         'TextInputType',
       ],
     ),
@@ -1399,6 +1416,10 @@ final _expectedImports = {
         'TextEditingController',
         'ToolbarOptions'
       ],
+    ),
+    ExpectedImport(
+      'package:flutter_form_builder/flutter_form_builder.dart',
+      shows: ['FormBuilderTextField'],
     ),
   ]),
 };

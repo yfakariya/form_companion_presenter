@@ -2,34 +2,42 @@
 
 import 'dart:async';
 
-import 'package:analyzer/exception/exception.dart';
+import 'package:build/build.dart';
 import 'package:form_companion_generator/src/form_field_locator.dart';
+import 'package:logging/logging.dart';
 import 'package:test/test.dart';
 
+import 'file_resolver.dart';
 import 'test_helpers.dart';
 
 Future<void> main() async {
+  final logger = Logger('form_field_locator_test');
+  Logger.root.level = Level.INFO;
+  logger.onRecord.listen(print);
+
   final library = await getParametersLibrary();
+  final resolver = FileResolver(library);
 
   group('createAsync', () {
     test('no extra libraries should succeed', () async {
-      await FormFieldLocator.createAsync(library.session, []);
+      await FormFieldLocator.createAsync(resolver, [], logger);
     });
 
     test('package is not in project dependency', () async {
       await expectLater(
         FormFieldLocator.createAsync(
-          library.session,
+          resolver,
           ['package:form_builder_extras/form_builder_extras.dart'],
+          logger,
         ),
-        throwsA(isA<AnalysisException>()),
+        throwsA(isA<AssetNotFoundException>()),
       );
     });
   });
   group('vanilla', () {
     for (final field in ['TextFormField', 'DropdownButtonFormField']) {
       test(field, () async {
-        final target = await FormFieldLocator.createAsync(library.session, []);
+        final target = await FormFieldLocator.createAsync(resolver, [], logger);
         final result = target.resolveFormFieldType(field);
         expect(result, isNotNull);
         expect(
@@ -57,7 +65,7 @@ Future<void> main() async {
       'FormBuilderTextField',
     ]) {
       test(field, () async {
-        final target = await FormFieldLocator.createAsync(library.session, []);
+        final target = await FormFieldLocator.createAsync(resolver, [], logger);
         final result = target.resolveFormFieldType(field);
         expect(result, isNotNull);
         expect(

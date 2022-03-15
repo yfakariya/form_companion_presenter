@@ -54,9 +54,14 @@ class PresenterDefinition {
             doAutovalidate ? 'AutovalidateMode.onUserInteraction' : null;
 }
 
+final _annotationLibraryUri = Uri(
+  scheme: 'package',
+  path: 'form_companion_presenter/src/form_companion_annotation.dart',
+);
+
 /// Determines that specified [ElementAnnotation] is `FormCompanion` or not.
 bool isFormCompanionAnnotation(ElementAnnotation annotation) =>
-    annotation.source?.fullName == 'form_companion_presenter' &&
+    annotation.element?.source?.uri == _annotationLibraryUri &&
     (annotation.element?.name == 'formCompanion' ||
         annotation.element?.name == 'FormCompanion');
 

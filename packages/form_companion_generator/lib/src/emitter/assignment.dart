@@ -49,6 +49,7 @@ class AssignmentContext {
   }
 }
 
+// TODO(yfakariya): rename to ArgumentsHandler and separate it.
 /// Implements argument emit and holds related data.
 @sealed
 class ArgumentEmitter {
@@ -66,6 +67,7 @@ class ArgumentEmitter {
       if (_mightMakeOmittable(parameter)) {
         if (parameter.requirability == ParameterRequirability.required) {
           yield ParameterInfo(
+            parameter.node,
             parameter.name,
             parameter.type,
             parameter.typeAnnotation,
@@ -77,6 +79,7 @@ class ArgumentEmitter {
         }
         if (parameter.hasDefaultValue) {
           yield ParameterInfo(
+            parameter.node,
             parameter.name,
             parameter.type,
             parameter.typeAnnotation,
@@ -96,8 +99,10 @@ class ArgumentEmitter {
   Iterable<ParameterInfo> get allParameters => _fieldConstructorParameters;
 
   /// Initializes a new [ArgumentEmitter] instance.
-  ArgumentEmitter(PresenterDefinition data, this._fieldConstructorParameters)
-      : _isFormBuilder = data.isFormBuilder;
+  ArgumentEmitter(
+    this._fieldConstructorParameters, {
+    required bool isFormBuilder,
+  }) : _isFormBuilder = isFormBuilder;
 
   bool _isIntrinsic(ParameterInfo parameter) {
     if (_isFormBuilder) {
@@ -203,6 +208,7 @@ Iterable<String>? _onChangedWorkaround(AssignmentContext _) =>
 final _intrinsicBuilderAssignmentEmitters =
     <String, Iterable<String>? Function(AssignmentContext)>{
   'initialValue': _assignInitialValue,
+  'onSaved': (_) => [], // nop
   'name': (context) => ['name: ${context.propertyDescriptor}.name,'],
   'validator': _assignValidator,
   'value': _assignValue,

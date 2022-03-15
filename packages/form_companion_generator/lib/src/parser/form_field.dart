@@ -18,6 +18,9 @@ FutureOr<PropertyAndFormFieldDefinition> resolveFormFieldAsync(
     property.preferredFieldType,
     isFormBuilder: isFormBuilder,
   );
+  context.logger.fine(
+    'Use $fieldTypeName for property name: ${property.name}, type: ${property.type}, preferredFieldType: ${property.preferredFieldType}',
+  );
   final fieldType =
       context.formFieldLocator.resolveFormFieldType(fieldTypeName);
   ConstructorDeclaration? fieldConstructor;
@@ -66,8 +69,8 @@ String _determineFormFieldTypeName(
           : _enumVanillaFormFieldType;
     }
 
-    final propertyTypeName =
-        propertyType.getDisplayString(withNullability: false);
+    // Use element name to ignore type arguments here.
+    final propertyTypeName = propertyType.element.name;
     if (isFormBuilder) {
       return _predefinedFormBuilderFieldTypes[propertyTypeName] ??
           _defaultFormBuilderFieldType;
@@ -106,6 +109,8 @@ final _predefinedFormBuilderFieldTypes = {
   'bool': 'FormBuilderSwitch',
   'DateTime': 'FormBuilderDateTimePicker',
   'DateTimeRange': 'FormBuilderDateRangePicker',
+  'List': 'FormBuilderFilterChip',
+  'RangeValues': 'FormBuilderRangeSlider',
 };
 
 final _predefinedVanillaFormFieldTypes = {

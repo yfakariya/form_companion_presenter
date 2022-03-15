@@ -76,9 +76,9 @@ _PropertyDefinitionWithSource? _parseBuilderMethodCall(
         // so raw type will be Object rather than dynamic here.
         type = context.typeProvider.objectType;
       } else {
-        final typeArgument = typeArguments.arguments.single.type?.element;
-        if (typeArgument is ClassElement) {
-          type = typeArgument.thisType;
+        final typeArgument = typeArguments.arguments.single.type;
+        if (typeArgument is InterfaceType) {
+          type = typeArgument;
         } else {
           type = context.typeProvider.objectType;
           final failedToResolveTypeMessage =
