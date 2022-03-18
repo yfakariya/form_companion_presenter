@@ -71,6 +71,11 @@ extension $TheFormPresenterPropertyExtension on TheFormPresenter {
   PropertyDescriptor<MyEnum> get propEnum =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
       properties['propEnum']! as PropertyDescriptor<MyEnum>;
+
+  /// Gets a [PropertyDescriptor] of propStringList property.
+  PropertyDescriptor<List<String>> get propStringList =>
+      // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
+      properties['propStringList']! as PropertyDescriptor<List<String>>;
 }
 
 class $TheFormPresenterFieldFactories {
@@ -217,6 +222,69 @@ class $TheFormPresenterFieldFactories {
   }) {
     final property = _presenter.propEnum;
     return DropdownButtonFormField<MyEnum>(
+      key: _presenter.getKey(property.name, context),
+      items: items,
+      selectedItemBuilder: selectedItemBuilder,
+      value: property.savedValue,
+      hint: hint,
+      disabledHint: disabledHint,
+      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+      onTap: onTap,
+      elevation: elevation,
+      style: style,
+      icon: icon,
+      iconDisabledColor: iconDisabledColor,
+      iconEnabledColor: iconEnabledColor,
+      iconSize: iconSize,
+      isDense: isDense,
+      isExpanded: isExpanded,
+      itemHeight: itemHeight,
+      focusColor: focusColor,
+      focusNode: focusNode,
+      autofocus: autofocus,
+      dropdownColor: dropdownColor,
+      decoration: InputDecoration(
+        labelText: property.name,
+      ),
+      onSaved: property.saveValue,
+      validator: property.getValidator(context),
+      autovalidateMode: autovalidateMode ?? AutovalidateMode.onUserInteraction,
+      menuMaxHeight: menuMaxHeight,
+      enableFeedback: enableFeedback,
+      alignment: alignment,
+    );
+  }
+
+  /// Gets a [FormField] for propStringList property.
+  DropdownButtonFormField<List<String>> propStringList(
+    BuildContext context, {
+    required List<DropdownMenuItem<List<String>>>? items,
+    DropdownButtonBuilder? selectedItemBuilder,
+    Widget? hint,
+    Widget? disabledHint,
+    ValueChanged<List<String>?>? onChanged,
+    VoidCallback? onTap,
+    int elevation = 8,
+    TextStyle? style,
+    Widget? icon,
+    Color? iconDisabledColor,
+    Color? iconEnabledColor,
+    double iconSize = 24.0,
+    bool isDense = true,
+    bool isExpanded = false,
+    double? itemHeight,
+    Color? focusColor,
+    FocusNode? focusNode,
+    bool autofocus = false,
+    Color? dropdownColor,
+    InputDecoration? decoration,
+    AutovalidateMode? autovalidateMode,
+    double? menuMaxHeight,
+    bool? enableFeedback,
+    AlignmentGeometry alignment = AlignmentDirectional.centerStart,
+  }) {
+    final property = _presenter.propStringList;
+    return DropdownButtonFormField<List<String>>(
       key: _presenter.getKey(property.name, context),
       items: items,
       selectedItemBuilder: selectedItemBuilder,

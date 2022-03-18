@@ -180,7 +180,6 @@ FutureOr<PropertyDescriptorsBuilding?> _parseExpressionAsync(
       if (parameters.isNotEmpty) {
         arguments = {};
         for (var i = 0; i < parameters.length; i++) {
-          // if (parameters[i].typeName == pdbTypeName) {
           if (_isPropertyDescriptorsBuilder(parameters[i].type)) {
             final argument = await _parseExpressionAsync(
               context,

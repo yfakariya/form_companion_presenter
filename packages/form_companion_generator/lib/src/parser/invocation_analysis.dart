@@ -54,52 +54,51 @@ _PropertyDefinitionWithSource? _parseBuilderMethodCall(
 }) {
   switch (methodInvocation.methodName.name) {
     case 'add':
-      final namedArguments = {
-        for (final ne in methodInvocation.argumentList.arguments
-            .whereType<NamedExpression>())
-          ne.name.label.name: ne.expression.unParenthesized
-      };
-
-      final name = _extractLiteralStringValue(
-        namedArguments,
-        'name',
+      final warnings = <String>[];
+      return _buildPropertyDefinitionWithSource(
         methodInvocation,
         contextElement,
-      )!;
+        _getPropertyTypeFromFirstTypeArgument(
+          context,
+          methodInvocation,
+          warnings,
+        ),
+        null,
+        warnings,
+      );
 
-      late final InterfaceType type;
-
+    case 'addWithField':
       final warnings = <String>[];
+
+      late final String? preferredFieldType;
       final typeArguments = methodInvocation.typeArguments;
-      if (typeArguments == null) {
-        // Because add method is declared as add<T extends Object>,
-        // so raw type will be Object rather than dynamic here.
-        type = context.typeProvider.objectType;
+      if (typeArguments == null || typeArguments.length < 2) {
+        // If omitted, it means that preferredFieldType is not specified.
+        preferredFieldType = null;
       } else {
-        final typeArgument = typeArguments.arguments.single.type;
+        final typeArgument = typeArguments.arguments[1].type;
         if (typeArgument is InterfaceType) {
-          type = typeArgument;
+          // Use element name to erase type arguments here.
+          preferredFieldType = typeArgument.element.name;
         } else {
-          type = context.typeProvider.objectType;
           final failedToResolveTypeMessage =
-              "Failed to resolve type arguments of $pdbTypeName.add<T>(): '$typeArgument'.";
+              "Failed to resolve second type argument of $pdbTypeName.${methodInvocation.methodName}${methodInvocation.typeArguments}(): '$typeArgument'.";
           warnings.add(failedToResolveTypeMessage);
           context.logger.warning(failedToResolveTypeMessage);
+          preferredFieldType = null;
         }
       }
 
-      return _PropertyDefinitionWithSource(
-        PropertyDefinition(
-          name: name,
-          type: type,
-          preferredFieldType:
-              (namedArguments['preferredFieldType'] as SymbolLiteral?)
-                  ?.staticType
-                  ?.getDisplayString(withNullability: false),
-          warnings: warnings,
-        ),
+      return _buildPropertyDefinitionWithSource(
         methodInvocation,
-        _getDeclaringElement(methodInvocation),
+        contextElement,
+        _getPropertyTypeFromFirstTypeArgument(
+          context,
+          methodInvocation,
+          warnings,
+        ),
+        preferredFieldType,
+        warnings,
       );
   }
 
@@ -108,6 +107,63 @@ _PropertyDefinitionWithSource? _parseBuilderMethodCall(
       "Unexpected method: '${methodInvocation.methodName.name}'.";
   context.addGlobalWarning(unexpectedMethodWarning);
   return null;
+}
+
+InterfaceType _getPropertyTypeFromFirstTypeArgument(
+  ParseContext context,
+  MethodInvocation methodInvocation,
+  List<String> warnings,
+) {
+  final typeArguments = methodInvocation.typeArguments;
+  if (typeArguments == null) {
+    // Because add method is declared as add<T extends Object>,
+    // so raw type will be Object rather than dynamic here.
+    return context.typeProvider.objectType;
+  } else {
+    final typeArgument = typeArguments.arguments.first.type;
+    if (typeArgument is InterfaceType) {
+      return typeArgument;
+    } else {
+      final type = context.typeProvider.objectType;
+      final failedToResolveTypeMessage =
+          "Failed to resolve first type argument of $pdbTypeName.${methodInvocation.methodName}${methodInvocation.typeArguments}(): '$typeArgument'.";
+      warnings.add(failedToResolveTypeMessage);
+      context.logger.warning(failedToResolveTypeMessage);
+      return type;
+    }
+  }
+}
+
+_PropertyDefinitionWithSource _buildPropertyDefinitionWithSource(
+  MethodInvocation methodInvocation,
+  Element contextElement,
+  InterfaceType type,
+  String? preferredFieldType,
+  List<String> warnings,
+) {
+  final namedArguments = {
+    for (final ne
+        in methodInvocation.argumentList.arguments.whereType<NamedExpression>())
+      ne.name.label.name: ne.expression.unParenthesized
+  };
+
+  final name = _extractLiteralStringValue(
+    namedArguments,
+    'name',
+    methodInvocation,
+    contextElement,
+  )!;
+
+  return _PropertyDefinitionWithSource(
+    PropertyDefinition(
+      name: name,
+      type: type,
+      preferredFieldType: preferredFieldType,
+      warnings: warnings,
+    ),
+    methodInvocation,
+    _getDeclaringElement(methodInvocation),
+  );
 }
 
 Element _getDeclaringElement(Expression expression) {

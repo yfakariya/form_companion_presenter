@@ -5,8 +5,11 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_companion_presenter/form_builder_companion_presenter.dart';
+import 'package:form_companion_presenter/form_companion_annotation.dart';
 import 'package:form_companion_presenter/form_companion_presenter.dart';
 
 import 'properties.dart';
@@ -153,6 +156,22 @@ class InlineWithCascading with CompanionPresenterMixin, FormCompanionMixin {
         ..add<MyEnum>(name: 'propEnum')
         ..add<List<MyEnum>>(name: 'propEnumList')
         ..add(name: 'propRaw'),
+    );
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+@formCompanion
+class ExtensionMethod with CompanionPresenterMixin, FormBuilderCompanionMixin {
+  ExtensionMethod() {
+    initializeCompanionMixin(
+      PropertyDescriptorsBuilder()
+        ..addWithField<double, FormBuilderSlider>(name: 'propDouble')
+        ..addWithField<List<MyEnum>, FormBuilderCheckboxGroup<MyEnum>>(
+          name: 'propEnumList',
+        ),
     );
   }
 

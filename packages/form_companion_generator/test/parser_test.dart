@@ -353,6 +353,49 @@ Future<void> main() async {
       );
     });
 
+    group('extension method', () {
+      test(
+        'addWithField',
+        () => testGetProperties('ExtensionMethod', (props) {
+          expect(props.length, 2);
+          expect(props['propDouble'], isNotNull);
+          expect(props['propDouble']!.type, typeProvider.doubleType);
+          expect(props['propDouble']!.fieldConstructor, isNotNull);
+          expect(props['propDouble']!.fieldConstructor!.name, isNull);
+          expect(props['propDouble']!.fieldType, isNotNull);
+          expect(
+            props['propDouble']!
+                .fieldType!
+                .getDisplayString(withNullability: true),
+            'FormBuilderSlider',
+          );
+          expect(props['propDouble']!.fieldTypeName, 'FormBuilderSlider');
+          expect(props['propDouble']!.warnings, isEmpty);
+          expect(props['propDouble']!.instantiationContext, isNotNull);
+          expect(props['propEnumList'], isNotNull);
+          expect(
+            props['propEnumList']!.type,
+            typeProvider.listType(myEnumType),
+          );
+          expect(props['propEnumList']!.fieldConstructor, isNotNull);
+          expect(props['propEnumList']!.fieldConstructor!.name, isNull);
+          expect(props['propEnumList']!.fieldType, isNotNull);
+          expect(
+            props['propEnumList']!
+                .fieldType!
+                .getDisplayString(withNullability: true),
+            'FormBuilderCheckboxGroup<T>',
+          );
+          expect(
+            props['propEnumList']!.fieldTypeName,
+            'FormBuilderCheckboxGroup',
+          );
+          expect(props['propEnumList']!.warnings, isEmpty);
+          expect(props['propEnumList']!.instantiationContext, isNotNull);
+        }),
+      );
+    });
+
     group('factory method', () {
       test(
         'cascading factory calls - detected',

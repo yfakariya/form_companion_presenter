@@ -33,6 +33,7 @@ import 'package:flutter/material.dart'
         DropdownButtonBuilder,
         DropdownMenuItem,
         Icons,
+        InputBorder,
         InputCounterWidgetBuilder,
         InputDecoration,
         ListTileControlAffinity,
@@ -43,12 +44,14 @@ import 'package:flutter/material.dart'
         SemanticFormatterCallback,
         TimeOfDay,
         TimePickerEntryMode,
+        VisualDensity,
         kMinInteractiveDimension;
 
 import 'package:flutter/painting.dart'
     show
         Axis,
         EdgeInsets,
+        EdgeInsetsGeometry,
         ImageProvider,
         OutlinedBorder,
         StrutStyle,
@@ -85,16 +88,24 @@ import 'package:flutter/widgets.dart'
 
 import 'package:flutter_form_builder/flutter_form_builder.dart'
     show
+        ControlAffinity,
         DisplayValues,
+        FormBuilderCheckbox,
+        FormBuilderCheckboxGroup,
+        FormBuilderChoiceChip,
         FormBuilderDateRangePicker,
         FormBuilderDateTimePicker,
         FormBuilderDropdown,
         FormBuilderFieldOption,
         FormBuilderFilterChip,
+        FormBuilderRadioGroup,
         FormBuilderRangeSlider,
+        FormBuilderSegmentedControl,
+        FormBuilderSlider,
         FormBuilderSwitch,
         FormBuilderTextField,
         InputType,
+        OptionsOrientation,
         ValueTransformer;
 
 import 'package:form_companion_generator_test_targets/properties.dart'
@@ -148,6 +159,42 @@ extension $TheFormBuilderPresenterPropertyExtension on TheFormBuilderPresenter {
   PropertyDescriptor<List<bool>> get propBoolList =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
       properties['propBoolList']! as PropertyDescriptor<List<bool>>;
+
+  /// Gets a [PropertyDescriptor] of propBoolCheckBox property.
+  PropertyDescriptor<bool> get propBoolCheckBox =>
+      // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
+      properties['propBoolCheckBox']! as PropertyDescriptor<bool>;
+
+  /// Gets a [PropertyDescriptor] of propEnumListCheckBoxGroup property.
+  PropertyDescriptor<List<MyEnum>> get propEnumListCheckBoxGroup =>
+      // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
+      properties['propEnumListCheckBoxGroup']!
+          as PropertyDescriptor<List<MyEnum>>;
+
+  /// Gets a [PropertyDescriptor] of propEnumChoiceChip property.
+  PropertyDescriptor<MyEnum> get propEnumChoiceChip =>
+      // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
+      properties['propEnumChoiceChip']! as PropertyDescriptor<MyEnum>;
+
+  /// Gets a [PropertyDescriptor] of propEnumListFilterChip property.
+  PropertyDescriptor<List<MyEnum>> get propEnumListFilterChip =>
+      // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
+      properties['propEnumListFilterChip']! as PropertyDescriptor<List<MyEnum>>;
+
+  /// Gets a [PropertyDescriptor] of propEnumRadioGroup property.
+  PropertyDescriptor<MyEnum> get propEnumRadioGroup =>
+      // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
+      properties['propEnumRadioGroup']! as PropertyDescriptor<MyEnum>;
+
+  /// Gets a [PropertyDescriptor] of propEnumSegmentedControl property.
+  PropertyDescriptor<MyEnum> get propEnumSegmentedControl =>
+      // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
+      properties['propEnumSegmentedControl']! as PropertyDescriptor<MyEnum>;
+
+  /// Gets a [PropertyDescriptor] of propDoubleSlider property.
+  PropertyDescriptor<double> get propDoubleSlider =>
+      // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
+      properties['propDoubleSlider']! as PropertyDescriptor<double>;
 }
 
 class $TheFormBuilderPresenterFieldFactories {
@@ -876,6 +923,460 @@ class $TheFormBuilderPresenterFieldFactories {
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
       valueTransformer: valueTransformer,
       onReset: onReset,
+    );
+  }
+
+  /// Gets a [FormField] for propBoolCheckBox property.
+  FormBuilderCheckbox propBoolCheckBox(
+    BuildContext context, {
+    Key? key,
+    InputDecoration? decoration,
+    ValueChanged<bool?>? onChanged,
+    ValueTransformer<bool?>? valueTransformer,
+    bool enabled = true,
+    AutovalidateMode? autovalidateMode,
+    VoidCallback? onReset,
+    FocusNode? focusNode,
+    required Widget title,
+    Color? activeColor,
+    bool autofocus = false,
+    Color? checkColor,
+    EdgeInsets contentPadding = EdgeInsets.zero,
+    ListTileControlAffinity controlAffinity = ListTileControlAffinity.leading,
+    Widget? secondary,
+    bool selected = false,
+    bool shouldRequestFocus = false,
+    Widget? subtitle,
+    bool tristate = false,
+  }) {
+    final property = _presenter.propBoolCheckBox;
+    return FormBuilderCheckbox(
+      key: key,
+      name: property.name,
+      validator: property.getValidator(context),
+      initialValue: property.savedValue,
+      decoration: InputDecoration(
+        labelText: property.name,
+      ),
+      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+      valueTransformer: valueTransformer,
+      enabled: enabled,
+      autovalidateMode: autovalidateMode ?? AutovalidateMode.onUserInteraction,
+      onReset: onReset,
+      focusNode: focusNode,
+      title: title,
+      activeColor: activeColor,
+      autofocus: autofocus,
+      checkColor: checkColor,
+      contentPadding: contentPadding,
+      controlAffinity: controlAffinity,
+      secondary: secondary,
+      selected: selected,
+      shouldRequestFocus: shouldRequestFocus,
+      subtitle: subtitle,
+      tristate: tristate,
+    );
+  }
+
+  /// Gets a [FormField] for propEnumListCheckBoxGroup property.
+  FormBuilderCheckboxGroup<MyEnum> propEnumListCheckBoxGroup(
+    BuildContext context, {
+    Key? key,
+    InputDecoration? decoration,
+    ValueChanged<List<MyEnum>?>? onChanged,
+    ValueTransformer<List<MyEnum>?>? valueTransformer,
+    bool enabled = true,
+    AutovalidateMode? autovalidateMode,
+    VoidCallback? onReset,
+    FocusNode? focusNode,
+    required List<FormBuilderFieldOption<MyEnum>> options,
+    Color? activeColor,
+    Color? checkColor,
+    Color? focusColor,
+    Color? hoverColor,
+    List<MyEnum>? disabled,
+    MaterialTapTargetSize? materialTapTargetSize,
+    bool tristate = false,
+    Axis wrapDirection = Axis.horizontal,
+    WrapAlignment wrapAlignment = WrapAlignment.start,
+    double wrapSpacing = 0.0,
+    WrapAlignment wrapRunAlignment = WrapAlignment.start,
+    double wrapRunSpacing = 0.0,
+    WrapCrossAlignment wrapCrossAxisAlignment = WrapCrossAlignment.start,
+    TextDirection? wrapTextDirection,
+    VerticalDirection wrapVerticalDirection = VerticalDirection.down,
+    Widget? separator,
+    ControlAffinity controlAffinity = ControlAffinity.leading,
+    OptionsOrientation orientation = OptionsOrientation.wrap,
+    bool shouldRequestFocus = false,
+  }) {
+    final property = _presenter.propEnumListCheckBoxGroup;
+    return FormBuilderCheckboxGroup<MyEnum>(
+      key: key,
+      name: property.name,
+      validator: property.getValidator(context),
+      initialValue: property.savedValue,
+      decoration: InputDecoration(
+        labelText: property.name,
+      ),
+      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+      valueTransformer: valueTransformer,
+      enabled: enabled,
+      autovalidateMode: autovalidateMode ?? AutovalidateMode.onUserInteraction,
+      onReset: onReset,
+      focusNode: focusNode,
+      options: options,
+      activeColor: activeColor,
+      checkColor: checkColor,
+      focusColor: focusColor,
+      hoverColor: hoverColor,
+      disabled: disabled,
+      materialTapTargetSize: materialTapTargetSize,
+      tristate: tristate,
+      wrapDirection: wrapDirection,
+      wrapAlignment: wrapAlignment,
+      wrapSpacing: wrapSpacing,
+      wrapRunAlignment: wrapRunAlignment,
+      wrapRunSpacing: wrapRunSpacing,
+      wrapCrossAxisAlignment: wrapCrossAxisAlignment,
+      wrapTextDirection: wrapTextDirection,
+      wrapVerticalDirection: wrapVerticalDirection,
+      separator: separator,
+      controlAffinity: controlAffinity,
+      orientation: orientation,
+      shouldRequestFocus: shouldRequestFocus,
+    );
+  }
+
+  /// Gets a [FormField] for propEnumChoiceChip property.
+  FormBuilderChoiceChip<MyEnum> propEnumChoiceChip(
+    BuildContext context, {
+    AutovalidateMode? autovalidateMode,
+    bool enabled = true,
+    FocusNode? focusNode,
+    InputDecoration? decoration,
+    Key? key,
+    required List<FormBuilderFieldOption<MyEnum>> options,
+    WrapAlignment alignment = WrapAlignment.start,
+    Color? backgroundColor,
+    WrapCrossAlignment crossAxisAlignment = WrapCrossAlignment.start,
+    Axis direction = Axis.horizontal,
+    Color? disabledColor,
+    double? elevation,
+    EdgeInsets? labelPadding,
+    TextStyle? labelStyle,
+    MaterialTapTargetSize? materialTapTargetSize,
+    EdgeInsets? padding,
+    double? pressElevation,
+    WrapAlignment runAlignment = WrapAlignment.start,
+    double runSpacing = 0.0,
+    Color? selectedColor,
+    Color? selectedShadowColor,
+    Color? shadowColor,
+    OutlinedBorder? shape,
+    bool shouldRequestFocus = false,
+    double spacing = 0.0,
+    TextDirection? textDirection,
+    VerticalDirection verticalDirection = VerticalDirection.down,
+    VisualDensity? visualDensity,
+    ValueChanged<MyEnum?>? onChanged,
+    ValueTransformer<MyEnum?>? valueTransformer,
+    VoidCallback? onReset,
+  }) {
+    final property = _presenter.propEnumChoiceChip;
+    return FormBuilderChoiceChip<MyEnum>(
+      autovalidateMode: autovalidateMode ?? AutovalidateMode.onUserInteraction,
+      enabled: enabled,
+      focusNode: focusNode,
+      validator: property.getValidator(context),
+      decoration: InputDecoration(
+        labelText: property.name,
+      ),
+      key: key,
+      name: property.name,
+      options: options,
+      initialValue: property.savedValue,
+      alignment: alignment,
+      backgroundColor: backgroundColor,
+      crossAxisAlignment: crossAxisAlignment,
+      direction: direction,
+      disabledColor: disabledColor,
+      elevation: elevation,
+      labelPadding: labelPadding,
+      labelStyle: labelStyle,
+      materialTapTargetSize: materialTapTargetSize,
+      padding: padding,
+      pressElevation: pressElevation,
+      runAlignment: runAlignment,
+      runSpacing: runSpacing,
+      selectedColor: selectedColor,
+      selectedShadowColor: selectedShadowColor,
+      shadowColor: shadowColor,
+      shape: shape,
+      shouldRequestFocus: shouldRequestFocus,
+      spacing: spacing,
+      textDirection: textDirection,
+      verticalDirection: verticalDirection,
+      visualDensity: visualDensity,
+      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+      valueTransformer: valueTransformer,
+      onReset: onReset,
+    );
+  }
+
+  /// Gets a [FormField] for propEnumListFilterChip property.
+  FormBuilderFilterChip<MyEnum> propEnumListFilterChip(
+    BuildContext context, {
+    AutovalidateMode? autovalidateMode,
+    bool enabled = true,
+    FocusNode? focusNode,
+    InputDecoration? decoration,
+    Key? key,
+    required List<FormBuilderFieldOption<MyEnum>> options,
+    WrapAlignment alignment = WrapAlignment.start,
+    Color? backgroundColor,
+    Color? checkmarkColor,
+    Clip clipBehavior = Clip.none,
+    WrapCrossAlignment crossAxisAlignment = WrapCrossAlignment.start,
+    Axis direction = Axis.horizontal,
+    Color? disabledColor,
+    double? elevation,
+    EdgeInsets? labelPadding,
+    TextStyle? labelStyle,
+    MaterialTapTargetSize? materialTapTargetSize,
+    int? maxChips,
+    EdgeInsets? padding,
+    double? pressElevation,
+    WrapAlignment runAlignment = WrapAlignment.start,
+    double runSpacing = 0.0,
+    Color? selectedColor,
+    Color? selectedShadowColor,
+    Color? shadowColor,
+    OutlinedBorder? shape,
+    bool shouldRequestFocus = false,
+    bool showCheckmark = true,
+    double spacing = 0.0,
+    TextDirection? textDirection,
+    VerticalDirection verticalDirection = VerticalDirection.down,
+    ValueChanged<List<MyEnum>?>? onChanged,
+    ValueTransformer<List<MyEnum>?>? valueTransformer,
+    VoidCallback? onReset,
+  }) {
+    final property = _presenter.propEnumListFilterChip;
+    return FormBuilderFilterChip<MyEnum>(
+      autovalidateMode: autovalidateMode ?? AutovalidateMode.onUserInteraction,
+      enabled: enabled,
+      focusNode: focusNode,
+      validator: property.getValidator(context),
+      decoration: InputDecoration(
+        labelText: property.name,
+      ),
+      key: key,
+      initialValue: property.savedValue!,
+      name: property.name,
+      options: options,
+      alignment: alignment,
+      backgroundColor: backgroundColor,
+      checkmarkColor: checkmarkColor,
+      clipBehavior: clipBehavior,
+      crossAxisAlignment: crossAxisAlignment,
+      direction: direction,
+      disabledColor: disabledColor,
+      elevation: elevation,
+      labelPadding: labelPadding,
+      labelStyle: labelStyle,
+      materialTapTargetSize: materialTapTargetSize,
+      maxChips: maxChips,
+      padding: padding,
+      pressElevation: pressElevation,
+      runAlignment: runAlignment,
+      runSpacing: runSpacing,
+      selectedColor: selectedColor,
+      selectedShadowColor: selectedShadowColor,
+      shadowColor: shadowColor,
+      shape: shape,
+      shouldRequestFocus: shouldRequestFocus,
+      showCheckmark: showCheckmark,
+      spacing: spacing,
+      textDirection: textDirection,
+      verticalDirection: verticalDirection,
+      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+      valueTransformer: valueTransformer,
+      onReset: onReset,
+    );
+  }
+
+  /// Gets a [FormField] for propEnumRadioGroup property.
+  FormBuilderRadioGroup<MyEnum> propEnumRadioGroup(
+    BuildContext context, {
+    AutovalidateMode? autovalidateMode,
+    bool enabled = true,
+    FocusNode? focusNode,
+    InputDecoration? decoration,
+    Key? key,
+    required List<FormBuilderFieldOption<MyEnum>> options,
+    bool shouldRadioRequestFocus = false,
+    Color? activeColor,
+    ControlAffinity controlAffinity = ControlAffinity.leading,
+    List<MyEnum>? disabled,
+    Color? focusColor,
+    Color? hoverColor,
+    MaterialTapTargetSize? materialTapTargetSize,
+    OptionsOrientation orientation = OptionsOrientation.wrap,
+    Widget? separator,
+    WrapAlignment wrapAlignment = WrapAlignment.start,
+    WrapCrossAlignment wrapCrossAxisAlignment = WrapCrossAlignment.start,
+    Axis wrapDirection = Axis.horizontal,
+    WrapAlignment wrapRunAlignment = WrapAlignment.start,
+    double wrapRunSpacing = 0.0,
+    double wrapSpacing = 0.0,
+    TextDirection? wrapTextDirection,
+    VerticalDirection wrapVerticalDirection = VerticalDirection.down,
+    ValueChanged<MyEnum?>? onChanged,
+    ValueTransformer<MyEnum?>? valueTransformer,
+    VoidCallback? onReset,
+  }) {
+    final property = _presenter.propEnumRadioGroup;
+    return FormBuilderRadioGroup<MyEnum>(
+      autovalidateMode: autovalidateMode ?? AutovalidateMode.onUserInteraction,
+      enabled: enabled,
+      focusNode: focusNode,
+      validator: property.getValidator(context),
+      decoration: InputDecoration(
+        labelText: property.name,
+      ),
+      key: key,
+      name: property.name,
+      options: options,
+      initialValue: property.savedValue,
+      shouldRadioRequestFocus: shouldRadioRequestFocus,
+      activeColor: activeColor,
+      controlAffinity: controlAffinity,
+      disabled: disabled,
+      focusColor: focusColor,
+      hoverColor: hoverColor,
+      materialTapTargetSize: materialTapTargetSize,
+      orientation: orientation,
+      separator: separator,
+      wrapAlignment: wrapAlignment,
+      wrapCrossAxisAlignment: wrapCrossAxisAlignment,
+      wrapDirection: wrapDirection,
+      wrapRunAlignment: wrapRunAlignment,
+      wrapRunSpacing: wrapRunSpacing,
+      wrapSpacing: wrapSpacing,
+      wrapTextDirection: wrapTextDirection,
+      wrapVerticalDirection: wrapVerticalDirection,
+      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+      valueTransformer: valueTransformer,
+      onReset: onReset,
+    );
+  }
+
+  /// Gets a [FormField] for propEnumSegmentedControl property.
+  FormBuilderSegmentedControl<MyEnum> propEnumSegmentedControl(
+    BuildContext context, {
+    Key? key,
+    InputDecoration? decoration,
+    ValueChanged<MyEnum?>? onChanged,
+    ValueTransformer<MyEnum?>? valueTransformer,
+    bool enabled = true,
+    AutovalidateMode? autovalidateMode,
+    VoidCallback? onReset,
+    FocusNode? focusNode,
+    required List<FormBuilderFieldOption<MyEnum>> options,
+    Color? borderColor,
+    Color? selectedColor,
+    Color? pressedColor,
+    EdgeInsetsGeometry? padding,
+    Color? unselectedColor,
+    bool shouldRequestFocus = false,
+  }) {
+    final property = _presenter.propEnumSegmentedControl;
+    return FormBuilderSegmentedControl<MyEnum>(
+      key: key,
+      name: property.name,
+      validator: property.getValidator(context),
+      initialValue: property.savedValue,
+      decoration: InputDecoration(
+        labelText: property.name,
+      ),
+      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+      valueTransformer: valueTransformer,
+      enabled: enabled,
+      autovalidateMode: autovalidateMode ?? AutovalidateMode.onUserInteraction,
+      onReset: onReset,
+      focusNode: focusNode,
+      options: options,
+      borderColor: borderColor,
+      selectedColor: selectedColor,
+      pressedColor: pressedColor,
+      padding: padding,
+      unselectedColor: unselectedColor,
+      shouldRequestFocus: shouldRequestFocus,
+    );
+  }
+
+  /// Gets a [FormField] for propDoubleSlider property.
+  FormBuilderSlider propDoubleSlider(
+    BuildContext context, {
+    Key? key,
+    InputDecoration? decoration,
+    ValueChanged<double?>? onChanged,
+    ValueTransformer<double?>? valueTransformer,
+    bool enabled = true,
+    AutovalidateMode? autovalidateMode,
+    VoidCallback? onReset,
+    FocusNode? focusNode,
+    required double min,
+    required double max,
+    int? divisions,
+    Color? activeColor,
+    Color? inactiveColor,
+    ValueChanged<double>? onChangeStart,
+    ValueChanged<double>? onChangeEnd,
+    String? label,
+    SemanticFormatterCallback? semanticFormatterCallback,
+    NumberFormat? numberFormat,
+    DisplayValues displayValues = DisplayValues.all,
+    TextStyle? minTextStyle,
+    TextStyle? textStyle,
+    TextStyle? maxTextStyle,
+    bool autofocus = false,
+    MouseCursor? mouseCursor,
+    bool shouldRequestFocus = false,
+  }) {
+    final property = _presenter.propDoubleSlider;
+    return FormBuilderSlider(
+      key: key,
+      name: property.name,
+      validator: property.getValidator(context),
+      initialValue: property.savedValue!,
+      decoration: InputDecoration(
+        labelText: property.name,
+      ),
+      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+      valueTransformer: valueTransformer,
+      enabled: enabled,
+      autovalidateMode: autovalidateMode ?? AutovalidateMode.onUserInteraction,
+      onReset: onReset,
+      focusNode: focusNode,
+      min: min,
+      max: max,
+      divisions: divisions,
+      activeColor: activeColor,
+      inactiveColor: inactiveColor,
+      onChangeStart: onChangeStart,
+      onChangeEnd: onChangeEnd,
+      label: label,
+      semanticFormatterCallback: semanticFormatterCallback,
+      numberFormat: numberFormat,
+      displayValues: displayValues,
+      minTextStyle: minTextStyle,
+      textStyle: textStyle,
+      maxTextStyle: maxTextStyle,
+      autofocus: autofocus,
+      mouseCursor: mouseCursor,
+      shouldRequestFocus: shouldRequestFocus,
     );
   }
 }
