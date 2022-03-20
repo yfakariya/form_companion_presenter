@@ -34,6 +34,9 @@ final Map<String, Set<String>> _itemSets = {
     _path('manual_validation_form_builder_account.dart'),
     _path('manual_validation_form_builder_booking.dart'),
   },
+  // empty
+  'form_companion_generator': {},
+  'form_companion_generator_test': {},
 };
 
 Future<void> distributeCore() async {
