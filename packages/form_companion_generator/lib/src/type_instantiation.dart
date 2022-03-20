@@ -3,6 +3,7 @@
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
+import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
 import 'package:source_gen/source_gen.dart';
 
@@ -28,49 +29,56 @@ class TypeInstantiationContext {
     NodeProvider nodeProvider,
     PropertyDefinition property,
     InterfaceType formFieldType,
+    Logger logger,
   ) {
-    final typeParameters =
-        formFieldType.typeArguments.whereType<TypeParameterType?>().toList();
-
-    // NOTE: we cannot use supertype.element here -- it may lose generic argument information
-    var currentType = formFieldType;
+    // We cannot use supertype.element here because it may lose generic argument
+    // information in inheritance hierarchy, but origin should be
+    // element.thisType to erase instantiated information.
+    var currentType = formFieldType.element.thisType;
     while (!currentType
         .getDisplayString(withNullability: false)
         .startsWith(_formFieldPattern)) {
       currentType = currentType.superclass!;
     }
 
-    final valueType = currentType.typeArguments.single;
-    if (typeParameters.isEmpty) {
-      // If valueType is String, it is OK because conversion between
-      // property.type and String should be handled by converter.
-      if (!valueType.isDartCoreString &&
-          valueType.getDisplayString(withNullability: true) !=
-              property.type.getDisplayString(withNullability: true)) {
+    final formFieldTypeArgument = currentType.typeArguments.single;
+
+    // We use element here to erase generic argument information, which may be
+    // specified via generic type argument of addWithField.
+    if (formFieldType.element.typeParameters.isEmpty) {
+      if (formFieldTypeArgument.getDisplayString(withNullability: true) !=
+          property.fieldType.toString()) {
         _throwTypeMismatch(
           detail:
-              "The type is '${property.type}', but resolved field value type is '$valueType' "
+              "The type is '${property.fieldType}', but resolved field value type is '$formFieldTypeArgument' "
               "for form field type '$formFieldType'.",
           propertyName: property.name,
         );
       }
+
+      logger.finer("Form field type '$formFieldType' is not generic.");
+
       return TypeInstantiationContext._(nodeProvider, {});
     }
 
     final mapping = <String, String>{};
     _buildTypeArgumentMappings(
-      valueType,
-      property.type,
+      formFieldTypeArgument,
+      property.fieldType,
       mapping,
       property.name,
       formFieldType,
+    );
+    logger.finer(
+      "Create type arguments mapping between field type argument '$formFieldTypeArgument' "
+      "and specified field value type '${property.fieldType}': $mapping",
     );
     return TypeInstantiationContext._(nodeProvider, mapping);
   }
 
   static void _buildTypeArgumentMappings(
     DartType parameter,
-    DartType argument,
+    GenericInterfaceType argument,
     Map<String, String> mapping,
     String propertyName,
     DartType formFieldType,
@@ -81,62 +89,75 @@ class TypeInstantiationContext {
       return;
     }
 
+    final argumentType = argument.rawType;
+
     if (parameter is ParameterizedType) {
-      if (argument is! ParameterizedType) {
+      if (argumentType is! ParameterizedType) {
         _throwTypeMismatch(
           detail:
               "Kinds of type parts are not match between the type argument type '$argument' and the type parameter type '$parameter'. "
-              "Argument's kind is '${argument.element!.kind}' but parameter's kind is '${parameter.element!.kind}'.",
+              "Argument's kind is '${argumentType.element!.kind}' but parameter's kind is '${parameter.element!.kind}'.",
           propertyName: propertyName,
         );
       }
 
-      if (parameter.element!.name! != argument.element!.name!) {
+      if (parameter.element!.name! != argumentType.element!.name!) {
         _throwTypeMismatch(
           detail:
               "Names of type parts are not match between the type argument type '$argument' and the type parameter type '$parameter'. "
-              "Argument's name is '${argument.element!.name}' but parameter's name is '${parameter.element!.name}'.",
+              "Argument's name is '${argumentType.element!.name}' but parameter's name is '${parameter.element!.name}'.",
           propertyName: propertyName,
         );
       }
 
-      if (parameter.typeArguments.length != argument.typeArguments.length) {
+      if (parameter.typeArguments.length != argumentType.typeArguments.length) {
         _throwTypeMismatch(
           detail:
               "Types parameters arity of type parts are not match between the type argument type '$argument' and the type parameter type '$parameter'. "
-              "Argument's arity is '${argument.typeArguments.length}' but parameter's arity is '${parameter.typeArguments.length}'.",
+              "Argument's arity is '${argumentType.typeArguments.length}' but parameter's arity is '${parameter.typeArguments.length}'.",
           propertyName: propertyName,
         );
       }
 
-      for (var i = 0; i < parameter.typeArguments.length; i++) {
-        _buildTypeArgumentMappings(
-          parameter.typeArguments[i],
-          argument.typeArguments[i],
-          mapping,
-          propertyName,
-          formFieldType,
-        );
+      if (parameter.typeArguments.isNotEmpty) {
+        late final List<GenericInterfaceType> argumentTypeArguments;
+        if (argument.typeArguments.isNotEmpty) {
+          argumentTypeArguments = argument.typeArguments;
+        } else {
+          argumentTypeArguments = argumentType.typeArguments
+              .map((e) => GenericInterfaceType(e, []))
+              .toList();
+        }
+
+        for (var i = 0; i < parameter.typeArguments.length; i++) {
+          _buildTypeArgumentMappings(
+            parameter.typeArguments[i],
+            argumentTypeArguments[i],
+            mapping,
+            propertyName,
+            formFieldType,
+          );
+        }
       }
 
       return;
     }
 
     if (parameter is FunctionType) {
-      if (argument is! FunctionType) {
+      if (argumentType is! FunctionType) {
         _throwTypeMismatch(
           detail:
               "Kinds of type parts are not match between the type argument type '$argument' and the type parameter type '$parameter'. "
-              "Argument's kind is '${argument.element!.kind}' but parameter's kind is '${parameter.element!.kind}'.",
+              "Argument's kind is '${argumentType.element!.kind}' but parameter's kind is '${parameter.element!.kind}'.",
           propertyName: propertyName,
         );
       }
 
-      if (parameter.returnType != argument.returnType) {
+      if (parameter.returnType != argumentType.returnType) {
         _throwTypeMismatch(
           detail:
               "Return types of function types are not match between the type argument type '$argument' and the type parameter type '$parameter'. "
-              "Argument's return type is '${argument.returnType}' but parameter's return type is '${parameter.returnType}'.",
+              "Argument's return type is '${argumentType.returnType}' but parameter's return type is '${parameter.returnType}'.",
           propertyName: propertyName,
         );
       }
@@ -152,18 +173,18 @@ class TypeInstantiationContext {
         );
       }
 
-      if (parameter.parameters.length != argument.parameters.length) {
+      if (parameter.parameters.length != argumentType.parameters.length) {
         _throwTypeMismatch(
           detail:
               "Parameters counts of function types are not match between the type argument type '$argument' and the type parameter type '$parameter'. "
-              "Argument's parameters count is '${argument.parameters.length}' but parameter's parameters count is '${parameter.parameters.length}'.",
+              "Argument's parameters count is '${argumentType.parameters.length}' but parameter's parameters count is '${parameter.parameters.length}'.",
           propertyName: propertyName,
         );
       }
 
       _buildTypeArgumentMappings(
         parameter.returnType,
-        argument.returnType,
+        GenericInterfaceType(argumentType.returnType, []),
         mapping,
         propertyName,
         formFieldType,
@@ -172,7 +193,7 @@ class TypeInstantiationContext {
       for (var i = 0; i < parameter.parameters.length; i++) {
         _buildTypeArgumentMappings(
           parameter.parameters[i].type,
-          argument.parameters[i].type,
+          GenericInterfaceType(argumentType.parameters[i].type, []),
           mapping,
           propertyName,
           formFieldType,
@@ -189,8 +210,9 @@ class TypeInstantiationContext {
   }) =>
       throw InvalidGenerationSourceError(
         "Failed to parse property '$propertyName'. $detail",
-        todo:
-            'Ensure `preferredFieldType` has compatible value type for the property.',
+        todo: 'Ensure specifying type parameter `TField` which is subtype of '
+            'FormField<T> where `T` is same as type parameter `F`. '
+            "Don't forget specify generic type arguments.",
       );
 
   /// Gets a mapped type string which was specified as type argument.

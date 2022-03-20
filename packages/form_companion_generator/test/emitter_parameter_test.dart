@@ -8,6 +8,7 @@ import 'package:form_companion_generator/src/model.dart';
 import 'package:form_companion_generator/src/node_provider.dart';
 import 'package:form_companion_generator/src/parameter.dart';
 import 'package:form_companion_generator/src/type_instantiation.dart';
+import 'package:logging/logging.dart';
 import 'package:test/expect.dart';
 import 'package:test/scaffolding.dart';
 
@@ -15,6 +16,10 @@ import 'file_resolver.dart';
 import 'test_helpers.dart';
 
 Future<void> main() async {
+  final logger = Logger('emitter_parameter_test');
+  Logger.root.level = Level.INFO;
+  logger.onRecord.listen(print);
+
   final library = await getParametersLibrary();
   final nodeProvider = NodeProvider(FileResolver(library));
   final holder = library.getType('ParameterHolder')!;
@@ -68,45 +73,92 @@ Future<void> main() async {
       p.identifier!.name: p
   };
 
-  PropertyDefinition makeProperty(InterfaceType valueType) =>
+  final myEnumType = await getMyEnumType();
+  final formBuilderDropdownOfMyEnum =
+      await lookupFormFieldTypeInstance('formBuilderDropdownOfMyEnum');
+  final formBuilderFilterChipOfMyEnum =
+      await lookupFormFieldTypeInstance('formBuilderFilterChipOfMyEnum');
+
+  PropertyDefinition makeProperty(
+    InterfaceType propertyValueType,
+    InterfaceType fieldValueType,
+  ) =>
       PropertyDefinition(
         name: 'prop',
-        type: valueType,
-        preferredFieldType: null,
+        propertyType: GenericInterfaceType(propertyValueType, []),
+        fieldType: GenericInterfaceType(fieldValueType, []),
+        preferredFormFieldType: null,
         warnings: [],
       );
 
   group('emitParameter', () {
     for (final constructorSpec in constructorParameters.entries) {
-      for (final parameterSpec in constructorSpec.value.entries) {
-        final description = '${constructorSpec.key}, ${parameterSpec.key}';
-        final expected = constructorExpected[
-            constructorExpectedTypes[constructorSpec.key]]![parameterSpec.key];
+      group(constructorSpec.key, () {
+        for (final parameterSpec in constructorSpec.value.entries) {
+          final description = '${constructorSpec.key}, ${parameterSpec.key}';
+          final expected = constructorExpected[constructorExpectedTypes[
+              constructorSpec.key]]![parameterSpec.key];
 
-        test(description, () async {
-          final element = parameterSpec.value;
-          final node = await nodeProvider
-              .getElementDeclarationAsync<FormalParameter>(element);
-          final context = TypeInstantiationContext.create(
-            nodeProvider,
-            makeProperty(library.typeProvider.boolType),
-            holder.thisType,
-          );
-          expect(
-            emitParameter(
-              context,
-              await ParameterInfo.fromNodeAsync(nodeProvider, node),
-            ),
-            equals(expected),
-          );
-        });
-      }
+          test(description, () async {
+            final element = parameterSpec.value;
+            final node = await nodeProvider
+                .getElementDeclarationAsync<FormalParameter>(element);
+            final context = TypeInstantiationContext.create(
+              nodeProvider,
+              makeProperty(
+                library.typeProvider.boolType,
+                library.typeProvider.boolType,
+              ),
+              holder.thisType,
+              logger,
+            );
+            expect(
+              emitParameter(
+                context,
+                await ParameterInfo.fromNodeAsync(nodeProvider, node),
+              ),
+              equals(expected),
+            );
+          });
+        }
+      });
     }
 
     for (final methodSpec in methodParameters.entries) {
-      for (final parameterSpec in methodSpec.value.entries) {
-        final description = '${methodSpec.key}, ${parameterSpec.key}';
-        final expected = functionExpected[methodSpec.key]![parameterSpec.key];
+      group(methodSpec.key, () {
+        for (final parameterSpec in methodSpec.value.entries) {
+          final description = '${methodSpec.key}, ${parameterSpec.key}';
+          final expected = functionExpected[methodSpec.key]![parameterSpec.key];
+
+          test(description, () async {
+            final element = parameterSpec.value;
+            final node = await nodeProvider
+                .getElementDeclarationAsync<FormalParameter>(element);
+            final context = TypeInstantiationContext.create(
+              nodeProvider,
+              makeProperty(
+                library.typeProvider.boolType,
+                library.typeProvider.boolType,
+              ),
+              holder.thisType,
+              logger,
+            );
+            expect(
+              emitParameter(
+                context,
+                await ParameterInfo.fromNodeAsync(nodeProvider, node),
+              ),
+              equals(expected),
+            );
+          });
+        }
+      });
+    }
+
+    for (final parameterSpec in listConstructorParameters.entries) {
+      group(parameterSpec.key, () {
+        final description = 'generic list, ${parameterSpec.key}';
+        final expected = listExpected[parameterSpec.key];
 
         test(description, () async {
           final element = parameterSpec.value;
@@ -114,8 +166,12 @@ Future<void> main() async {
               .getElementDeclarationAsync<FormalParameter>(element);
           final context = TypeInstantiationContext.create(
             nodeProvider,
-            makeProperty(library.typeProvider.boolType),
+            makeProperty(
+              library.typeProvider.boolType,
+              library.typeProvider.boolType,
+            ),
             holder.thisType,
+            logger,
           );
           expect(
             emitParameter(
@@ -125,21 +181,67 @@ Future<void> main() async {
             equals(expected),
           );
         });
-      }
+      });
     }
 
     for (final parameterSpec in listConstructorParameters.entries) {
-      final description = 'generic list, ${parameterSpec.key}';
-      final expected = listExpected[parameterSpec.key];
+      group(parameterSpec.key, () {
+        for (final parameterSpec in listMethodParameters.entries) {
+          final description = 'generic list, ${parameterSpec.key}';
+          final expected = listExpected[parameterSpec.key];
 
-      test(description, () async {
-        final element = parameterSpec.value;
+          test(description, () async {
+            final element = parameterSpec.value;
+            final node = await nodeProvider
+                .getElementDeclarationAsync<FormalParameter>(element);
+            final context = TypeInstantiationContext.create(
+              nodeProvider,
+              makeProperty(
+                library.typeProvider.boolType,
+                library.typeProvider.boolType,
+              ),
+              holder.thisType,
+              logger,
+            );
+            expect(
+              emitParameter(
+                context,
+                await ParameterInfo.fromNodeAsync(nodeProvider, node),
+              ),
+              equals(expected),
+            );
+          });
+        }
+      });
+    }
+
+    group('instantiated preferredFieldType', () {
+      Future<void> testPreferredFieldType(
+        InterfaceType propertyAndFieldValueType,
+        InterfaceType preferredFieldType,
+        InterfaceType typeArgumentOfFormField,
+      ) async {
+        final parameterElement = listConstructorParameters['nonPrefixed']!;
+        final expected =
+            'List<${typeArgumentOfFormField.getDisplayString(withNullability: true)}> nonPrefixed';
         final node = await nodeProvider
-            .getElementDeclarationAsync<FormalParameter>(element);
+            .getElementDeclarationAsync<FormalParameter>(parameterElement);
         final context = TypeInstantiationContext.create(
           nodeProvider,
-          makeProperty(library.typeProvider.boolType),
-          holder.thisType,
+          PropertyDefinition(
+            name: 'prop',
+            propertyType: GenericInterfaceType(propertyAndFieldValueType, []),
+            fieldType: GenericInterfaceType(propertyAndFieldValueType, []),
+            preferredFormFieldType:
+                // POINT: With instantiated InterfaceType without type arguments
+                //        rather than generic type definition and type arguments.
+                //        That is, specify DropdownButtonFormField<bool>
+                //        instead of DropdownButtonFormField<T>, for example.
+                GenericInterfaceType(preferredFieldType, []),
+            warnings: [],
+          ),
+          preferredFieldType,
+          logger,
         );
         expect(
           emitParameter(
@@ -148,31 +250,26 @@ Future<void> main() async {
           ),
           equals(expected),
         );
-      });
-    }
+      }
 
-    for (final parameterSpec in listMethodParameters.entries) {
-      final description = 'generic list, ${parameterSpec.key}';
-      final expected = listExpected[parameterSpec.key];
+      test(
+        'generic',
+        () => testPreferredFieldType(
+          myEnumType,
+          formBuilderDropdownOfMyEnum,
+          myEnumType,
+        ),
+      );
 
-      test(description, () async {
-        final element = parameterSpec.value;
-        final node = await nodeProvider
-            .getElementDeclarationAsync<FormalParameter>(element);
-        final context = TypeInstantiationContext.create(
-          nodeProvider,
-          makeProperty(library.typeProvider.boolType),
-          holder.thisType,
-        );
-        expect(
-          emitParameter(
-            context,
-            await ParameterInfo.fromNodeAsync(nodeProvider, node),
-          ),
-          equals(expected),
-        );
-      });
-    }
+      test(
+        'nested-generic',
+        () => testPreferredFieldType(
+          library.typeProvider.listType(myEnumType),
+          formBuilderFilterChipOfMyEnum,
+          myEnumType,
+        ),
+      );
+    });
   });
 
   group('processTypeWithValueType', () {
@@ -187,8 +284,12 @@ Future<void> main() async {
           final element = constructorSpec.value;
           final context = TypeInstantiationContext.create(
             nodeProvider,
-            makeProperty(library.typeProvider.boolType),
+            makeProperty(
+              library.typeProvider.boolType,
+              library.typeProvider.boolType,
+            ),
             holder.thisType,
+            logger,
           );
           final sink = StringBuffer();
 
@@ -216,8 +317,12 @@ Future<void> main() async {
           final element = parameterSpec.value;
           final context = TypeInstantiationContext.create(
             nodeProvider,
-            makeProperty(library.typeProvider.boolType),
+            makeProperty(
+              library.typeProvider.boolType,
+              library.typeProvider.boolType,
+            ),
             holder.thisType,
+            logger,
           );
           final sink = StringBuffer();
 
@@ -245,8 +350,12 @@ Future<void> main() async {
         final element = listConstructorParameters[typeKind]!;
         final context = TypeInstantiationContext.create(
           nodeProvider,
-          makeProperty(library.typeProvider.boolType),
+          makeProperty(
+            library.typeProvider.boolType,
+            library.typeProvider.boolType,
+          ),
           holder.thisType,
+          logger,
         );
         final sink = StringBuffer();
 
@@ -275,8 +384,12 @@ Future<void> main() async {
         final element = listMethodParameters[typeKind]!;
         final context = TypeInstantiationContext.create(
           nodeProvider,
-          makeProperty(library.typeProvider.boolType),
+          makeProperty(
+            library.typeProvider.boolType,
+            library.typeProvider.boolType,
+          ),
           holder.thisType,
+          logger,
         );
         final sink = StringBuffer();
 
@@ -306,8 +419,12 @@ Future<void> main() async {
               constructorParameterNodes[nullability]![constructorSpec.key]!;
           final context = TypeInstantiationContext.create(
             nodeProvider,
-            makeProperty(library.typeProvider.boolType),
+            makeProperty(
+              library.typeProvider.boolType,
+              library.typeProvider.boolType,
+            ),
             holder.thisType,
+            logger,
           );
           final parameterInfo =
               await ParameterInfo.fromNodeAsync(nodeProvider, node);
@@ -339,8 +456,12 @@ Future<void> main() async {
               parameterSpec.key]!;
           final context = TypeInstantiationContext.create(
             nodeProvider,
-            makeProperty(library.typeProvider.boolType),
+            makeProperty(
+              library.typeProvider.boolType,
+              library.typeProvider.boolType,
+            ),
             holder.thisType,
+            logger,
           );
           final parameterInfo =
               await ParameterInfo.fromNodeAsync(nodeProvider, node);
@@ -381,8 +502,12 @@ Future<void> main() async {
         final node = listConstructorParameterNodes[typeKind]!;
         final context = TypeInstantiationContext.create(
           nodeProvider,
-          makeProperty(library.typeProvider.boolType),
+          makeProperty(
+            library.typeProvider.boolType,
+            library.typeProvider.boolType,
+          ),
           holder.thisType,
+          logger,
         );
         final parameterInfo =
             await ParameterInfo.fromNodeAsync(nodeProvider, node);
@@ -413,8 +538,12 @@ Future<void> main() async {
         final node = listMethodParameterNodes[typeKind]!;
         final context = TypeInstantiationContext.create(
           nodeProvider,
-          makeProperty(library.typeProvider.boolType),
+          makeProperty(
+            library.typeProvider.boolType,
+            library.typeProvider.boolType,
+          ),
           holder.thisType,
+          logger,
         );
         final parameterInfo =
             await ParameterInfo.fromNodeAsync(nodeProvider, node);

@@ -30,9 +30,9 @@ Iterable<String> _emitPropertyAccessors(
     }
 
     yield '  /// Gets a [PropertyDescriptor] of ${property.name} property.';
-    yield '  PropertyDescriptor<${property.type}> get ${property.name} =>';
+    yield '  PropertyDescriptor<${property.propertyValueType}, ${property.fieldValueType}> get ${property.name} =>';
     // properties is marked as @protected and @visibleForTesting
     yield '      // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member';
-    yield "      properties['${property.name}']! as PropertyDescriptor<${property.type}>;";
+    yield "      properties['${property.name}']! as PropertyDescriptor<${property.propertyValueType}, ${property.fieldValueType}>;";
   }
 }

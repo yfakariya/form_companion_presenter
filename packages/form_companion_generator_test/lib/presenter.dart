@@ -8,6 +8,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:form_builder_companion_presenter/form_builder_companion_annotation.dart';
 import 'package:form_builder_companion_presenter/form_builder_companion_presenter.dart';
 import 'package:form_companion_presenter/form_companion_annotation.dart';
 import 'package:form_companion_presenter/form_companion_presenter.dart';
@@ -146,16 +147,16 @@ class MultipleConstructorBody with CompanionPresenterMixin, FormCompanionMixin {
 // for tryGetProperties testing
 
 @formCompanion
-class InlineWithCascading with CompanionPresenterMixin, FormCompanionMixin {
+class InlineWithCascading
+    with CompanionPresenterMixin, FormBuilderCompanionMixin {
   InlineWithCascading() {
     initializeCompanionMixin(
       PropertyDescriptorsBuilder()
-        ..add<int>(name: 'propInt')
-        ..add<String>(name: 'propString')
-        ..add<bool>(name: 'propBool')
-        ..add<MyEnum>(name: 'propEnum')
-        ..add<List<MyEnum>>(name: 'propEnumList')
-        ..add(name: 'propRaw'),
+        ..add<int, String>(name: 'propInt', valueConverter: intStringConverter)
+        ..add<String, String>(name: 'propString')
+        ..add<bool, bool>(name: 'propBool')
+        ..add<MyEnum, MyEnum>(name: 'propEnum')
+        ..add<List<MyEnum>, List<MyEnum>>(name: 'propEnumList'),
     );
   }
 
@@ -168,9 +169,311 @@ class ExtensionMethod with CompanionPresenterMixin, FormBuilderCompanionMixin {
   ExtensionMethod() {
     initializeCompanionMixin(
       PropertyDescriptorsBuilder()
-        ..addWithField<double, FormBuilderSlider>(name: 'propDouble')
-        ..addWithField<List<MyEnum>, FormBuilderCheckboxGroup<MyEnum>>(
+        ..addWithField<double, double, FormBuilderSlider>(name: 'propDouble')
+        ..addWithField<List<MyEnum>, List<MyEnum>,
+            FormBuilderCheckboxGroup<MyEnum>>(
           name: 'propEnumList',
+        ),
+    );
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+@formCompanion
+class InferredTypes with CompanionPresenterMixin, FormBuilderCompanionMixin {
+  InferredTypes() {
+    initializeCompanionMixin(
+      PropertyDescriptorsBuilder()
+        ..add(
+          name: 'addWithValueConverter',
+          valueConverter: intStringConverter,
+        )
+        ..addString(
+          name: 'addStringWithStringConverter',
+          stringConverter: bigIntStringConverter,
+        )
+        ..addString(
+          name: 'addStringWithInitialValue',
+          initialValue: 1.23,
+          stringConverter: doubleStringConverter,
+        )
+        ..addEnum(
+          name: 'addEnumWithInitialValue',
+          initialValue: MyEnum.one,
+        )
+        ..addEnumList(
+          name: 'addEnumListWithInitialValue',
+          initialValues: [MyEnum.one],
+        ),
+    );
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+@formCompanion
+class RawAddVanilla with CompanionPresenterMixin, FormCompanionMixin {
+  RawAddVanilla() {
+    initializeCompanionMixin(
+      PropertyDescriptorsBuilder()..add(name: 'propRaw'),
+    );
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+@formCompanion
+class RawAddWithFieldVanilla with CompanionPresenterMixin, FormCompanionMixin {
+  RawAddWithFieldVanilla() {
+    initializeCompanionMixin(
+      PropertyDescriptorsBuilder()..addWithField(name: 'propRaw'),
+    );
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+@formCompanion
+class RawAddBigIntWithFieldVanilla
+    with CompanionPresenterMixin, FormCompanionMixin {
+  RawAddBigIntWithFieldVanilla() {
+    initializeCompanionMixin(
+      PropertyDescriptorsBuilder()..addBigIntWithField(name: 'propRaw'),
+    );
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+@formCompanion
+class RawAddBoolWithFieldVanilla
+    with CompanionPresenterMixin, FormCompanionMixin {
+  RawAddBoolWithFieldVanilla() {
+    initializeCompanionMixin(
+      PropertyDescriptorsBuilder()..addBoolWithField(name: 'propRaw'),
+    );
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+@formCompanion
+class RawAddDoubleWithFieldVanilla
+    with CompanionPresenterMixin, FormCompanionMixin {
+  RawAddDoubleWithFieldVanilla() {
+    initializeCompanionMixin(
+      PropertyDescriptorsBuilder()..addDoubleWithField(name: 'propRaw'),
+    );
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+@formCompanion
+class RawAddEnumWithFieldVanilla
+    with CompanionPresenterMixin, FormCompanionMixin {
+  RawAddEnumWithFieldVanilla() {
+    initializeCompanionMixin(
+      PropertyDescriptorsBuilder()..addEnumWithField(name: 'propRaw'),
+    );
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+@formCompanion
+class RawAddIntWithFieldVanilla
+    with CompanionPresenterMixin, FormCompanionMixin {
+  RawAddIntWithFieldVanilla() {
+    initializeCompanionMixin(
+      PropertyDescriptorsBuilder()..addIntWithField(name: 'propRaw'),
+    );
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+@formCompanion
+class RawAddStringWithFieldVanilla
+    with CompanionPresenterMixin, FormCompanionMixin {
+  RawAddStringWithFieldVanilla() {
+    initializeCompanionMixin(
+      PropertyDescriptorsBuilder()
+        ..addStringWithField(
+          name: 'propRaw',
+          stringConverter: StringConverter.fromCallbacks(
+            stringify: (v, l) => v.toString(),
+            parse: (v, l) => ConversionResult<Object>(null),
+          ),
+        ),
+    );
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+@formCompanion
+class RawAddFormBuilder
+    with CompanionPresenterMixin, FormBuilderCompanionMixin {
+  RawAddFormBuilder() {
+    initializeCompanionMixin(
+      PropertyDescriptorsBuilder()..add(name: 'propRaw'),
+    );
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+@formCompanion
+class RawAddWithFieldFormBuilder
+    with CompanionPresenterMixin, FormBuilderCompanionMixin {
+  RawAddWithFieldFormBuilder() {
+    initializeCompanionMixin(
+      PropertyDescriptorsBuilder()..addWithField(name: 'propRaw'),
+    );
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+@formCompanion
+class RawAddBigIntWithFieldFormBuilder
+    with CompanionPresenterMixin, FormBuilderCompanionMixin {
+  RawAddBigIntWithFieldFormBuilder() {
+    initializeCompanionMixin(
+      PropertyDescriptorsBuilder()..addBigIntWithField(name: 'propRaw'),
+    );
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+@formCompanion
+class RawAddBoolListWithFieldFormBuilder
+    with CompanionPresenterMixin, FormBuilderCompanionMixin {
+  RawAddBoolListWithFieldFormBuilder() {
+    initializeCompanionMixin(
+      PropertyDescriptorsBuilder()..addBoolListWithField(name: 'propRaw'),
+    );
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+@formCompanion
+class RawAddBoolWithFieldFormBuilder
+    with CompanionPresenterMixin, FormBuilderCompanionMixin {
+  RawAddBoolWithFieldFormBuilder() {
+    initializeCompanionMixin(
+      PropertyDescriptorsBuilder()..addBoolWithField(name: 'propRaw'),
+    );
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+@formCompanion
+class RawAddDoubleWithFieldFormBuilder
+    with CompanionPresenterMixin, FormBuilderCompanionMixin {
+  RawAddDoubleWithFieldFormBuilder() {
+    initializeCompanionMixin(
+      PropertyDescriptorsBuilder()..addDoubleWithField(name: 'propRaw'),
+    );
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+@formCompanion
+class RawAddEnumListWithFieldFormBuilder
+    with CompanionPresenterMixin, FormBuilderCompanionMixin {
+  RawAddEnumListWithFieldFormBuilder() {
+    initializeCompanionMixin(
+      PropertyDescriptorsBuilder()..addEnumListWithField(name: 'propRaw'),
+    );
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+@formCompanion
+class RawAddEnumWithFieldFormBuilder
+    with CompanionPresenterMixin, FormBuilderCompanionMixin {
+  RawAddEnumWithFieldFormBuilder() {
+    initializeCompanionMixin(
+      PropertyDescriptorsBuilder()..addEnumWithField(name: 'propRaw'),
+    );
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+@formCompanion
+class RawAddIntWithFieldFormBuilder
+    with CompanionPresenterMixin, FormBuilderCompanionMixin {
+  RawAddIntWithFieldFormBuilder() {
+    initializeCompanionMixin(
+      PropertyDescriptorsBuilder()..addIntWithField(name: 'propRaw'),
+    );
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+@formCompanion
+class RawAddStringWithFieldFormBuilder
+    with CompanionPresenterMixin, FormBuilderCompanionMixin {
+  RawAddStringWithFieldFormBuilder() {
+    initializeCompanionMixin(
+      PropertyDescriptorsBuilder()
+        ..addStringWithField(
+          name: 'propRaw',
+          stringConverter: StringConverter.fromCallbacks(
+            stringify: (v, l) => v.toString(),
+            parse: (v, l) => ConversionResult<Object>(null),
+          ),
+        ),
+    );
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+@formCompanion
+class ConvinientExtensionMethod
+    with CompanionPresenterMixin, FormBuilderCompanionMixin {
+  ConvinientExtensionMethod() {
+    initializeCompanionMixin(
+      PropertyDescriptorsBuilder()
+        ..addInt(name: 'propInt')
+        ..addText(name: 'propString')
+        ..addBool(name: 'propBool')
+        ..addEnum<MyEnum>(name: 'propEnum')
+        ..addEnumList<MyEnum>(name: 'propEnumList')
+        ..addDoubleWithField<FormBuilderSlider>(name: 'propDouble')
+        ..addEnumListWithField<MyEnum, FormBuilderCheckboxGroup<MyEnum>>(
+          name: 'propEnumList2',
         ),
     );
   }
@@ -472,12 +775,11 @@ class LocalVariableInlineInitialized
     with CompanionPresenterMixin, FormCompanionMixin {
   LocalVariableInlineInitialized() {
     final builder = PropertyDescriptorsBuilder()
-      ..add<int>(name: 'propInt')
-      ..add<String>(name: 'propString')
-      ..add<bool>(name: 'propBool')
-      ..add<MyEnum>(name: 'propEnum')
-      ..add<List<MyEnum>>(name: 'propEnumList')
-      ..add(name: 'propRaw');
+      ..add<int, String>(name: 'propInt')
+      ..add<String, String>(name: 'propString')
+      ..add<bool, bool>(name: 'propBool')
+      ..add<MyEnum, MyEnum>(name: 'propEnum')
+      ..add<List<MyEnum>, List<MyEnum>>(name: 'propEnumList');
     initializeCompanionMixin(builder);
   }
 
@@ -513,7 +815,7 @@ class LocalVariableRefersFieldWithModification
     with CompanionPresenterMixin, FormCompanionMixin {
   LocalVariableRefersFieldWithModification() {
     final builder = inlineInitialized;
-    builder.add<String>(name: 'extra');
+    builder.add<String, String>(name: 'extra');
     initializeCompanionMixin(builder);
   }
 
@@ -538,7 +840,7 @@ class LocalVariableRefersAlwaysSameGetterWithModification
     with CompanionPresenterMixin, FormCompanionMixin {
   LocalVariableRefersAlwaysSameGetterWithModification() {
     final builder = refersInlineInitialized;
-    builder.add<String>(name: 'extra');
+    builder.add<String, String>(name: 'extra');
     initializeCompanionMixin(builder);
   }
 
@@ -551,7 +853,7 @@ class LocalVariableRefersAlwaysNewGetterWithModification
     with CompanionPresenterMixin, FormCompanionMixin {
   LocalVariableRefersAlwaysNewGetterWithModification() {
     final builder = refersFactory;
-    builder.add<String>(name: 'extra');
+    builder.add<String, String>(name: 'extra');
     initializeCompanionMixin(builder);
   }
 
@@ -576,7 +878,7 @@ class LocalVariableRefersAlwaysSameFactoryMethodWithMofidication
     with CompanionPresenterMixin, FormCompanionMixin {
   LocalVariableRefersAlwaysSameFactoryMethodWithMofidication() {
     final builder = singletonFactory();
-    builder.add<String>(name: 'extra');
+    builder.add<String, String>(name: 'extra');
     initializeCompanionMixin(builder);
   }
 
@@ -589,7 +891,7 @@ class LocalVariableRefersAlwaysNewFactoryMethodWithMofidication
     with CompanionPresenterMixin, FormCompanionMixin {
   LocalVariableRefersAlwaysNewFactoryMethodWithMofidication() {
     final builder = withHelpersFactory();
-    builder.add<String>(name: 'extra');
+    builder.add<String, String>(name: 'extra');
     initializeCompanionMixin(builder);
   }
 
@@ -602,9 +904,9 @@ class LocalVariableCallsHelpers
     with CompanionPresenterMixin, FormCompanionMixin {
   LocalVariableCallsHelpers() {
     final builder = PropertyDescriptorsBuilder();
-    builder.add<int>(name: 'propInt');
+    builder.add<int, String>(name: 'propInt');
     helper(builder);
-    builder.add(name: 'propRaw');
+    builder.add<List<MyEnum>, List<MyEnum>>(name: 'propEnumList');
     initializeCompanionMixin(builder);
   }
 
@@ -642,8 +944,8 @@ class InvalidLocalVariableInitializationWithDuplication
     with CompanionPresenterMixin, FormCompanionMixin {
   InvalidLocalVariableInitializationWithDuplication() {
     final builder = PropertyDescriptorsBuilder()
-      ..add<int>(name: 'propInt')
-      ..add<int>(name: 'propInt');
+      ..add<int, String>(name: 'propInt')
+      ..add<int, String>(name: 'propInt');
     initializeCompanionMixin(builder);
   }
 
@@ -667,10 +969,10 @@ class MultipleInitializeCompanionMixin
     with CompanionPresenterMixin, FormCompanionMixin {
   MultipleInitializeCompanionMixin() {
     initializeCompanionMixin(
-      PropertyDescriptorsBuilder()..add<int>(name: 'prop1'),
+      PropertyDescriptorsBuilder()..add<int, String>(name: 'prop1'),
     );
     initializeCompanionMixin(
-      PropertyDescriptorsBuilder()..add<String>(name: 'prop2'),
+      PropertyDescriptorsBuilder()..add<String, String>(name: 'prop2'),
     );
   }
 
@@ -683,7 +985,7 @@ class DynamicPropertyName with CompanionPresenterMixin, FormCompanionMixin {
   DynamicPropertyName() {
     initializeCompanionMixin(
       PropertyDescriptorsBuilder()
-        ..add<int>(name: 'prop${Platform.numberOfProcessors}'),
+        ..add<int, String>(name: 'prop${Platform.numberOfProcessors}'),
     );
   }
 
@@ -824,13 +1126,12 @@ class InvalidInitializationWithDuplication
   InvalidInitializationWithDuplication() {
     initializeCompanionMixin(
       PropertyDescriptorsBuilder()
-        ..add<int>(name: 'propInt')
-        ..add<String>(name: 'propString')
-        ..add<bool>(name: 'propBool')
-        ..add<MyEnum>(name: 'propEnum')
-        ..add<List<MyEnum>>(name: 'propEnumList')
-        ..add(name: 'propRaw')
-        ..add<String>(name: 'propInt'),
+        ..add<int, String>(name: 'propInt')
+        ..add<String, String>(name: 'propString')
+        ..add<bool, bool>(name: 'propBool')
+        ..add<MyEnum, MyEnum>(name: 'propEnum')
+        ..add<List<MyEnum>, List<MyEnum>>(name: 'propEnumList')
+        ..add<String, String>(name: 'propInt'),
     );
   }
 

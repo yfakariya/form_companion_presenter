@@ -9,6 +9,7 @@ import 'package:meta/meta.dart';
 import 'package:source_gen/source_gen.dart';
 
 import 'form_field_locator.dart';
+import 'model.dart';
 import 'node_provider.dart';
 import 'utilities.dart';
 
@@ -62,6 +63,9 @@ class ParseContext {
   /// This value will never be cleared.
   PropertyDescriptorsBuilding? initializeCompanionMixinArgument;
 
+  /// Whether the current presenter uses `flutter_form_builder` or not.
+  bool isFormBuilder;
+
   /// Initialize a new [ParseContext] instance.
   ParseContext(
     this.logger,
@@ -69,8 +73,9 @@ class ParseContext {
     this.formFieldLocator,
     this.typeProvider,
     this.typeSystem,
-    this._warnings,
-  );
+    this._warnings, {
+    required this.isFormBuilder,
+  });
 
   /// Marks that current executable is returned.
   ///
@@ -130,19 +135,49 @@ class _Scope {
         localFunctions = Map.from(outerLocalFunctions);
 }
 
+// TODO(yfakariya): Should be same as PropertyDefinition
+
+@sealed
+// ignore: public_member_api_docs
+class PropertyDescriptorsBuilderMethodInvocation {
+// ignore: public_member_api_docs
+  final MethodInvocation node;
+// ignore: public_member_api_docs
+  final String name;
+// ignore: public_member_api_docs
+  final GenericInterfaceType propertyType;
+// ignore: public_member_api_docs
+  final GenericInterfaceType fieldType;
+// ignore: public_member_api_docs
+  final GenericInterfaceType? formFieldType;
+// ignore: public_member_api_docs
+  final List<String> warnings;
+
+// ignore: public_member_api_docs
+  PropertyDescriptorsBuilderMethodInvocation(
+    this.node,
+    this.name,
+    this.propertyType,
+    this.fieldType,
+    this.formFieldType,
+    this.warnings,
+  );
+}
+
 /// Represents a series of property building operations for specified variable.
 @sealed
 class PropertyDescriptorsBuilding {
   /// Gets a name of variable which is operated in.
   final String variableName;
 
-  final List<MethodInvocation> _buildings;
+  final List<PropertyDescriptorsBuilderMethodInvocation> _buildings;
 
   /// `true` if this variable is assigned to non-local variable.
   bool _isMutable = false;
 
   /// Gets a series of property building operations in order.
-  Iterable<MethodInvocation> get buildings => _buildings;
+  Iterable<PropertyDescriptorsBuilderMethodInvocation> get buildings =>
+      _buildings;
 
   /// Effiently gets a value  whether [buildings] is empty or not.
   bool get isEmpty => _buildings.isEmpty;
@@ -168,11 +203,14 @@ class PropertyDescriptorsBuilding {
   ///
   /// If the operation is attempted to shared instance,
   /// [InvalidGenerationSourceError] will be thrown.
-  void add(MethodInvocation invocation, Element contextElement) {
+  void add(
+    PropertyDescriptorsBuilderMethodInvocation invocation,
+    Element contextElement,
+  ) {
     if (_isMutable) {
       throwError(
         message:
-            'Modification of shared $pdbTypeName object is detected at ${getNodeLocation(invocation, contextElement)}.',
+            'Modification of shared $pdbTypeName object is detected at ${getNodeLocation(invocation.node, contextElement)}.',
         todo:
             'Do not define extra properties to $pdbTypeName when it is declared as fields or top level variables because $pdbTypeName is mutable object.',
         element: contextElement,
@@ -189,7 +227,10 @@ class PropertyDescriptorsBuilding {
   ///
   /// If the operation is attempted to shared instance,
   /// [InvalidGenerationSourceError] will be thrown.
-  void addAll(Iterable<MethodInvocation> invocations, Element contextElement) {
+  void addAll(
+    Iterable<PropertyDescriptorsBuilderMethodInvocation> invocations,
+    Element contextElement,
+  ) {
     for (final invocation in invocations) {
       add(invocation, contextElement);
     }

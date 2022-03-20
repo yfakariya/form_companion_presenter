@@ -71,7 +71,9 @@ class FormFieldLocator {
   /// Resolves specified `FormField` type from dependent libraries.
   ///
   /// This method returns `null` when [typeName] cannot be resolved.
-  InterfaceType? resolveFormFieldType(String typeName) {
+  InterfaceType? resolveFormFieldType(
+    String typeName,
+  ) {
     for (final package in _packages) {
       final library = _libraries[package]!;
       final candidate = _getTypeFromLibrary(library, typeName);

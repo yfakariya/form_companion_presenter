@@ -6,6 +6,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:form_companion_presenter/async_validation_indicator.dart';
+import 'package:form_companion_presenter/form_companion_extension.dart';
 import 'package:form_companion_presenter/form_companion_presenter.dart';
 
 import 'l10n/locale_keys.g.dart';
@@ -13,6 +14,8 @@ import 'models.dart';
 import 'routes.dart';
 import 'screen.dart';
 import 'validators.dart';
+
+// TODO(yfakariya): use generator
 
 //------------------------------------------------------------------------------
 // In this example, [AutovalidateMode] of the form and fields are set to
@@ -64,7 +67,7 @@ class _BulkAutoValidationVanillaFormAccountPane extends ConsumerWidget {
             key: presenter.getKey('id', context),
             initialValue: state.id,
             validator: presenter.getPropertyValidator('id', context),
-            onSaved: presenter.savePropertyValue('id'),
+            onSaved: presenter.savePropertyValue('id', context),
             keyboardType: TextInputType.emailAddress,
             decoration: InputDecoration(
               labelText: LocaleKeys.id_label.tr(),
@@ -79,7 +82,7 @@ class _BulkAutoValidationVanillaFormAccountPane extends ConsumerWidget {
             key: presenter.getKey('name', context),
             initialValue: state.name,
             validator: presenter.getPropertyValidator('name', context),
-            onSaved: presenter.savePropertyValue('name'),
+            onSaved: presenter.savePropertyValue('name', context),
             decoration: InputDecoration(
               labelText: LocaleKeys.name_label.tr(),
               hintText: LocaleKeys.name_hint.tr(),
@@ -88,7 +91,7 @@ class _BulkAutoValidationVanillaFormAccountPane extends ConsumerWidget {
           DropdownButtonFormField<Gender>(
             key: presenter.getKey('gender', context),
             value: state.gender,
-            onSaved: presenter.savePropertyValue('gender'),
+            onSaved: presenter.savePropertyValue('gender', context),
             // Tip: required to work
             onChanged: (_) {},
             decoration: InputDecoration(
@@ -118,7 +121,7 @@ class _BulkAutoValidationVanillaFormAccountPane extends ConsumerWidget {
             key: presenter.getKey('age', context),
             initialValue: state.age.toString(),
             validator: presenter.getPropertyValidator('age', context),
-            onSaved: presenter.savePropertyValue('age'),
+            onSaved: presenter.savePropertyValue('age', context),
             decoration: InputDecoration(
               labelText: LocaleKeys.age_label.tr(),
               hintText: LocaleKeys.age_hint.tr(),
@@ -150,7 +153,7 @@ class BulkAutoValidationVanillaFormAccountPresenter
   ) : super(initialState) {
     initializeCompanionMixin(
       PropertyDescriptorsBuilder()
-        ..add<String>(
+        ..addText(
           name: 'id',
           validatorFactories: [
             Validator.required,
@@ -160,21 +163,23 @@ class BulkAutoValidationVanillaFormAccountPresenter
             Validator.id,
           ],
         )
-        ..add<String>(
+        ..addText(
           name: 'name',
           validatorFactories: [
             Validator.required,
           ],
         )
-        ..add<Gender>(
+        ..addEnum<Gender>(
           name: 'gender',
         )
-        ..add<String>(
+        ..addString(
           name: 'age',
           validatorFactories: [
             Validator.required,
             Validator.min(0),
           ],
+          initialValue: 20,
+          stringConverter: intStringConverter,
         ),
     );
   }
@@ -186,7 +191,7 @@ class BulkAutoValidationVanillaFormAccountPresenter
     final name = getSavedPropertyValue<String>('name')!;
     final gender = getSavedPropertyValue<Gender>('gender')!;
     // You can omit generic type argument occasionally.
-    final age = int.parse(getSavedPropertyValue('age')!);
+    final age = getSavedPropertyValue<int>('age')!;
 
     // Call business logic.
     if (!(await doSubmitLogic(id, name, gender, age))) {

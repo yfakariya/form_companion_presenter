@@ -9,6 +9,7 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:form_builder_companion_presenter/form_builder_companion_presenter.dart';
+import 'package:form_companion_presenter/form_companion_extension.dart';
 import 'package:form_companion_presenter/form_companion_presenter.dart';
 
 Widget _buildChilren(
@@ -229,7 +230,7 @@ void main() {
       var validatorCalled = false;
       final presenter = Presenter(
         properties: PropertyDescriptorsBuilder()
-          ..add<String>(
+          ..add<String, String>(
             name: 'prop',
             validatorFactories: [
               (context) => (value) {
@@ -275,7 +276,7 @@ void main() {
       final completer = Completer<void>();
       final presenter = Presenter(
         properties: PropertyDescriptorsBuilder()
-          ..add<String>(
+          ..add<String, String>(
             name: 'prop',
             asyncValidatorFactories: [
               (context) => (value, options) async {
@@ -323,7 +324,7 @@ void main() {
       final validatorCompleted = Completer<void>();
       final presenter = Presenter(
         properties: PropertyDescriptorsBuilder()
-          ..add<String>(
+          ..add<String, String>(
             name: 'prop',
             asyncValidatorFactories: [
               (context) => (value, options) async {
@@ -401,7 +402,7 @@ void main() {
         (tester) async {
       final presenter = Presenter(
         properties: PropertyDescriptorsBuilder()
-          ..add<String>(
+          ..add<String, String>(
             name: 'prop',
             validatorFactories: [
               (context) => (value) => null,
@@ -579,7 +580,7 @@ void main() {
       final completer = Completer<void>();
       final presenter = Presenter(
         properties: PropertyDescriptorsBuilder()
-          ..add<String>(
+          ..add<String, String>(
             name: 'target',
             validatorFactories: [
               (_) => (value) {
@@ -594,7 +595,7 @@ void main() {
                   },
             ],
           )
-          ..add<String>(
+          ..add<String, String>(
             name: 'another',
             validatorFactories: [
               (_) => (value) {
@@ -781,7 +782,7 @@ void main() {
       'saves each field values without onSaved handler.',
       (widgetTester) => testSaveFields(
         widgetTester,
-        PropertyDescriptorsBuilder()..add<String>(name: 'target'),
+        PropertyDescriptorsBuilder()..add<String, String>(name: 'target'),
         (context) => [
           FormBuilderTextField(name: 'target'),
         ],
@@ -792,7 +793,7 @@ void main() {
       'extra fields are ignored and harmless.',
       (widgetTester) async => testSaveFields(
         widgetTester,
-        PropertyDescriptorsBuilder()..add<String>(name: 'target'),
+        PropertyDescriptorsBuilder()..add<String, String>(name: 'target'),
         (context) => [
           FormBuilderTextField(name: 'target'),
           FormBuilderTextField(name: 'another'),
@@ -805,8 +806,8 @@ void main() {
       (widgetTester) => testSaveFields(
         widgetTester,
         PropertyDescriptorsBuilder()
-          ..add<String>(name: 'target')
-          ..add<String>(name: 'another'),
+          ..add<String, String>(name: 'target')
+          ..add<String, String>(name: 'another'),
         (context) => [
           FormBuilderTextField(name: 'target'),
         ],

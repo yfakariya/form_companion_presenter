@@ -8,12 +8,16 @@ import 'package:meta/meta.dart';
 /// [FormStateAdapter] implementation for [FormBuilderState].
 class _FormBuilderStateAdapter implements FormStateAdapter {
   final FormBuilderState _state;
+  final Locale _locale;
 
   @override
   AutovalidateMode get autovalidateMode =>
       _state.widget.autovalidateMode ?? AutovalidateMode.disabled;
 
-  _FormBuilderStateAdapter(this._state);
+  @override
+  Locale get locale => _locale;
+
+  _FormBuilderStateAdapter(this._state, this._locale);
 
   @override
   bool validate() => _state.validate();
@@ -42,7 +46,7 @@ mixin FormBuilderCompanionMixin on CompanionPresenterMixin {
     // Form. Note that FormBuilder internally uses Form to set _FormScope.
     final formState = Form.of(context);
     assert(formState != null);
-    return _FormBuilderStateAdapter(state);
+    return _FormBuilderStateAdapter(state, getLocale(context));
   }
 
   @override
@@ -94,7 +98,7 @@ mixin FormBuilderCompanionMixin on CompanionPresenterMixin {
     if (formState is _FormBuilderStateAdapter) {
       formState.save();
       for (final field in formState._state.value.entries) {
-        properties[field.key]?.saveValue(field.value);
+        properties[field.key]?.setFieldValue(field.value, formState.locale);
       }
     }
   }

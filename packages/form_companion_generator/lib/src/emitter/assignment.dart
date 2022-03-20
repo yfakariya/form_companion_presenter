@@ -176,6 +176,7 @@ Iterable<String>? _assignAutovalidateMode(AssignmentContext context) =>
             'autovalidateMode: autovalidateMode ?? ${context.data.fieldAutovalidateMode},'
           ];
 
+// TODO(yfakariya): Merge to defaultConstantValue
 Iterable<String>? _assignDecoration(AssignmentContext context) => [
       'decoration: InputDecoration(',
       '  labelText: ${context.propertyDescriptor}.name,',
@@ -193,9 +194,7 @@ String _assignValueCore(AssignmentContext context) {
       context.parameterType.nullabilitySuffix == NullabilitySuffix.none
           ? '!'
           : '';
-  return context.parameterType.isDartCoreString
-      ? '${context.propertyDescriptor}.savedValue$nullabilitySuffix.toString()'
-      : '${context.propertyDescriptor}.savedValue$nullabilitySuffix';
+  return "${context.propertyDescriptor}.getFieldValue(Localizations.maybeLocaleOf(${context.buildContext}) ?? const Locale('en', 'US'))$nullabilitySuffix";
 }
 
 Iterable<String>? _assignValidator(AssignmentContext context) => [
@@ -220,7 +219,9 @@ final _intrinsicVanillaAssignmentEmitters =
         'key: ${context.presenter}.getKey(${context.propertyDescriptor}.name, ${context.buildContext}),'
       ],
   'initialValue': _assignInitialValue,
-  'onSaved': (context) => ['onSaved: ${context.propertyDescriptor}.saveValue,'],
+  'onSaved': (context) => [
+        "onSaved: (v) => ${context.propertyDescriptor}.setFieldValue(v, Localizations.maybeLocaleOf(${context.buildContext}) ?? const Locale('en', 'US')),"
+      ],
   'validator': _assignValidator,
   'value': _assignValue,
 };

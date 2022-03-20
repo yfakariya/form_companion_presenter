@@ -9,6 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:form_companion_presenter/form_companion_presenter.dart';
 import 'package:form_companion_presenter/src/async_validator_executor.dart';
+import 'package:form_companion_presenter/src/internal_utils.dart';
 
 void main() {
   group('AsyncValidatorExecutor', () {
@@ -24,7 +25,7 @@ void main() {
               () => result,
             ),
             value: 1,
-            locale: const Locale('en', 'US'),
+            locale: defaultLocale,
             onCompleted: (v, e) => completer1.complete(v),
             failureHandler: (_) {},
           ),
@@ -44,7 +45,7 @@ void main() {
               () => result + result,
             ),
             value: 1,
-            locale: const Locale('en', 'US'),
+            locale: defaultLocale,
             onCompleted: (v, e) => completer2.complete(v),
             failureHandler: (_) {},
           ),
@@ -64,7 +65,7 @@ void main() {
             ),
             // Different value
             value: 2,
-            locale: const Locale('en', 'US'),
+            locale: defaultLocale,
             onCompleted: (v, e) => completer3.complete(v),
             failureHandler: (_) {},
           ),
@@ -124,7 +125,7 @@ void main() {
               );
             },
             value: 1,
-            locale: const Locale('en', 'US'),
+            locale: defaultLocale,
             onCompleted: (v, e) =>
                 e == null ? completer.complete(v) : completer.completeError(e),
             failureHandler: (_) {},
@@ -159,7 +160,7 @@ void main() {
             target.validate(
               validator: validator,
               value: value,
-              locale: const Locale('en', 'US'),
+              locale: defaultLocale,
               onCompleted: (r, e) {
                 onCompleted(r, e);
                 if (e == null) {
@@ -313,7 +314,7 @@ void main() {
             return Future.delayed(Duration.zero, () => null);
           },
           value: 1,
-          locale: const Locale('en', 'US'),
+          locale: defaultLocale,
           onCompleted: onCompleted,
           onFailed: onFailed,
           failureHandler: (_) {},
@@ -329,7 +330,7 @@ void main() {
             return Future.delayed(Duration.zero, null);
           },
           value: 1,
-          locale: const Locale('en', 'US'),
+          locale: defaultLocale,
           onCompleted: (value) {
             // nop
           },

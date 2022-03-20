@@ -21,5 +21,21 @@ DartType? _getVariableType(VariableDeclarationStatement statement) {
   return null;
 }
 
-ClassElement? _getTargetClass(MethodInvocation method) =>
-    method.realTarget?.staticType?.element as ClassElement?;
+ClassElement? _getTargetClass(
+  Element callerElement,
+  MethodInvocation method,
+) {
+  final target = method.realTarget?.staticType?.element as ClassElement?;
+  if (target != null) {
+    return target;
+  }
+
+  // For extension -> instance method pattern
+  final callerType =
+      callerElement.thisOrAncestorOfType<ExtensionElement>()?.extendedType;
+  if (callerType is InterfaceType) {
+    return callerType.element;
+  } else {
+    return null;
+  }
+}

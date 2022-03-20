@@ -8,20 +8,21 @@ part of '../form_companion_mixin.dart';
 ///
 /// You can use this descriptor indirectly to:
 /// * Setup [FormField] or simluar widgets. [FormFieldValidator] is provided
-///   via [CompanionPresenterMixin.getPropertyValidator] (it internally calls
-///   [getValidator]), which sequentially run validators including asynchronous
-///   ones and they should be set to [FormField.validator] parameters.
+///   via [CompanionPresenterMixinExtension.getPropertyValidator] (it internally
+///   calls [getValidator]), which sequentially run validators including
+///   asynchronous ones and they should be set to [FormField.validator]
+///   parameters.
 ///   For vanilla [FormField], it is required to bind [FormField.onSaved]
 ///   parameters and callbacks returned from
-///   [CompanionPresenterMixin.savePropertyValue] methods to work the mixin
-///   correctly. The callback internally calls [saveValue] method.
+///   [CompanionPresenterMixinExtension.savePropertyValue] methods to work
+///   the mixin correctly. The callback internally calls [setFieldValue] method.
 ///   [name] property which should be set to name for some form frameworks.
 /// * Checking whether asynchronous validation via
-///   [CompanionPresenterMixin.hasPendingAsyncValidations] to show some
+///   [CompanionPresenterMixinExtension.hasPendingAsyncValidations] to show some
 ///   indicator. It internally calls [hasPendingAsyncValidations].
 /// * Get saved valid value for this property via
-///   [CompanionPresenterMixin.getSavedPropertyValue] which internally calls
-///   [savedValue] property.
+///   [CompanionPresenterMixinExtension.getSavedPropertyValue] which internally
+///   calls [value] property.
 ///
 /// Conversely, you must use this object to setup form fields to work
 /// [CompanionPresenterMixin] logics correctly.
@@ -29,7 +30,7 @@ part of '../form_companion_mixin.dart';
 /// This object is built with [PropertyDescriptorsBuilder] which is passed to
 /// [CompanionPresenterMixin.initializeCompanionMixin].
 @sealed
-class PropertyDescriptor<T extends Object> {
+class PropertyDescriptor<P extends Object, F extends Object> {
   /// Unique name of this property.
   final String name;
 
@@ -42,16 +43,18 @@ class PropertyDescriptor<T extends Object> {
   // async validation from FormCompanionMixin.
 
   /// Factories of [FormFieldValidator].
-  final List<FormFieldValidatorFactory<T>> _validatorFactories;
+  final List<FormFieldValidatorFactory<F>> _validatorFactories;
 
   /// Entries to build [AsyncValidator].
-  final List<_AsyncValidatorFactoryEntry<T>> _asynvValidatorEntries;
+  final List<_AsyncValidatorFactoryEntry<F>> _asynvValidatorEntries;
+
+  final ValueConverter<P, F> _valueConverter;
 
   /// Saved property value. This value can be `null`.
-  T? _value;
+  P? _value;
 
-  /// Indicates whether this property value is set (saved).
-  var _isValueSet = false;
+  /// Gets a saved or initial value of this property.
+  P? get value => _value;
 
   /// [Completer] to notify [CompanionPresenterMixin] with
   /// non-autovalidation mode which should run and wait asynchronous validators
@@ -61,33 +64,25 @@ class PropertyDescriptor<T extends Object> {
   /// State automaton node of validation.
   _ValidationContext _validationContext = _ValidationContext.unspecified;
 
-  /// Saved property value. This value can be `null`.
+  /// Gets a field value (rather than property value) for form field.
   ///
-  /// Note that this property should not be used for initial value of [FormField].,
-  T? get savedValue {
-    assert(
-      _isValueSet,
-      'value has not been set yet via saveValue(). Note that this property should not be used for initial value of FormField.',
-    );
+  /// This value calls [ValueConverter.toFieldValue] with [value] and [locale].
+  F? getFieldValue(Locale locale) =>
+      _valueConverter.toFieldValue(_value, locale);
 
-    return _value;
-  }
-
-  /// Save value from logic which handles this [PropertyDescriptor] without
-  /// strong typing.
+  /// Set a field value (rather than property value) from form field.
   ///
-  /// This method throws [ArgumentError] if [value] is not compatible [T].
-  void saveValue(dynamic value) {
-    if (value is! T?) {
-      throw ArgumentError.value(
-        value,
-        'value',
-        '${value.runtimeType} is not compatible with $T.',
-      );
+  /// This setter eventually set [value].
+  ///
+  /// This value calls [ValueConverter.toPropertyValue] with [value]
+  /// and [locale].
+  void setFieldValue(F? value, Locale locale) {
+    final result = _valueConverter.toPropertyValue(value, locale);
+    if (result is! ConversionResult<P>) {
+      throw ArgumentError.value(value, 'value', result.toString());
     }
 
-    _value = value;
-    _isValueSet = true;
+    _value = result.value;
   }
 
   /// State of pending async validations.
@@ -103,25 +98,35 @@ class PropertyDescriptor<T extends Object> {
   PropertyDescriptor._({
     required this.name,
     required this.presenter,
-    required List<FormFieldValidatorFactory<T>> validatorFactories,
-    required List<AsyncValidatorFactory<T>> asyncValidatorFactories,
-    Equality<T?>? equality,
-  })  : _validatorFactories = validatorFactories,
+    required List<FormFieldValidatorFactory<F>> validatorFactories,
+    required List<AsyncValidatorFactory<F>> asyncValidatorFactories,
+    required P? initialValue,
+    required Equality<F?>? equality,
+    required ValueConverter<P, F>? valueConverter,
+  })  : _value = initialValue,
+        _valueConverter = valueConverter ?? DefaultValueConverter<P, F>(),
+        _validatorFactories = [...validatorFactories],
         _asynvValidatorEntries = asyncValidatorFactories
             .map(
-              (v) => _AsyncValidatorFactoryEntry<T>(
+              (v) => _AsyncValidatorFactoryEntry<F>(
                 v,
                 equality,
                 presenter.handleCanceledAsyncValidationError,
               ),
             )
             .toList(),
-        _pendingAsyncValidations = _PendingAsyncValidations();
+        _pendingAsyncValidations = _PendingAsyncValidations() {
+    if (valueConverter != null) {
+      _validatorFactories.add(
+        createValidatorFactoryFromConverter<P, F>(valueConverter),
+      );
+    }
+  }
 
   /// Returns a composite validator which contains synchronous (normal)
   /// validators and asynchronous validators.
-  FormFieldValidator<T> getValidator(BuildContext context) =>
-      _PropertyValidator<T>(
+  FormFieldValidator<F> getValidator(BuildContext context) =>
+      _PropertyValidator<F>(
         [
           ..._validatorFactories.map((f) => f(context)),
         ],

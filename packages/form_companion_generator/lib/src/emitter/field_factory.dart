@@ -52,12 +52,12 @@ Stream<String> emitFieldFactory(
   // For newline before lines.
   yield '';
 
-  final formFieldConstructor = property.fieldConstructor;
+  final formFieldConstructor = property.formFieldConstructor;
   final instantiationContext = property.instantiationContext;
   if (instantiationContext == null || formFieldConstructor == null) {
     // We cannot handle this pattern.
     yield "  // $_todoHeader ERROR - Cannot generate field factory for '${property.name}' "
-        "property, because FormField type '${property.fieldTypeName}' is unknown.";
+        "property, because FormField type '${property.formFieldTypeName}' is unknown.";
     return;
   }
 
@@ -75,7 +75,11 @@ Stream<String> emitFieldFactory(
   }
 
   final sink = StringBuffer();
-  processTypeWithValueType(instantiationContext, property.fieldType!, sink);
+  processTypeWithValueType(
+    instantiationContext,
+    property.formFieldType!,
+    sink,
+  );
   final formFieldType = sink.toString();
 
   yield '  /// Gets a [FormField] for ${property.name} property.';

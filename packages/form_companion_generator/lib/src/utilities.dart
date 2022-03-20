@@ -49,7 +49,7 @@ extension FutureOrIterableExtensions<T> on Iterable<FutureOr<T>> {
 Never throwError({
   required String message,
   String? todo,
-  required Element element,
+  Element? element,
 }) =>
     todo == null
         ? throw InvalidGenerationSourceError(message, element: element)

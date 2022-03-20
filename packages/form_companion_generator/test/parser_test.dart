@@ -160,6 +160,7 @@ Future<void> main() async {
       void Function(Map<String, PropertyAndFormFieldDefinition>)
           propertiesAssertion, {
       void Function(List<String>)? warningsAssertion,
+      required bool isFormBuilder,
     }) async {
       final targetClass = findType(name);
       final warnings = <String>[];
@@ -169,10 +170,9 @@ Future<void> main() async {
         findConstructor(targetClass),
         warnings,
         logger,
-        isFormBuilder: false,
+        isFormBuilder: isFormBuilder,
       );
 
-      propertiesAssertion(result);
       if (warningsAssertion != null) {
         warningsAssertion(warnings);
       } else {
@@ -182,12 +182,30 @@ Future<void> main() async {
           reason: 'Some warnings are found: $warnings',
         );
       }
+
+      propertiesAssertion(result);
     }
+
+    // FutureOr<void> testGetPropertiesError<TElement>(
+    //   String name, {
+    //   required String message,
+    //   required String todo,
+    // }) =>
+    //     _testGetPropertiesErrorCore<TElement>(name,
+    //         message: message, todo: todo, withElement: true);
+    // FutureOr<void> testGetPropertiesErrorWithoutElement(
+    //   String name, {
+    //   required String message,
+    //   required String todo,
+    // }) =>
+    //     _testGetPropertiesErrorCore<Null>(name,
+    //         message: message, todo: todo, withElement: false);
 
     FutureOr<void> testGetPropertiesError<TElement>(
       String name, {
       required String message,
       required String todo,
+      // required bool withElement,
     }) async {
       final targetClass = findType(name);
       final warnings = <String>[];
@@ -198,15 +216,26 @@ Future<void> main() async {
           findConstructor(targetClass),
           warnings,
           logger,
-          isFormBuilder: false,
+          isFormBuilder: true,
         );
-        fail('No error occurred. Properties: $result');
+        fail(
+          'No error occurred. Properties: {${result.entries.map((e) => '${e.key}: '
+              '{name: ${e.value.name}, '
+              'propertyType: ${e.value.propertyValueType}, '
+              'fieldType: ${e.value.fieldValueType}, '
+              'formFieldType: ${e.value.formFieldTypeName}, '
+              'warnings: ${e.value.warnings}}').join(', ')}}',
+        );
       }
       // ignore: avoid_catching_errors
       on InvalidGenerationSourceError catch (e, s) {
         printOnFailure(e.toString());
         printOnFailure(s.toString());
-        expect(e.element, isA<TElement>());
+        expect(
+          e.element,
+          isA<TElement>(),
+          reason: e.element.runtimeType.toString(),
+        );
         // "at ..." in tail should not be verified.
         expect(e.message, startsWith(message));
         expect(e.todo, equals(todo));
@@ -218,86 +247,92 @@ Future<void> main() async {
     ) {
       expect(props['propInt'], isNotNull);
       expect(props['propInt']!.name, 'propInt');
-      expect(props['propInt']!.type, typeProvider.intType);
-      expect(props['propInt']!.fieldConstructor, isNotNull);
-      expect(props['propInt']!.fieldConstructor!.name, isNull);
-      expect(props['propInt']!.fieldType, isNotNull);
+      expect(props['propInt']!.propertyValueType.rawType, typeProvider.intType);
+      expect(props['propInt']!.fieldValueType.rawType, typeProvider.stringType);
+      expect(props['propInt']!.formFieldConstructor, isNotNull);
+      expect(props['propInt']!.formFieldConstructor!.name, isNull);
+      expect(props['propInt']!.formFieldType, isNotNull);
       expect(
-        props['propInt']!.fieldType!.getDisplayString(withNullability: true),
-        equals('TextFormField'),
+        props['propInt']!.formFieldType!.toString(),
+        equals('FormBuilderTextField'),
       );
-      expect(props['propInt']!.fieldTypeName, 'TextFormField');
+      expect(props['propInt']!.formFieldTypeName, 'FormBuilderTextField');
       expect(props['propInt']!.warnings, isEmpty);
       expect(props['propInt']!.instantiationContext, isNotNull);
       expect(props['propString'], isNotNull);
       expect(props['propString']!.name, 'propString');
-      expect(props['propString']!.type, typeProvider.stringType);
-      expect(props['propString']!.fieldConstructor, isNotNull);
-      expect(props['propString']!.fieldConstructor!.name, isNull);
-      expect(props['propString']!.fieldType, isNotNull);
       expect(
-        props['propString']!.fieldType!.getDisplayString(withNullability: true),
-        'TextFormField',
+        props['propString']!.propertyValueType.rawType,
+        typeProvider.stringType,
       );
-      expect(props['propString']!.fieldTypeName, 'TextFormField');
+      expect(
+        props['propString']!.fieldValueType.rawType,
+        typeProvider.stringType,
+      );
+      expect(props['propString']!.formFieldConstructor, isNotNull);
+      expect(props['propString']!.formFieldConstructor!.name, isNull);
+      expect(props['propString']!.formFieldType, isNotNull);
+      expect(
+        props['propString']!.formFieldType!.toString(),
+        'FormBuilderTextField',
+      );
+      expect(props['propString']!.formFieldTypeName, 'FormBuilderTextField');
       expect(props['propString']!.warnings, isEmpty);
       expect(props['propString']!.instantiationContext, isNotNull);
       expect(props['propBool'], isNotNull);
-      expect(props['propBool']!.type, typeProvider.boolType);
-      expect(props['propBool']!.fieldConstructor, isNotNull);
-      expect(props['propBool']!.fieldConstructor!.name, isNull);
-      expect(props['propBool']!.fieldType, isNotNull);
       expect(
-        props['propBool']!.fieldType!.getDisplayString(withNullability: true),
-        'DropdownButtonFormField<T>',
+        props['propBool']!.propertyValueType.rawType,
+        typeProvider.boolType,
       );
-      expect(props['propBool']!.fieldTypeName, 'DropdownButtonFormField');
+      expect(props['propBool']!.fieldValueType.rawType, typeProvider.boolType);
+      expect(props['propBool']!.formFieldConstructor, isNotNull);
+      expect(props['propBool']!.formFieldConstructor!.name, isNull);
+      expect(props['propBool']!.formFieldType, isNotNull);
+      expect(
+        props['propBool']!.formFieldType!.toString(),
+        'FormBuilderSwitch',
+      );
+      expect(props['propBool']!.formFieldTypeName, 'FormBuilderSwitch');
       expect(props['propBool']!.warnings, isEmpty);
       expect(props['propBool']!.instantiationContext, isNotNull);
       expect(props['propEnum'], isNotNull);
       expect(
-        props['propEnum']!.type.getDisplayString(withNullability: true),
+        props['propEnum']!.propertyValueType.toString(),
         'MyEnum',
       );
-      expect(props['propEnum']!.fieldConstructor, isNotNull);
-      expect(props['propEnum']!.fieldConstructor!.name, isNull);
-      expect(props['propEnum']!.fieldType, isNotNull);
       expect(
-        props['propEnum']!.fieldType!.getDisplayString(withNullability: true),
-        'DropdownButtonFormField<T>',
+        props['propEnum']!.fieldValueType.toString(),
+        'MyEnum',
       );
-      expect(props['propEnum']!.fieldTypeName, 'DropdownButtonFormField');
+      expect(props['propEnum']!.formFieldConstructor, isNotNull);
+      expect(props['propEnum']!.formFieldConstructor!.name, isNull);
+      expect(props['propEnum']!.formFieldType, isNotNull);
+      expect(
+        props['propEnum']!.formFieldType!.toString(),
+        'FormBuilderDropdown<T>',
+      );
+      expect(props['propEnum']!.formFieldTypeName, 'FormBuilderDropdown');
       expect(props['propEnum']!.warnings, isEmpty);
       expect(props['propEnum']!.instantiationContext, isNotNull);
       expect(props['propEnumList'], isNotNull);
       expect(
-        props['propEnumList']!.type.getDisplayString(withNullability: true),
+        props['propEnumList']!.propertyValueType.toString(),
         'List<MyEnum>',
       );
-      expect(props['propEnumList']!.fieldConstructor, isNotNull);
-      expect(props['propEnumList']!.fieldConstructor!.name, isNull);
-      expect(props['propEnumList']!.fieldType, isNotNull);
       expect(
-        props['propEnumList']!
-            .fieldType!
-            .getDisplayString(withNullability: true),
-        'TextFormField',
+        props['propEnumList']!.fieldValueType.toString(),
+        'List<MyEnum>',
       );
-      expect(props['propEnumList']!.fieldTypeName, 'TextFormField');
+      expect(props['propEnumList']!.formFieldConstructor, isNotNull);
+      expect(props['propEnumList']!.formFieldConstructor!.name, isNull);
+      expect(props['propEnumList']!.formFieldType, isNotNull);
+      expect(
+        props['propEnumList']!.formFieldType!.toString(),
+        'FormBuilderFilterChip<T>',
+      );
+      expect(props['propEnumList']!.formFieldTypeName, 'FormBuilderFilterChip');
       expect(props['propEnumList']!.warnings, isEmpty);
       expect(props['propEnumList']!.instantiationContext, isNotNull);
-      expect(props['propRaw'], isNotNull);
-      expect(props['propRaw']!.type, typeProvider.objectType);
-      expect(props['propRaw']!.fieldConstructor, isNotNull);
-      expect(props['propRaw']!.fieldConstructor!.name, isNull);
-      expect(props['propRaw']!.fieldType, isNotNull);
-      expect(
-        props['propRaw']!.fieldType!.getDisplayString(withNullability: true),
-        equals('TextFormField'),
-      );
-      expect(props['propRaw']!.fieldTypeName, 'TextFormField');
-      expect(props['propRaw']!.warnings, isEmpty);
-      expect(props['propRaw']!.instantiationContext, isNotNull);
     }
 
     void testExtraProperties(
@@ -305,15 +340,19 @@ Future<void> main() async {
     ) {
       expect(props['extra'], isNotNull);
       expect(props['extra']!.name, 'extra');
-      expect(props['extra']!.type, typeProvider.stringType);
-      expect(props['extra']!.fieldConstructor, isNotNull);
-      expect(props['extra']!.fieldConstructor!.name, isNull);
-      expect(props['extra']!.fieldType, isNotNull);
       expect(
-        props['extra']!.fieldType!.getDisplayString(withNullability: true),
-        'TextFormField',
+        props['extra']!.propertyValueType.rawType,
+        typeProvider.stringType,
       );
-      expect(props['extra']!.fieldTypeName, 'TextFormField');
+      expect(props['extra']!.fieldValueType.rawType, typeProvider.stringType);
+      expect(props['extra']!.formFieldConstructor, isNotNull);
+      expect(props['extra']!.formFieldConstructor!.name, isNull);
+      expect(props['extra']!.formFieldType, isNotNull);
+      expect(
+        props['extra']!.formFieldType!.toString(),
+        'FormBuilderTextField',
+      );
+      expect(props['extra']!.formFieldTypeName, 'FormBuilderTextField');
       expect(props['extra']!.warnings, isEmpty);
       expect(props['extra']!.instantiationContext, isNotNull);
     }
@@ -321,9 +360,10 @@ Future<void> main() async {
     FutureOr<void> testGetPropertiesSuccess(String name) => testGetProperties(
           name,
           (props) {
-            expect(props.length, 6);
+            expect(props.length, 5);
             testBasicProperties(props);
           },
+          isFormBuilder: true,
         );
 
     FutureOr<void> testGetPropertiesNoProperties(String name) =>
@@ -339,6 +379,7 @@ Future<void> main() async {
               ),
             );
           },
+          isFormBuilder: true,
         );
 
     group('inline', () {
@@ -356,43 +397,214 @@ Future<void> main() async {
     group('extension method', () {
       test(
         'addWithField',
-        () => testGetProperties('ExtensionMethod', (props) {
-          expect(props.length, 2);
-          expect(props['propDouble'], isNotNull);
-          expect(props['propDouble']!.type, typeProvider.doubleType);
-          expect(props['propDouble']!.fieldConstructor, isNotNull);
-          expect(props['propDouble']!.fieldConstructor!.name, isNull);
-          expect(props['propDouble']!.fieldType, isNotNull);
-          expect(
-            props['propDouble']!
-                .fieldType!
-                .getDisplayString(withNullability: true),
-            'FormBuilderSlider',
-          );
-          expect(props['propDouble']!.fieldTypeName, 'FormBuilderSlider');
-          expect(props['propDouble']!.warnings, isEmpty);
-          expect(props['propDouble']!.instantiationContext, isNotNull);
-          expect(props['propEnumList'], isNotNull);
-          expect(
-            props['propEnumList']!.type,
-            typeProvider.listType(myEnumType),
-          );
-          expect(props['propEnumList']!.fieldConstructor, isNotNull);
-          expect(props['propEnumList']!.fieldConstructor!.name, isNull);
-          expect(props['propEnumList']!.fieldType, isNotNull);
-          expect(
-            props['propEnumList']!
-                .fieldType!
-                .getDisplayString(withNullability: true),
-            'FormBuilderCheckboxGroup<T>',
-          );
-          expect(
-            props['propEnumList']!.fieldTypeName,
-            'FormBuilderCheckboxGroup',
-          );
-          expect(props['propEnumList']!.warnings, isEmpty);
-          expect(props['propEnumList']!.instantiationContext, isNotNull);
-        }),
+        () => testGetProperties(
+          'ExtensionMethod',
+          (props) {
+            expect(props.length, 2);
+            expect(props['propDouble'], isNotNull);
+            expect(
+              props['propDouble']!.propertyValueType.rawType,
+              typeProvider.doubleType,
+            );
+            expect(
+              props['propDouble']!.fieldValueType.rawType,
+              typeProvider.doubleType,
+            );
+            expect(props['propDouble']!.formFieldConstructor, isNotNull);
+            expect(props['propDouble']!.formFieldConstructor!.name, isNull);
+            expect(props['propDouble']!.formFieldType, isNotNull);
+            expect(
+              props['propDouble']!.formFieldType!.toString(),
+              'FormBuilderSlider',
+            );
+            expect(props['propDouble']!.formFieldTypeName, 'FormBuilderSlider');
+            expect(props['propDouble']!.warnings, isEmpty);
+            expect(props['propDouble']!.instantiationContext, isNotNull);
+            expect(props['propEnumList'], isNotNull);
+            expect(
+              props['propEnumList']!.propertyValueType.rawType,
+              typeProvider.listType(myEnumType),
+            );
+            expect(
+              props['propEnumList']!.fieldValueType.rawType,
+              typeProvider.listType(myEnumType),
+            );
+            expect(props['propEnumList']!.formFieldConstructor, isNotNull);
+            expect(props['propEnumList']!.formFieldConstructor!.name, isNull);
+            expect(props['propEnumList']!.formFieldType, isNotNull);
+            expect(
+              props['propEnumList']!.formFieldType!.toString(),
+              'FormBuilderCheckboxGroup<MyEnum>',
+            );
+            expect(
+              props['propEnumList']!.formFieldTypeName,
+              'FormBuilderCheckboxGroup',
+            );
+            expect(props['propEnumList']!.warnings, isEmpty);
+            expect(props['propEnumList']!.instantiationContext, isNotNull);
+          },
+          isFormBuilder: true,
+        ),
+      );
+
+      test(
+        'convinient wrappers',
+        () => testGetProperties(
+          'ConvinientExtensionMethod',
+          (props) {
+            expect(props.length, 7);
+            expect(props['propInt'], isNotNull);
+            expect(
+              props['propInt']!.propertyValueType.rawType,
+              typeProvider.intType,
+            );
+            expect(
+              props['propInt']!.fieldValueType.rawType,
+              typeProvider.stringType,
+            );
+            expect(props['propInt']!.formFieldConstructor, isNotNull);
+            expect(props['propInt']!.formFieldConstructor!.name, isNull);
+            expect(props['propInt']!.formFieldType, isNotNull);
+            expect(
+              props['propInt']!.formFieldType!.toString(),
+              'FormBuilderTextField',
+            );
+            expect(props['propInt']!.formFieldTypeName, 'FormBuilderTextField');
+            expect(props['propInt']!.warnings, isEmpty);
+            expect(props['propInt']!.instantiationContext, isNotNull);
+            expect(props['propString'], isNotNull);
+            expect(
+              props['propString']!.propertyValueType.rawType,
+              typeProvider.stringType,
+            );
+            expect(
+              props['propString']!.fieldValueType.rawType,
+              typeProvider.stringType,
+            );
+            expect(props['propString']!.formFieldConstructor, isNotNull);
+            expect(props['propString']!.formFieldConstructor!.name, isNull);
+            expect(props['propString']!.formFieldType, isNotNull);
+            expect(
+              props['propString']!.formFieldType!.toString(),
+              'FormBuilderTextField',
+            );
+            expect(
+              props['propString']!.formFieldTypeName,
+              'FormBuilderTextField',
+            );
+            expect(props['propString']!.warnings, isEmpty);
+            expect(props['propString']!.instantiationContext, isNotNull);
+            expect(props['propBool'], isNotNull);
+            expect(
+              props['propBool']!.propertyValueType.rawType,
+              typeProvider.boolType,
+            );
+            expect(
+              props['propBool']!.fieldValueType.rawType,
+              typeProvider.boolType,
+            );
+            expect(props['propBool']!.formFieldConstructor, isNotNull);
+            expect(props['propBool']!.formFieldConstructor!.name, isNull);
+            expect(props['propBool']!.formFieldType, isNotNull);
+            expect(
+              props['propBool']!.formFieldType!.toString(),
+              'FormBuilderSwitch',
+            );
+            expect(props['propBool']!.formFieldTypeName, 'FormBuilderSwitch');
+            expect(props['propBool']!.warnings, isEmpty);
+            expect(props['propBool']!.instantiationContext, isNotNull);
+
+            expect(props['propEnum'], isNotNull);
+            expect(
+              props['propEnum']!.propertyValueType.rawType,
+              myEnumType,
+            );
+            expect(props['propEnum']!.fieldValueType.rawType, myEnumType);
+            expect(props['propEnum']!.formFieldConstructor, isNotNull);
+            expect(props['propEnum']!.formFieldConstructor!.name, isNull);
+            expect(props['propEnum']!.formFieldType, isNotNull);
+            expect(
+              props['propEnum']!.formFieldType!.toString(),
+              'FormBuilderDropdown<T>',
+            );
+            expect(props['propEnum']!.formFieldTypeName, 'FormBuilderDropdown');
+            expect(props['propEnum']!.warnings, isEmpty);
+            expect(props['propEnum']!.instantiationContext, isNotNull);
+            expect(props['propEnumList'], isNotNull);
+            expect(
+              props['propEnumList']!.propertyValueType.toString(),
+              typeProvider
+                  .listType(myEnumType)
+                  .getDisplayString(withNullability: true),
+            );
+            expect(
+              props['propEnumList']!.fieldValueType.toString(),
+              typeProvider
+                  .listType(myEnumType)
+                  .getDisplayString(withNullability: true),
+            );
+            expect(props['propEnumList']!.formFieldConstructor, isNotNull);
+            expect(props['propEnumList']!.formFieldConstructor!.name, isNull);
+            expect(props['propEnumList']!.formFieldType, isNotNull);
+            expect(
+              props['propEnumList']!.formFieldType!.toString(),
+              'FormBuilderFilterChip<T>',
+            );
+            expect(
+              props['propEnumList']!.formFieldTypeName,
+              'FormBuilderFilterChip',
+            );
+            expect(props['propEnumList']!.warnings, isEmpty);
+            expect(props['propEnumList']!.instantiationContext, isNotNull);
+            expect(props['propDouble'], isNotNull);
+            expect(
+              props['propDouble']!.propertyValueType.rawType,
+              typeProvider.doubleType,
+            );
+            expect(
+              props['propDouble']!.fieldValueType.rawType,
+              typeProvider.doubleType,
+            );
+            expect(props['propDouble']!.formFieldConstructor, isNotNull);
+            expect(props['propDouble']!.formFieldConstructor!.name, isNull);
+            expect(props['propDouble']!.formFieldType, isNotNull);
+            expect(
+              props['propDouble']!.formFieldType!.toString(),
+              'FormBuilderSlider',
+            );
+            expect(props['propDouble']!.formFieldTypeName, 'FormBuilderSlider');
+            expect(props['propDouble']!.warnings, isEmpty);
+            expect(props['propDouble']!.instantiationContext, isNotNull);
+            expect(props['propEnumList2'], isNotNull);
+            expect(
+              props['propEnumList2']!.propertyValueType.toString(),
+              typeProvider
+                  .listType(myEnumType)
+                  .getDisplayString(withNullability: true),
+            );
+            expect(
+              props['propEnumList2']!.fieldValueType.toString(),
+              typeProvider
+                  .listType(myEnumType)
+                  .getDisplayString(withNullability: true),
+            );
+            expect(props['propEnumList2']!.formFieldConstructor, isNotNull);
+            expect(props['propEnumList2']!.formFieldConstructor!.name, isNull);
+            expect(props['propEnumList2']!.formFieldType, isNotNull);
+            // Generic type is resolved when it is specified via type argument.
+            expect(
+              props['propEnumList2']!.formFieldType!.toString(),
+              'FormBuilderCheckboxGroup<MyEnum>',
+            );
+            expect(
+              props['propEnumList2']!.formFieldTypeName,
+              'FormBuilderCheckboxGroup',
+            );
+            expect(props['propEnumList2']!.warnings, isEmpty);
+            expect(props['propEnumList2']!.instantiationContext, isNotNull);
+          },
+          isFormBuilder: true,
+        ),
       );
     });
 
@@ -533,10 +745,11 @@ Future<void> main() async {
         () => testGetProperties(
           'LocalVariableRefersAlwaysNewGetterWithModification',
           (props) {
-            expect(props.length, equals(7));
+            expect(props.length, equals(6));
             testBasicProperties(props);
             testExtraProperties(props);
           },
+          isFormBuilder: true,
         ),
       );
 
@@ -562,10 +775,11 @@ Future<void> main() async {
         () => testGetProperties(
           'LocalVariableRefersAlwaysNewFactoryMethodWithMofidication',
           (props) {
-            expect(props.length, equals(7));
+            expect(props.length, equals(6));
             testBasicProperties(props);
             testExtraProperties(props);
           },
+          isFormBuilder: true,
         ),
       );
 
@@ -635,6 +849,7 @@ Future<void> main() async {
               ),
             );
           },
+          isFormBuilder: true,
         ),
       );
 
@@ -643,7 +858,7 @@ Future<void> main() async {
         () => testGetPropertiesError<ConstructorElement>(
           'DynamicPropertyName',
           message:
-              "Failed to parse non-literal 'name' argument from expression '..add<int>(name: 'prop\${Platform.numberOfProcessors}')'.",
+              "Failed to parse non-literal 'name' argument from expression '..add<int, String>(name: 'prop\${Platform.numberOfProcessors}')'.",
           todo: "Use constant expression for 'name' argument.",
         ),
       );
@@ -709,6 +924,459 @@ Future<void> main() async {
         ),
       );
     });
+
+    group('inferrance error -- default FormField is used and warnings', () {
+      const fieldValueWarning =
+          '`Object` is used for field value type because type parameter `F` '
+          'is not specified and it cannot be inferred with parameters. '
+          'Ensure specify type argument `F` explicitly.';
+      const propertyValueWarning =
+          '`Object` is used for property value type because type parameter `P` '
+          'is not specified and it cannot be inferred with parameters. '
+          'Ensure specify type argument `P` explicitly.';
+
+      const fieldEnumValueWarning =
+          '`Enum` is used for field value type because type parameter `F` '
+          'is not specified and it cannot be inferred with parameters. '
+          'Ensure specify type argument `F` explicitly.';
+      const propertyEnumValueWarning =
+          '`Enum` is used for property value type because type parameter `P` '
+          'is not specified and it cannot be inferred with parameters. '
+          'Ensure specify type argument `P` explicitly.';
+      const fieldEnumListValueWarning =
+          '`List<Enum>` is used for field value type because type parameter '
+          '`F` is not specified and it cannot be inferred with parameters. '
+          'Ensure specify type argument `F` explicitly.';
+      const propertyEnumListValueWarning =
+          '`List<Enum>` is used for property value type because type parameter '
+          '`P` is not specified and it cannot be inferred with parameters. '
+          'Ensure specify type argument `P` explicitly.';
+
+      const preferredFormFieldWarningBase =
+          'is used for FormField type because type parameter `TField` is '
+          'not specified and it cannot be inferred with parameters. '
+          'Ensure specify type argument `TField` explicitly.';
+
+      const defaultFormFieldWarningBase =
+          'is used for FormField type because type parameter `F` is '
+          'not specified and it cannot be inferred with parameters. '
+          'Ensure specify type argument `F` explicitly.';
+      const defaultFormFieldWarningVanilla =
+          '`FormField<Object>` $defaultFormFieldWarningBase';
+      const defaultFormFieldWarningBuilder =
+          '`FormBuilderField<Object>` $defaultFormFieldWarningBase';
+
+      FutureOr<void> testRawType(
+        String presenterName,
+        String propertyValueType,
+        String fieldValueType,
+        String formFieldTypeName,
+        List<String> warnings, {
+        required bool isFormBuilder,
+      }) {
+        final anglePosition = formFieldTypeName.indexOf('<');
+        final formFieldRawTypeName =
+            formFieldTypeName.substring(0, anglePosition);
+        return testGetProperties(
+          presenterName,
+          (props) {
+            expect(props.length, 1, reason: props.toString());
+            expect(props['propRaw'], isNotNull);
+            expect(
+              props['propRaw']!
+                  .propertyValueType
+                  .getDisplayString(withNullability: true),
+              propertyValueType,
+            );
+            expect(
+              props['propRaw']!
+                  .fieldValueType
+                  .getDisplayString(withNullability: true),
+              fieldValueType,
+            );
+            expect(props['propRaw']!.formFieldConstructor, isNotNull);
+            expect(props['propRaw']!.formFieldConstructor!.name, isNull);
+            expect(props['propRaw']!.formFieldType, isNotNull);
+            expect(
+              props['propRaw']!.formFieldType!.toString(),
+              formFieldTypeName,
+            );
+            expect(props['propRaw']!.formFieldTypeName, formFieldRawTypeName);
+            expect(props['propRaw']!.warnings, warnings);
+            expect(props['propRaw']!.instantiationContext, isNotNull);
+          },
+          isFormBuilder: isFormBuilder,
+        );
+      }
+
+      group('Vanilla Form', () {
+        for (final testCase in [
+          Tuple5(
+            '', // intentionally empty
+            'Object',
+            'Object',
+            'FormField<T>',
+            [
+              propertyValueWarning,
+              fieldValueWarning,
+              defaultFormFieldWarningVanilla
+            ],
+          ),
+          Tuple5(
+            'WithField',
+            'Object',
+            'Object',
+            'FormField<Object>',
+            [
+              propertyValueWarning,
+              fieldValueWarning,
+              '`FormField<Object>` $preferredFormFieldWarningBase'
+            ],
+          ),
+          Tuple5(
+            'BigIntWithField',
+            'BigInt',
+            'BigInt',
+            'FormField<BigInt>',
+            ['`FormField<BigInt>` $preferredFormFieldWarningBase'],
+          ),
+          Tuple5(
+            'BoolWithField',
+            'bool',
+            'bool',
+            'FormField<bool>',
+            ['`FormField<bool>` $preferredFormFieldWarningBase'],
+          ),
+          Tuple5(
+            'DoubleWithField',
+            'double',
+            'double',
+            'FormField<double>',
+            ['`FormField<double>` $preferredFormFieldWarningBase'],
+          ),
+          Tuple5(
+            'EnumWithField',
+            'Enum',
+            'Enum',
+            'FormField<Enum>',
+            [
+              propertyEnumValueWarning,
+              fieldEnumValueWarning,
+              '`FormField<Enum>` $preferredFormFieldWarningBase'
+            ],
+          ),
+          Tuple5(
+            'IntWithField',
+            'int',
+            'int',
+            'FormField<int>',
+            ['`FormField<int>` $preferredFormFieldWarningBase'],
+          ),
+          Tuple5(
+            'StringWithField',
+            'Object',
+            'String',
+            'FormField<String>',
+            [
+              propertyValueWarning,
+              '`FormField<String>` $preferredFormFieldWarningBase'
+            ],
+          ),
+        ]) {
+          test(
+            'add${testCase.item1} - error',
+            () => testRawType(
+              'RawAdd${testCase.item1}Vanilla',
+              testCase.item2,
+              testCase.item3,
+              testCase.item4,
+              testCase.item5,
+              isFormBuilder: false,
+            ),
+          );
+        }
+      });
+
+      group('FormBuilder', () {
+        for (final testCase in [
+          Tuple5(
+            '',
+            'Object',
+            'Object',
+            'FormBuilderField<T>',
+            [
+              propertyValueWarning,
+              fieldValueWarning,
+              defaultFormFieldWarningBuilder
+            ],
+          ), // item1 is intentionally empty
+          Tuple5(
+            'WithField',
+            'Object',
+            'Object',
+            'FormField<Object>',
+            [
+              propertyValueWarning,
+              fieldValueWarning,
+              '`FormField<Object>` $preferredFormFieldWarningBase'
+            ],
+          ),
+          Tuple5(
+            'BigIntWithField',
+            'BigInt',
+            'BigInt',
+            'FormField<BigInt>',
+            ['`FormField<BigInt>` $preferredFormFieldWarningBase'],
+          ),
+          Tuple5(
+            'BoolListWithField',
+            'List<bool>',
+            'List<bool>',
+            'FormField<List<bool>>',
+            ['`FormField<List<bool>>` $preferredFormFieldWarningBase'],
+          ),
+          Tuple5(
+            'BoolWithField',
+            'bool',
+            'bool',
+            'FormField<bool>',
+            ['`FormField<bool>` $preferredFormFieldWarningBase'],
+          ),
+          Tuple5(
+            'DoubleWithField',
+            'double',
+            'double',
+            'FormField<double>',
+            ['`FormField<double>` $preferredFormFieldWarningBase'],
+          ),
+          Tuple5(
+            'EnumListWithField',
+            'List<Enum>',
+            'List<Enum>',
+            'FormField<List<Enum>>',
+            [
+              propertyEnumListValueWarning,
+              fieldEnumListValueWarning,
+              '`FormField<List<Enum>>` $preferredFormFieldWarningBase'
+            ],
+          ),
+          Tuple5(
+            'EnumWithField',
+            'Enum',
+            'Enum',
+            'FormField<Enum>',
+            [
+              propertyEnumValueWarning,
+              fieldEnumValueWarning,
+              '`FormField<Enum>` $preferredFormFieldWarningBase'
+            ],
+          ),
+          Tuple5(
+            'IntWithField',
+            'int',
+            'int',
+            'FormField<int>',
+            ['`FormField<int>` $preferredFormFieldWarningBase'],
+          ),
+          Tuple5(
+            'StringWithField',
+            'Object',
+            'String',
+            'FormField<String>',
+            [
+              propertyValueWarning,
+              '`FormField<String>` $preferredFormFieldWarningBase'
+            ],
+          ),
+        ]) {
+          test(
+            'add${testCase.item1} - error',
+            () => testRawType(
+              'RawAdd${testCase.item1}FormBuilder',
+              testCase.item2,
+              testCase.item3,
+              testCase.item4,
+              testCase.item5,
+              isFormBuilder: true,
+            ),
+          );
+        }
+      });
+    });
+
+    test(
+      'type inferrence is available',
+      () => testGetProperties(
+        'InferredTypes',
+        (props) {
+          expect(props.length, 5);
+          expect(props['addWithValueConverter'], isNotNull);
+          expect(
+            props['addWithValueConverter']!.propertyValueType.rawType,
+            typeProvider.intType,
+          );
+          expect(
+            props['addWithValueConverter']!.fieldValueType.rawType,
+            typeProvider.stringType,
+          );
+          expect(
+              props['addWithValueConverter']!.formFieldConstructor, isNotNull);
+          expect(
+            props['addWithValueConverter']!.formFieldConstructor!.name,
+            isNull,
+          );
+          expect(props['addWithValueConverter']!.formFieldType, isNotNull);
+          expect(
+            props['addWithValueConverter']!.formFieldType!.toString(),
+            'FormBuilderTextField',
+          );
+          expect(
+            props['addWithValueConverter']!.formFieldTypeName,
+            'FormBuilderTextField',
+          );
+          expect(props['addWithValueConverter']!.warnings, isEmpty);
+          expect(
+              props['addWithValueConverter']!.instantiationContext, isNotNull);
+          expect(props['addStringWithStringConverter'], isNotNull);
+          expect(
+            props['addStringWithStringConverter']!
+                .propertyValueType
+                .getDisplayString(withNullability: true),
+            'BigInt',
+          );
+          expect(
+            props['addStringWithStringConverter']!.fieldValueType.rawType,
+            typeProvider.stringType,
+          );
+          expect(
+            props['addStringWithStringConverter']!.formFieldConstructor,
+            isNotNull,
+          );
+          expect(
+            props['addStringWithStringConverter']!.formFieldConstructor!.name,
+            isNull,
+          );
+          expect(
+              props['addStringWithStringConverter']!.formFieldType, isNotNull);
+          expect(
+            props['addStringWithStringConverter']!.formFieldType!.toString(),
+            'FormBuilderTextField',
+          );
+          expect(
+            props['addStringWithStringConverter']!.formFieldTypeName,
+            'FormBuilderTextField',
+          );
+          expect(props['addStringWithStringConverter']!.warnings, isEmpty);
+          expect(
+            props['addStringWithStringConverter']!.instantiationContext,
+            isNotNull,
+          );
+          expect(props['addStringWithInitialValue'], isNotNull);
+          expect(
+            props['addStringWithInitialValue']!.propertyValueType.rawType,
+            typeProvider.doubleType,
+          );
+          expect(
+            props['addStringWithInitialValue']!.fieldValueType.rawType,
+            typeProvider.stringType,
+          );
+          expect(
+            props['addStringWithInitialValue']!.formFieldConstructor,
+            isNotNull,
+          );
+          expect(
+            props['addStringWithInitialValue']!.formFieldConstructor!.name,
+            isNull,
+          );
+          expect(props['addStringWithInitialValue']!.formFieldType, isNotNull);
+          expect(
+            props['addStringWithInitialValue']!.formFieldType!.toString(),
+            'FormBuilderTextField',
+          );
+          expect(
+            props['addStringWithInitialValue']!.formFieldTypeName,
+            'FormBuilderTextField',
+          );
+          expect(props['addStringWithInitialValue']!.warnings, isEmpty);
+          expect(
+            props['addStringWithInitialValue']!.instantiationContext,
+            isNotNull,
+          );
+          expect(props['addEnumWithInitialValue'], isNotNull);
+          expect(
+            props['addEnumWithInitialValue']!.propertyValueType.rawType,
+            myEnumType,
+          );
+          expect(
+            props['addEnumWithInitialValue']!.fieldValueType.rawType,
+            myEnumType,
+          );
+          expect(
+            props['addEnumWithInitialValue']!.formFieldConstructor,
+            isNotNull,
+          );
+          expect(
+            props['addEnumWithInitialValue']!.formFieldConstructor!.name,
+            isNull,
+          );
+          expect(props['addEnumWithInitialValue']!.formFieldType, isNotNull);
+          expect(
+            props['addEnumWithInitialValue']!.formFieldType!.toString(),
+            'FormBuilderDropdown<T>',
+          );
+          expect(
+            props['addEnumWithInitialValue']!.formFieldTypeName,
+            'FormBuilderDropdown',
+          );
+          expect(props['addEnumWithInitialValue']!.warnings, isEmpty);
+          expect(
+            props['addEnumWithInitialValue']!.instantiationContext,
+            isNotNull,
+          );
+          expect(props['addEnumListWithInitialValue'], isNotNull);
+          expect(
+            props['addEnumListWithInitialValue']!
+                .propertyValueType
+                .getDisplayString(withNullability: true),
+            typeProvider
+                .listType(myEnumType)
+                .getDisplayString(withNullability: true),
+          );
+          expect(
+            props['addEnumListWithInitialValue']!
+                .fieldValueType
+                .getDisplayString(withNullability: true),
+            typeProvider
+                .listType(myEnumType)
+                .getDisplayString(withNullability: true),
+          );
+          expect(
+            props['addEnumListWithInitialValue']!.formFieldConstructor,
+            isNotNull,
+          );
+          expect(
+            props['addEnumListWithInitialValue']!.formFieldConstructor!.name,
+            isNull,
+          );
+          expect(
+              props['addEnumListWithInitialValue']!.formFieldType, isNotNull);
+          expect(
+            props['addEnumListWithInitialValue']!.formFieldType!.toString(),
+            'FormBuilderFilterChip<T>',
+          );
+          expect(
+            props['addEnumListWithInitialValue']!.formFieldTypeName,
+            'FormBuilderFilterChip',
+          );
+          expect(props['addEnumListWithInitialValue']!.warnings, isEmpty);
+          expect(
+            props['addEnumListWithInitialValue']!.instantiationContext,
+            isNotNull,
+          );
+        },
+        isFormBuilder: true,
+      ),
+    );
   });
 
   group('collectDependencies', () {
@@ -716,22 +1384,28 @@ Future<void> main() async {
       String formFieldTypeName,
       InterfaceType valueType,
     ) async {
+      final formFieldType = formFieldLocator.resolveFormFieldType(
+        formFieldTypeName,
+      )!;
+
       final property = PropertyDefinition(
         name: 'prop',
-        type: valueType,
-        preferredFieldType: formFieldTypeName,
+        fieldType: GenericInterfaceType(valueType, []),
+        propertyType: GenericInterfaceType(valueType, []),
+        preferredFormFieldType: GenericInterfaceType(
+          formFieldType,
+          [GenericInterfaceType(valueType, [])],
+        ),
         warnings: [],
       );
 
-      final formFieldType =
-          formFieldLocator.resolveFormFieldType(formFieldTypeName)!;
-
       return PropertyAndFormFieldDefinition(
         property: property,
-        fieldType: formFieldType,
-        fieldTypeName: formFieldTypeName,
-        fieldConstructor: await nodeProvider.getElementDeclarationAsync(
-            formFieldType.element.unnamedConstructor!),
+        formFieldType: formFieldType,
+        formFieldTypeName: formFieldTypeName,
+        formFieldConstructor: await nodeProvider.getElementDeclarationAsync(
+          formFieldType.element.unnamedConstructor!,
+        ),
         instantiationContext: null, // This is OK
       );
     }
@@ -774,16 +1448,17 @@ Future<void> main() async {
     for (final spec in [
       Tuple2(
         'normal',
-        ExpectedImport('dart:ui', shows: ['Color']),
+        ExpectedImport('dart:ui', shows: ['Color', 'Locale']),
       ),
       Tuple2(
         'alias',
-        ExpectedImport('dart:ui', shows: ['VoidCallback']),
+        ExpectedImport('dart:ui', shows: ['Locale', 'VoidCallback']),
       ),
       Tuple2(
         'prefixed',
         ExpectedImport(
           'dart:ui',
+          shows: ['Locale'],
           prefixes: [
             MapEntry('ui', ['VoidCallback']),
           ],
@@ -793,7 +1468,7 @@ Future<void> main() async {
         'function',
         ExpectedImport(
           'dart:ui',
-          shows: ['Color'],
+          shows: ['Color', 'Locale'],
           prefixes: [
             MapEntry('ui', ['VoidCallback'])
           ],
@@ -806,16 +1481,17 @@ Future<void> main() async {
       test('unit test: $kind', () async {
         final property = PropertyDefinition(
           name: 'prop',
-          type: typeProvider.stringType,
-          preferredFieldType: null,
+          fieldType: GenericInterfaceType(typeProvider.stringType, []),
+          propertyType: GenericInterfaceType(typeProvider.stringType, []),
+          preferredFormFieldType: null,
           warnings: [],
         );
 
         final propertyAndField = PropertyAndFormFieldDefinition(
           property: property,
-          fieldType: null, // This is OK
-          fieldTypeName: '', // This is OK
-          fieldConstructor: await nodeProvider
+          formFieldType: null, // This is OK
+          formFieldTypeName: '', // This is OK
+          formFieldConstructor: await nodeProvider
               .getElementDeclarationAsync<ConstructorDeclaration>(
             dependencyHolder.constructors.singleWhere((c) => c.name == kind),
           ),
@@ -835,7 +1511,7 @@ Future<void> main() async {
           [
             expected,
             ExpectedImport('package:flutter/widgets.dart',
-                shows: ['BuildContext']),
+                shows: ['BuildContext', 'Localizations']),
           ],
         );
       });
@@ -919,7 +1595,6 @@ Future<void> main() async {
   });
 
   // TODO(yfakariya): field related tests.
-  // preferredType
   // resolveFormFieldAsync() - isFormBuilder x types x preferredType
 
   // TODO(yfakariya): parseElementAsync : isFormBuilder x warnings
@@ -970,7 +1645,7 @@ List<ExpectedImport> _merge(List<ExpectedImport> lists) {
 const _vanillaCommonImports = [
   ExpectedImport(
     'dart:ui',
-    shows: ['Color', 'VoidCallback'],
+    shows: ['Color', 'Locale', 'VoidCallback'],
   ),
   ExpectedImport(
     'package:flutter/foundation.dart',
@@ -990,6 +1665,7 @@ const _vanillaCommonImports = [
       'AutovalidateMode',
       'BuildContext',
       'FocusNode',
+      'Localizations',
     ],
   ),
 ];
@@ -997,7 +1673,7 @@ const _vanillaCommonImports = [
 const _builderCommonImports = [
   ExpectedImport(
     'dart:ui',
-    shows: ['Color', 'VoidCallback'],
+    shows: ['Color', 'Locale', 'VoidCallback'],
   ),
   ExpectedImport(
     'package:flutter/foundation.dart',
@@ -1013,6 +1689,7 @@ const _builderCommonImports = [
       'AutovalidateMode',
       'BuildContext',
       'FocusNode',
+      'Localizations',
     ],
   ),
   ExpectedImport(
