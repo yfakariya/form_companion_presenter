@@ -47,9 +47,6 @@ jobs:
       - name: Setup fvm
         run: fvm install
 
-      - name: Setup global version
-        run: fvm global 2.10.1
-
       - name: Initialize grinder project
         run: fvm flutter pub get
         working-directory: tool/dev_env
