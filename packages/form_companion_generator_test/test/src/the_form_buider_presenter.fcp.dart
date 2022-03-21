@@ -33,7 +33,6 @@ import 'package:flutter/material.dart'
         DropdownButtonBuilder,
         DropdownMenuItem,
         Icons,
-        InputBorder,
         InputCounterWidgetBuilder,
         InputDecoration,
         ListTileControlAffinity,
