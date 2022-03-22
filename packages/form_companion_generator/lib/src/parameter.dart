@@ -126,7 +126,7 @@ class ParameterInfo {
     throwError(
       message:
           "Failed to parse complex parameter '$node' (${node.runtimeType}) at ${getNodeLocation(node, node.declaredElement!)} ",
-      element: node.declaredElement!,
+      element: node.declaredElement,
     );
   }
 }

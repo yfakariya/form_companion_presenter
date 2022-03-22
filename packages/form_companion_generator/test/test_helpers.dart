@@ -20,10 +20,18 @@ final _contextCollection = AnalysisContextCollection(
   ],
 );
 
+// TODO(yfakariya): rename to getResolvedLibraryResult
 FutureOr<ResolvedLibraryResult> getElement(String fileName) =>
     _getElement(path.canonicalize('$_sourceDirectory/$fileName'));
 
+final Map<String, ResolvedLibraryResult> _resolvedLibrariesCache = {};
+
 FutureOr<ResolvedLibraryResult> _getElement(String filePath) async {
+  final cachedResult = _resolvedLibrariesCache[filePath];
+  if (cachedResult != null) {
+    return cachedResult;
+  }
+
   final result = await _contextCollection
       .contextFor(filePath)
       .currentSession
@@ -32,7 +40,7 @@ FutureOr<ResolvedLibraryResult> _getElement(String filePath) async {
     throw Exception('Failed to resolve "$filePath": ${result.runtimeType}');
   }
 
-  return result;
+  return _resolvedLibrariesCache[filePath] = result;
 }
 
 LibraryElement? _flutterFormBuilder;
@@ -117,6 +125,15 @@ ClassElement lookupExportedClass(LibraryElement library, String name) {
 
 FutureOr<ClassElement> lookupFormBuilderClass(String name) async =>
     lookupExportedClass(await _getFlutterFormBuilder(), name);
+
+FutureOr<InterfaceType> lookupFormFieldTypeInstance(String name) async =>
+    (await getElement('form_fields.dart'))
+        .element
+        .topLevelElements
+        .whereType<TopLevelVariableElement>()
+        .singleWhere((e) => e.name == name)
+        .computeConstantValue()!
+        .toTypeValue()! as InterfaceType;
 
 extension LibraryElementExtensions on LibraryElement {
   ClassElement lookupClass(String className) =>

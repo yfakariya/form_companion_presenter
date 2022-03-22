@@ -1,6 +1,7 @@
 // See LICENCE file in the root.
 
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:meta/meta.dart';
 
@@ -152,3 +153,7 @@ class Logger {
         stackTrace: stackTrace,
       );
 }
+
+/// Default locale.
+@internal
+const defaultLocale = Locale('en', 'US');

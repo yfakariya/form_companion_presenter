@@ -18,7 +18,8 @@ export 'src/form_companion_mixin.dart'
         PropertyDescriptor,
         PropertyDescriptorsBuilder,
         CompanionPresenterMixin,
-        FormCompanionMixin;
+        FormCompanionMixin,
+        FormCompanionPropertyDescriptorsBuilderExtension;
 export 'src/future_invoker.dart'
     show
         AsyncErrorHandler,
@@ -30,6 +31,26 @@ export 'src/future_invoker.dart'
         AsyncOperationNotifier,
         AsyncOperationStatus,
         FutureInvoker;
+export 'src/string_converter.dart'
+    show
+        ParseStringConverter,
+        ParseFailureMessageProvider,
+        Parser,
+        StringConverter,
+        Stringifier,
+        bigIntStringConverter,
+        dateTimeStringConverter,
+        doubleStringConverter,
+        intStringConverter,
+        uriStringConverter;
+export 'src/value_converter.dart'
+    show
+        ConversionResult,
+        FailureResult,
+        FieldToPropertyConverter,
+        PropertyToFieldConverter,
+        SomeConversionResult,
+        ValueConverter;
 
 // for testing
 // Enable this line to take effect logs in tests in form_builder_companion_presenter package.

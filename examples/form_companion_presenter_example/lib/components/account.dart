@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:form_builder_companion_presenter/form_builder_companion_presenter.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:form_companion_presenter/async_validation_indicator.dart';
+import 'package:form_companion_presenter/form_companion_extension.dart';
 import 'package:form_companion_presenter/form_companion_presenter.dart';
 
 import '../l10n/locale_keys.g.dart';
@@ -16,6 +17,8 @@ import '../models.dart';
 import '../routes.dart';
 import '../screen.dart';
 import '../validators.dart';
+
+// TODO(yfakariya): use generator
 
 //!macro headerNote
 
@@ -51,7 +54,7 @@ class _AccountPaneTemplate extends ConsumerWidget {
             //!macro endAutoOnly
             validator: presenter.getPropertyValidator('id', context),
             //!macro beginVanillaOnly
-            onSaved: presenter.savePropertyValue('id'),
+            onSaved: presenter.savePropertyValue('id', context),
             //!macro endVanillaOnly
             keyboardType: TextInputType.emailAddress,
             decoration: InputDecoration(
@@ -71,7 +74,7 @@ class _AccountPaneTemplate extends ConsumerWidget {
             //!macro endAutoOnly
             validator: presenter.getPropertyValidator('name', context),
             //!macro beginVanillaOnly
-            onSaved: presenter.savePropertyValue('name'),
+            onSaved: presenter.savePropertyValue('name', context),
             //!macro endVanillaOnly
             decoration: InputDecoration(
               labelText: LocaleKeys.name_label.tr(),
@@ -81,7 +84,7 @@ class _AccountPaneTemplate extends ConsumerWidget {
           FormBuilderDropdown<Gender>(
             name: 'gender', //!macro fieldInit gender
             //!macro dropDownInit gender
-            onSaved: presenter.savePropertyValue('gender'),
+            onSaved: presenter.savePropertyValue('gender', context),
             // Tip: required to work
             onChanged: (_) {},
             //!macro endVanillaOnly
@@ -116,7 +119,7 @@ class _AccountPaneTemplate extends ConsumerWidget {
             //!macro endAutoOnly
             validator: presenter.getPropertyValidator('age', context),
             //!macro beginVanillaOnly
-            onSaved: presenter.savePropertyValue('age'),
+            onSaved: presenter.savePropertyValue('age', context),
             //!macro endVanillaOnly
             decoration: InputDecoration(
               labelText: LocaleKeys.age_label.tr(),
@@ -196,7 +199,7 @@ class AccountPresenterTemplate extends StateNotifier<Account>
   ) : super(initialState) {
     initializeCompanionMixin(
       PropertyDescriptorsBuilder()
-        ..add<String>(
+        ..addText(
           name: 'id',
           validatorFactories: [
             //!macro beginVanillaOnly
@@ -212,7 +215,7 @@ class AccountPresenterTemplate extends StateNotifier<Account>
             Validator.id,
           ],
         )
-        ..add<String>(
+        ..addText(
           name: 'name',
           validatorFactories: [
             //!macro beginVanillaOnly
@@ -223,10 +226,10 @@ class AccountPresenterTemplate extends StateNotifier<Account>
             //!macro endBuilderOnly
           ],
         )
-        ..add<Gender>(
+        ..addEnum<Gender>(
           name: 'gender',
         )
-        ..add<String>(
+        ..addString(
           name: 'age',
           validatorFactories: [
             //!macro beginVanillaOnly
@@ -238,9 +241,11 @@ class AccountPresenterTemplate extends StateNotifier<Account>
             (context) => FormBuilderValidators.min(context, 0),
             //!macro endBuilderOnly
           ],
+          initialValue: 20,
+          stringConverter: intStringConverter,
         )
         //!macro beginBuilderOnly
-        ..add<List<Region>>(name: 'preferredRegions')
+        ..addEnumList<Region>(name: 'preferredRegions')
       //!macro endBuilderOnly
       ,
     );
@@ -253,7 +258,7 @@ class AccountPresenterTemplate extends StateNotifier<Account>
     final name = getSavedPropertyValue<String>('name')!;
     final gender = getSavedPropertyValue<Gender>('gender')!;
     // You can omit generic type argument occasionally.
-    final age = int.parse(getSavedPropertyValue('age')!);
+    final age = getSavedPropertyValue<int>('age')!;
     //!macro beginBuilderOnly
     final preferredRegions =
         getSavedPropertyValue<List<Region>>('preferredRegions')!;

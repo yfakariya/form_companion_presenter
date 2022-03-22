@@ -8,7 +8,14 @@
 // **************************************************************************
 
 import 'dart:ui'
-    show Brightness, Color, Radius, TextAlign, TextDirection, VoidCallback;
+    show
+        Brightness,
+        Color,
+        Locale,
+        Radius,
+        TextAlign,
+        TextDirection,
+        VoidCallback;
 
 import 'package:flutter/foundation.dart' show ValueChanged;
 
@@ -47,6 +54,7 @@ import 'package:flutter/widgets.dart'
         AutovalidateMode,
         BuildContext,
         FocusNode,
+        Localizations,
         ScrollController,
         ScrollPhysics,
         TextEditingController,
@@ -63,19 +71,25 @@ import 'the_form_presenter.dart';
 
 extension $TheFormPresenterPropertyExtension on TheFormPresenter {
   /// Gets a [PropertyDescriptor] of propString property.
-  PropertyDescriptor<String> get propString =>
+  PropertyDescriptor<String, String> get propString =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-      properties['propString']! as PropertyDescriptor<String>;
+      properties['propString']! as PropertyDescriptor<String, String>;
 
   /// Gets a [PropertyDescriptor] of propEnum property.
-  PropertyDescriptor<MyEnum> get propEnum =>
+  PropertyDescriptor<MyEnum, MyEnum> get propEnum =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-      properties['propEnum']! as PropertyDescriptor<MyEnum>;
+      properties['propEnum']! as PropertyDescriptor<MyEnum, MyEnum>;
 
   /// Gets a [PropertyDescriptor] of propStringList property.
-  PropertyDescriptor<List<String>> get propStringList =>
+  PropertyDescriptor<List<String>, List<String>> get propStringList =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-      properties['propStringList']! as PropertyDescriptor<List<String>>;
+      properties['propStringList']!
+          as PropertyDescriptor<List<String>, List<String>>;
+
+  /// Gets a [PropertyDescriptor] of propInt property.
+  PropertyDescriptor<int, String> get propInt =>
+      // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
+      properties['propInt']! as PropertyDescriptor<int, String>;
 }
 
 class $TheFormPresenterFieldFactories {
@@ -138,9 +152,10 @@ class $TheFormPresenterFieldFactories {
     return TextFormField(
       key: _presenter.getKey(property.name, context),
       controller: controller,
-      initialValue: property.savedValue.toString(),
+      initialValue: property.getFieldValue(
+          Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       focusNode: focusNode,
-      decoration: InputDecoration(
+      decoration: const InputDecoration().copyWith(
         labelText: property.name,
       ),
       keyboardType: keyboardType,
@@ -170,7 +185,8 @@ class $TheFormPresenterFieldFactories {
       onTap: onTap,
       onEditingComplete: onEditingComplete,
       onFieldSubmitted: onFieldSubmitted,
-      onSaved: property.saveValue,
+      onSaved: (v) => property.setFieldValue(
+          v, Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       validator: property.getValidator(context),
       inputFormatters: inputFormatters,
       enabled: enabled,
@@ -225,7 +241,8 @@ class $TheFormPresenterFieldFactories {
       key: _presenter.getKey(property.name, context),
       items: items,
       selectedItemBuilder: selectedItemBuilder,
-      value: property.savedValue,
+      value: property.getFieldValue(
+          Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       hint: hint,
       disabledHint: disabledHint,
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
@@ -246,7 +263,8 @@ class $TheFormPresenterFieldFactories {
       decoration: InputDecoration(
         labelText: property.name,
       ),
-      onSaved: property.saveValue,
+      onSaved: (v) => property.setFieldValue(
+          v, Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       validator: property.getValidator(context),
       autovalidateMode: autovalidateMode ?? AutovalidateMode.onUserInteraction,
       menuMaxHeight: menuMaxHeight,
@@ -288,7 +306,8 @@ class $TheFormPresenterFieldFactories {
       key: _presenter.getKey(property.name, context),
       items: items,
       selectedItemBuilder: selectedItemBuilder,
-      value: property.savedValue,
+      value: property.getFieldValue(
+          Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       hint: hint,
       disabledHint: disabledHint,
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
@@ -309,12 +328,124 @@ class $TheFormPresenterFieldFactories {
       decoration: InputDecoration(
         labelText: property.name,
       ),
-      onSaved: property.saveValue,
+      onSaved: (v) => property.setFieldValue(
+          v, Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       validator: property.getValidator(context),
       autovalidateMode: autovalidateMode ?? AutovalidateMode.onUserInteraction,
       menuMaxHeight: menuMaxHeight,
       enableFeedback: enableFeedback,
       alignment: alignment,
+    );
+  }
+
+  /// Gets a [FormField] for propInt property.
+  TextFormField propInt(
+    BuildContext context, {
+    TextEditingController? controller,
+    FocusNode? focusNode,
+    InputDecoration? decoration,
+    TextInputType? keyboardType,
+    TextCapitalization textCapitalization = TextCapitalization.none,
+    TextInputAction? textInputAction,
+    TextStyle? style,
+    StrutStyle? strutStyle,
+    TextDirection? textDirection,
+    TextAlign textAlign = TextAlign.start,
+    TextAlignVertical? textAlignVertical,
+    bool autofocus = false,
+    bool readOnly = false,
+    ToolbarOptions? toolbarOptions,
+    bool? showCursor,
+    String obscuringCharacter = '•',
+    bool obscureText = false,
+    bool autocorrect = true,
+    SmartDashesType? smartDashesType,
+    SmartQuotesType? smartQuotesType,
+    bool enableSuggestions = true,
+    MaxLengthEnforcement? maxLengthEnforcement,
+    int? maxLines = 1,
+    int? minLines,
+    bool expands = false,
+    int? maxLength,
+    ValueChanged<String>? onChanged,
+    GestureTapCallback? onTap,
+    VoidCallback? onEditingComplete,
+    ValueChanged<String>? onFieldSubmitted,
+    List<TextInputFormatter>? inputFormatters,
+    bool? enabled,
+    double cursorWidth = 2.0,
+    double? cursorHeight,
+    Radius? cursorRadius,
+    Color? cursorColor,
+    Brightness? keyboardAppearance,
+    EdgeInsets scrollPadding = const EdgeInsets.all(20.0),
+    bool enableInteractiveSelection = true,
+    TextSelectionControls? selectionControls,
+    InputCounterWidgetBuilder? buildCounter,
+    ScrollPhysics? scrollPhysics,
+    Iterable<String>? autofillHints,
+    AutovalidateMode? autovalidateMode,
+    ScrollController? scrollController,
+    String? restorationId,
+    bool enableIMEPersonalizedLearning = true,
+  }) {
+    final property = _presenter.propInt;
+    return TextFormField(
+      key: _presenter.getKey(property.name, context),
+      controller: controller,
+      initialValue: property.getFieldValue(
+          Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
+      focusNode: focusNode,
+      decoration: const InputDecoration().copyWith(
+        labelText: property.name,
+      ),
+      keyboardType: keyboardType,
+      textCapitalization: textCapitalization,
+      textInputAction: textInputAction,
+      style: style,
+      strutStyle: strutStyle,
+      textDirection: textDirection,
+      textAlign: textAlign,
+      textAlignVertical: textAlignVertical,
+      autofocus: autofocus,
+      readOnly: readOnly,
+      toolbarOptions: toolbarOptions,
+      showCursor: showCursor,
+      obscuringCharacter: obscuringCharacter,
+      obscureText: obscureText,
+      autocorrect: autocorrect,
+      smartDashesType: smartDashesType,
+      smartQuotesType: smartQuotesType,
+      enableSuggestions: enableSuggestions,
+      maxLengthEnforcement: maxLengthEnforcement,
+      maxLines: maxLines,
+      minLines: minLines,
+      expands: expands,
+      maxLength: maxLength,
+      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+      onTap: onTap,
+      onEditingComplete: onEditingComplete,
+      onFieldSubmitted: onFieldSubmitted,
+      onSaved: (v) => property.setFieldValue(
+          v, Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
+      validator: property.getValidator(context),
+      inputFormatters: inputFormatters,
+      enabled: enabled,
+      cursorWidth: cursorWidth,
+      cursorHeight: cursorHeight,
+      cursorRadius: cursorRadius,
+      cursorColor: cursorColor,
+      keyboardAppearance: keyboardAppearance,
+      scrollPadding: scrollPadding,
+      enableInteractiveSelection: enableInteractiveSelection,
+      selectionControls: selectionControls,
+      buildCounter: buildCounter,
+      scrollPhysics: scrollPhysics,
+      autofillHints: autofillHints,
+      autovalidateMode: autovalidateMode ?? AutovalidateMode.onUserInteraction,
+      scrollController: scrollController,
+      restorationId: restorationId,
+      enableIMEPersonalizedLearning: enableIMEPersonalizedLearning,
     );
   }
 }

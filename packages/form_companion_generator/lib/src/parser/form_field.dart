@@ -12,22 +12,30 @@ FutureOr<PropertyAndFormFieldDefinition> resolveFormFieldAsync(
   PropertyDefinition property, {
   required bool isFormBuilder,
 }) async {
-  final fieldTypeName = _determineFormFieldTypeName(
+  final formFieldRawTypeName = _determineFormFieldTypeName(
     context,
-    property.type,
-    property.preferredFieldType,
+    property.fieldType,
+    property.preferredFormFieldType,
     isFormBuilder: isFormBuilder,
   );
   context.logger.fine(
-    'Use $fieldTypeName for property name: ${property.name}, type: ${property.type}, preferredFieldType: ${property.preferredFieldType}',
+    'Use $formFieldRawTypeName for property name: ${property.name}, '
+    'fieldValueType: ${property.fieldType}, '
+    'preferredFormFieldType: ${property.preferredFormFieldType}',
   );
-  final fieldType =
-      context.formFieldLocator.resolveFormFieldType(fieldTypeName);
+
+  final preferredFieldType =
+      property.preferredFormFieldType?.maybeAsInterfaceType;
+
+  final formFieldType = preferredFieldType ??
+      context.formFieldLocator.resolveFormFieldType(
+        formFieldRawTypeName,
+      );
   ConstructorDeclaration? fieldConstructor;
   TypeInstantiationContext? instantiationContext;
-  if (fieldType != null) {
+  if (formFieldType != null) {
     final constructorElement =
-        _findFormFieldConstructor(fieldType, property.warnings);
+        _findFormFieldConstructor(formFieldType, property.warnings);
     if (constructorElement != null) {
       fieldConstructor = await context.nodeProvider
           .getElementDeclarationAsync<ConstructorDeclaration>(
@@ -38,30 +46,31 @@ FutureOr<PropertyAndFormFieldDefinition> resolveFormFieldAsync(
     instantiationContext = TypeInstantiationContext.create(
       context.nodeProvider,
       property,
-      fieldType,
+      formFieldType,
+      context.logger,
     );
   }
 
   return PropertyAndFormFieldDefinition(
     property: property,
-    fieldType: fieldType,
-    fieldTypeName: fieldTypeName,
-    fieldConstructor: fieldConstructor,
+    formFieldType: formFieldType,
+    formFieldTypeName: formFieldRawTypeName,
+    formFieldConstructor: fieldConstructor,
     instantiationContext: instantiationContext,
   );
 }
 
 String _determineFormFieldTypeName(
   ParseContext context,
-  InterfaceType propertyType,
-  String? preferredFieldType, {
+  GenericInterfaceType fieldValueType,
+  GenericInterfaceType? preferredFormFieldType, {
   required bool isFormBuilder,
 }) {
-  if (preferredFieldType != null) {
-    return preferredFieldType;
+  if (preferredFormFieldType != null) {
+    return preferredFormFieldType.rawTypeName;
   } else {
     if (context.typeSystem.isAssignableTo(
-      propertyType,
+      fieldValueType.rawType,
       context.typeProvider.enumType!,
     )) {
       return isFormBuilder
@@ -70,12 +79,12 @@ String _determineFormFieldTypeName(
     }
 
     // Use element name to ignore type arguments here.
-    final propertyTypeName = propertyType.element.name;
+    final fieldValueTypeName = fieldValueType.rawTypeName;
     if (isFormBuilder) {
-      return _predefinedFormBuilderFieldTypes[propertyTypeName] ??
+      return _predefinedFormBuilderFieldTypes[fieldValueTypeName] ??
           _defaultFormBuilderFieldType;
     } else {
-      return _predefinedVanillaFormFieldTypes[propertyTypeName] ??
+      return _predefinedVanillaFormFieldTypes[fieldValueTypeName] ??
           _defaultVanillaFormFieldType;
     }
   }
@@ -97,9 +106,9 @@ ConstructorElement? _findFormFieldConstructor(
   return normalConstructors.single;
 }
 
-final _defaultFormBuilderFieldType = 'FormBuilderTextField';
+final _defaultFormBuilderFieldType = 'FormBuilderField';
 
-final _defaultVanillaFormFieldType = 'TextFormField';
+final _defaultVanillaFormFieldType = 'FormField';
 
 final _enumFormBuilderFieldType = 'FormBuilderDropdown';
 
@@ -111,8 +120,10 @@ final _predefinedFormBuilderFieldTypes = {
   'DateTimeRange': 'FormBuilderDateRangePicker',
   'List': 'FormBuilderFilterChip',
   'RangeValues': 'FormBuilderRangeSlider',
+  'String': 'FormBuilderTextField',
 };
 
 final _predefinedVanillaFormFieldTypes = {
   'bool': 'DropdownButtonFormField',
+  'String': 'TextFormField',
 };

@@ -175,6 +175,7 @@ FutureOr<Map<String, PropertyAndFormFieldDefinition>> getPropertiesAsync(
     constructor.library.typeProvider,
     constructor.library.typeSystem,
     globalWarnings,
+    isFormBuilder: isFormBuilder,
   );
   final ast = await context.nodeProvider
       .getElementDeclarationAsync<ConstructorDeclaration>(constructor);
@@ -252,16 +253,16 @@ FutureOr<List<LibraryImport>> collectDependenciesAsync(
   );
 
   for (final property in properties) {
-    final fieldConstructor = property.fieldConstructor;
-    if (fieldConstructor != null) {
+    final formFieldConstructor = property.formFieldConstructor;
+    if (formFieldConstructor != null) {
       collector.reset(
-        fieldConstructor.declaredElement!.enclosingElement,
+        formFieldConstructor.declaredElement!.enclosingElement,
         property.warnings,
       );
 
       // TODO(yfakariya): Move to PropertyAndField field to avoid reconstruction.
       final argumentsHandler = ArgumentEmitter(
-        await fieldConstructor.parameters.parameters
+        await formFieldConstructor.parameters.parameters
             .map((e) => ParameterInfo.fromNodeAsync(nodeProvider, e))
             .toListAsync(),
         isFormBuilder: isFormBuilder,
@@ -273,15 +274,23 @@ FutureOr<List<LibraryImport>> collectDependenciesAsync(
         parameter.node.accept(collector);
       }
 
-      // Add property value
-      collector.processType(property.type);
-
       // Add form field itself.
-      final classDeclaration = fieldConstructor.parent! as ClassDeclaration;
-      collector.recordTypeId(
-        classDeclaration.declaredElement!,
-        classDeclaration.name,
-      );
+      final classDeclaration = formFieldConstructor.parent! as ClassDeclaration;
+      collector
+        ..recordTypeId(
+          classDeclaration.declaredElement!,
+          classDeclaration.name,
+        )
+        // Add property value
+        ..processGenericType(property.propertyValueType)
+        // Add field value
+        ..processGenericType(property.fieldValueType)
+        // Add getFieldValue/setFieldValue related.
+        ..recordTypeIdDirect('dart:ui', 'Locale')
+        ..recordTypeIdDirect(
+          'package:flutter/widgets.dart',
+          'Localizations',
+        );
 
       await collector.endAsync();
     }

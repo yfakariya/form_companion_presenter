@@ -38,10 +38,12 @@ Future<void> main() async {
     for (final field in ['TextFormField', 'DropdownButtonFormField']) {
       test(field, () async {
         final target = await FormFieldLocator.createAsync(resolver, [], logger);
-        final result = target.resolveFormFieldType(field);
+        final result = target.resolveFormFieldType(
+          field,
+        );
         expect(result, isNotNull);
         expect(
-          result?.getDisplayString(withNullability: false),
+          result?.toString(),
           // may be generic
           startsWith(field),
         );
@@ -69,7 +71,7 @@ Future<void> main() async {
         final result = target.resolveFormFieldType(field);
         expect(result, isNotNull);
         expect(
-          result?.getDisplayString(withNullability: false),
+          result?.toString(),
           // may be generic
           startsWith(field),
         );

@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:form_builder_companion_presenter/form_builder_companion_presenter.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:form_companion_presenter/async_validation_indicator.dart';
+import 'package:form_companion_presenter/form_companion_extension.dart';
 import 'package:form_companion_presenter/form_companion_presenter.dart';
 
 import 'l10n/locale_keys.g.dart';
@@ -16,6 +17,8 @@ import 'models.dart';
 import 'routes.dart';
 import 'screen.dart';
 import 'validators.dart';
+
+// TODO(yfakariya): use generator
 
 //------------------------------------------------------------------------------
 // In this example, [AutovalidateMode] of the form and fields are disabled (default value).
@@ -86,7 +89,7 @@ class _ManualValidationFormBuilderAccountPane extends ConsumerWidget {
           FormBuilderDropdown<Gender>(
             name: 'gender',
             initialValue: state.gender,
-            onSaved: presenter.savePropertyValue('gender'),
+            onSaved: presenter.savePropertyValue('gender', context),
             // Tip: required to work
             onChanged: (_) {},
             decoration: InputDecoration(
@@ -192,7 +195,7 @@ class ManualValidationFormBuilderAccountPresenter extends StateNotifier<Account>
   ) : super(initialState) {
     initializeCompanionMixin(
       PropertyDescriptorsBuilder()
-        ..add<String>(
+        ..addText(
           name: 'id',
           validatorFactories: [
             FormBuilderValidators.required,
@@ -202,23 +205,25 @@ class ManualValidationFormBuilderAccountPresenter extends StateNotifier<Account>
             Validator.id,
           ],
         )
-        ..add<String>(
+        ..addText(
           name: 'name',
           validatorFactories: [
             FormBuilderValidators.required,
           ],
         )
-        ..add<Gender>(
+        ..addEnum<Gender>(
           name: 'gender',
         )
-        ..add<String>(
+        ..addString(
           name: 'age',
           validatorFactories: [
             FormBuilderValidators.required,
             (context) => FormBuilderValidators.min(context, 0),
           ],
+          initialValue: 20,
+          stringConverter: intStringConverter,
         )
-        ..add<List<Region>>(name: 'preferredRegions'),
+        ..addEnumList<Region>(name: 'preferredRegions'),
     );
   }
 
@@ -229,7 +234,7 @@ class ManualValidationFormBuilderAccountPresenter extends StateNotifier<Account>
     final name = getSavedPropertyValue<String>('name')!;
     final gender = getSavedPropertyValue<Gender>('gender')!;
     // You can omit generic type argument occasionally.
-    final age = int.parse(getSavedPropertyValue('age')!);
+    final age = getSavedPropertyValue<int>('age')!;
     final preferredRegions =
         getSavedPropertyValue<List<Region>>('preferredRegions')!;
 

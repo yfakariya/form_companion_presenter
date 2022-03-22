@@ -265,3 +265,28 @@ class _AsyncValidatorChain<T extends Object> {
     return _first(value);
   }
 }
+
+/// Creates [FormFieldValidatorFactory] from [ValueConverter].
+@internal
+@visibleForTesting
+FormFieldValidatorFactory<F>
+    createValidatorFactoryFromConverter<P extends Object, F extends Object>(
+  ValueConverter<P, F> converter,
+) =>
+        (x) => (v) {
+              final result = v == null
+                  ? ConversionResult<P>(null)
+                  : converter.toPropertyValue(
+                      v, Localizations.maybeLocaleOf(x) ?? defaultLocale);
+              if (result is FailureResult<P>) {
+                return result.message;
+              }
+
+              if (result is ConversionResult<P>) {
+                return null;
+              }
+
+              throw UnsupportedError(
+                'Unsupported result type ${result.runtimeType}.',
+              );
+            };

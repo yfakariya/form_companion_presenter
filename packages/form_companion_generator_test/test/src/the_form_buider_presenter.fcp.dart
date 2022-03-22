@@ -33,6 +33,7 @@ import 'package:flutter/material.dart'
         DropdownButtonBuilder,
         DropdownMenuItem,
         Icons,
+        InputBorder,
         InputCounterWidgetBuilder,
         InputDecoration,
         ListTileControlAffinity,
@@ -77,6 +78,7 @@ import 'package:flutter/widgets.dart'
         BuildContext,
         FocusNode,
         Icon,
+        Localizations,
         RouteSettings,
         ScrollController,
         ScrollPhysics,
@@ -120,80 +122,91 @@ import 'the_form_buider_presenter.dart';
 
 extension $TheFormBuilderPresenterPropertyExtension on TheFormBuilderPresenter {
   /// Gets a [PropertyDescriptor] of propString property.
-  PropertyDescriptor<String> get propString =>
+  PropertyDescriptor<String, String> get propString =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-      properties['propString']! as PropertyDescriptor<String>;
+      properties['propString']! as PropertyDescriptor<String, String>;
 
   /// Gets a [PropertyDescriptor] of propEnum property.
-  PropertyDescriptor<MyEnum> get propEnum =>
+  PropertyDescriptor<MyEnum, MyEnum> get propEnum =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-      properties['propEnum']! as PropertyDescriptor<MyEnum>;
+      properties['propEnum']! as PropertyDescriptor<MyEnum, MyEnum>;
 
   /// Gets a [PropertyDescriptor] of propBool property.
-  PropertyDescriptor<bool> get propBool =>
+  PropertyDescriptor<bool, bool> get propBool =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-      properties['propBool']! as PropertyDescriptor<bool>;
+      properties['propBool']! as PropertyDescriptor<bool, bool>;
 
   /// Gets a [PropertyDescriptor] of propDateTime property.
-  PropertyDescriptor<DateTime> get propDateTime =>
+  PropertyDescriptor<DateTime, DateTime> get propDateTime =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-      properties['propDateTime']! as PropertyDescriptor<DateTime>;
+      properties['propDateTime']! as PropertyDescriptor<DateTime, DateTime>;
 
   /// Gets a [PropertyDescriptor] of propDateTimeRange property.
-  PropertyDescriptor<DateTimeRange> get propDateTimeRange =>
+  PropertyDescriptor<DateTimeRange, DateTimeRange> get propDateTimeRange =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-      properties['propDateTimeRange']! as PropertyDescriptor<DateTimeRange>;
+      properties['propDateTimeRange']!
+          as PropertyDescriptor<DateTimeRange, DateTimeRange>;
 
   /// Gets a [PropertyDescriptor] of propRangeValues property.
-  PropertyDescriptor<RangeValues> get propRangeValues =>
+  PropertyDescriptor<RangeValues, RangeValues> get propRangeValues =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-      properties['propRangeValues']! as PropertyDescriptor<RangeValues>;
+      properties['propRangeValues']!
+          as PropertyDescriptor<RangeValues, RangeValues>;
 
   /// Gets a [PropertyDescriptor] of propEnumList property.
-  PropertyDescriptor<List<MyEnum>> get propEnumList =>
+  PropertyDescriptor<List<MyEnum>, List<MyEnum>> get propEnumList =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-      properties['propEnumList']! as PropertyDescriptor<List<MyEnum>>;
+      properties['propEnumList']!
+          as PropertyDescriptor<List<MyEnum>, List<MyEnum>>;
 
   /// Gets a [PropertyDescriptor] of propBoolList property.
-  PropertyDescriptor<List<bool>> get propBoolList =>
+  PropertyDescriptor<List<bool>, List<bool>> get propBoolList =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-      properties['propBoolList']! as PropertyDescriptor<List<bool>>;
+      properties['propBoolList']! as PropertyDescriptor<List<bool>, List<bool>>;
 
   /// Gets a [PropertyDescriptor] of propBoolCheckBox property.
-  PropertyDescriptor<bool> get propBoolCheckBox =>
+  PropertyDescriptor<bool, bool> get propBoolCheckBox =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-      properties['propBoolCheckBox']! as PropertyDescriptor<bool>;
+      properties['propBoolCheckBox']! as PropertyDescriptor<bool, bool>;
 
   /// Gets a [PropertyDescriptor] of propEnumListCheckBoxGroup property.
-  PropertyDescriptor<List<MyEnum>> get propEnumListCheckBoxGroup =>
-      // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-      properties['propEnumListCheckBoxGroup']!
-          as PropertyDescriptor<List<MyEnum>>;
+  PropertyDescriptor<List<MyEnum>, List<MyEnum>>
+      get propEnumListCheckBoxGroup =>
+          // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
+          properties['propEnumListCheckBoxGroup']!
+              as PropertyDescriptor<List<MyEnum>, List<MyEnum>>;
 
   /// Gets a [PropertyDescriptor] of propEnumChoiceChip property.
-  PropertyDescriptor<MyEnum> get propEnumChoiceChip =>
+  PropertyDescriptor<MyEnum, MyEnum> get propEnumChoiceChip =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-      properties['propEnumChoiceChip']! as PropertyDescriptor<MyEnum>;
+      properties['propEnumChoiceChip']! as PropertyDescriptor<MyEnum, MyEnum>;
 
   /// Gets a [PropertyDescriptor] of propEnumListFilterChip property.
-  PropertyDescriptor<List<MyEnum>> get propEnumListFilterChip =>
+  PropertyDescriptor<List<MyEnum>, List<MyEnum>> get propEnumListFilterChip =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-      properties['propEnumListFilterChip']! as PropertyDescriptor<List<MyEnum>>;
+      properties['propEnumListFilterChip']!
+          as PropertyDescriptor<List<MyEnum>, List<MyEnum>>;
 
   /// Gets a [PropertyDescriptor] of propEnumRadioGroup property.
-  PropertyDescriptor<MyEnum> get propEnumRadioGroup =>
+  PropertyDescriptor<MyEnum, MyEnum> get propEnumRadioGroup =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-      properties['propEnumRadioGroup']! as PropertyDescriptor<MyEnum>;
+      properties['propEnumRadioGroup']! as PropertyDescriptor<MyEnum, MyEnum>;
 
   /// Gets a [PropertyDescriptor] of propEnumSegmentedControl property.
-  PropertyDescriptor<MyEnum> get propEnumSegmentedControl =>
+  PropertyDescriptor<MyEnum, MyEnum> get propEnumSegmentedControl =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-      properties['propEnumSegmentedControl']! as PropertyDescriptor<MyEnum>;
+      properties['propEnumSegmentedControl']!
+          as PropertyDescriptor<MyEnum, MyEnum>;
 
   /// Gets a [PropertyDescriptor] of propDoubleSlider property.
-  PropertyDescriptor<double> get propDoubleSlider =>
+  PropertyDescriptor<double, double> get propDoubleSlider =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-      properties['propDoubleSlider']! as PropertyDescriptor<double>;
+      properties['propDoubleSlider']! as PropertyDescriptor<double, double>;
+
+  /// Gets a [PropertyDescriptor] of propInt property.
+  PropertyDescriptor<int, String> get propInt =>
+      // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
+      properties['propInt']! as PropertyDescriptor<int, String>;
 }
 
 class $TheFormBuilderPresenterFieldFactories {
@@ -260,9 +273,10 @@ class $TheFormBuilderPresenterFieldFactories {
       key: key,
       name: property.name,
       validator: property.getValidator(context),
-      initialValue: property.savedValue.toString(),
+      initialValue: property.getFieldValue(
+          Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       readOnly: readOnly,
-      decoration: InputDecoration(
+      decoration: const InputDecoration().copyWith(
         labelText: property.name,
       ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
@@ -353,8 +367,9 @@ class $TheFormBuilderPresenterFieldFactories {
       key: key,
       name: property.name,
       validator: property.getValidator(context),
-      initialValue: property.savedValue,
-      decoration: InputDecoration(
+      initialValue: property.getFieldValue(
+          Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
+      decoration: const InputDecoration().copyWith(
         labelText: property.name,
       ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
@@ -418,8 +433,9 @@ class $TheFormBuilderPresenterFieldFactories {
       key: key,
       name: property.name,
       validator: property.getValidator(context),
-      initialValue: property.savedValue,
-      decoration: InputDecoration(
+      initialValue: property.getFieldValue(
+          Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
+      decoration: const InputDecoration().copyWith(
         labelText: property.name,
       ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
@@ -513,8 +529,9 @@ class $TheFormBuilderPresenterFieldFactories {
       key: key,
       name: property.name,
       validator: property.getValidator(context),
-      initialValue: property.savedValue,
-      decoration: InputDecoration(
+      initialValue: property.getFieldValue(
+          Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
+      decoration: const InputDecoration().copyWith(
         labelText: property.name,
       ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
@@ -641,8 +658,9 @@ class $TheFormBuilderPresenterFieldFactories {
       key: key,
       name: property.name,
       validator: property.getValidator(context),
-      initialValue: property.savedValue,
-      decoration: InputDecoration(
+      initialValue: property.getFieldValue(
+          Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
+      decoration: const InputDecoration().copyWith(
         labelText: property.name,
       ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
@@ -733,8 +751,9 @@ class $TheFormBuilderPresenterFieldFactories {
       key: key,
       name: property.name,
       validator: property.getValidator(context),
-      initialValue: property.savedValue!,
-      decoration: InputDecoration(
+      initialValue: property.getFieldValue(
+          Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))!,
+      decoration: const InputDecoration().copyWith(
         labelText: property.name,
       ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
@@ -805,11 +824,12 @@ class $TheFormBuilderPresenterFieldFactories {
       enabled: enabled,
       focusNode: focusNode,
       validator: property.getValidator(context),
-      decoration: InputDecoration(
+      decoration: const InputDecoration().copyWith(
         labelText: property.name,
       ),
       key: key,
-      initialValue: property.savedValue!,
+      initialValue: property.getFieldValue(
+          Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))!,
       name: property.name,
       options: options,
       alignment: alignment,
@@ -887,11 +907,12 @@ class $TheFormBuilderPresenterFieldFactories {
       enabled: enabled,
       focusNode: focusNode,
       validator: property.getValidator(context),
-      decoration: InputDecoration(
+      decoration: const InputDecoration().copyWith(
         labelText: property.name,
       ),
       key: key,
-      initialValue: property.savedValue!,
+      initialValue: property.getFieldValue(
+          Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))!,
       name: property.name,
       options: options,
       alignment: alignment,
@@ -953,8 +974,15 @@ class $TheFormBuilderPresenterFieldFactories {
       key: key,
       name: property.name,
       validator: property.getValidator(context),
-      initialValue: property.savedValue,
-      decoration: InputDecoration(
+      initialValue: property.getFieldValue(
+          Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
+      decoration: const InputDecoration(
+              border: InputBorder.none,
+              focusedBorder: InputBorder.none,
+              enabledBorder: InputBorder.none,
+              errorBorder: InputBorder.none,
+              disabledBorder: InputBorder.none)
+          .copyWith(
         labelText: property.name,
       ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
@@ -1014,8 +1042,9 @@ class $TheFormBuilderPresenterFieldFactories {
       key: key,
       name: property.name,
       validator: property.getValidator(context),
-      initialValue: property.savedValue,
-      decoration: InputDecoration(
+      initialValue: property.getFieldValue(
+          Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
+      decoration: const InputDecoration().copyWith(
         labelText: property.name,
       ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
@@ -1088,13 +1117,14 @@ class $TheFormBuilderPresenterFieldFactories {
       enabled: enabled,
       focusNode: focusNode,
       validator: property.getValidator(context),
-      decoration: InputDecoration(
+      decoration: const InputDecoration().copyWith(
         labelText: property.name,
       ),
       key: key,
       name: property.name,
       options: options,
-      initialValue: property.savedValue,
+      initialValue: property.getFieldValue(
+          Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       alignment: alignment,
       backgroundColor: backgroundColor,
       crossAxisAlignment: crossAxisAlignment,
@@ -1167,11 +1197,12 @@ class $TheFormBuilderPresenterFieldFactories {
       enabled: enabled,
       focusNode: focusNode,
       validator: property.getValidator(context),
-      decoration: InputDecoration(
+      decoration: const InputDecoration().copyWith(
         labelText: property.name,
       ),
       key: key,
-      initialValue: property.savedValue!,
+      initialValue: property.getFieldValue(
+          Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))!,
       name: property.name,
       options: options,
       alignment: alignment,
@@ -1241,13 +1272,14 @@ class $TheFormBuilderPresenterFieldFactories {
       enabled: enabled,
       focusNode: focusNode,
       validator: property.getValidator(context),
-      decoration: InputDecoration(
+      decoration: const InputDecoration().copyWith(
         labelText: property.name,
       ),
       key: key,
       name: property.name,
       options: options,
-      initialValue: property.savedValue,
+      initialValue: property.getFieldValue(
+          Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       shouldRadioRequestFocus: shouldRadioRequestFocus,
       activeColor: activeColor,
       controlAffinity: controlAffinity,
@@ -1295,8 +1327,9 @@ class $TheFormBuilderPresenterFieldFactories {
       key: key,
       name: property.name,
       validator: property.getValidator(context),
-      initialValue: property.savedValue,
-      decoration: InputDecoration(
+      initialValue: property.getFieldValue(
+          Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
+      decoration: const InputDecoration().copyWith(
         labelText: property.name,
       ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
@@ -1349,8 +1382,9 @@ class $TheFormBuilderPresenterFieldFactories {
       key: key,
       name: property.name,
       validator: property.getValidator(context),
-      initialValue: property.savedValue!,
-      decoration: InputDecoration(
+      initialValue: property.getFieldValue(
+          Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))!,
+      decoration: const InputDecoration().copyWith(
         labelText: property.name,
       ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
@@ -1376,6 +1410,121 @@ class $TheFormBuilderPresenterFieldFactories {
       autofocus: autofocus,
       mouseCursor: mouseCursor,
       shouldRequestFocus: shouldRequestFocus,
+    );
+  }
+
+  /// Gets a [FormField] for propInt property.
+  FormBuilderTextField propInt(
+    BuildContext context, {
+    Key? key,
+    bool readOnly = false,
+    InputDecoration? decoration,
+    ValueChanged<String?>? onChanged,
+    ValueTransformer<String?>? valueTransformer,
+    bool enabled = true,
+    AutovalidateMode? autovalidateMode,
+    VoidCallback? onReset,
+    FocusNode? focusNode,
+    int? maxLines = 1,
+    bool obscureText = false,
+    TextCapitalization textCapitalization = TextCapitalization.none,
+    EdgeInsets scrollPadding = const EdgeInsets.all(20.0),
+    bool enableInteractiveSelection = true,
+    MaxLengthEnforcement? maxLengthEnforcement,
+    TextAlign textAlign = TextAlign.start,
+    bool autofocus = false,
+    bool autocorrect = true,
+    double cursorWidth = 2.0,
+    TextInputType? keyboardType,
+    TextStyle? style,
+    TextEditingController? controller,
+    TextInputAction? textInputAction,
+    StrutStyle? strutStyle,
+    TextDirection? textDirection,
+    int? maxLength,
+    VoidCallback? onEditingComplete,
+    ValueChanged<String?>? onSubmitted,
+    List<TextInputFormatter>? inputFormatters,
+    Radius? cursorRadius,
+    Color? cursorColor,
+    Brightness? keyboardAppearance,
+    InputCounterWidgetBuilder? buildCounter,
+    bool expands = false,
+    int? minLines,
+    bool? showCursor,
+    GestureTapCallback? onTap,
+    bool enableSuggestions = false,
+    TextAlignVertical? textAlignVertical,
+    DragStartBehavior dragStartBehavior = DragStartBehavior.start,
+    ScrollController? scrollController,
+    ScrollPhysics? scrollPhysics,
+    ui.BoxWidthStyle selectionWidthStyle = ui.BoxWidthStyle.tight,
+    SmartDashesType? smartDashesType,
+    SmartQuotesType? smartQuotesType,
+    ToolbarOptions? toolbarOptions,
+    ui.BoxHeightStyle selectionHeightStyle = ui.BoxHeightStyle.tight,
+    Iterable<String>? autofillHints,
+    String obscuringCharacter = '•',
+    MouseCursor? mouseCursor,
+  }) {
+    final property = _presenter.propInt;
+    return FormBuilderTextField(
+      key: key,
+      name: property.name,
+      validator: property.getValidator(context),
+      initialValue: property.getFieldValue(
+          Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
+      readOnly: readOnly,
+      decoration: const InputDecoration().copyWith(
+        labelText: property.name,
+      ),
+      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+      valueTransformer: valueTransformer,
+      enabled: enabled,
+      autovalidateMode: autovalidateMode ?? AutovalidateMode.onUserInteraction,
+      onReset: onReset,
+      focusNode: focusNode,
+      maxLines: maxLines,
+      obscureText: obscureText,
+      textCapitalization: textCapitalization,
+      scrollPadding: scrollPadding,
+      enableInteractiveSelection: enableInteractiveSelection,
+      maxLengthEnforcement: maxLengthEnforcement,
+      textAlign: textAlign,
+      autofocus: autofocus,
+      autocorrect: autocorrect,
+      cursorWidth: cursorWidth,
+      keyboardType: keyboardType,
+      style: style,
+      controller: controller,
+      textInputAction: textInputAction,
+      strutStyle: strutStyle,
+      textDirection: textDirection,
+      maxLength: maxLength,
+      onEditingComplete: onEditingComplete,
+      onSubmitted: onSubmitted,
+      inputFormatters: inputFormatters,
+      cursorRadius: cursorRadius,
+      cursorColor: cursorColor,
+      keyboardAppearance: keyboardAppearance,
+      buildCounter: buildCounter,
+      expands: expands,
+      minLines: minLines,
+      showCursor: showCursor,
+      onTap: onTap,
+      enableSuggestions: enableSuggestions,
+      textAlignVertical: textAlignVertical,
+      dragStartBehavior: dragStartBehavior,
+      scrollController: scrollController,
+      scrollPhysics: scrollPhysics,
+      selectionWidthStyle: selectionWidthStyle,
+      smartDashesType: smartDashesType,
+      smartQuotesType: smartQuotesType,
+      toolbarOptions: toolbarOptions,
+      selectionHeightStyle: selectionHeightStyle,
+      autofillHints: autofillHints,
+      obscuringCharacter: obscuringCharacter,
+      mouseCursor: mouseCursor,
     );
   }
 }

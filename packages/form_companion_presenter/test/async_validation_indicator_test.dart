@@ -10,6 +10,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:form_companion_presenter/async_validation_indicator.dart';
 
 import 'package:form_companion_presenter/form_companion_presenter.dart';
+import 'package:form_companion_presenter/src/presenter_extension.dart';
 
 class FormHost extends StatelessWidget {
   final Widget _child;
@@ -168,7 +169,7 @@ void main() {
       final validationStarter = Completer<void>();
       final presenter = Presenter(
         properties: PropertyDescriptorsBuilder()
-          ..add<String>(
+          ..add<String, String>(
             name: 'prop',
             asyncValidatorFactories: [
               (context) => (value, options) async {
@@ -205,7 +206,7 @@ void main() {
     test('default values.', () {
       final presenter = Presenter(
         properties: PropertyDescriptorsBuilder()
-          ..add<String>(
+          ..add<String, String>(
             name: 'prop',
           ),
       );
@@ -222,7 +223,7 @@ void main() {
     test('keys is used.', () {
       final presenter = Presenter(
         properties: PropertyDescriptorsBuilder()
-          ..add<String>(
+          ..add<String, String>(
             name: 'prop',
           ),
       );
@@ -243,7 +244,7 @@ void main() {
       final validationStarter = Completer<void>();
       final presenter = Presenter(
         properties: PropertyDescriptorsBuilder()
-          ..add<String>(
+          ..add<String, String>(
             name: 'prop',
             asyncValidatorFactories: [
               (context) => (value, options) async {
@@ -279,7 +280,7 @@ void main() {
       final validationStarter = Completer<void>();
       final presenter = Presenter(
         properties: PropertyDescriptorsBuilder()
-          ..add<String>(
+          ..add<String, String>(
             name: 'prop',
             asyncValidatorFactories: [
               (context) => (value, options) async {

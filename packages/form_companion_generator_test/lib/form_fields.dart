@@ -6,6 +6,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 
+import 'properties.dart';
+
 // for allowing emitter testings loopup FormFields.
 
 const Type textFormField = TextFormField;
@@ -25,3 +27,6 @@ const Type formBuilderSwitch = FormBuilderSwitch;
 const Type formBuilderTextField = FormBuilderTextField;
 const Type dateTime = DateTime;
 const Type dateTimeRange = DateTimeRange;
+
+const Type formBuilderDropdownOfMyEnum = FormBuilderDropdown<MyEnum>;
+const Type formBuilderFilterChipOfMyEnum = FormBuilderFilterChip<MyEnum>;

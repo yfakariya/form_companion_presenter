@@ -12,16 +12,15 @@ class TheFormPresenter with CompanionPresenterMixin, FormCompanionMixin {
   TheFormPresenter() {
     initializeCompanionMixin(
       PropertyDescriptorsBuilder()
-        ..add<String>(name: 'propString')
-        ..add<MyEnum>(name: 'propEnum')
-        ..addWithField<List<String>, DropdownButtonFormField<List<String>>>(
+        ..addText(name: 'propString')
+        ..addEnum<MyEnum>(name: 'propEnum')
+        ..addWithField<List<String>, List<String>,
+            DropdownButtonFormField<List<String>>>(
           name: 'propStringList',
         )
-      // TODO(yfakariya): converter test
-      // ..add<int>(
-      //   name: 'propInt',
-      // )
-      ,
+        ..addInt(
+          name: 'propInt',
+        ),
     );
   }
 

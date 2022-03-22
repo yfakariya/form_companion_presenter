@@ -4,10 +4,13 @@ part of '../form_companion_mixin.dart';
 
 /// Defines interface between [CompanionPresenterMixin] and actual state of `Form`.
 abstract class FormStateAdapter {
-  /// Gets a current [AutovalidateMode] of the `Form`.
+  /// Current [AutovalidateMode] of the `Form`.
   ///
   /// [CompanionPresenterMixin] behaves respecting to [AutovalidateMode].
   AutovalidateMode get autovalidateMode;
+
+  /// Current [Locale] of the `Form`.
+  Locale get locale;
 
   /// Do validation of all form's fields and then returns the value whether
   /// all fields are valid or not.

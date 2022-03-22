@@ -9,7 +9,6 @@ String _path(String name) => 'lib${Platform.pathSeparator}$name';
 
 List<String> _commonItems = [
   _path('l10n'),
-  _path('app.dart'),
   _path('generated_plugin_registrant.dart'),
   _path('home.dart'),
   _path('main.dart'),

@@ -28,15 +28,21 @@ part of '../form_companion_mixin.dart';
 ///   is ready for "submit" or `null` otherwise. This class checks validation
 ///   results of [FormField]s and existance of pending async validations.
 mixin CompanionPresenterMixin {
-  late final Map<String, PropertyDescriptor<Object>> _properties;
+  /// Do not use this.
+  @internal
+  late final CompanionPresenterMixinInternals internals;
+
+  late final Map<String, PropertyDescriptor<Object, Object>> _properties;
+
   late final bool _hasAsyncValidators;
+
   _ValidationContext _validationContext = _ValidationContext.unspecified;
 
   /// Map of [PropertyDescriptor]. Key is [PropertyDescriptor.name].
   @nonVirtual
   @protected
   @visibleForTesting
-  Map<String, PropertyDescriptor<Object>> get properties => _properties;
+  Map<String, PropertyDescriptor<Object, Object>> get properties => _properties;
 
   /// Initializes [CompanionPresenterMixin].
   ///
@@ -70,6 +76,7 @@ mixin CompanionPresenterMixin {
   void initializeCompanionMixin(
     PropertyDescriptorsBuilder properties,
   ) {
+    internals = CompanionPresenterMixinInternals(this);
     _properties = properties._build(this);
     _hasAsyncValidators =
         _properties.values.any((p) => p._asynvValidatorEntries.isNotEmpty);
@@ -84,99 +91,11 @@ mixin CompanionPresenterMixin {
   /// Default implementation just calls [print] to log the error.
   @protected
   @visibleForOverriding
+  // TODO(yfakariya): API reorganization
   void handleCanceledAsyncValidationError(AsyncError error) {
     // ignore: avoid_print
     print(error);
   }
-
-  PropertyDescriptor<Object> _getProperty(String name) {
-    final property = properties[name];
-    if (property == null) {
-      throw ArgumentError.value(
-        name,
-        'name',
-        'Specified property is not registered.',
-      );
-    }
-
-    return property;
-  }
-
-  /// Gets a [PropertyDescriptor] for the specified [name],
-  /// which was registered via constrcutor.
-  ///
-  /// This method throws [ArgumentError] if the property named [name] does not
-  /// exist, and throws [StateError] if [T] is not compatible with the `T` of
-  /// getting [PropertyDescriptor].
-  ///
-  /// You should defined wrapper getter in your presenter class to avoid typo
-  /// and repeated input for the name and value type error:
-  /// ```dart
-  /// PropertyDescriptor<String> get name => getProperty<String>('name');
-  /// PropertyDescriptor<int> get age => getProperty<int>('age');
-  /// ```
-  @nonVirtual
-  @protected
-  @visibleForTesting
-  PropertyDescriptor<T> getProperty<T extends Object>(String name) {
-    final property = _getProperty(name);
-
-    if (property is! PropertyDescriptor<T>) {
-      throw StateError(
-        'A type of \'$name\' property is ${property.runtimeType} instead of PropertyDescriptor<$T>.',
-      );
-    }
-
-    return property;
-  }
-
-  /// Gets a saved property value of specified name.
-  ///
-  /// The value should be set from `FormField` via [savePropertyValue].
-  /// This getter should be called in [doSubmit] implementation to get saved
-  /// valid values.
-  @nonVirtual
-  @protected
-  @visibleForTesting
-  T? getSavedPropertyValue<T extends Object>(String name) =>
-      getProperty<T>(name).savedValue;
-
-  /// Gets a setter to set a proprty value with validated form field input.
-  ///
-  /// The result should be bound to [FormField.onSaved] for vanilla [Form].
-  @nonVirtual
-  void Function(T?) savePropertyValue<T extends Object>(String name) =>
-      (v) => getProperty<T>(name).saveValue(v);
-
-  /// Gets a validator to validate form field input.
-  ///
-  /// The result should be bound to [FormField.validator].
-  @nonVirtual
-  FormFieldValidator<T> getPropertyValidator<T extends Object>(
-    String name,
-    BuildContext context,
-  ) =>
-      getProperty<T>(name).getValidator(context);
-
-  /// Gets a value which indicates that specified property has pencing
-  /// asynchronous validation or not.
-  ///
-  /// Note that pending validation complection causes re-evaluation of validity
-  /// of the form field, so rebuild will be caused from the field.
-  @nonVirtual
-  bool hasPendingAsyncValidations(String name) =>
-      _getProperty(name).hasPendingAsyncValidations;
-
-  /// Gets a [ValueListenable] which indicates there are any pending async
-  /// validations in a property specified by [name].
-  @nonVirtual
-  ValueListenable<bool> getPropertyPendingAsyncValidationsListener(
-    String name,
-  ) =>
-      _getProperty(name)._pendingAsyncValidations;
-
-  // TODO(yfakariya): converter: ConversionResult Function(T? inputValue) ; class ConversionResult { final String? error; final dynamic value; }; PropertyDescriptor<T, P>.getConvertedValue()
-  //       The converter should be "final" validator of validator chain because it is convinient and general that conversion error indicates validation error.
 
   /// Gets the ancestor [FormState] like state from specified [BuildContext],
   /// and wraps it to [FormStateAdapter].
@@ -186,6 +105,8 @@ mixin CompanionPresenterMixin {
   /// This method shall be implemented in the concrete class which is mix-ined
   /// [CompanionPresenterMixin].
   @protected
+  @visibleForOverriding
+  // TODO(yfakariya): API reorganization
   FormStateAdapter? maybeFormStateOf(BuildContext context);
 
   /// Gets the ancestor [FormState] like state from specified [BuildContext],
@@ -199,6 +120,7 @@ mixin CompanionPresenterMixin {
   @nonVirtual
   @protected
   @visibleForTesting
+  // TODO(yfakariya): API reorganization
   FormStateAdapter formStateOf(BuildContext context) {
     final state = maybeFormStateOf(context);
     if (state == null) {
@@ -252,8 +174,9 @@ mixin CompanionPresenterMixin {
   @protected
   @visibleForOverriding
   @visibleForTesting
+  // TODO(yfakariya): API reorganization
   Locale getLocale(BuildContext context) =>
-      Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US');
+      Localizations.maybeLocaleOf(context) ?? defaultLocale;
 
   /// Returns completion logic when any async validation is completed.
   ///
@@ -262,6 +185,7 @@ mixin CompanionPresenterMixin {
   @protected
   @visibleForOverriding
   @visibleForTesting
+  // TODO(yfakariya): API reorganization
   AsyncValidationCompletionCallback buildOnAsyncValidationCompleted(
     String name,
     BuildContext context,
@@ -278,6 +202,7 @@ mixin CompanionPresenterMixin {
   /// [AsyncError].
   @visibleForOverriding
   @visibleForTesting
+  // TODO(yfakariya): API reorganization
   String getAsyncValidationFailureMessage(AsyncError error) =>
       'Failed to check value. Try input again later.';
 
@@ -290,6 +215,7 @@ mixin CompanionPresenterMixin {
   /// saving within [doSubmit] or you omitted creating [Form] or simular widgets
   /// to coordinate [FormField]s. If so, this method effectively returns a
   /// closure which just call and await [doSubmit].
+  // TODO(yfakariya): API reorganization
   VoidCallback _buildDoSubmit(BuildContext context) {
     final formState = formStateOf(context);
 
@@ -311,6 +237,7 @@ mixin CompanionPresenterMixin {
   @protected
   @visibleForOverriding
   @visibleForTesting
+  // TODO(yfakariya): API reorganization
   void saveFields(FormStateAdapter formState) {
     formState.save();
   }
@@ -321,7 +248,10 @@ mixin CompanionPresenterMixin {
   ///
   /// Note that [FutureOr] will be [bool] if no asynchronous validations are
   /// registered.
+  @protected
   @nonVirtual
+  @visibleForTesting
+  // TODO(yfakariya): API reorganization
   FutureOr<bool> validateAll(FormStateAdapter formState) {
     if (!_hasAsyncValidators) {
       // just validate.
@@ -331,6 +261,7 @@ mixin CompanionPresenterMixin {
     return _validateAllWithAsync(formState);
   }
 
+  // TODO(yfakariya): API reorganization
   Future<bool> _validateAllWithAsync(FormStateAdapter formState) async {
     // Kick async validators.
     final allSynchronousValidationsAreSucceeded = formState.validate();
@@ -370,7 +301,10 @@ mixin CompanionPresenterMixin {
   /// respectively for manual validate & save from [doSubmit] when
   /// [AutovalidateMode] of the form is not set or is set to
   /// [AutovalidateMode.disabled].
+  @protected
   @nonVirtual
+  @visibleForTesting
+  // TODO(yfakariya): API reorganization
   Future<bool> validateAndSave(FormStateAdapter formState) async {
     if (!await validateAll(formState)) {
       return false;
@@ -400,4 +334,40 @@ mixin CompanionPresenterMixin {
   @protected
   @visibleForOverriding
   FutureOr<void> doSubmit();
+}
+
+/// Internal helper methos of [CompanionPresenterMixin].
+///
+/// The API in this class subject to change without any notification,
+/// so users should not use this class.
+@internal
+@sealed
+class CompanionPresenterMixinInternals {
+  final CompanionPresenterMixin _presenter;
+
+  /// Initializes a new [CompanionPresenterMixinInternals] instance.
+  CompanionPresenterMixinInternals(this._presenter);
+
+  /// Returns an untyped [PropertyDescriptor] with specified [name].
+  PropertyDescriptor<Object, Object> getProperty(String name) {
+    final property = _presenter.properties[name];
+    if (property == null) {
+      throw ArgumentError.value(
+        name,
+        'name',
+        'Specified property is not registered.',
+      );
+    }
+
+    return property;
+  }
+
+  /// Gets a [ValueListenable] which indicates there are any pending async
+  /// validations in a property specified by [name].
+  @nonVirtual
+  @internal
+  ValueListenable<bool> getPropertyPendingAsyncValidationsListener(
+    String name,
+  ) =>
+      getProperty(name)._pendingAsyncValidations;
 }

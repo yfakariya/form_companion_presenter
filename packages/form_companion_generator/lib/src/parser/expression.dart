@@ -9,23 +9,23 @@ FutureOr<PropertyDescriptorsBuilding?> _parseExpressionAsync(
   Element contextElement,
   Expression expression,
 ) async {
-  final unParenthesized = expression.unParenthesized;
-  _eliminateControlExpression(unParenthesized, contextElement);
+  final unparenthesized = expression.unParenthesized;
+  _eliminateControlExpression(unparenthesized, contextElement);
 
-  if (unParenthesized is Identifier) {
+  if (unparenthesized is Identifier) {
     return await _parseIdentifierAsync(
       context,
-      unParenthesized,
+      unparenthesized,
       contextElement,
     );
-  } else if (unParenthesized is AssignmentExpression) {
-    if (!_isPropertyDescriptorsBuilder(unParenthesized.staticType)) {
+  } else if (unparenthesized is AssignmentExpression) {
+    if (!_isPropertyDescriptorsBuilder(unparenthesized.staticType)) {
       context.logger.fine(
           "Skip assignment expression '$expression' because right hand type is not $pdbTypeName at ${getNodeLocation(expression, contextElement)}.");
       return null;
     }
 
-    final leftHand = unParenthesized.leftHandSide;
+    final leftHand = unparenthesized.leftHandSide;
     if (leftHand is Identifier) {
       if (leftHand.staticElement is! PromotableElement) {
         // x[n] or x.n, so just skip
@@ -35,7 +35,7 @@ FutureOr<PropertyDescriptorsBuilding?> _parseExpressionAsync(
         return await _parseExpressionAsync(
           context,
           contextElement,
-          unParenthesized.rightHandSide,
+          unparenthesized.rightHandSide,
         );
       } else {
         // x = y
@@ -44,7 +44,7 @@ FutureOr<PropertyDescriptorsBuilding?> _parseExpressionAsync(
           expression,
           contextElement,
           leftHand.name,
-          unParenthesized.rightHandSide,
+          unparenthesized.rightHandSide,
         );
       }
     } else {
@@ -58,8 +58,16 @@ FutureOr<PropertyDescriptorsBuilding?> _parseExpressionAsync(
         element: contextElement,
       );
     }
-  } else if (unParenthesized is CascadeExpression) {
-    final target = unParenthesized.target;
+  } else if (unparenthesized is CascadeExpression) {
+    final target = unparenthesized.target;
+    final targetClass = target.staticType?.element as ClassElement?;
+    if (targetClass?.name != pdbTypeName) {
+      throwNotSupportedYet(
+        node: unparenthesized,
+        contextElement: contextElement,
+      );
+    }
+
     late final PropertyDescriptorsBuilding building;
     if (target is Identifier && target.staticElement is PromotableElement) {
       context.logger.fine(
@@ -86,46 +94,84 @@ FutureOr<PropertyDescriptorsBuilding?> _parseExpressionAsync(
     }
 
     building.addAll(
-      unParenthesized.cascadeSections.whereType<MethodInvocation>(),
+      await unparenthesized.cascadeSections
+          .whereType<MethodInvocation>()
+          .map(
+            (e) => _getRealMethodAsync(
+              context,
+              contextElement,
+              e,
+              _lookupMethod(contextElement, targetClass, e.methodName.name)!,
+              targetClass,
+              null,
+              e.typeArgumentTypes
+                      ?.map((e) => GenericInterfaceType(e, []))
+                      .toList() ??
+                  [],
+              isInferred:
+                  e.typeArguments?.length != e.typeArgumentTypes?.length,
+            ),
+          )
+          .toListAsync(),
       contextElement,
     );
     return building;
   }
 
-  if (unParenthesized is InstanceCreationExpression &&
-      unParenthesized.argumentList.arguments.isEmpty) {
-    return _handleConstructorCall(context, unParenthesized, contextElement);
+  if (unparenthesized is InstanceCreationExpression &&
+      unparenthesized.argumentList.arguments.isEmpty) {
+    return _handleConstructorCall(context, unparenthesized, contextElement);
   }
 
-  if (unParenthesized is MethodInvocation) {
-    if (unParenthesized.methodName.name == pdbTypeName &&
-        unParenthesized.argumentList.arguments.isEmpty) {
+  if (unparenthesized is MethodInvocation) {
+    if (unparenthesized.methodName.name == pdbTypeName &&
+        unparenthesized.argumentList.arguments.isEmpty) {
       // constructor
-      return _handleConstructorCall(context, unParenthesized, contextElement);
+      return _handleConstructorCall(context, unparenthesized, contextElement);
     } else {
       // method call
 
-      if (unParenthesized.methodName.name ==
+      if (unparenthesized.methodName.name ==
           initializeCompanionMixinMethodName) {
-        assert(unParenthesized.argumentList.arguments.length == 1);
+        assert(unparenthesized.argumentList.arguments.length == 1);
         context.initializeCompanionMixinArgument = await _parseExpressionAsync(
           context,
           contextElement,
-          unParenthesized.argumentList.arguments[0],
+          unparenthesized.argumentList.arguments[0],
         );
         return null;
       }
 
-      final target = unParenthesized.target;
-      final targetClass = _getTargetClass(unParenthesized);
+      final target = unparenthesized.target;
+      final targetClass = _getTargetClass(contextElement, unparenthesized);
       if (targetClass?.name == pdbTypeName) {
         if (target is SimpleIdentifier) {
           // Found PDB method call.
-          context.buildings[target.name]!.add(unParenthesized, contextElement);
+          context.buildings[target.name]!.add(
+            await _getRealMethodAsync(
+              context,
+              contextElement,
+              unparenthesized,
+              _lookupMethod(
+                contextElement,
+                targetClass,
+                unparenthesized.methodName.name,
+              )!,
+              targetClass,
+              null,
+              unparenthesized.typeArgumentTypes
+                      ?.map((e) => GenericInterfaceType(e, []))
+                      .toList() ??
+                  [],
+              isInferred: unparenthesized.typeArguments?.length !=
+                  unparenthesized.typeArgumentTypes?.length,
+            ),
+            contextElement,
+          );
           return null;
         } else {
           throwNotSupportedYet(
-            node: unParenthesized,
+            node: unparenthesized,
             contextElement: contextElement,
           );
         }
@@ -133,7 +179,7 @@ FutureOr<PropertyDescriptorsBuilding?> _parseExpressionAsync(
 
       late final ExecutableNode? method;
       final localFunction =
-          context.localFunctions[unParenthesized.methodName.name];
+          context.localFunctions[unparenthesized.methodName.name];
       if (localFunction != null) {
         method = ExecutableNode(
           context.nodeProvider,
@@ -141,11 +187,11 @@ FutureOr<PropertyDescriptorsBuilding?> _parseExpressionAsync(
           localFunction.declaredElement!,
         );
       } else {
-        final methodElement = targetClass?.lookUpMethod(
-                unParenthesized.methodName.name, contextElement.library!) ??
-            contextElement.library!.scope
-                .lookup(unParenthesized.methodName.name)
-                .getter;
+        final methodElement = _lookupMethod(
+          contextElement,
+          targetClass,
+          unparenthesized.methodName.name,
+        );
         if (methodElement != null) {
           method = ExecutableNode(
             context.nodeProvider,
@@ -161,7 +207,7 @@ FutureOr<PropertyDescriptorsBuilding?> _parseExpressionAsync(
       if (method == null) {
         throwError(
           message:
-              "Failed to lookup method or function '$unParenthesized' in context of ${contextElement.library} at ${getNodeLocation(unParenthesized, contextElement)}.",
+              "Failed to lookup method or function '$unparenthesized' in context of ${contextElement.library} at ${getNodeLocation(unparenthesized, contextElement)}.",
           element: contextElement,
         );
       }
@@ -170,7 +216,7 @@ FutureOr<PropertyDescriptorsBuilding?> _parseExpressionAsync(
       if (!_isPropertyDescriptorsBuilder(method.returnType) &&
           !parameters.any((p) => _isPropertyDescriptorsBuilder(p.type))) {
         context.logger.fine(
-          "Skip trivial method or function call '$unParenthesized' at ${getNodeLocation(unParenthesized, contextElement)}.",
+          "Skip trivial method or function call '$unparenthesized' at ${getNodeLocation(unparenthesized, contextElement)}.",
         );
         return null;
       }
@@ -184,12 +230,12 @@ FutureOr<PropertyDescriptorsBuilding?> _parseExpressionAsync(
             final argument = await _parseExpressionAsync(
               context,
               contextElement,
-              unParenthesized.argumentList.arguments[i],
+              unparenthesized.argumentList.arguments[i],
             );
             assert(
               argument != null,
-              "$pdbTypeName typed expression '${unParenthesized.argumentList.arguments[i]}'"
-              ' (${unParenthesized.argumentList.arguments[i].runtimeType}) does not return building.',
+              "$pdbTypeName typed expression '${unparenthesized.argumentList.arguments[i]}'"
+              ' (${unparenthesized.argumentList.arguments[i].runtimeType}) does not return building.',
             );
             // bind argument to parameter
             arguments[parameters[i].name] = argument!;
@@ -198,7 +244,7 @@ FutureOr<PropertyDescriptorsBuilding?> _parseExpressionAsync(
       }
 
       context.logger.fine(
-        "Parse method or function '${method.name}' at ${getNodeLocation(unParenthesized, contextElement)}",
+        "Parse method or function '${method.name}' at ${getNodeLocation(unparenthesized, contextElement)}",
       );
 
       return await _parseFunctionBodyAsync(
@@ -210,8 +256,8 @@ FutureOr<PropertyDescriptorsBuilding?> _parseExpressionAsync(
     } // method or function
   } // is MethodInvocation
 
-  if (unParenthesized is FunctionExpressionInvocation ||
-      unParenthesized is FunctionExpression) {
+  if (unparenthesized is FunctionExpressionInvocation ||
+      unparenthesized is FunctionExpression) {
     // (a.getter)(x) or () => x;
     // Too complex and it should not be used for builder construction.
     throwNotSupportedYet(
@@ -221,7 +267,7 @@ FutureOr<PropertyDescriptorsBuilding?> _parseExpressionAsync(
   }
 
   context.logger.fine(
-      "Skip trivial expression '$expression'(${unParenthesized.runtimeType}) at ${getNodeLocation(expression, contextElement)}.");
+      "Skip trivial expression '$expression'(${unparenthesized.runtimeType}) at ${getNodeLocation(expression, contextElement)}.");
   return null;
 }
 
@@ -252,3 +298,18 @@ FutureOr<PropertyDescriptorsBuilding> _handleConstructorCall(
   );
   return PropertyDescriptorsBuilding.begin();
 }
+
+ExecutableElement? _lookupMethod(
+  Element contextElement,
+  ClassElement? targetClass,
+  String methodName,
+) =>
+    targetClass?.lookUpMethod(methodName, contextElement.library!) ??
+    contextElement.library!.scope.lookup(methodName).getter
+        as ExecutableElement? ??
+    contextElement.library!.accessibleExtensions
+        .expand<MethodElement?>((x) => x.methods)
+        .firstWhere(
+          (m) => m?.name == methodName,
+          orElse: () => null,
+        );

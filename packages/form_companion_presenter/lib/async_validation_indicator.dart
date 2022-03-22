@@ -1,5 +1,5 @@
 // See LICENCE file in the root.
 
-library form_companion_presenter;
+library async_validation_indicator;
 
 export 'src/async_validation_indicator.dart';

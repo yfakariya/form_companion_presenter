@@ -9,6 +9,8 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:form_companion_presenter/form_companion_presenter.dart';
+import 'package:form_companion_presenter/src/internal_utils.dart';
+import 'package:form_companion_presenter/src/presenter_extension.dart';
 
 class TestPresenter with CompanionPresenterMixin {
   final void Function() _doSubmitCalled;
@@ -68,6 +70,9 @@ class FixedFormStateAdapter implements FormStateAdapter {
 
   @override
   AutovalidateMode get autovalidateMode => _autovalidateMode;
+
+  @override
+  Locale get locale => defaultLocale;
 
   @override
   void save() => _onSave();
@@ -208,17 +213,18 @@ void main() {
       test('is initialized with constructor argument.', () {
         final target = TestPresenter(
           properties: PropertyDescriptorsBuilder()
-            ..add<int>(name: 'int')
-            ..add<String>(name: 'string'),
+            ..add<int, String>(name: 'int')
+            ..add<String, String>(name: 'string'),
         );
         expect(target.properties.length, equals(2));
         expect(target.properties, contains('int'));
-        expect(target.properties['int'], isA<PropertyDescriptor<int>>());
+        expect(
+            target.properties['int'], isA<PropertyDescriptor<int, String>>());
 
         expect(target.properties, contains('string'));
         expect(
           target.properties['string'],
-          isA<PropertyDescriptor<String>>(),
+          isA<PropertyDescriptor<String, String>>(),
         );
       });
 
@@ -234,33 +240,38 @@ void main() {
       test('is wrapper of properties.', () {
         final target = TestPresenter(
           properties: PropertyDescriptorsBuilder()
-            ..add<int>(name: 'int')
-            ..add<String>(name: 'string'),
+            ..add<int, String>(name: 'int')
+            ..add<String, String>(name: 'string'),
         );
-        expect(target.getProperty<int>('int'), isNotNull);
-        expect(target.getProperty<int>('int'), same(target.properties['int']));
+        expect(target.getProperty<int, String>('int'), isNotNull);
+        expect(target.getProperty<int, String>('int'),
+            same(target.properties['int']));
 
-        expect(target.getProperty<String>('string'), isNotNull);
+        expect(target.getProperty<String, String>('string'), isNotNull);
         expect(
-          target.getProperty<String>('string'),
+          target.getProperty<String, String>('string'),
           same(target.properties['string']),
         );
       });
 
       test('throws ArgumentError for unknown.', () {
         final target = TestPresenter(
-          properties: PropertyDescriptorsBuilder()..add<int>(name: 'int'),
+          properties: PropertyDescriptorsBuilder()
+            ..add<int, String>(name: 'int'),
         );
 
-        expect(() => target.getProperty<String>('string'), throwsArgumentError);
+        expect(() => target.getProperty<String, String>('string'),
+            throwsArgumentError);
       });
 
       test('throws StateError for incompatible type.', () {
         final target = TestPresenter(
-          properties: PropertyDescriptorsBuilder()..add<int>(name: 'int'),
+          properties: PropertyDescriptorsBuilder()
+            ..add<int, String>(name: 'int'),
         );
 
-        expect(() => target.getProperty<String>('int'), throwsStateError);
+        expect(
+            () => target.getProperty<String, String>('int'), throwsStateError);
       });
     });
 
@@ -268,10 +279,11 @@ void main() {
       test('non-null for never-registered property but throws ArgumentError.',
           () {
         final presenter = TestPresenter(
-          properties: PropertyDescriptorsBuilder()..add<int>(name: 'int'),
+          properties: PropertyDescriptorsBuilder()
+            ..add<int, String>(name: 'int'),
         );
 
-        final target = presenter.savePropertyValue('long');
+        final target = presenter.savePropertyValue('long', DummyBuildContext());
         expect(target, isNotNull);
         expect(() => target(0), throwsArgumentError);
       });
@@ -280,43 +292,62 @@ void main() {
           'non-null for registered property and passes through to PropertyDescriptor.saveValue.',
           () {
         final presenter = TestPresenter(
-          properties: PropertyDescriptorsBuilder()..add<int>(name: 'int'),
+          properties: PropertyDescriptorsBuilder()
+            ..add<int, String>(name: 'int', valueConverter: intStringConverter),
         );
 
-        final target = presenter.savePropertyValue('int');
+        final target = presenter.savePropertyValue('int', DummyBuildContext());
         expect(target, isNotNull);
         final value = DateTime.now().microsecondsSinceEpoch;
-        target(value);
+        target(value.toString());
 
         // Check pass through
-        expect(presenter.getProperty('int').savedValue, equals(value));
+        expect(presenter.getSavedPropertyValue('int'), equals(value));
       });
     });
 
     group('getSavedPropertyValue', () {
-      test('assertion error when never saved.', () {
+      test('null when never saved and no initial value.', () {
         final target = TestPresenter(
-          properties: PropertyDescriptorsBuilder()..add<int>(name: 'int'),
+          properties: PropertyDescriptorsBuilder()
+            ..add<int, String>(name: 'int', valueConverter: intStringConverter),
         );
 
-        expect(() => target.getSavedPropertyValue('int'), throwsAssertionError);
+        expect(target.getSavedPropertyValue('int'), isNull);
+      });
+
+      test('initial value when never saved and initial value was specified.',
+          () {
+        final initialValue = DateTime.now().microsecondsSinceEpoch;
+        final target = TestPresenter(
+          properties: PropertyDescriptorsBuilder()
+            ..add<int, String>(
+              name: 'int',
+              valueConverter: intStringConverter,
+              initialValue: initialValue,
+            ),
+        );
+
+        expect(target.getSavedPropertyValue('int'), initialValue);
       });
 
       test('can get saved value.', () {
         final target = TestPresenter(
-          properties: PropertyDescriptorsBuilder()..add<int>(name: 'int'),
+          properties: PropertyDescriptorsBuilder()
+            ..add<int, String>(name: 'int', valueConverter: intStringConverter),
         );
 
         final value = DateTime.now().microsecondsSinceEpoch;
-        target.savePropertyValue('int')(value);
-        expect(target.getSavedPropertyValue('int'), equals(value));
+        target.savePropertyValue('int', DummyBuildContext())(value.toString());
+        expect(target.getSavedPropertyValue('int'), value);
       });
     });
 
     group('hasPendingAsyncValidations', () {
       test('ArgumentError for never-registered property.', () {
         final target = TestPresenter(
-          properties: PropertyDescriptorsBuilder()..add<int>(name: 'int'),
+          properties: PropertyDescriptorsBuilder()
+            ..add<int, String>(name: 'int'),
         );
 
         expect(
@@ -329,7 +360,7 @@ void main() {
         final completer = Completer<void>();
         final target = TestPresenter(
           properties: PropertyDescriptorsBuilder()
-            ..add<int>(name: 'int', asyncValidatorFactories: [
+            ..add<int, String>(name: 'int', asyncValidatorFactories: [
               (_) => (value, options) async {
                     await completer.future;
                     return null;
@@ -344,7 +375,7 @@ void main() {
         final completer = Completer<void>();
         final target = TestPresenter(
           properties: PropertyDescriptorsBuilder()
-            ..add<int>(name: 'int', asyncValidatorFactories: [
+            ..add<int, int>(name: 'int', asyncValidatorFactories: [
               (_) => (value, options) async {
                     await completer.future;
                     return null;
@@ -352,7 +383,9 @@ void main() {
             ]),
         );
 
-        target.getProperty<int>('int').getValidator(DummyBuildContext())(123);
+        target
+            .getProperty<int, int>('int')
+            .getValidator(DummyBuildContext())(123);
         expect(target.hasPendingAsyncValidations('int'), isTrue);
         completer.complete();
       });
@@ -361,7 +394,7 @@ void main() {
         final completer = Completer<void>();
         final target = TestPresenter(
           properties: PropertyDescriptorsBuilder()
-            ..add<int>(name: 'int', asyncValidatorFactories: [
+            ..add<int, int>(name: 'int', asyncValidatorFactories: [
               (_) => (value, options) async {
                     completer.complete();
                     return null;
@@ -369,7 +402,9 @@ void main() {
             ]),
         );
 
-        target.getProperty<int>('int').getValidator(DummyBuildContext())(123);
+        target
+            .getProperty<int, int>('int')
+            .getValidator(DummyBuildContext())(123);
         await completer.future;
         // pump
         await Future<void>.delayed(Duration.zero);
@@ -380,23 +415,17 @@ void main() {
     group('PropertyDescriptor', () {
       test('can be get / save value.', () {
         final target = TestPresenter(
-          properties: PropertyDescriptorsBuilder()..add<int>(name: 'int'),
+          properties: PropertyDescriptorsBuilder()
+            ..add<int, String>(
+              name: 'int',
+              valueConverter: intStringConverter,
+            ),
         );
 
-        final property = target.getProperty<int>('int');
+        final property = target.getProperty<int, String>('int');
         // ignore: cascade_invocations
-        property.saveValue(123);
-        expect(property.savedValue, equals(123));
-      });
-
-      test('throws ArgumentError from saveValue for incompatible type.', () {
-        final target = TestPresenter(
-          properties: PropertyDescriptorsBuilder()..add<int>(name: 'int'),
-        );
-
-        final property = target.getProperty<int>('int');
-        // ignore: cascade_invocations
-        expect(() => property.saveValue('ABC'), throwsArgumentError);
+        property.setFieldValue('123', defaultLocale);
+        expect(property.value, equals(123));
       });
     });
   });
@@ -465,7 +494,7 @@ void main() {
       final values = <int?>[];
       final target = TestPresenter(
           properties: PropertyDescriptorsBuilder()
-            ..add<int>(
+            ..add<int, int>(
               name: 'prop',
               asyncValidatorFactories: [
                 (context) => (value, options) async {
@@ -487,7 +516,8 @@ void main() {
               ],
             ));
 
-      final validator = target.getProperty<int>('prop').getValidator(context);
+      final validator =
+          target.getProperty<int, int>('prop').getValidator(context);
       expect(validator(0), isNull);
       expect(asyncOperationStartGates[0].isCompleted, isFalse);
       expect(validator(1), isNull);
@@ -533,7 +563,7 @@ void main() {
 
         final target = TestPresenter(
           properties: PropertyDescriptorsBuilder()
-            ..add<int>(
+            ..add<int, int>(
               name: 'prop',
               asyncValidatorFactories: [
                 (context) => (value, options) async {
@@ -562,7 +592,8 @@ void main() {
               onHandleCanceledAsyncValidationError,
         );
 
-        final validator = target.getProperty<int>('prop').getValidator(context);
+        final validator =
+            target.getProperty<int, int>('prop').getValidator(context);
         // Causes exception
         expect(validator(2), isNull);
         // Cancel previous
@@ -667,7 +698,7 @@ void main() {
         }
 
         final target = TestPresenter(
-          properties: PropertyDescriptorsBuilder()..add<int>(name: 'int'),
+          properties: PropertyDescriptorsBuilder()..add<int, int>(name: 'int'),
         );
         await testCore(target, true);
         await testCore(target, false);
@@ -683,7 +714,7 @@ void main() {
           var asyncValidatorCalled = false;
           final target = TestPresenter(
             properties: PropertyDescriptorsBuilder()
-              ..add<int>(name: 'int', asyncValidatorFactories: [
+              ..add<int, int>(name: 'int', asyncValidatorFactories: [
                 (_) => (value, options) async {
                       final result = await Future.delayed(
                         Duration.zero,
@@ -703,7 +734,7 @@ void main() {
               // dummy logic
               final context = DummyBuildContext();
               final validator =
-                  target.getProperty<int>('int').getValidator(context);
+                  target.getProperty<int, int>('int').getValidator(context);
               final result = validator(1) == null;
               validationResults.add(result);
               return result;
@@ -789,7 +820,7 @@ void main() {
       Locale? asyncLocale2;
       final target = TestPresenter(
         properties: PropertyDescriptorsBuilder()
-          ..add<int>(
+          ..add<int, int>(
             name: name,
             validatorFactories: [
               (context) => (value) {
@@ -820,7 +851,7 @@ void main() {
           ),
       );
 
-      final property = target.getProperty<int>(name);
+      final property = target.getProperty<int, int>(name);
       const locale = Locale('en', 'US');
       final context = DummyBuildContext();
       const value = 123;

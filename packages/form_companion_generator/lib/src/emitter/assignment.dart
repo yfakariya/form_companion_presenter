@@ -32,6 +32,11 @@ class AssignmentContext {
   /// Gets a current parameter type;
   late DartType parameterType;
 
+  String? _defaultValue;
+
+  /// Gets a default value of the assigned parameter.
+  String? get defaultValue => _defaultValue;
+
   /// Initializes a new [AssignmentContext] instance.
   AssignmentContext({
     required this.data,
@@ -42,9 +47,14 @@ class AssignmentContext {
 
   /// Refresh instance for new parameter with specified informations.
   // ignore: avoid_returning_this
-  AssignmentContext withParameter(String name, DartType type) {
+  AssignmentContext withParameter(
+    String name,
+    DartType type,
+    String? defaultValue,
+  ) {
     _parameterName = name;
     parameterType = type;
+    _defaultValue = defaultValue;
     return this;
   }
 }
@@ -155,6 +165,7 @@ class ArgumentEmitter {
       final contents = emitter(assignmentContext.withParameter(
         parameter.name,
         parameter.type,
+        parameter.defaultValue,
       ));
       if (contents != null) {
         for (final content in contents) {
@@ -176,11 +187,19 @@ Iterable<String>? _assignAutovalidateMode(AssignmentContext context) =>
             'autovalidateMode: autovalidateMode ?? ${context.data.fieldAutovalidateMode},'
           ];
 
-Iterable<String>? _assignDecoration(AssignmentContext context) => [
-      'decoration: InputDecoration(',
-      '  labelText: ${context.propertyDescriptor}.name,',
-      '),',
-    ];
+// TODO(yfakariya): Merge to defaultConstantValue
+Iterable<String>? _assignDecoration(AssignmentContext context) =>
+    context.defaultValue == null
+        ? [
+            'decoration: InputDecoration(',
+            '  labelText: ${context.propertyDescriptor}.name,',
+            '),',
+          ]
+        : [
+            'decoration: ${context.defaultValue}.copyWith(',
+            '  labelText: ${context.propertyDescriptor}.name,',
+            '),',
+          ];
 
 Iterable<String>? _assignInitialValue(AssignmentContext context) =>
     ['initialValue: ${_assignValueCore(context)},'];
@@ -193,9 +212,7 @@ String _assignValueCore(AssignmentContext context) {
       context.parameterType.nullabilitySuffix == NullabilitySuffix.none
           ? '!'
           : '';
-  return context.parameterType.isDartCoreString
-      ? '${context.propertyDescriptor}.savedValue$nullabilitySuffix.toString()'
-      : '${context.propertyDescriptor}.savedValue$nullabilitySuffix';
+  return "${context.propertyDescriptor}.getFieldValue(Localizations.maybeLocaleOf(${context.buildContext}) ?? const Locale('en', 'US'))$nullabilitySuffix";
 }
 
 Iterable<String>? _assignValidator(AssignmentContext context) => [
@@ -220,7 +237,9 @@ final _intrinsicVanillaAssignmentEmitters =
         'key: ${context.presenter}.getKey(${context.propertyDescriptor}.name, ${context.buildContext}),'
       ],
   'initialValue': _assignInitialValue,
-  'onSaved': (context) => ['onSaved: ${context.propertyDescriptor}.saveValue,'],
+  'onSaved': (context) => [
+        "onSaved: (v) => ${context.propertyDescriptor}.setFieldValue(v, Localizations.maybeLocaleOf(${context.buildContext}) ?? const Locale('en', 'US')),"
+      ],
   'validator': _assignValidator,
   'value': _assignValue,
 };

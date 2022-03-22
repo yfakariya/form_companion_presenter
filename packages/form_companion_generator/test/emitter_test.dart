@@ -18,8 +18,8 @@ import 'package:tuple/tuple.dart';
 import 'file_resolver.dart';
 import 'test_helpers.dart';
 
-typedef PropertyDefinitionSpec
-    = Tuple5<String, InterfaceType, ClassElement?, String?, List<String>>;
+typedef PropertyDefinitionSpec = Tuple6<String, InterfaceType, InterfaceType,
+    ClassElement?, GenericInterfaceType?, List<String>>;
 
 const emptyConfig = Config(<String, dynamic>{});
 
@@ -29,6 +29,10 @@ const emptyConfig = Config(<String, dynamic>{});
 // \$(\{(<ID>?[_A-Za-z$][_A-Za-z0-9$]*)\}|(<ID>?[_A-Za-z][_A-Za-z0-9]*))
 
 Future<void> main() async {
+  final logger = Logger('emitter_test');
+  Logger.root.level = Level.INFO;
+  logger.onRecord.listen(print);
+
   final library = await getFormFieldsLibrary();
   final nodeProvider = NodeProvider(FileResolver(library.library));
   final myEnumType = await getMyEnumType();
@@ -63,10 +67,6 @@ Future<void> main() async {
   final formBuilderTextField =
       await lookupFormBuilderClass('FormBuilderTextField');
 
-  final logger = Logger('emitter_test');
-  Logger.root.level = Level.INFO;
-  logger.onRecord.listen(print);
-
   FutureOr<Map<String, PropertyAndFormFieldDefinition>> makePropertiesFully(
     Iterable<PropertyDefinitionSpec> specs,
   ) async =>
@@ -74,33 +74,38 @@ Future<void> main() async {
         await for (final d in Stream.fromFutures(
           specs.map((spec) async {
             final name = spec.item1;
-            final type = spec.item2;
-            final formField = spec.item3;
-            final preferredFieldType = spec.item4;
-            final warnings = spec.item5;
+            final propertyValueType = spec.item2;
+            final fieldValueType = spec.item3;
+            final formField = spec.item4;
+            final preferredFormFieldType = spec.item5;
+            final warnings = spec.item6;
 
             final property = PropertyDefinition(
               name: name,
-              type: type,
-              preferredFieldType: preferredFieldType,
+              propertyType: GenericInterfaceType(propertyValueType, []),
+              fieldType: GenericInterfaceType(fieldValueType, []),
+              preferredFormFieldType: preferredFormFieldType,
               warnings: warnings,
             );
             return PropertyAndFormFieldDefinition(
               property: property,
-              fieldTypeName: formField?.name ?? preferredFieldType!,
-              fieldConstructor: formField == null
+              formFieldTypeName: preferredFormFieldType?.toString() ??
+                  formField?.name ??
+                  '<UNRESOLVED>', // This value is actually 'TextFormField' or 'FormBuilderTextField'.
+              formFieldConstructor: formField == null
                   ? null
                   : await _getConstructorNode(
                       nodeProvider,
                       formField.unnamedConstructor,
                     ),
-              fieldType: formField?.thisType,
+              formFieldType: formField?.thisType,
               instantiationContext: formField == null
                   ? null
                   : TypeInstantiationContext.create(
                       nodeProvider,
                       property,
                       formField.thisType,
+                      logger,
                     ),
             );
           }),
@@ -109,25 +114,36 @@ Future<void> main() async {
       };
 
   FutureOr<Map<String, PropertyAndFormFieldDefinition>> makeProperties(
-    Iterable<Tuple3<String, InterfaceType, ClassElement>> specs,
+    Iterable<Tuple4<String, InterfaceType, InterfaceType, ClassElement>> specs,
   ) =>
       makePropertiesFully(
         specs.map(
-          (e) => PropertyDefinitionSpec(e.item1, e.item2, e.item3, null, []),
+          (e) => PropertyDefinitionSpec(
+            e.item1,
+            e.item2,
+            e.item3,
+            e.item4,
+            null,
+            [],
+          ),
         ),
       );
 
   FutureOr<Map<String, PropertyAndFormFieldDefinition>> makeProperty(
     String name,
-    InterfaceType type,
+    InterfaceType propertyValueType,
+    InterfaceType fieldValueType,
     ClassElement formField,
   ) =>
-      makeProperties([Tuple3(name, type, formField)]);
+      makeProperties(
+        [Tuple4(name, propertyValueType, fieldValueType, formField)],
+      );
 
   group('emitPropertyAccessor', () {
     test('1 property of String', () async {
       final properties = await makeProperty(
         'prop',
+        library.typeProvider.stringType,
         library.typeProvider.stringType,
         textFormField,
       );
@@ -147,15 +163,25 @@ Future<void> main() async {
       );
       expect(
         emitPropertyAccessor(data.name, data.properties.values, emptyConfig),
-        equals(typedProperties('Test01', [MapEntry('prop', 'String')])),
+        equals(typedProperties('Test01', [Tuple3('prop', 'String', 'String')])),
       );
     });
 
     test('2 properties of String and int', () async {
       final properties = await makeProperties(
         [
-          Tuple3('prop1', library.typeProvider.stringType, textFormField),
-          Tuple3('prop2', library.typeProvider.intType, textFormField),
+          Tuple4(
+            'prop1',
+            library.typeProvider.stringType,
+            library.typeProvider.stringType,
+            textFormField,
+          ),
+          Tuple4(
+            'prop2',
+            library.typeProvider.intType,
+            library.typeProvider.stringType,
+            textFormField,
+          ),
         ],
       );
       final data = PresenterDefinition(
@@ -178,8 +204,8 @@ Future<void> main() async {
           typedProperties(
             'Test02',
             [
-              MapEntry('prop1', 'String'),
-              MapEntry('prop2', 'int'),
+              Tuple3('prop1', 'String', 'String'),
+              Tuple3('prop2', 'int', 'String'),
             ],
           ),
         ),
@@ -189,6 +215,7 @@ Future<void> main() async {
     test('1 property of List<Enum>', () async {
       final properties = await makeProperty(
         'prop',
+        library.typeProvider.listType(myEnumType),
         library.typeProvider.listType(myEnumType),
         dropdownButtonFormField,
       );
@@ -208,7 +235,10 @@ Future<void> main() async {
       );
       expect(
         emitPropertyAccessor(data.name, data.properties.values, emptyConfig),
-        equals(typedProperties('Test01', [MapEntry('prop', 'List<MyEnum>')])),
+        equals(typedProperties(
+          'Test01',
+          [Tuple3('prop', 'List<MyEnum>', 'List<MyEnum>')],
+        )),
       );
     });
 
@@ -234,6 +264,7 @@ Future<void> main() async {
         final properties = await makeProperty(
           'prop1',
           library.typeProvider.stringType,
+          library.typeProvider.stringType,
           textFormField,
         );
         final data = PresenterDefinition(
@@ -257,6 +288,7 @@ Future<void> main() async {
       test('1 warning -- 1 line', () async {
         final properties = await makeProperty(
           'prop1',
+          library.typeProvider.stringType,
           library.typeProvider.stringType,
           textFormField,
         );
@@ -283,6 +315,7 @@ Future<void> main() async {
       test('2 warnings -- 2 line', () async {
         final properties = await makeProperty(
           'prop1',
+          library.typeProvider.stringType,
           library.typeProvider.stringType,
           textFormField,
         );
@@ -313,6 +346,7 @@ Future<void> main() async {
         final properties = await makeProperty(
           'prop1',
           library.typeProvider.stringType,
+          library.typeProvider.stringType,
           textFormField,
         );
         final data = PresenterDefinition(
@@ -333,14 +367,14 @@ Future<void> main() async {
         expect(
           lines,
           [
-            "import 'dart:ui' show Brightness, Color, Radius, TextAlign, TextDirection, VoidCallback;",
+            "import 'dart:ui' show Brightness, Color, Locale, Radius, TextAlign, TextDirection, VoidCallback;",
             '',
             "import 'package:flutter/foundation.dart' show ValueChanged;",
             "import 'package:flutter/gestures.dart' show GestureTapCallback;",
             "import 'package:flutter/material.dart' show InputCounterWidgetBuilder, InputDecoration, TextFormField;",
             "import 'package:flutter/painting.dart' show EdgeInsets, StrutStyle, TextAlignVertical, TextStyle;",
             "import 'package:flutter/services.dart' show MaxLengthEnforcement, SmartDashesType, SmartQuotesType, TextCapitalization, TextInputAction, TextInputFormatter, TextInputType;",
-            "import 'package:flutter/widgets.dart' show AutovalidateMode, BuildContext, FocusNode, ScrollController, ScrollPhysics, TextEditingController, TextSelectionControls, ToolbarOptions;",
+            "import 'package:flutter/widgets.dart' show AutovalidateMode, BuildContext, FocusNode, Localizations, ScrollController, ScrollPhysics, TextEditingController, TextSelectionControls, ToolbarOptions;",
             "import 'package:form_companion_presenter/form_companion_presenter.dart';",
             '',
             "import 'form_fields.dart';"
@@ -351,6 +385,7 @@ Future<void> main() async {
       test('imports - form builder', () async {
         final properties = await makeProperty(
           'prop1',
+          dateTimeType,
           dateTimeType,
           formBuilderDateTimePicker,
         );
@@ -376,10 +411,10 @@ Future<void> main() async {
             "import 'dart:ui' as ui show TextDirection;",
             '',
             "import 'package:flutter/foundation.dart' show Key, ValueChanged;",
-            "import 'package:flutter/material.dart' show DatePickerEntryMode, DatePickerMode, InputCounterWidgetBuilder, InputDecoration, SelectableDayPredicate, TimeOfDay, TimePickerEntryMode;",
+            "import 'package:flutter/material.dart' show DatePickerEntryMode, DatePickerMode, Icons, InputCounterWidgetBuilder, InputDecoration, SelectableDayPredicate, TimeOfDay, TimePickerEntryMode;",
             "import 'package:flutter/painting.dart' show EdgeInsets, StrutStyle, TextStyle;",
             "import 'package:flutter/services.dart' show MaxLengthEnforcement, TextCapitalization, TextInputAction, TextInputFormatter, TextInputType;",
-            "import 'package:flutter/widgets.dart' show AutovalidateMode, BuildContext, FocusNode, Icon, RouteSettings, TextEditingController, TransitionBuilder;",
+            "import 'package:flutter/widgets.dart' show AutovalidateMode, BuildContext, FocusNode, Icon, Localizations, RouteSettings, TextEditingController, TransitionBuilder;",
             "import 'package:flutter_form_builder/flutter_form_builder.dart' show FormBuilderDateTimePicker, InputType, ValueTransformer;",
             "import 'package:form_companion_presenter/form_companion_presenter.dart';",
             "import 'package:intl/intl.dart' show DateFormat;",
@@ -394,6 +429,7 @@ Future<void> main() async {
       test('imports - builder', () async {
         final properties = await makeProperty(
           'prop1',
+          dateTimeType,
           dateTimeType,
           formBuilderDateTimePicker,
         );
@@ -422,10 +458,10 @@ Future<void> main() async {
             "import 'dart:ui' as ui show TextDirection;",
             '',
             "import 'package:flutter/foundation.dart' show Key, ValueChanged;",
-            "import 'package:flutter/material.dart' show DatePickerEntryMode, DatePickerMode, InputCounterWidgetBuilder, InputDecoration, SelectableDayPredicate, TimeOfDay, TimePickerEntryMode;",
+            "import 'package:flutter/material.dart' show DatePickerEntryMode, DatePickerMode, Icons, InputCounterWidgetBuilder, InputDecoration, SelectableDayPredicate, TimeOfDay, TimePickerEntryMode;",
             "import 'package:flutter/painting.dart' show EdgeInsets, StrutStyle, TextStyle;",
             "import 'package:flutter/services.dart' show MaxLengthEnforcement, TextCapitalization, TextInputAction, TextInputFormatter, TextInputType;",
-            "import 'package:flutter/widgets.dart' show AutovalidateMode, BuildContext, FocusNode, Icon, RouteSettings, TextEditingController, TransitionBuilder;",
+            "import 'package:flutter/widgets.dart' show AutovalidateMode, BuildContext, FocusNode, Icon, Localizations, RouteSettings, TextEditingController, TransitionBuilder;",
             "import 'package:flutter_form_builder/flutter_form_builder.dart' show FormBuilderDateTimePicker, InputType, ValueTransformer;",
             "import 'package:form_companion_presenter/form_companion_presenter.dart';",
             "import 'package:intl/intl.dart' show DateFormat;",
@@ -441,6 +477,7 @@ Future<void> main() async {
     test('1 property of String, vanilla, no warnings', () async {
       final properties = await makeProperty(
         'prop',
+        library.typeProvider.stringType,
         library.typeProvider.stringType,
         textFormField,
       );
@@ -467,9 +504,15 @@ Future<void> main() async {
     test('2 properties of String and enum', () async {
       final properties = await makeProperties(
         [
-          Tuple3('prop1', library.typeProvider.stringType, textFormField),
-          Tuple3(
+          Tuple4(
+            'prop1',
+            library.typeProvider.stringType,
+            library.typeProvider.stringType,
+            textFormField,
+          ),
+          Tuple4(
             'prop2',
+            library.typeProvider.boolType,
             library.typeProvider.boolType,
             dropdownButtonFormField,
           ),
@@ -519,9 +562,10 @@ Future<void> main() async {
   group('emitFieldFactory', () {
     FutureOr<void> _testEmitFieldFactory({
       required bool isFormBuilder,
-      required InterfaceType type,
+      required InterfaceType propertyValueType,
+      required InterfaceType fieldValueType,
       required ClassElement? formFieldClass,
-      String? preferredFieldType,
+      GenericInterfaceType? preferredFieldType,
       bool doAutovalidate = false,
       List<String>? warnings,
       required String expectedBody,
@@ -531,7 +575,8 @@ Future<void> main() async {
         [
           PropertyDefinitionSpec(
             'prop',
-            type,
+            propertyValueType,
+            fieldValueType,
             formFieldClass,
             preferredFieldType,
             realWarnings,
@@ -587,7 +632,8 @@ Future<void> main() async {
           'String with ${warnings.length} warnings',
           () => _testEmitFieldFactory(
             isFormBuilder: false,
-            type: library.typeProvider.stringType,
+            propertyValueType: library.typeProvider.stringType,
+            fieldValueType: library.typeProvider.stringType,
             formFieldClass: textFormField,
             warnings: warnings,
             expectedBody: textFormFieldFactory('prop'),
@@ -602,7 +648,8 @@ Future<void> main() async {
           isEnum ? 'enum' : 'bool',
           () => _testEmitFieldFactory(
             isFormBuilder: false,
-            type: type,
+            propertyValueType: type,
+            fieldValueType: type,
             formFieldClass: dropdownButtonFormField,
             expectedBody: dropdownButtonFieldFactory('prop', typeName),
           ),
@@ -613,9 +660,13 @@ Future<void> main() async {
         'String with known preferredFieldType -- preferredFieldType is used',
         () => _testEmitFieldFactory(
           isFormBuilder: false,
-          type: library.typeProvider.stringType,
+          propertyValueType: library.typeProvider.stringType,
+          fieldValueType: library.typeProvider.stringType,
           formFieldClass: dropdownButtonFormField,
-          preferredFieldType: 'DropdownButtonFormField',
+          preferredFieldType: GenericInterfaceType(
+            dropdownButtonFormField.thisType,
+            [GenericInterfaceType(library.typeProvider.stringType, [])],
+          ),
           expectedBody: dropdownButtonFieldFactory('prop', 'String'),
         ),
       );
@@ -624,10 +675,14 @@ Future<void> main() async {
         'bool with known preferredFieldType -- preferredFieldType is used',
         () => _testEmitFieldFactory(
           isFormBuilder: false,
-          type: library.typeProvider.boolType,
-          formFieldClass: textFormField,
-          preferredFieldType: 'TextFormField',
-          expectedBody: textFormFieldFactory('prop'),
+          propertyValueType: library.typeProvider.intType,
+          fieldValueType: library.typeProvider.intType,
+          formFieldClass: dropdownButtonFormField,
+          preferredFieldType: GenericInterfaceType(
+            dropdownButtonFormField.thisType,
+            [GenericInterfaceType(library.typeProvider.intType, [])],
+          ),
+          expectedBody: dropdownButtonFieldFactory('prop', 'int'),
         ),
       );
 
@@ -635,11 +690,13 @@ Future<void> main() async {
         'Unknown preferredFieldType -- error',
         () => _testEmitFieldFactory(
           isFormBuilder: false,
-          type: library.typeProvider.stringType,
+          propertyValueType: library.typeProvider.stringType,
+          fieldValueType: library.typeProvider.stringType,
           formFieldClass: null,
-          preferredFieldType: 'UnknownFormField',
+          preferredFieldType:
+              GenericInterfaceType(library.typeProvider.objectType, []),
           expectedBody:
-              "  // TODO(CompanionGenerator): ERROR - Cannot generate field factory for 'prop' property, because FormField type 'UnknownFormField' is unknown.",
+              "  // TODO(CompanionGenerator): ERROR - Cannot generate field factory for 'prop' property, because FormField type 'Object' is unknown.",
         ),
       );
 
@@ -648,7 +705,8 @@ Future<void> main() async {
           'doAutovalidate ($value) is respected',
           () => _testEmitFieldFactory(
             isFormBuilder: false,
-            type: library.typeProvider.stringType,
+            propertyValueType: library.typeProvider.stringType,
+            fieldValueType: library.typeProvider.stringType,
             formFieldClass: textFormField,
             doAutovalidate: value,
             expectedBody: textFormFieldFactory('prop', isAutovalidate: value),
@@ -667,7 +725,8 @@ Future<void> main() async {
           'String with ${warnings.length} warnings',
           () => _testEmitFieldFactory(
             isFormBuilder: true,
-            type: library.typeProvider.stringType,
+            propertyValueType: library.typeProvider.stringType,
+            fieldValueType: library.typeProvider.stringType,
             formFieldClass: formBuilderTextField,
             warnings: warnings,
             expectedBody: formBuilderTextFieldFactory('prop'),
@@ -679,7 +738,8 @@ Future<void> main() async {
         'enum',
         () => _testEmitFieldFactory(
           isFormBuilder: true,
-          type: myEnumType,
+          propertyValueType: myEnumType,
+          fieldValueType: myEnumType,
           formFieldClass: formBuilderDropdown,
           expectedBody: formBuilderDropdownFactory('prop', 'MyEnum'),
         ),
@@ -689,7 +749,8 @@ Future<void> main() async {
         'bool',
         () => _testEmitFieldFactory(
           isFormBuilder: true,
-          type: library.typeProvider.boolType,
+          propertyValueType: library.typeProvider.boolType,
+          fieldValueType: library.typeProvider.boolType,
           formFieldClass: formBuilderSwitch,
           expectedBody: formBuilderSwitchFactory('prop'),
         ),
@@ -699,7 +760,8 @@ Future<void> main() async {
         'DateTime',
         () => _testEmitFieldFactory(
           isFormBuilder: true,
-          type: dateTimeType,
+          propertyValueType: dateTimeType,
+          fieldValueType: dateTimeType,
           formFieldClass: formBuilderDateTimePicker,
           expectedBody: formBuilderDateTimePickerFactory('prop'),
         ),
@@ -709,7 +771,8 @@ Future<void> main() async {
         'DateTimeRange',
         () => _testEmitFieldFactory(
           isFormBuilder: true,
-          type: dateTimeRangeType,
+          propertyValueType: dateTimeRangeType,
+          fieldValueType: dateTimeRangeType,
           formFieldClass: formBuilderDateRangePicker,
           expectedBody: formBuilderDateRangePickerFactory('prop'),
         ),
@@ -719,7 +782,8 @@ Future<void> main() async {
         'RangeValue',
         () => _testEmitFieldFactory(
           isFormBuilder: true,
-          type: rangeValuesType,
+          propertyValueType: rangeValuesType,
+          fieldValueType: rangeValuesType,
           formFieldClass: formBuilderRangeSlider,
           expectedBody: formBuilderRangeSliderFactory('prop'),
         ),
@@ -729,9 +793,13 @@ Future<void> main() async {
         'String with known preferredFieldType -- preferredFieldType is used',
         () => _testEmitFieldFactory(
           isFormBuilder: true,
-          type: library.typeProvider.stringType,
+          propertyValueType: library.typeProvider.stringType,
+          fieldValueType: library.typeProvider.stringType,
           formFieldClass: formBuilderDropdown,
-          preferredFieldType: 'FormBuilderDropdown',
+          preferredFieldType: GenericInterfaceType(
+            formBuilderDropdown.thisType,
+            [GenericInterfaceType(library.typeProvider.stringType, [])],
+          ),
           expectedBody: formBuilderDropdownFactory('prop', 'String'),
         ),
       );
@@ -740,9 +808,13 @@ Future<void> main() async {
         'bool with known preferredFieldType -- preferredFieldType is used',
         () => _testEmitFieldFactory(
           isFormBuilder: true,
-          type: library.typeProvider.stringType,
+          propertyValueType: library.typeProvider.boolType,
+          fieldValueType: library.typeProvider.stringType,
           formFieldClass: formBuilderTextField,
-          preferredFieldType: 'FormBuilderTextField',
+          preferredFieldType: GenericInterfaceType(
+            formBuilderTextField.thisType,
+            [],
+          ),
           expectedBody: formBuilderTextFieldFactory('prop'),
         ),
       );
@@ -766,9 +838,13 @@ Future<void> main() async {
           'preferredFieldType of ${spec.name} for bool',
           () => _testEmitFieldFactory(
             isFormBuilder: true,
-            type: spec.type,
+            propertyValueType: spec.type,
+            fieldValueType: spec.type,
             formFieldClass: spec.formFieldClass,
-            preferredFieldType: spec.name,
+            preferredFieldType: GenericInterfaceType(
+              spec.formFieldClass.thisType,
+              [],
+            ),
             expectedBody: spec.expectedBody,
           ),
         );
@@ -794,9 +870,13 @@ Future<void> main() async {
           'preferredFieldType of ${spec.name} for numeric',
           () => _testEmitFieldFactory(
             isFormBuilder: true,
-            type: spec.type,
+            propertyValueType: spec.type,
+            fieldValueType: spec.type,
             formFieldClass: spec.formFieldClass,
-            preferredFieldType: spec.name,
+            preferredFieldType: GenericInterfaceType(
+              spec.formFieldClass.thisType,
+              [],
+            ),
             expectedBody: spec.expectedBody,
           ),
         );
@@ -838,9 +918,13 @@ Future<void> main() async {
           'preferredFieldType of ${spec.name} for enum',
           () => _testEmitFieldFactory(
             isFormBuilder: true,
-            type: spec.type,
+            propertyValueType: spec.type,
+            fieldValueType: spec.type,
             formFieldClass: spec.formFieldClass,
-            preferredFieldType: spec.name,
+            preferredFieldType: GenericInterfaceType(
+              spec.formFieldClass.thisType,
+              [GenericInterfaceType(spec.type, [])],
+            ),
             expectedBody: spec.expectedBody,
           ),
         );
@@ -850,11 +934,15 @@ Future<void> main() async {
         'String with unknown preferredFieldType -- error',
         () => _testEmitFieldFactory(
           isFormBuilder: true,
-          type: library.typeProvider.stringType,
+          propertyValueType: library.typeProvider.stringType,
+          fieldValueType: library.typeProvider.stringType,
           formFieldClass: null,
-          preferredFieldType: 'FormBuilderUnknown',
+          preferredFieldType: GenericInterfaceType(
+            library.typeProvider.objectType,
+            [],
+          ),
           expectedBody:
-              "  // TODO(CompanionGenerator): ERROR - Cannot generate field factory for 'prop' property, because FormField type 'FormBuilderUnknown' is unknown.",
+              "  // TODO(CompanionGenerator): ERROR - Cannot generate field factory for 'prop' property, because FormField type 'Object' is unknown.",
         ),
       );
 
@@ -863,7 +951,8 @@ Future<void> main() async {
           'doAutovalidate ($value) is respected',
           () => _testEmitFieldFactory(
             isFormBuilder: true,
-            type: library.typeProvider.stringType,
+            propertyValueType: library.typeProvider.stringType,
+            fieldValueType: library.typeProvider.stringType,
             formFieldClass: formBuilderTextField,
             doAutovalidate: value,
             expectedBody:
@@ -901,18 +990,20 @@ class FormBuilderTestSpec {
 }
 
 String typedProperties(
-        String className, Iterable<MapEntry<String, String>> propertyTypes) =>
+  String className,
+  Iterable<Tuple3<String, String, String>> propertyTypes,
+) =>
     '''
 extension \$${className}PropertyExtension on $className {
-${propertyTypes.isEmpty ? '  // No properties were found.' : propertyTypes.map((e) => typedProperty(e.key, e.value)).join('\n\n')}
+${propertyTypes.isEmpty ? '  // No properties were found.' : propertyTypes.map((e) => typedProperty(e.item1, e.item2, e.item3)).join('\n\n')}
 }
 ''';
 
-String typedProperty(String name, String type) => '''
+String typedProperty(String name, String propertyType, String fieldType) => '''
   /// Gets a [PropertyDescriptor] of $name property.
-  PropertyDescriptor<$type> get $name =>
+  PropertyDescriptor<$propertyType, $fieldType> get $name =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-      properties['$name']! as PropertyDescriptor<$type>;''';
+      properties['$name']! as PropertyDescriptor<$propertyType, $fieldType>;''';
 
 String fieldFactories(String className, Iterable<String> factories) => '''
 class \$${className}FieldFactories {
@@ -989,7 +1080,7 @@ String textFormFieldFactory(
     return TextFormField(
       key: _presenter.getKey(property.name, context),
       controller: controller,
-      initialValue: property.savedValue.toString(),
+      initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       focusNode: focusNode,
       decoration: InputDecoration(
         labelText: property.name,
@@ -1021,7 +1112,7 @@ String textFormFieldFactory(
       onTap: onTap,
       onEditingComplete: onEditingComplete,
       onFieldSubmitted: onFieldSubmitted,
-      onSaved: property.saveValue,
+      onSaved: (v) => property.setFieldValue(v, Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       validator: property.getValidator(context),
       inputFormatters: inputFormatters,
       enabled: enabled,
@@ -1082,7 +1173,7 @@ String dropdownButtonFieldFactory(
       key: _presenter.getKey(property.name, context),
       items: items,
       selectedItemBuilder: selectedItemBuilder,
-      value: property.savedValue,
+      value: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       hint: hint,
       disabledHint: disabledHint,
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
@@ -1103,7 +1194,7 @@ String dropdownButtonFieldFactory(
       decoration: InputDecoration(
         labelText: property.name,
       ),
-      onSaved: property.saveValue,
+      onSaved: (v) => property.setFieldValue(v, Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       validator: property.getValidator(context),
       autovalidateMode: autovalidateMode ?? AutovalidateMode.${isAutovalidate ? 'onUserInteraction' : 'disabled'},
       menuMaxHeight: menuMaxHeight,
@@ -1145,7 +1236,7 @@ String formBuilderCheckboxFactory(
       key: key,
       name: property.name,
       validator: property.getValidator(context),
-      initialValue: property.savedValue,
+      initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       decoration: InputDecoration(
         labelText: property.name,
       ),
@@ -1212,7 +1303,7 @@ String formBuilderCheckboxGroupFactory(
       key: key,
       name: property.name,
       validator: property.getValidator(context),
-      initialValue: property.savedValue,
+      initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       decoration: InputDecoration(
         labelText: property.name,
       ),
@@ -1298,7 +1389,7 @@ String formBuilderChoiceChipFactory(
       key: key,
       name: property.name,
       options: options,
-      initialValue: property.savedValue,
+      initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       alignment: alignment,
       backgroundColor: backgroundColor,
       crossAxisAlignment: crossAxisAlignment,
@@ -1396,7 +1487,7 @@ String formBuilderDateRangePickerFactory(
       key: key,
       name: property.name,
       validator: property.getValidator(context),
-      initialValue: property.savedValue,
+      initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       decoration: InputDecoration(
         labelText: property.name,
       ),
@@ -1529,7 +1620,7 @@ String formBuilderDateTimePickerFactory(
       key: key,
       name: property.name,
       validator: property.getValidator(context),
-      initialValue: property.savedValue,
+      initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       decoration: InputDecoration(
         labelText: property.name,
       ),
@@ -1637,7 +1728,7 @@ String formBuilderDropdownFactory(
       key: key,
       name: property.name,
       validator: property.getValidator(context),
-      initialValue: property.savedValue,
+      initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       decoration: InputDecoration(
         labelText: property.name,
       ),
@@ -1725,7 +1816,7 @@ String formBuilderFilterChipFactory(
         labelText: property.name,
       ),
       key: key,
-      initialValue: property.savedValue!,
+      initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))!,
       name: property.name,
       options: options,
       alignment: alignment,
@@ -1807,7 +1898,7 @@ String formBuilderRadioGroupFactory(
       key: key,
       name: property.name,
       options: options,
-      initialValue: property.savedValue,
+      initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       shouldRadioRequestFocus: shouldRadioRequestFocus,
       activeColor: activeColor,
       controlAffinity: controlAffinity,
@@ -1868,7 +1959,7 @@ String formBuilderRangeSliderFactory(
       key: key,
       name: property.name,
       validator: property.getValidator(context),
-      initialValue: property.savedValue!,
+      initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))!,
       decoration: InputDecoration(
         labelText: property.name,
       ),
@@ -1926,7 +2017,7 @@ String formBuilderSegmentedControlFactory(
       key: key,
       name: property.name,
       validator: property.getValidator(context),
-      initialValue: property.savedValue,
+      initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       decoration: InputDecoration(
         labelText: property.name,
       ),
@@ -1985,7 +2076,7 @@ String formBuilderSliderFactory(
       key: key,
       name: property.name,
       validator: property.getValidator(context),
-      initialValue: property.savedValue!,
+      initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))!,
       decoration: InputDecoration(
         labelText: property.name,
       ),
@@ -2051,7 +2142,7 @@ String formBuilderSwitchFactory(
       key: key,
       name: property.name,
       validator: property.getValidator(context),
-      initialValue: property.savedValue,
+      initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       decoration: InputDecoration(
         labelText: property.name,
       ),
@@ -2142,7 +2233,7 @@ String formBuilderTextFieldFactory(
       key: key,
       name: property.name,
       validator: property.getValidator(context),
-      initialValue: property.savedValue.toString(),
+      initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       readOnly: readOnly,
       decoration: InputDecoration(
         labelText: property.name,

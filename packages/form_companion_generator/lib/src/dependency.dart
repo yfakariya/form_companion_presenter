@@ -10,6 +10,7 @@ import 'package:analyzer/exception/exception.dart';
 import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
 
+import 'model.dart';
 import 'node_provider.dart';
 
 /// Represents library import.
@@ -457,5 +458,12 @@ class DependentLibraryCollector extends RecursiveAstVisitor<void> {
       processType(type.returnType);
       type.parameters.map((e) => e.type).forEach(processType);
     }
+  }
+
+  /// Process specified [GenericInterfaceType]
+  /// and records its and its type arguments imports.
+  void processGenericType(GenericInterfaceType type) {
+    processType(type.rawType);
+    type.typeArguments.forEach(processGenericType);
   }
 }
