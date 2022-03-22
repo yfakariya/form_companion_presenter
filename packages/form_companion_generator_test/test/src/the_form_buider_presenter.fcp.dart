@@ -33,6 +33,7 @@ import 'package:flutter/material.dart'
         DropdownButtonBuilder,
         DropdownMenuItem,
         Icons,
+        InputBorder,
         InputCounterWidgetBuilder,
         InputDecoration,
         ListTileControlAffinity,
@@ -275,7 +276,7 @@ class $TheFormBuilderPresenterFieldFactories {
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       readOnly: readOnly,
-      decoration: InputDecoration(
+      decoration: const InputDecoration().copyWith(
         labelText: property.name,
       ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
@@ -368,7 +369,7 @@ class $TheFormBuilderPresenterFieldFactories {
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
-      decoration: InputDecoration(
+      decoration: const InputDecoration().copyWith(
         labelText: property.name,
       ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
@@ -434,7 +435,7 @@ class $TheFormBuilderPresenterFieldFactories {
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
-      decoration: InputDecoration(
+      decoration: const InputDecoration().copyWith(
         labelText: property.name,
       ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
@@ -530,7 +531,7 @@ class $TheFormBuilderPresenterFieldFactories {
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
-      decoration: InputDecoration(
+      decoration: const InputDecoration().copyWith(
         labelText: property.name,
       ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
@@ -659,7 +660,7 @@ class $TheFormBuilderPresenterFieldFactories {
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
-      decoration: InputDecoration(
+      decoration: const InputDecoration().copyWith(
         labelText: property.name,
       ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
@@ -752,7 +753,7 @@ class $TheFormBuilderPresenterFieldFactories {
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))!,
-      decoration: InputDecoration(
+      decoration: const InputDecoration().copyWith(
         labelText: property.name,
       ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
@@ -823,7 +824,7 @@ class $TheFormBuilderPresenterFieldFactories {
       enabled: enabled,
       focusNode: focusNode,
       validator: property.getValidator(context),
-      decoration: InputDecoration(
+      decoration: const InputDecoration().copyWith(
         labelText: property.name,
       ),
       key: key,
@@ -906,7 +907,7 @@ class $TheFormBuilderPresenterFieldFactories {
       enabled: enabled,
       focusNode: focusNode,
       validator: property.getValidator(context),
-      decoration: InputDecoration(
+      decoration: const InputDecoration().copyWith(
         labelText: property.name,
       ),
       key: key,
@@ -975,7 +976,13 @@ class $TheFormBuilderPresenterFieldFactories {
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
-      decoration: InputDecoration(
+      decoration: const InputDecoration(
+              border: InputBorder.none,
+              focusedBorder: InputBorder.none,
+              enabledBorder: InputBorder.none,
+              errorBorder: InputBorder.none,
+              disabledBorder: InputBorder.none)
+          .copyWith(
         labelText: property.name,
       ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
@@ -1037,7 +1044,7 @@ class $TheFormBuilderPresenterFieldFactories {
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
-      decoration: InputDecoration(
+      decoration: const InputDecoration().copyWith(
         labelText: property.name,
       ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
@@ -1110,7 +1117,7 @@ class $TheFormBuilderPresenterFieldFactories {
       enabled: enabled,
       focusNode: focusNode,
       validator: property.getValidator(context),
-      decoration: InputDecoration(
+      decoration: const InputDecoration().copyWith(
         labelText: property.name,
       ),
       key: key,
@@ -1190,7 +1197,7 @@ class $TheFormBuilderPresenterFieldFactories {
       enabled: enabled,
       focusNode: focusNode,
       validator: property.getValidator(context),
-      decoration: InputDecoration(
+      decoration: const InputDecoration().copyWith(
         labelText: property.name,
       ),
       key: key,
@@ -1265,7 +1272,7 @@ class $TheFormBuilderPresenterFieldFactories {
       enabled: enabled,
       focusNode: focusNode,
       validator: property.getValidator(context),
-      decoration: InputDecoration(
+      decoration: const InputDecoration().copyWith(
         labelText: property.name,
       ),
       key: key,
@@ -1322,7 +1329,7 @@ class $TheFormBuilderPresenterFieldFactories {
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
-      decoration: InputDecoration(
+      decoration: const InputDecoration().copyWith(
         labelText: property.name,
       ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
@@ -1377,7 +1384,7 @@ class $TheFormBuilderPresenterFieldFactories {
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))!,
-      decoration: InputDecoration(
+      decoration: const InputDecoration().copyWith(
         labelText: property.name,
       ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
@@ -1468,7 +1475,7 @@ class $TheFormBuilderPresenterFieldFactories {
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       readOnly: readOnly,
-      decoration: InputDecoration(
+      decoration: const InputDecoration().copyWith(
         labelText: property.name,
       ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly

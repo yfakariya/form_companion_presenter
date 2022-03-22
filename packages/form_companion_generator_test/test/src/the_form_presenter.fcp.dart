@@ -155,7 +155,7 @@ class $TheFormPresenterFieldFactories {
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       focusNode: focusNode,
-      decoration: InputDecoration(
+      decoration: const InputDecoration().copyWith(
         labelText: property.name,
       ),
       keyboardType: keyboardType,
@@ -396,7 +396,7 @@ class $TheFormPresenterFieldFactories {
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       focusNode: focusNode,
-      decoration: InputDecoration(
+      decoration: const InputDecoration().copyWith(
         labelText: property.name,
       ),
       keyboardType: keyboardType,
