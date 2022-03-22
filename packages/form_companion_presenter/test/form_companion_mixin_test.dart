@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:form_companion_presenter/form_companion_presenter.dart';
+import 'package:form_companion_presenter/src/presenter_extension.dart';
 
 Widget _buildChilren(
   BuildContext context, {
@@ -165,36 +166,36 @@ class Presenter with CompanionPresenterMixin, FormCompanionMixin {
 
 void main() {
   // For debugging
-  loggerSink = (
-    name,
-    level,
-    message,
-    zone,
-    error,
-    stackTrace,
-  ) {
-    String messageString;
-    if (message is String Function()) {
-      messageString = message();
-    } else if (message is String) {
-      messageString = message;
-    } else {
-      messageString = message?.toString() ?? '';
-    }
+  // loggerSink = (
+  //   name,
+  //   level,
+  //   message,
+  //   zone,
+  //   error,
+  //   stackTrace,
+  // ) {
+  //   String messageString;
+  //   if (message is String Function()) {
+  //     messageString = message();
+  //   } else if (message is String) {
+  //     messageString = message;
+  //   } else {
+  //     messageString = message?.toString() ?? '';
+  //   }
 
-    String errorString;
-    if (error != null) {
-      if (stackTrace != null) {
-        errorString = ' $error\n$stackTrace';
-      } else {
-        errorString = ' $error';
-      }
-    } else {
-      errorString = '';
-    }
+  //   String errorString;
+  //   if (error != null) {
+  //     if (stackTrace != null) {
+  //       errorString = ' $error\n$stackTrace';
+  //     } else {
+  //       errorString = ' $error';
+  //     }
+  //   } else {
+  //     errorString = '';
+  //   }
 
-    printOnFailure('[${level.name}] $name: $messageString$errorString');
-  };
+  //   printOnFailure('[${level.name}] $name: $messageString$errorString');
+  // };
 
   group('canSubmit()', () {
     testWidgets('returns true when maybeFormStateOf() returns null.',
@@ -223,7 +224,7 @@ void main() {
       var validatorCalled = false;
       final presenter = Presenter(
         properties: PropertyDescriptorsBuilder()
-          ..add<String>(
+          ..add<String, String>(
             name: 'prop',
             validatorFactories: [
               (context) => (value) {
@@ -269,7 +270,7 @@ void main() {
       final completer = Completer<void>();
       final presenter = Presenter(
         properties: PropertyDescriptorsBuilder()
-          ..add<String>(
+          ..add<String, String>(
             name: 'prop',
             asyncValidatorFactories: [
               (context) => (value, options) async {
@@ -317,7 +318,7 @@ void main() {
       final validatorCompleted = Completer<void>();
       final presenter = Presenter(
         properties: PropertyDescriptorsBuilder()
-          ..add<String>(
+          ..add<String, String>(
             name: 'prop',
             asyncValidatorFactories: [
               (context) => (value, options) async {
@@ -394,7 +395,7 @@ void main() {
         (tester) async {
       final presenter = Presenter(
         properties: PropertyDescriptorsBuilder()
-          ..add<String>(
+          ..add<String, String>(
             name: 'prop',
             validatorFactories: [
               (context) => (value) => null,
@@ -558,7 +559,7 @@ void main() {
     });
   });
 
-  group('async validation completion behavor', () {
+  group('async validation completion behavior', () {
     Future<void> testRebuildBehavior(
       WidgetTester tester,
       AutovalidateMode formValidateMode,
@@ -568,7 +569,7 @@ void main() {
       final completer = Completer<void>();
       final presenter = Presenter(
         properties: PropertyDescriptorsBuilder()
-          ..add<String>(
+          ..add<String, String>(
             name: 'target',
             validatorFactories: [
               (_) => (value) {
@@ -583,7 +584,7 @@ void main() {
                   },
             ],
           )
-          ..add<String>(
+          ..add<String, String>(
             name: 'another',
             validatorFactories: [
               (_) => (value) {
@@ -735,7 +736,7 @@ void main() {
       var validatorCalled = 0;
       final presenter = Presenter(
           properties: PropertyDescriptorsBuilder()
-            ..add<String>(
+            ..add<String, String>(
               name: 'prop',
               asyncValidatorFactories: [
                 (context) => (value, options) async {
@@ -791,7 +792,7 @@ void main() {
       var validatorCalled = 0;
       final presenter = Presenter(
           properties: PropertyDescriptorsBuilder()
-            ..add<String>(
+            ..add<String, String>(
               name: 'prop',
               asyncValidatorFactories: [
                 (context) => (value, options) async {
@@ -852,7 +853,7 @@ void main() {
       var validatorCalled = 0;
       final presenter = Presenter(
           properties: PropertyDescriptorsBuilder()
-            ..add<String>(
+            ..add<String, String>(
               name: 'prop',
               asyncValidatorFactories: [
                 (context) => (value, options) async {
@@ -917,7 +918,7 @@ void main() {
       var validatorCalled = 0;
       final presenter = Presenter(
           properties: PropertyDescriptorsBuilder()
-            ..add<String>(
+            ..add<String, String>(
               name: 'prop',
               asyncValidatorFactories: [
                 (context) => (value, options) async {
@@ -999,7 +1000,7 @@ void main() {
         var validation2Called = 0;
         final presenter = Presenter(
             properties: PropertyDescriptorsBuilder()
-              ..add<String>(
+              ..add<String, String>(
                 name: 'prop1',
                 asyncValidatorFactories: [
                   (context) => (value, options) async {
@@ -1010,7 +1011,7 @@ void main() {
                       }
                 ],
               )
-              ..add<String>(
+              ..add<String, String>(
                 name: 'prop2',
                 asyncValidatorFactories: [
                   (context) => (value, options) async {
@@ -1095,7 +1096,7 @@ void main() {
         var validation2Called = 0;
         final presenter = Presenter(
             properties: PropertyDescriptorsBuilder()
-              ..add<String>(
+              ..add<String, String>(
                 name: 'prop1',
                 asyncValidatorFactories: [
                   (context) => (value, options) async {
@@ -1109,7 +1110,7 @@ void main() {
                       }
                 ],
               )
-              ..add<String>(
+              ..add<String, String>(
                 name: 'prop2',
                 asyncValidatorFactories: [
                   (context) => (value, options) async {
@@ -1234,7 +1235,7 @@ void main() {
       var secondCalled = 0;
       final presenter = Presenter(
         properties: PropertyDescriptorsBuilder()
-          ..add<String>(
+          ..add<String, String>(
             name: 'prop',
             asyncValidatorFactories: [
               (context) => (value, options) async {

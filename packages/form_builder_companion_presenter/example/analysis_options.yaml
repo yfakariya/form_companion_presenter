@@ -1,5 +1,6 @@
 include: ../../../analysis_options.yaml
 
 analyzer: 
+  exclude: ['lib/generated_plugin_registrant.dart']
   errors:
     public_member_api_docs: ignore # overkill for examples

@@ -132,3 +132,14 @@ fvm flutter pub global run melos run easy_localization
 #### libraries in example
 
 We use [riverpod](https://pub.dev/packages/riverpod) and [state notifier](https://pub.dev/packages/state_notifier) to implement examples.
+
+#### Example package's source code generation
+
+Example form widget sources under `examples/form_companion_presenter/` directory are generated from `lib/components` files.
+You can regenerate form files by running `grind assemble` command in the `examples/form_companion_presenter/` directory.
+Do not forget to run this command when you modify files under `examples/form_companion_presenter/` directory.
+
+#### Examples source code under each packages generation
+
+Example files under each package in `packages/` directory are basically copies of `examples/form_companion_presenter/`. You can refresh these copies with running `grind distribute` command in the `examples/form_companion_presenter/` directory.
+Note that you should modify files in `examples/form_companion_presenter/lib/components` and then run `grind assemble` before distributing to each packages' `example` directories.

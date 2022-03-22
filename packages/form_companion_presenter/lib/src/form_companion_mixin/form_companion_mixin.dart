@@ -5,11 +5,15 @@ part of '../form_companion_mixin.dart';
 /// [FormStateAdapter] implementation for [FormState].
 class _FormStateAdapter implements FormStateAdapter {
   final FormState _state;
+  final Locale _locale;
 
   @override
   AutovalidateMode get autovalidateMode => _state.widget.autovalidateMode;
 
-  _FormStateAdapter(this._state);
+  @override
+  Locale get locale => _locale;
+
+  _FormStateAdapter(this._state, this._locale);
 
   @override
   bool validate() => _state.validate();
@@ -67,7 +71,7 @@ mixin FormCompanionMixin on CompanionPresenterMixin {
   @nonVirtual
   FormStateAdapter? maybeFormStateOf(BuildContext context) {
     final state = Form.of(context);
-    return state == null ? null : _FormStateAdapter(state);
+    return state == null ? null : _FormStateAdapter(state, getLocale(context));
   }
 
   @override

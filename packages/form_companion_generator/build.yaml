@@ -1,0 +1,8 @@
+# Read about `build.yaml` at https://pub.dev/packages/build_config
+builders:
+  form_companion_generator:
+    import: "package:form_companion_generator/builder.dart"
+    builder_factories: ["generate"]
+    build_extensions: { ".dart": [".fcp.dart"] }
+    auto_apply: dependents
+    build_to: source

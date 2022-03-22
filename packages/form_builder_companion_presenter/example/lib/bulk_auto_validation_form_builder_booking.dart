@@ -7,12 +7,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:form_builder_companion_presenter/form_builder_companion_presenter.dart';
+import 'package:form_companion_presenter/form_companion_extension.dart';
 import 'package:form_companion_presenter/form_companion_presenter.dart';
 
 import 'l10n/locale_keys.g.dart';
 import 'models.dart';
 import 'routes.dart';
 import 'screen.dart';
+
+// TODO(yfakariya): use generator
 
 //------------------------------------------------------------------------------
 // In this example, [AutovalidateMode] of the form and fields are set to
@@ -254,31 +257,31 @@ class BulkAutoValidationFormBuilderBookingPresenter
   ) : super(initialState) {
     initializeCompanionMixin(
       PropertyDescriptorsBuilder()
-        ..add<DateTimeRange>(
+        ..addDateTimeRange(
           name: 'stay',
         )
-        ..add<DateTime>(
+        ..addDateTime(
           name: 'specialOfferDate',
         )
-        ..add<RoomType>(
+        ..addEnum<RoomType>(
           name: 'roomType',
         )
-        ..add<List<MealType>>(
+        ..addEnumList<MealType>(
           name: 'mealOffers',
         )
-        ..add<bool>(
+        ..addBool(
           name: 'smoking',
         )
-        ..add<int>(
+        ..addInt(
           name: 'persons',
         )
-        ..add<int>(
+        ..addInt(
           name: 'babyBeds',
         )
-        ..add<RangeValues>(
+        ..addRangeValues(
           name: 'prefferedPrice',
         )
-        ..add<String>(
+        ..addText(
           name: 'note',
         ),
     );

@@ -9,7 +9,6 @@ String _path(String name) => 'lib${Platform.pathSeparator}$name';
 
 List<String> _commonItems = [
   _path('l10n'),
-  _path('app.dart'),
   _path('generated_plugin_registrant.dart'),
   _path('home.dart'),
   _path('main.dart'),
@@ -34,6 +33,9 @@ final Map<String, Set<String>> _itemSets = {
     _path('manual_validation_form_builder_account.dart'),
     _path('manual_validation_form_builder_booking.dart'),
   },
+  // empty
+  'form_companion_generator': {},
+  'form_companion_generator_test': {},
 };
 
 Future<void> distributeCore() async {

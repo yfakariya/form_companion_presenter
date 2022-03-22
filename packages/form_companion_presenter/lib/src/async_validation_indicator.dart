@@ -36,8 +36,8 @@ class AsyncValidationIndicator extends StatelessWidget {
     required String propertyName,
     this.text,
     this.height,
-  })  : _hasPendingAsyncValidationListener =
-            presenter.getPropertyPendingAsyncValidationsListener(propertyName),
+  })  : _hasPendingAsyncValidationListener = presenter.internals
+            .getPropertyPendingAsyncValidationsListener(propertyName),
         super(key: key);
 
   @override
