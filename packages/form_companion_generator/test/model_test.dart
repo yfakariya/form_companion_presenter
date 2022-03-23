@@ -10,7 +10,7 @@ import 'test_helpers.dart';
 
 Future<void> main() async {
   final libraryReader = LibraryReader(
-    (await getElement('form_companion_annotation.dart')).element,
+    (await getResolvedLibraryResult('form_companion_annotation.dart')).element,
   );
 
   ConstantReader findAnnotation(String className) {

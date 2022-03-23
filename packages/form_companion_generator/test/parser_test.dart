@@ -39,7 +39,7 @@ Future<void> main() async {
   logger.onRecord.listen(print);
 
   final presenterLibrary = LibraryReader(
-    (await getElement('presenter.dart')).element,
+    (await getResolvedLibraryResult('presenter.dart')).element,
   );
   final resolver = FileResolver(presenterLibrary.element);
   final nodeProvider = NodeProvider(FileResolver(presenterLibrary.element));
