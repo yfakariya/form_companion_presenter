@@ -56,16 +56,26 @@ class PresenterDefinition {
             doAutovalidate ? 'AutovalidateMode.onUserInteraction' : null;
 }
 
-final _annotationLibraryUri = Uri(
-  scheme: 'package',
-  path: 'form_companion_presenter/src/form_companion_annotation.dart',
-);
+const _annotationLibrary =
+    'package:form_companion_presenter/src/form_companion_annotation.dart';
 
 /// Determines that specified [ElementAnnotation] is `FormCompanion` or not.
-bool isFormCompanionAnnotation(ElementAnnotation annotation) =>
-    annotation.element?.source?.uri == _annotationLibraryUri &&
-    (annotation.element?.name == 'formCompanion' ||
-        annotation.element?.name == 'FormCompanion');
+bool isFormCompanionAnnotation(ElementAnnotation annotation) {
+  // We use hand written logic instead of GeneratorForAnnotation to avoid
+  // dependency to `form_presenter_companion` which causes a lot of error
+  // related to flutter SDK because the SDK prohibits reflection (dart:mirrors)
+  // but test tool chain of build_runner depends reflection.
+  final element = annotation.element;
+  if (element is PropertyAccessorElement) {
+    return element.library.identifier == _annotationLibrary &&
+        element.name == 'formCompanion';
+  } else if (element is ConstructorElement) {
+    return element.library.identifier == _annotationLibrary &&
+        element.enclosingElement.name == 'FormCompanion';
+  }
+
+  return false;
+}
 
 /// A convinient accessor for a constant evaluated `FormCompanion` annotation.
 @sealed
