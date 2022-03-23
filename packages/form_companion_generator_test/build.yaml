@@ -6,7 +6,6 @@ targets:
         enabled: true
         generate_for:
           exclude:
-            # - test
             - example
             - lib
           include:
