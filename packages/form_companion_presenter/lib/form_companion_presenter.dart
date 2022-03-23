@@ -12,14 +12,16 @@ export 'src/async_validator_executor.dart'
         ValidationInvocation;
 export 'src/form_companion_mixin.dart'
     show
-        FormFieldValidatorFactory,
         AsyncValidatorFactory,
+        CompanionPresenterFeatures,
+        CompanionPresenterMixin,
+        CompanionPresenterMixinExtension,
+        FormCompanionMixin,
+        FormCompanionPropertyDescriptorsBuilderExtension,
+        FormFieldValidatorFactory,
         FormStateAdapter,
         PropertyDescriptor,
-        PropertyDescriptorsBuilder,
-        CompanionPresenterMixin,
-        FormCompanionMixin,
-        FormCompanionPropertyDescriptorsBuilderExtension;
+        PropertyDescriptorsBuilder;
 export 'src/future_invoker.dart'
     show
         AsyncErrorHandler,
