@@ -3,3 +3,59 @@ name: form_companion_presenter
 packages:
   - examples/**
   - packages/**
+  - tool/**
+
+scripts:
+  analyze:
+    run: melos run analyze:core --no-select
+    description: Run `flutter analyze` in all packages.
+
+  analyze:core:
+    run: melos exec -c 1 -- flutter analyze .
+    description: Run `flutter analyze` in all packages.
+    select-package:
+      flutter: true
+      scope: '*'
+      ignore: dev_env
+
+  test:
+    run: melos run test:core --no-select
+    description: Run Flutter tests for a specific package in this project.
+
+  test:core:
+    run: melos exec -c 1 --fail-fast -- fvm flutter test --reporter=expanded --coverage
+    description: Run Flutter tests for a specific package in this project.
+    select-package:
+      flutter: true
+      dir-exists: test
+      # TEMP
+      ignore: '*examples'
+
+  build_runner:
+    run: melos run freezed:generate --no-select
+    description: Do source generation for freezed
+  
+  freezed:generate:
+    run: melos exec -c 1 --fail-fast -- fvm flutter pub run build_runner build --delete-conflicting-outputs
+    select-package:
+      flutter: true
+      depends-on:
+        - build_runner
+
+  easy_localization:
+    run: melos run easy_localization:json --no-select && melos run easy_localization:keys --no-select
+    description: Do source generation for easy_localization.
+
+  easy_localization:json:
+    run: melos exec -c 1 --fail-fast -- fvm flutter pub run easy_localization:generate -O lib/l10n -f json
+    select-package:
+      flutter: true
+      dir-exists: resources/langs
+      depends-on: easy_localization
+
+  easy_localization:keys:
+    run: melos exec -c 1 --fail-fast -- fvm flutter pub run easy_localization:generate -O lib/l10n -f keys -o locale_keys.g.dart
+    select-package:
+      flutter: true
+      dir-exists: resources/langs
+      depends-on: easy_localization

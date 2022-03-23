@@ -1,0 +1,23 @@
+name: form_companion_presenter
+description: >
+  Helps building view model for forms with validations in model layer
+  including asynchronous validations, submittion button availability,
+  etc.
+version: 0.1.0
+homepage: https://github.com/yfakariya/form_companion_presenter
+repository: https://github.com/yfakariya/form_companion_presenter
+
+environment:
+  sdk: ">=2.15.0 <3.0.0"
+  flutter: ">=1.17.0"
+
+dependencies:
+  collection: ^1.15.0
+  flutter:
+    sdk: flutter
+  meta: ^1.3.0
+
+dev_dependencies:
+  flutter_lints: ^1.0.0
+  flutter_test:
+    sdk: flutter

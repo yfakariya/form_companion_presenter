@@ -1,0 +1,14 @@
+# Read about `build.yaml` at https://pub.dev/packages/build_config
+targets:
+  $default:
+    builders:
+      form_companion_generator:
+        enabled: true
+        generate_for:
+          exclude:
+            # - test
+            - example
+            - lib
+          include:
+            - test/src/*
+            - test/src/**/*
