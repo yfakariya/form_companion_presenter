@@ -2,4 +2,4 @@
 
 library async_validation_indicator;
 
-export 'src/async_validation_indicator.dart';
+export 'src/async_validation_indicator.dart' show AsyncValidationIndicator;

@@ -26,15 +26,70 @@ class _FormBuilderStateAdapter implements FormStateAdapter {
   void save() => _state.save();
 }
 
-/// Another [FormCompanionMixin] for [FormBuilder] instead of [Form].
+/// Extends [CompanionPresenterFeatures] for [FormBuilder] instead of [Form].
+class FormBuilderCompanionFeatures extends CompanionPresenterFeatures {
+  final FormBuilderCompanionMixin _presenter;
+
+  FormBuilderCompanionFeatures._(this._presenter);
+
+  @override
+  @nonVirtual
+  FormStateAdapter? maybeFormStateOf(BuildContext context) =>
+      _presenter._maybeFormStateOf(context);
+
+  @override
+  AsyncValidationCompletionCallback buildOnAsyncValidationCompleted(
+    String name,
+    BuildContext context,
+  ) {
+    final formState = _presenter.formStateOf(context);
+    if (formState.autovalidateMode == AutovalidateMode.disabled) {
+      // Only re-evaluate target field.
+      final fieldState =
+          _presenter._maybeFormStateOf(context)?._state.fields[name];
+      return (result, error) => fieldState?.validate();
+    } else {
+      // Re-evaluate all fields including submit button availability.
+      return (result, error) => formState.validate();
+    }
+  }
+
+  @override
+  @nonVirtual
+  @protected
+  @visibleForTesting
+  void saveFields(FormStateAdapter formState) {
+    assert(
+      formState is _FormBuilderStateAdapter,
+      'formState should be _FormBuilderStateAdapter but ${formState.runtimeType}',
+    );
+
+    if (formState is _FormBuilderStateAdapter) {
+      formState.save();
+      for (final field in formState._state.value.entries) {
+        _presenter.properties[field.key]
+            ?.setFieldValue(field.value, formState.locale);
+      }
+    }
+  }
+}
+
+/// Another [CompanionPresenterMixin] companion mixin
+/// for [FormBuilder] instead of [Form].
 ///
 /// **It is required for [submit] method that there is a [FormBuilder] widget as
 /// an ancestor in [BuildContext].**
 mixin FormBuilderCompanionMixin on CompanionPresenterMixin {
+  late final FormBuilderCompanionFeatures _presenterFeatures;
+
   @override
-  @nonVirtual
-  FormStateAdapter? maybeFormStateOf(BuildContext context) =>
-      _maybeFormStateOf(context);
+  CompanionPresenterFeatures get presenterFeatures => _presenterFeatures;
+
+  @override
+  void initializeCompanionMixin(PropertyDescriptorsBuilder properties) {
+    _presenterFeatures = FormBuilderCompanionFeatures._(this);
+    super.initializeCompanionMixin(properties);
+  }
 
   _FormBuilderStateAdapter? _maybeFormStateOf(BuildContext context) {
     final state = FormBuilder.of(context);
@@ -67,39 +122,5 @@ mixin FormBuilderCompanionMixin on CompanionPresenterMixin {
     // More efficient than base implementation.
     return formState._state.fields.values.every((f) => !f.hasError) &&
         properties.values.every((p) => !p.hasPendingAsyncValidations);
-  }
-
-  @override
-  AsyncValidationCompletionCallback buildOnAsyncValidationCompleted(
-    String name,
-    BuildContext context,
-  ) {
-    final formState = formStateOf(context);
-    if (formState.autovalidateMode == AutovalidateMode.disabled) {
-      // Only re-evaluate target field.
-      final fieldState = _maybeFormStateOf(context)?._state.fields[name];
-      return (result, error) => fieldState?.validate();
-    } else {
-      // Re-evaluate all fields including submit button availability.
-      return (result, error) => formState.validate();
-    }
-  }
-
-  @override
-  @nonVirtual
-  @protected
-  @visibleForTesting
-  void saveFields(FormStateAdapter formState) {
-    assert(
-      formState is _FormBuilderStateAdapter,
-      'formState should be _FormBuilderStateAdapter but ${formState.runtimeType}',
-    );
-
-    if (formState is _FormBuilderStateAdapter) {
-      formState.save();
-      for (final field in formState._state.value.entries) {
-        properties[field.key]?.setFieldValue(field.value, formState.locale);
-      }
-    }
   }
 }

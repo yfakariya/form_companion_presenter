@@ -12,7 +12,31 @@ import 'package:form_companion_presenter/form_companion_presenter.dart';
 import 'package:form_companion_presenter/src/internal_utils.dart';
 import 'package:form_companion_presenter/src/presenter_extension.dart';
 
+class TestPresenterFeatures extends CompanionPresenterFeatures {
+  final TestPresenter _presenter;
+
+  TestPresenterFeatures(this._presenter);
+
+  @override
+  FormStateAdapter? maybeFormStateOf(BuildContext context) =>
+      _presenter._maybeFormStateOfCalled(context);
+
+  @override
+  void handleCanceledAsyncValidationError(AsyncError error) {
+    final handler = _presenter._onHandleCanceledAsyncValidationError;
+    if (handler != null) {
+      handler(error);
+    } else {
+      super.handleCanceledAsyncValidationError(error);
+    }
+  }
+}
+
 class TestPresenter with CompanionPresenterMixin {
+  late final CompanionPresenterFeatures _presenterFeatures;
+  @override
+  CompanionPresenterFeatures get presenterFeatures => _presenterFeatures;
+
   final void Function() _doSubmitCalled;
   final FormStateAdapter? Function(BuildContext) _maybeFormStateOfCalled;
   final void Function(AsyncError)? _onHandleCanceledAsyncValidationError;
@@ -29,27 +53,14 @@ class TestPresenter with CompanionPresenterMixin {
         _onHandleCanceledAsyncValidationError =
             onHandleCanceledAsyncValidationError,
         _canSubmitCalled = (canSubmitCalled ?? (_) => true) {
+    _presenterFeatures = TestPresenterFeatures(this);
     initializeCompanionMixin(properties);
-  }
-
-  @override
-  void handleCanceledAsyncValidationError(AsyncError error) {
-    final handler = _onHandleCanceledAsyncValidationError;
-    if (handler != null) {
-      handler(error);
-    } else {
-      super.handleCanceledAsyncValidationError(error);
-    }
   }
 
   @override
   FutureOr<void> doSubmit() async {
     _doSubmitCalled();
   }
-
-  @override
-  FormStateAdapter? maybeFormStateOf(BuildContext context) =>
-      _maybeFormStateOfCalled(context);
 
   @override
   bool canSubmit(BuildContext context) => _canSubmitCalled(context);

@@ -3,7 +3,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-import '../form_companion_presenter.dart';
+import 'form_companion_mixin.dart';
 
 /// Simple indicator to indicate async validation is in progress or not.
 class AsyncValidationIndicator extends StatelessWidget {
@@ -36,8 +36,8 @@ class AsyncValidationIndicator extends StatelessWidget {
     required String propertyName,
     this.text,
     this.height,
-  })  : _hasPendingAsyncValidationListener = presenter.internals
-            .getPropertyPendingAsyncValidationsListener(propertyName),
+  })  : _hasPendingAsyncValidationListener =
+            presenter.getPropertyPendingAsyncValidationsListener(propertyName),
         super(key: key);
 
   @override

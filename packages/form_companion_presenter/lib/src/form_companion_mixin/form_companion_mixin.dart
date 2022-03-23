@@ -22,6 +22,36 @@ class _FormStateAdapter implements FormStateAdapter {
   void save() => _state.save();
 }
 
+/// Extended mixin of [CompanionPresenterFeatures] for vanilla [Form].
+class FormCompanionFeatures extends CompanionPresenterFeatures {
+  final FormCompanionMixin _presenter;
+
+  FormCompanionFeatures._(this._presenter);
+
+  @override
+  @nonVirtual
+  FormStateAdapter? maybeFormStateOf(BuildContext context) {
+    final state = Form.of(context);
+    return state == null ? null : _FormStateAdapter(state, getLocale(context));
+  }
+
+  @override
+  AsyncValidationCompletionCallback buildOnAsyncValidationCompleted(
+    String name,
+    BuildContext context,
+  ) {
+    final state = _presenter.formStateOf(context);
+    if (state.autovalidateMode == AutovalidateMode.disabled) {
+      // Only re-evaluate target field.
+      return (result, error) =>
+          _presenter._fieldKeys[name]?.currentState?.validate();
+    } else {
+      // Re-evaluate all fields including submit button availability.
+      return (result, error) => state.validate();
+    }
+  }
+}
+
 /// Extended mixin of [CompanionPresenterMixin] for vanilla [Form].
 ///
 /// **It is required for [submit] method that there is a [Form] widget as
@@ -63,30 +93,9 @@ mixin FormCompanionMixin on CompanionPresenterMixin {
   void initializeCompanionMixin(
     PropertyDescriptorsBuilder properties,
   ) {
+    _presenterFeatures = FormCompanionFeatures._(this);
     super.initializeCompanionMixin(properties);
     _fieldKeys = {for (final name in properties._properties.keys) name: null};
-  }
-
-  @override
-  @nonVirtual
-  FormStateAdapter? maybeFormStateOf(BuildContext context) {
-    final state = Form.of(context);
-    return state == null ? null : _FormStateAdapter(state, getLocale(context));
-  }
-
-  @override
-  AsyncValidationCompletionCallback buildOnAsyncValidationCompleted(
-    String name,
-    BuildContext context,
-  ) {
-    final state = formStateOf(context);
-    if (state.autovalidateMode == AutovalidateMode.disabled) {
-      // Only re-evaluate target field.
-      return (result, error) => _fieldKeys[name]?.currentState?.validate();
-    } else {
-      // Re-evaluate all fields including submit button availability.
-      return (result, error) => state.validate();
-    }
   }
 
   @override

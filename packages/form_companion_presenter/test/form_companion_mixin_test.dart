@@ -7,7 +7,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:form_companion_presenter/form_companion_presenter.dart';
+import 'package:form_companion_presenter/src/form_companion_mixin.dart';
 import 'package:form_companion_presenter/src/presenter_extension.dart';
 
 Widget _buildChilren(

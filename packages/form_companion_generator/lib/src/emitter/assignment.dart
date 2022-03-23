@@ -187,7 +187,6 @@ Iterable<String>? _assignAutovalidateMode(AssignmentContext context) =>
             'autovalidateMode: autovalidateMode ?? ${context.data.fieldAutovalidateMode},'
           ];
 
-// TODO(yfakariya): Merge to defaultConstantValue
 Iterable<String>? _assignDecoration(AssignmentContext context) =>
     context.defaultValue == null
         ? [

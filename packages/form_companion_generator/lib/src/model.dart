@@ -228,7 +228,7 @@ class PropertyDefinition {
   /// This may not be equal to the type of property's value.
   final GenericInterfaceType fieldType;
 
-  // TODO: can be InterfaceType
+  // TODO(yfakariya): can be InterfaceType
   /// Preferred type of `FormField`, which is specified as type arguments
   /// of `addWithField` extension method.
   final GenericInterfaceType? preferredFormFieldType;

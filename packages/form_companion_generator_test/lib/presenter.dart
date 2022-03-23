@@ -55,8 +55,19 @@ class DualPresenter
 @formCompanion
 class VanillaPresenter {}
 
+class InvalidCompanionPresenterFeatures extends CompanionPresenterFeatures {
+  const InvalidCompanionPresenterFeatures();
+
+  @override
+  FormStateAdapter? maybeFormStateOf(BuildContext context) => null;
+}
+
 @formCompanion
 class InvalidCompanionPresenter with CompanionPresenterMixin {
+  @override
+  CompanionPresenterFeatures get presenterFeatures =>
+      const InvalidCompanionPresenterFeatures();
+
   InvalidCompanionPresenter() {
     initializeCompanionMixin(PropertyDescriptorsBuilder());
   }
@@ -66,9 +77,6 @@ class InvalidCompanionPresenter with CompanionPresenterMixin {
 
   @override
   FutureOr<void> doSubmit() {}
-
-  @override
-  FormStateAdapter? maybeFormStateOf(BuildContext context) => null;
 }
 
 // for findConstructor() testing
