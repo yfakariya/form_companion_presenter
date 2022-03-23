@@ -4,39 +4,30 @@ part of '../parser.dart';
 
 // Defines _parseMethodInvocations and its sub functions.
 
-Iterable<PropertyDefinition> _parseMethodInvocations(
+Iterable<PropertyDefinition> _toUniquePropertyDefinitions(
   ParseContext context,
-  Iterable<PropertyDescriptorsBuilderMethodInvocation> invocations,
+  Iterable<PropertyDefinitionAndSource> definitions,
   Element contextElement, {
   required bool isFormBuilder,
-}) {
-  final result = <String, PropertyDefinition>{};
-  for (final parameter in invocations.map((m) => _parseBuilderMethodCall(
-        context,
-        m,
-        contextElement,
-        isFormBuilder: isFormBuilder,
-      ))) {
-    if (parameter == null) {
-      continue;
-    }
-
-    if (result.containsKey(parameter.name)) {
+}) sync* {
+  final names = <String>{};
+  for (final definition in definitions) {
+    final property = definition.property;
+    final element = _getDeclaringElement(definition.source);
+    if (!names.add(property.name)) {
       throwError(
         message:
-            "Property '${parameter.name}' is defined more than once ${getNodeLocation(parameter.node, parameter.element)}.",
+            "Property '${property.name}' is defined more than once ${getNodeLocation(definition.source, element)}.",
         todo: 'Fix to define each properties only once for given $pdbTypeName.',
-        element: parameter.element,
+        element: element,
       );
     }
 
-    result[parameter.name] = parameter.property;
+    yield property;
   }
-
-  return result.values;
 }
 
-FutureOr<PropertyDescriptorsBuilderMethodInvocation> _getRealMethodAsync(
+FutureOr<PropertyDefinitionAndSource> _getRealMethodAsync(
   ParseContext context,
   Element contextElement,
   MethodInvocation method,
@@ -136,7 +127,7 @@ FutureOr<PropertyDescriptorsBuilderMethodInvocation> _getRealMethodAsync(
   );
 }
 
-PropertyDescriptorsBuilderMethodInvocation _createPropertyDefinition(
+PropertyDefinitionAndSource _createPropertyDefinition(
   ParseContext context,
   Element contextElement,
   MethodInvocation method,
@@ -244,18 +235,20 @@ PropertyDescriptorsBuilderMethodInvocation _createPropertyDefinition(
       );
     }
   }
-  return PropertyDescriptorsBuilderMethodInvocation(
+  return PropertyDefinitionAndSource(
+    PropertyDefinition(
+      name: propertyName ??
+          _getPropertyNameFromInvocation(
+            method,
+            contextElement,
+            mayNotExist: false,
+          )!,
+      propertyType: typeArgument1,
+      fieldType: typeArgument2,
+      preferredFormFieldType: typeArgument3,
+      warnings: warnings,
+    ),
     method,
-    propertyName ??
-        _getPropertyNameFromInvocation(
-          method,
-          contextElement,
-          mayNotExist: false,
-        )!,
-    typeArgument1,
-    typeArgument2,
-    typeArgument3,
-    warnings,
   );
 }
 
@@ -381,36 +374,6 @@ class _PropertyDefinitionWithSource {
   String get name => property.name;
 
   _PropertyDefinitionWithSource(this.property, this.node, this.element);
-}
-
-// TODO(yfakariya): Remove
-_PropertyDefinitionWithSource? _parseBuilderMethodCall(
-  ParseContext context,
-  PropertyDescriptorsBuilderMethodInvocation methodInvocation,
-  Element contextElement, {
-  required bool isFormBuilder,
-}) {
-  switch (methodInvocation.node.methodName.name) {
-    case PropertyDescriptorsBuilderMethods.add:
-    case PropertyDescriptorsBuilderMethods.addWithField:
-      return _PropertyDefinitionWithSource(
-        PropertyDefinition(
-          name: methodInvocation.name,
-          propertyType: methodInvocation.propertyType,
-          fieldType: methodInvocation.fieldType,
-          preferredFormFieldType: methodInvocation.formFieldType,
-          warnings: methodInvocation.warnings,
-        ),
-        methodInvocation.node,
-        _getDeclaringElement(methodInvocation.node),
-      );
-  }
-
-  // Unknown method.
-  final unexpectedMethodWarning =
-      "Unexpected method: '${methodInvocation.node.methodName}' at ${getNodeLocation(methodInvocation.node, contextElement)}.";
-  context.addGlobalWarning(unexpectedMethodWarning);
-  return null;
 }
 
 GenericInterfaceType _getTypeFromTypeArgument(

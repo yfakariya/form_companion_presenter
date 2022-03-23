@@ -8,13 +8,11 @@ import 'package:meta/meta.dart';
 
 import 'config.dart';
 import 'dependency.dart';
-import 'emitter/assignment.dart';
 import 'emitter/instantiation.dart';
 import 'model.dart';
 import 'node_provider.dart';
 import 'parameter.dart';
 import 'type_instantiation.dart';
-import 'utilities.dart';
 
 part 'emitter/field_factory.dart';
 part 'emitter/typed_property.dart';
@@ -32,7 +30,7 @@ Stream<Object> emitFromData(
     yield global;
   }
 
-  yield emitPropertyAccessor(data.name, data.properties.values, config);
+  yield emitPropertyAccessor(data.name, data.properties, config);
   if (!config.suppressFieldFactory) {
     yield await emitFieldFactoriesAsync(nodeProvider, data, config);
   }

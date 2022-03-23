@@ -56,6 +56,13 @@ FutureOr<PropertyAndFormFieldDefinition> resolveFormFieldAsync(
     formFieldType: formFieldType,
     formFieldTypeName: formFieldRawTypeName,
     formFieldConstructor: fieldConstructor,
+    argumentsHandler: fieldConstructor == null
+        ? null
+        : await ArgumentsHandler.createAsync(
+            fieldConstructor,
+            context.nodeProvider,
+            isFormBuilder: isFormBuilder,
+          ),
     instantiationContext: instantiationContext,
   );
 }

@@ -135,52 +135,22 @@ class _Scope {
         localFunctions = Map.from(outerLocalFunctions);
 }
 
-// TODO(yfakariya): Should be same as PropertyDefinition
-
-@sealed
-// ignore: public_member_api_docs
-class PropertyDescriptorsBuilderMethodInvocation {
-// ignore: public_member_api_docs
-  final MethodInvocation node;
-// ignore: public_member_api_docs
-  final String name;
-// ignore: public_member_api_docs
-  final GenericInterfaceType propertyType;
-// ignore: public_member_api_docs
-  final GenericInterfaceType fieldType;
-// ignore: public_member_api_docs
-  final GenericInterfaceType? formFieldType;
-// ignore: public_member_api_docs
-  final List<String> warnings;
-
-// ignore: public_member_api_docs
-  PropertyDescriptorsBuilderMethodInvocation(
-    this.node,
-    this.name,
-    this.propertyType,
-    this.fieldType,
-    this.formFieldType,
-    this.warnings,
-  );
-}
-
 /// Represents a series of property building operations for specified variable.
 @sealed
 class PropertyDescriptorsBuilding {
   /// Gets a name of variable which is operated in.
   final String variableName;
 
-  final List<PropertyDescriptorsBuilderMethodInvocation> _buildings;
-
-  /// `true` if this variable is assigned to non-local variable.
-  bool _isMutable = false;
+  final List<PropertyDefinitionAndSource> _buildings;
 
   /// Gets a series of property building operations in order.
-  Iterable<PropertyDescriptorsBuilderMethodInvocation> get buildings =>
-      _buildings;
+  Iterable<PropertyDefinitionAndSource> get buildings => _buildings;
 
   /// Effiently gets a value  whether [buildings] is empty or not.
   bool get isEmpty => _buildings.isEmpty;
+
+  /// `true` if this variable is assigned to non-local variable.
+  bool _isMutable = false;
 
   PropertyDescriptorsBuilding._(
       this.variableName, this._buildings, this._isMutable);
@@ -204,20 +174,20 @@ class PropertyDescriptorsBuilding {
   /// If the operation is attempted to shared instance,
   /// [InvalidGenerationSourceError] will be thrown.
   void add(
-    PropertyDescriptorsBuilderMethodInvocation invocation,
+    PropertyDefinitionAndSource definition,
     Element contextElement,
   ) {
     if (_isMutable) {
       throwError(
         message:
-            'Modification of shared $pdbTypeName object is detected at ${getNodeLocation(invocation.node, contextElement)}.',
+            'Modification of shared $pdbTypeName object is detected at ${getNodeLocation(definition.source, contextElement)}.',
         todo:
             'Do not define extra properties to $pdbTypeName when it is declared as fields or top level variables because $pdbTypeName is mutable object.',
         element: contextElement,
       );
     }
 
-    _buildings.add(invocation);
+    _buildings.add(definition);
   }
 
   /// Adds a series of detected property building operation,
@@ -228,11 +198,11 @@ class PropertyDescriptorsBuilding {
   /// If the operation is attempted to shared instance,
   /// [InvalidGenerationSourceError] will be thrown.
   void addAll(
-    Iterable<PropertyDescriptorsBuilderMethodInvocation> invocations,
+    Iterable<PropertyDefinitionAndSource> definitions,
     Element contextElement,
   ) {
-    for (final invocation in invocations) {
-      add(invocation, contextElement);
+    for (final definition in definitions) {
+      add(definition, contextElement);
     }
   }
 
