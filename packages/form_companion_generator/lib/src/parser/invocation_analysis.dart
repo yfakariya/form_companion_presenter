@@ -366,16 +366,6 @@ GenericInterfaceType? _tryGetTypeFromTypeArgument(
   }
 }
 
-/// Packs [PropertyDefinition] and diagnostic informations ([AstNode] and [Element]).
-class _PropertyDefinitionWithSource {
-  final PropertyDefinition property;
-  final AstNode node;
-  final Element element;
-  String get name => property.name;
-
-  _PropertyDefinitionWithSource(this.property, this.node, this.element);
-}
-
 GenericInterfaceType _getTypeFromTypeArgument(
   ParseContext context,
   MethodInvocation methodInvocation,

@@ -3,6 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:form_companion_presenter/form_companion_presenter.dart';
 
+// TODO(yfakariya): More be DSL-ish with removing `add` prefix.
+
 /// Defines convinient extension methos for [PropertyDescriptorsBuilder] to
 /// define typical type combinations with `flutter_form_builder`.
 extension FormBuilderCompanionPropertyDescriptorsBuilderExtension

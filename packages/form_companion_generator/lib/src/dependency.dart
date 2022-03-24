@@ -165,6 +165,7 @@ class DependentLibraryCollector extends RecursiveAstVisitor<void> {
     );
   }
 
+  // TODO(yfakariya): relative path import support.
   LibraryImport? _getLibraryImportEntryDirect(
     String libraryIdentifier,
     String Function()? logicalLibraryIdFinder,
