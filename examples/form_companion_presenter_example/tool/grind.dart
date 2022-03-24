@@ -10,16 +10,27 @@ import 'grinder_tasks/distribute.dart';
 Future<dynamic> main(List<String> args) => grind(args);
 
 @Task()
-Future<dynamic> test() => TestRunner().testAsync();
+Future<dynamic> test() => runAsync(
+      'fvm',
+      arguments: [
+        'flutter',
+        'test',
+        '--reporter=expanded',
+      ],
+    );
 
 @DefaultTask()
 @Depends(clean, assemble, runBuildRunner, test, distribute)
 void buildAll() {}
 
 @Task()
-void build() {
-  Pub.build();
-}
+void build() => runAsync(
+      'fvm',
+      arguments: [
+        'flutter',
+        'build',
+      ],
+    );
 
 @Task()
 void clean() => defaultClean();
