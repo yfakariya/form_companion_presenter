@@ -6,16 +6,15 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:form_companion_presenter/async_validation_indicator.dart';
-import 'package:form_companion_presenter/form_companion_extension.dart';
+import 'package:form_companion_presenter/form_companion_annotation.dart';
 import 'package:form_companion_presenter/form_companion_presenter.dart';
 
+import 'auto_validation_vanilla_form.fcp.dart';
 import 'l10n/locale_keys.g.dart';
 import 'models.dart';
 import 'routes.dart';
 import 'screen.dart';
 import 'validators.dart';
-
-// TODO(yfakariya): use generator
 
 //------------------------------------------------------------------------------
 // In this example, [AutovalidateMode] of the form is disabled (default value)
@@ -55,19 +54,13 @@ class AutoValidationVanillaFormAccountPage extends Screen {
 class _AutoValidationVanillaFormAccountPane extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(_presenter);
     final presenter = ref.watch(_presenter.notifier);
 
     return SingleChildScrollView(
       child: Column(
         children: [
-          TextFormField(
-            key: presenter.getKey('id', context),
-            initialValue: state.id,
-            autovalidateMode: AutovalidateMode.onUserInteraction,
-            validator: presenter.getPropertyValidator('id', context),
-            onSaved: presenter.savePropertyValue('id', context),
-            keyboardType: TextInputType.emailAddress,
+          presenter.fields.id(
+            context,
             decoration: InputDecoration(
               labelText: LocaleKeys.id_label.tr(),
               hintText: LocaleKeys.id_hint.tr(),
@@ -77,23 +70,15 @@ class _AutoValidationVanillaFormAccountPane extends ConsumerWidget {
               ),
             ),
           ),
-          TextFormField(
-            key: presenter.getKey('name', context),
-            initialValue: state.name,
-            autovalidateMode: AutovalidateMode.onUserInteraction,
-            validator: presenter.getPropertyValidator('name', context),
-            onSaved: presenter.savePropertyValue('name', context),
+          presenter.fields.name(
+            context,
             decoration: InputDecoration(
               labelText: LocaleKeys.name_label.tr(),
               hintText: LocaleKeys.name_hint.tr(),
             ),
           ),
-          DropdownButtonFormField<Gender>(
-            key: presenter.getKey('gender', context),
-            value: state.gender,
-            onSaved: presenter.savePropertyValue('gender', context),
-            // Tip: required to work
-            onChanged: (_) {},
+          presenter.fields.gender(
+            context,
             decoration: InputDecoration(
               labelText: LocaleKeys.gender_label.tr(),
               hintText: LocaleKeys.gender_hint.tr(),
@@ -117,17 +102,11 @@ class _AutoValidationVanillaFormAccountPane extends ConsumerWidget {
               ),
             ],
           ),
-          TextFormField(
-            key: presenter.getKey('age', context),
-            initialValue: state.age.toString(),
-            autovalidateMode: AutovalidateMode.onUserInteraction,
-            validator: presenter.getPropertyValidator('age', context),
-            onSaved: presenter.savePropertyValue('age', context),
-            decoration: InputDecoration(
-              labelText: LocaleKeys.age_label.tr(),
-              hintText: LocaleKeys.age_hint.tr(),
-            ),
-          ),
+          presenter.fields.age(context,
+              decoration: InputDecoration(
+                labelText: LocaleKeys.age_label.tr(),
+                hintText: LocaleKeys.age_hint.tr(),
+              )),
           ElevatedButton(
             onPressed: presenter.submit(context),
             child: Text(
@@ -140,8 +119,8 @@ class _AutoValidationVanillaFormAccountPane extends ConsumerWidget {
   }
 }
 
-/// Testable presenter.
-@visibleForTesting
+/// Presenter which holds form properties.
+@formCompanion
 class AutoValidationVanillaFormAccountPresenter extends StateNotifier<Account>
     with CompanionPresenterMixin, FormCompanionMixin {
   final Reader _read;
@@ -155,6 +134,7 @@ class AutoValidationVanillaFormAccountPresenter extends StateNotifier<Account>
       PropertyDescriptorsBuilder()
         ..addText(
           name: 'id',
+          initialValue: initialState.id,
           validatorFactories: [
             Validator.required,
             Validator.email,
@@ -165,20 +145,22 @@ class AutoValidationVanillaFormAccountPresenter extends StateNotifier<Account>
         )
         ..addText(
           name: 'name',
+          initialValue: initialState.name,
           validatorFactories: [
             Validator.required,
           ],
         )
         ..addEnum<Gender>(
           name: 'gender',
+          initialValue: initialState.gender,
         )
         ..addString(
           name: 'age',
+          initialValue: initialState.age,
           validatorFactories: [
             Validator.required,
             Validator.min(0),
           ],
-          initialValue: 20,
           stringConverter: intStringConverter,
         ),
     );
@@ -187,11 +169,10 @@ class AutoValidationVanillaFormAccountPresenter extends StateNotifier<Account>
   @override
   FutureOr<void> doSubmit() async {
     // Get saved values here to call business logic.
-    final id = getSavedPropertyValue<String>('id')!;
-    final name = getSavedPropertyValue<String>('name')!;
-    final gender = getSavedPropertyValue<Gender>('gender')!;
-    // You can omit generic type argument occasionally.
-    final age = getSavedPropertyValue<int>('age')!;
+    final id = this.id.value!;
+    final name = this.name.value!;
+    final gender = this.gender.value!;
+    final age = this.age.value!;
 
     // Call business logic.
     if (!(await doSubmitLogic(id, name, gender, age))) {

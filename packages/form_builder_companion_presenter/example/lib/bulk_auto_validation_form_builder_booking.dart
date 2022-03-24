@@ -7,15 +7,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:form_builder_companion_presenter/form_builder_companion_presenter.dart';
-import 'package:form_companion_presenter/form_companion_extension.dart';
+import 'package:form_companion_presenter/form_companion_annotation.dart';
 import 'package:form_companion_presenter/form_companion_presenter.dart';
 
+import 'bulk_auto_validation_form_builder_booking.fcp.dart';
 import 'l10n/locale_keys.g.dart';
 import 'models.dart';
 import 'routes.dart';
 import 'screen.dart';
-
-// TODO(yfakariya): use generator
 
 //------------------------------------------------------------------------------
 // In this example, [AutovalidateMode] of the form and fields are set to
@@ -61,7 +60,6 @@ class _BulkAutoValidationFormBuilderBookingPane extends ConsumerWidget {
     final today = DateTime.now();
     final userState = ref.watch(account);
     final bookingState = ref.watch(booking);
-    final state = ref.watch(_presenter);
     final presenter = ref.watch(_presenter.notifier);
 
     return SingleChildScrollView(
@@ -83,29 +81,27 @@ class _BulkAutoValidationFormBuilderBookingPane extends ConsumerWidget {
                   ),
             style: Theme.of(context).textTheme.bodyText1,
           ),
-          FormBuilderDateRangePicker(
-            name: 'stay',
-            initialValue: state.stay,
-            firstDate: state.stay.start,
-            lastDate: today.add(const Duration(days: 90)),
+          presenter.fields.stay(
+            context,
+            firstDate: presenter.stay.value?.start ?? today,
+            lastDate: presenter.stay.value?.end ??
+                today.add(const Duration(days: 90)),
             decoration: InputDecoration(
               labelText: LocaleKeys.stay_label.tr(),
               hintText: LocaleKeys.stay_hint.tr(),
             ),
           ),
           Text(LocaleKeys.specialOffer_description.tr()),
-          FormBuilderDateTimePicker(
-            name: 'specialOfferDate',
-            initialDate: state.specialOfferDate,
+          presenter.fields.specialOfferDate(
+            context,
             inputType: InputType.date,
             decoration: InputDecoration(
               labelText: LocaleKeys.specialOffer_label.tr(),
               hintText: LocaleKeys.specialOffer_hint.tr(),
             ),
           ),
-          FormBuilderRadioGroup(
-            name: 'roomType',
-            initialValue: state.roomType,
+          presenter.fields.roomType(
+            context,
             options: [
               FormBuilderFieldOption(
                 value: RoomType.standard,
@@ -131,9 +127,8 @@ class _BulkAutoValidationFormBuilderBookingPane extends ConsumerWidget {
               hintText: LocaleKeys.roomType_hint.tr(),
             ),
           ),
-          FormBuilderFilterChip(
-            name: 'mealOffers',
-            initialValue: state.mealOffers,
+          presenter.fields.mealOffers(
+            context,
             options: [
               FormBuilderFieldOption(
                 value: MealType.halal,
@@ -153,9 +148,8 @@ class _BulkAutoValidationFormBuilderBookingPane extends ConsumerWidget {
               hintText: LocaleKeys.mealOffers_hint.tr(),
             ),
           ),
-          FormBuilderSwitch(
-            name: 'smoking',
-            initialValue: state.smoking,
+          presenter.fields.smoking(
+            context,
             title: Text(
               LocaleKeys.smoking_title.tr(),
             ),
@@ -163,9 +157,8 @@ class _BulkAutoValidationFormBuilderBookingPane extends ConsumerWidget {
               labelText: LocaleKeys.smoking_label.tr(),
             ),
           ),
-          FormBuilderSlider(
-            name: 'persons',
-            initialValue: (state.persons).toDouble(),
+          presenter.fields.persons(
+            context,
             min: 1,
             max: 4,
             divisions: 3,
@@ -174,9 +167,8 @@ class _BulkAutoValidationFormBuilderBookingPane extends ConsumerWidget {
               labelText: LocaleKeys.persons_label.tr(),
             ),
           ),
-          FormBuilderSegmentedControl(
-            name: 'babyBeds',
-            initialValue: state.babyBeds,
+          presenter.fields.babyBeds(
+            context,
             options: const [
               FormBuilderFieldOption(
                 value: 0,
@@ -196,10 +188,8 @@ class _BulkAutoValidationFormBuilderBookingPane extends ConsumerWidget {
               hintText: LocaleKeys.babyBeds_hint.tr(),
             ),
           ),
-          // I know this example does not consider L10N.
-          FormBuilderRangeSlider(
-            name: 'preferredPrice',
-            initialValue: RangeValues(state.price ?? 100, state.price ?? 100),
+          presenter.fields.preferredPrice(
+            context,
             min: 0,
             max: 1000,
             decoration: InputDecoration(
@@ -207,9 +197,8 @@ class _BulkAutoValidationFormBuilderBookingPane extends ConsumerWidget {
               hintText: LocaleKeys.preferredPrice_hint.tr(),
             ),
           ),
-          FormBuilderTextField(
-            name: 'note',
-            initialValue: state.note,
+          presenter.fields.note(
+            context,
             maxLines: null,
             textInputAction: TextInputAction.newline,
             keyboardType: TextInputType.multiline,
@@ -241,8 +230,8 @@ class _BulkAutoValidationFormBuilderBookingPane extends ConsumerWidget {
   }
 }
 
-/// Testable presenter.
-@visibleForTesting
+/// Presenter which holds form properties.
+@formCompanion
 class BulkAutoValidationFormBuilderBookingPresenter
     extends StateNotifier<Booking>
     with CompanionPresenterMixin, FormBuilderCompanionMixin {
@@ -259,30 +248,42 @@ class BulkAutoValidationFormBuilderBookingPresenter
       PropertyDescriptorsBuilder()
         ..addDateTimeRange(
           name: 'stay',
+          initialValue: initialState.stay,
         )
         ..addDateTime(
           name: 'specialOfferDate',
+          initialValue: initialState.specialOfferDate,
         )
-        ..addEnum<RoomType>(
+        ..addEnumWithField<RoomType, FormBuilderRadioGroup<RoomType>>(
           name: 'roomType',
+          initialValue: initialState.roomType,
         )
         ..addEnumList<MealType>(
           name: 'mealOffers',
+          initialValues: initialState.mealOffers,
         )
         ..addBool(
           name: 'smoking',
+          initialValue: initialState.smoking ?? false,
         )
-        ..addInt(
+        ..addWithField<int, double, FormBuilderSlider>(
           name: 'persons',
+          initialValue: initialState.persons,
+          valueConverter: intDoubleConverter,
         )
-        ..addInt(
+        ..addIntWithField<FormBuilderSegmentedControl<int>>(
           name: 'babyBeds',
+          initialValue: initialState.babyBeds,
         )
         ..addRangeValues(
-          name: 'prefferedPrice',
+          name: 'preferredPrice',
+          initialValue: initialState.price == null
+              ? const RangeValues(1000, 100000)
+              : RangeValues(initialState.price!, initialState.price!),
         )
         ..addText(
           name: 'note',
+          initialValue: initialState.note,
         ),
     );
   }
@@ -291,17 +292,15 @@ class BulkAutoValidationFormBuilderBookingPresenter
   FutureOr<void> doSubmit() async {
     // Get saved values here to call business logic.
     final userId = _account.id ?? 'Dummy User';
-    final stay = getSavedPropertyValue<DateTimeRange>('stay')!;
-    final specialOfferDate =
-        getSavedPropertyValue<DateTime>('specialOfferDate')!;
-    final roomType = getSavedPropertyValue<RoomType>('roomType')!;
-    final mealOffers = getSavedPropertyValue<List<MealType>>('mealOffers')!;
-    final smoking = getSavedPropertyValue<bool>('smoking')!;
-    final persons = getSavedPropertyValue<int>('persons')!;
-    final babyBeds = getSavedPropertyValue<int>('babyBeds')!;
-    final preferredPrice =
-        getSavedPropertyValue<RangeValues>('prefferedPrice')!;
-    final note = getSavedPropertyValue<String>('note')!;
+    final stay = this.stay.value!;
+    final specialOfferDate = this.specialOfferDate.value!;
+    final roomType = this.roomType.value!;
+    final mealOffers = this.mealOffers.value!;
+    final smoking = this.smoking.value!;
+    final persons = this.persons.value!;
+    final babyBeds = this.babyBeds.value!;
+    final preferredPrice = this.preferredPrice.value!;
+    final note = this.note.value!;
 
     // Call business logic.
     final result = await doSubmitLogic(

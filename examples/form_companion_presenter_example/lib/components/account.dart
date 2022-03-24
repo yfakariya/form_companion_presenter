@@ -9,16 +9,23 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:form_builder_companion_presenter/form_builder_companion_presenter.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:form_companion_presenter/async_validation_indicator.dart';
-import 'package:form_companion_presenter/form_companion_extension.dart';
+import 'package:form_companion_presenter/form_companion_annotation.dart';
 import 'package:form_companion_presenter/form_companion_presenter.dart';
 
+//!macro beginNotManualOnly
+//!macro importFcp
+//!macro endNotManualOnly
 import '../l10n/locale_keys.g.dart';
+//!macro beginManualOnly
+//!macro importFcp
+//!macro endManualOnly
 import '../models.dart';
 import '../routes.dart';
 import '../screen.dart';
 import '../validators.dart';
-
-// TODO(yfakariya): use generator
+//!macro beginRemove
+import 'account.fcp.dart';
+//!macro endRemove
 
 //!macro headerNote
 
@@ -40,23 +47,13 @@ class AccountPageTemplate extends Screen {
 class _AccountPaneTemplate extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(_presenter);
     final presenter = ref.watch(_presenter.notifier);
 
     return SingleChildScrollView(
       child: Column(
         children: [
-          FormBuilderTextField(
-            name: 'id', //!macro fieldInit id
-            initialValue: state.id,
-            //!macro beginAutoOnly
-            autovalidateMode: AutovalidateMode.onUserInteraction,
-            //!macro endAutoOnly
-            validator: presenter.getPropertyValidator('id', context),
-            //!macro beginVanillaOnly
-            onSaved: presenter.savePropertyValue('id', context),
-            //!macro endVanillaOnly
-            keyboardType: TextInputType.emailAddress,
+          presenter.fields.id(
+            context,
             decoration: InputDecoration(
               labelText: LocaleKeys.id_label.tr(),
               hintText: LocaleKeys.id_hint.tr(),
@@ -66,28 +63,15 @@ class _AccountPaneTemplate extends ConsumerWidget {
               ),
             ),
           ),
-          FormBuilderTextField(
-            name: 'name', //!macro fieldInit name
-            initialValue: state.name,
-            //!macro beginAutoOnly
-            autovalidateMode: AutovalidateMode.onUserInteraction,
-            //!macro endAutoOnly
-            validator: presenter.getPropertyValidator('name', context),
-            //!macro beginVanillaOnly
-            onSaved: presenter.savePropertyValue('name', context),
-            //!macro endVanillaOnly
+          presenter.fields.name(
+            context,
             decoration: InputDecoration(
               labelText: LocaleKeys.name_label.tr(),
               hintText: LocaleKeys.name_hint.tr(),
             ),
           ),
-          FormBuilderDropdown<Gender>(
-            name: 'gender', //!macro fieldInit gender
-            //!macro dropDownInit gender
-            onSaved: presenter.savePropertyValue('gender', context),
-            // Tip: required to work
-            onChanged: (_) {},
-            //!macro endVanillaOnly
+          presenter.fields.gender(
+            context,
             decoration: InputDecoration(
               labelText: LocaleKeys.gender_label.tr(),
               hintText: LocaleKeys.gender_hint.tr(),
@@ -111,25 +95,14 @@ class _AccountPaneTemplate extends ConsumerWidget {
               ),
             ],
           ),
-          FormBuilderTextField(
-            name: 'age', //!macro fieldInit age
-            initialValue: state.age.toString(),
-            //!macro beginAutoOnly
-            autovalidateMode: AutovalidateMode.onUserInteraction,
-            //!macro endAutoOnly
-            validator: presenter.getPropertyValidator('age', context),
-            //!macro beginVanillaOnly
-            onSaved: presenter.savePropertyValue('age', context),
-            //!macro endVanillaOnly
-            decoration: InputDecoration(
-              labelText: LocaleKeys.age_label.tr(),
-              hintText: LocaleKeys.age_hint.tr(),
-            ),
-          ),
+          presenter.fields.age(context,
+              decoration: InputDecoration(
+                labelText: LocaleKeys.age_label.tr(),
+                hintText: LocaleKeys.age_hint.tr(),
+              )),
           //!macro beginBuilderOnly
-          FormBuilderCheckboxGroup<Region>(
-            name: 'preferredRegions', //!macro fieldInit preferredRegions
-            initialValue: state.preferredRegsions,
+          presenter.fields.preferredRegions(
+            context,
             decoration: InputDecoration(
               labelText: LocaleKeys.preferredRegions_label.tr(),
               hintText: LocaleKeys.preferredRegions_hint.tr(),
@@ -186,8 +159,8 @@ class _AccountPaneTemplate extends ConsumerWidget {
   }
 }
 
-/// Testable presenter.
-@visibleForTesting
+/// Presenter which holds form properties.
+@formCompanion
 class AccountPresenterTemplate extends StateNotifier<Account>
     with CompanionPresenterMixin, FormBuilderCompanionMixin {
   final Reader _read;
@@ -201,6 +174,7 @@ class AccountPresenterTemplate extends StateNotifier<Account>
       PropertyDescriptorsBuilder()
         ..addText(
           name: 'id',
+          initialValue: initialState.id,
           validatorFactories: [
             //!macro beginVanillaOnly
             Validator.required,
@@ -217,6 +191,7 @@ class AccountPresenterTemplate extends StateNotifier<Account>
         )
         ..addText(
           name: 'name',
+          initialValue: initialState.name,
           validatorFactories: [
             //!macro beginVanillaOnly
             Validator.required,
@@ -228,9 +203,11 @@ class AccountPresenterTemplate extends StateNotifier<Account>
         )
         ..addEnum<Gender>(
           name: 'gender',
+          initialValue: initialState.gender,
         )
         ..addString(
           name: 'age',
+          initialValue: initialState.age,
           validatorFactories: [
             //!macro beginVanillaOnly
             Validator.required,
@@ -241,11 +218,13 @@ class AccountPresenterTemplate extends StateNotifier<Account>
             (context) => FormBuilderValidators.min(context, 0),
             //!macro endBuilderOnly
           ],
-          initialValue: 20,
           stringConverter: intStringConverter,
         )
         //!macro beginBuilderOnly
-        ..addEnumList<Region>(name: 'preferredRegions')
+        ..addEnumList<Region>(
+          name: 'preferredRegions',
+          initialValues: initialState.preferredRegsions,
+        )
       //!macro endBuilderOnly
       ,
     );
@@ -254,14 +233,12 @@ class AccountPresenterTemplate extends StateNotifier<Account>
   @override
   FutureOr<void> doSubmit() async {
     // Get saved values here to call business logic.
-    final id = getSavedPropertyValue<String>('id')!;
-    final name = getSavedPropertyValue<String>('name')!;
-    final gender = getSavedPropertyValue<Gender>('gender')!;
-    // You can omit generic type argument occasionally.
-    final age = getSavedPropertyValue<int>('age')!;
+    final id = this.id.value!;
+    final name = this.name.value!;
+    final gender = this.gender.value!;
+    final age = this.age.value!;
     //!macro beginBuilderOnly
-    final preferredRegions =
-        getSavedPropertyValue<List<Region>>('preferredRegions')!;
+    final preferredRegions = this.preferredRegions.value!;
     //!macro endBuilderOnly
 
     // Call business logic.
