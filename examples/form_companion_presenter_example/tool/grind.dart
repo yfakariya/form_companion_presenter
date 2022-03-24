@@ -13,7 +13,10 @@ Future<dynamic> main(List<String> args) => grind(args);
 Future<dynamic> test() => TestRunner().testAsync();
 
 @DefaultTask()
-@Depends(clean, test, assemble, distribute)
+@Depends(clean, assemble, runBuildRunner, test, distribute)
+void buildAll() {}
+
+@Task()
 void build() {
   Pub.build();
 }
@@ -71,8 +74,9 @@ Future<void> easyL10n() async {
   );
 }
 
-@Task('Run freezed. Specify --watch to run with watch mode.')
-Future<void> runFreezed() async {
+@Task(
+    'Run freezed and form_companion_generator. Specify --watch to run with watch mode.')
+Future<void> runBuildRunner() async {
   final command =
       context.invocation.arguments.getFlag('watch') ? 'watch' : 'build';
   await runAsync(
