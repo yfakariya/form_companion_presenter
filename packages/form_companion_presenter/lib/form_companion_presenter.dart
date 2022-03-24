@@ -33,6 +33,8 @@ export 'src/future_invoker.dart'
         AsyncOperationNotifier,
         AsyncOperationStatus,
         FutureInvoker;
+export 'src/number_converter.dart'
+    show bigIntDoubleConverter, intDoubleConverter;
 export 'src/string_converter.dart'
     show
         ParseStringConverter,
