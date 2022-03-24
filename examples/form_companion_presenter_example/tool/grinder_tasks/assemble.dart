@@ -162,6 +162,9 @@ Future<void> assembleCore(
           continue;
         }
 
+        final destinationFileName = '${mode.toLowerCase()}_validation_'
+            '${flavor == _Flavor.vanillaForm ? 'vanilla_form' : 'form_builder_${model.toLowerCase()}'}';
+
         final replacementMap = {
           '${model.toTitleCase()}PageTemplate':
               '${mode.toTitleCase()}Validation${flavor.toTitleCase()}${model.toTitleCase()}Page',
@@ -171,7 +174,7 @@ Future<void> assembleCore(
               '${mode.toTitleCase()}Validation${flavor.toTitleCase()}${model.toTitleCase()}Presenter',
           "'TITLE_TEMPLATE'": 'LocaleKeys.${mode.toLowerCase()}_'
               '${flavor == _Flavor.vanillaForm ? 'vanilla' : 'flutterFormBuilder${model.toTitleCase()}'}_title.tr()',
-          "import '../": "import '",
+          r"import '\.\./": "import '",
         };
         if (flavor == _Flavor.vanillaForm) {
           replacementMap['FormBuilderTextField'] = 'TextFormField';
@@ -182,10 +185,15 @@ Future<void> assembleCore(
           replacementMap['FormBuilderCompanionMixin'] = 'FormCompanionMixin';
         }
 
+        if (mode == _Mode.manual) {
+          replacementMap['@formCompanion'] =
+              '@FormCompanion(autovalidate: false)';
+        }
+
         final replamentRegexp = replacementMap.entries
             .map((entry) => MapEntry(RegExp(entry.key), entry.value));
 
-        final macroMap = _setupMacro(mode, model, flavor);
+        final macroMap = _setupMacro(mode, model, flavor, destinationFileName);
 
         final removalImports = flavor == _Flavor.formBuilder
             ? <String>{}
@@ -198,10 +206,7 @@ Future<void> assembleCore(
         // read
         final source = File('$sourceDirectory/${model.toLowerCase()}.dart');
         final destinationFile = File(
-          '$destinationDirectory/'
-          '${mode.toLowerCase()}_validation_'
-          '${flavor == _Flavor.vanillaForm ? 'vanilla_form' : 'form_builder_${model.toLowerCase()}'}'
-          '.dart',
+          '$destinationDirectory/$destinationFileName.dart',
         );
         final destination = destinationFile.openWrite();
         try {
@@ -257,7 +262,12 @@ typedef _Macro = void Function(
   _OutputController output,
 );
 
-Map<String, _Macro> _setupMacro(_Mode mode, _Model model, _Flavor flavor) {
+Map<String, _Macro> _setupMacro(
+  _Mode mode,
+  _Model model,
+  _Flavor flavor,
+  String destinationFileName,
+) {
   final headerNote = StringBuffer()..write(_headerNoteSeparator);
   switch (mode) {
     case _Mode.auto:
@@ -300,6 +310,7 @@ Map<String, _Macro> _setupMacro(_Mode mode, _Model model, _Flavor flavor) {
     'preferredRegionsAssignment': flavor == _Flavor.vanillaForm
         ? _preferredRegionsAssignmentVanilla
         : _preferredRegionsAssignmentBuilder,
+    'importFcp': "import '$destinationFileName.fcp.dart';",
   };
 
   return simpleMacros.map((key, value) => MapEntry(
@@ -313,6 +324,14 @@ Map<String, _Macro> _setupMacro(_Mode mode, _Model model, _Flavor flavor) {
           }
         },
       ))
+    ..['beginRemove'] = (line, match, arg, output) {
+      output.enable = false;
+      // Line itself is not written.
+    }
+    ..['endRemove'] = (line, match, arg, output) {
+      output.enable = true;
+      // Line itself is not written.
+    }
     ..['beginBuilderOnly'] = (line, match, arg, output) {
       if (flavor != _Flavor.formBuilder) {
         output.enable = false;
@@ -345,6 +364,30 @@ Map<String, _Macro> _setupMacro(_Mode mode, _Model model, _Flavor flavor) {
     }
     ..['endAutoOnly'] = (line, match, arg, output) {
       if (mode != _Mode.auto) {
+        output.enable = true;
+      }
+      // Line itself is not written.
+    }
+    ..['beginManualOnly'] = (line, match, arg, output) {
+      if (mode != _Mode.manual) {
+        output.enable = false;
+      }
+      // Line itself is not written.
+    }
+    ..['endManualOnly'] = (line, match, arg, output) {
+      if (mode != _Mode.manual) {
+        output.enable = true;
+      }
+      // Line itself is not written.
+    }
+    ..['beginNotManualOnly'] = (line, match, arg, output) {
+      if (mode == _Mode.manual) {
+        output.enable = false;
+      }
+      // Line itself is not written.
+    }
+    ..['endNotManualOnly'] = (line, match, arg, output) {
+      if (mode == _Mode.manual) {
         output.enable = true;
       }
       // Line itself is not written.
