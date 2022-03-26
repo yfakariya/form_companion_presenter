@@ -1,7 +1,6 @@
 // See LICENCE file in the root.
 
 import 'dart:async';
-import 'dart:math';
 
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';

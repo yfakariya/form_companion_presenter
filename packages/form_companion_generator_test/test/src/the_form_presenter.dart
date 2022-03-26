@@ -4,7 +4,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:form_companion_generator_test_targets/enum.dart';
-import 'package:form_companion_generator_test_targets/properties.dart';
 import 'package:form_companion_presenter/form_companion_annotation.dart';
 import 'package:form_companion_presenter/form_companion_presenter.dart';
 

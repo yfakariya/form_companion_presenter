@@ -5,8 +5,6 @@ import 'package:flutter/material.dart';
 
 import 'app.dart';
 
-// TODO(yfakariya): converter usage
-
 // ignore: avoid_void_async
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
