@@ -22,4 +22,3 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 
-dependency_overrides: {form_companion_presenter: {path: ../../packages/form_companion_presenter}}

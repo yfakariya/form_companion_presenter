@@ -12,13 +12,13 @@ class TheFormPresenter with CompanionPresenterMixin, FormCompanionMixin {
   TheFormPresenter() {
     initializeCompanionMixin(
       PropertyDescriptorsBuilder()
-        ..addText(name: 'propString')
-        ..addEnum<MyEnum>(name: 'propEnum')
+        ..string(name: 'propString')
+        ..enumerated<MyEnum>(name: 'propEnum')
         ..addWithField<List<String>, List<String>,
             DropdownButtonFormField<List<String>>>(
           name: 'propStringList',
         )
-        ..addInt(
+        ..integerText(
           name: 'propInt',
         ),
     );

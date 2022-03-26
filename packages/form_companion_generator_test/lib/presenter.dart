@@ -199,20 +199,20 @@ class InferredTypes with CompanionPresenterMixin, FormBuilderCompanionMixin {
           name: 'addWithValueConverter',
           valueConverter: intStringConverter,
         )
-        ..addString(
+        ..stringConvertible(
           name: 'addStringWithStringConverter',
           stringConverter: bigIntStringConverter,
         )
-        ..addString(
+        ..stringConvertible(
           name: 'addStringWithInitialValue',
           initialValue: 1.23,
           stringConverter: doubleStringConverter,
         )
-        ..addEnum(
+        ..enumerated(
           name: 'addEnumWithInitialValue',
           initialValue: MyEnum.one,
         )
-        ..addEnumList(
+        ..enumeratedList(
           name: 'addEnumListWithInitialValue',
           initialValues: [MyEnum.one],
         ),
@@ -252,7 +252,7 @@ class RawAddBigIntWithFieldVanilla
     with CompanionPresenterMixin, FormCompanionMixin {
   RawAddBigIntWithFieldVanilla() {
     initializeCompanionMixin(
-      PropertyDescriptorsBuilder()..addBigIntWithField(name: 'propRaw'),
+      PropertyDescriptorsBuilder()..bigIntWithField(name: 'propRaw'),
     );
   }
 
@@ -265,7 +265,7 @@ class RawAddBoolWithFieldVanilla
     with CompanionPresenterMixin, FormCompanionMixin {
   RawAddBoolWithFieldVanilla() {
     initializeCompanionMixin(
-      PropertyDescriptorsBuilder()..addBoolWithField(name: 'propRaw'),
+      PropertyDescriptorsBuilder()..booleanWithField(name: 'propRaw'),
     );
   }
 
@@ -278,7 +278,7 @@ class RawAddDoubleWithFieldVanilla
     with CompanionPresenterMixin, FormCompanionMixin {
   RawAddDoubleWithFieldVanilla() {
     initializeCompanionMixin(
-      PropertyDescriptorsBuilder()..addDoubleWithField(name: 'propRaw'),
+      PropertyDescriptorsBuilder()..realWithField(name: 'propRaw'),
     );
   }
 
@@ -291,7 +291,7 @@ class RawAddEnumWithFieldVanilla
     with CompanionPresenterMixin, FormCompanionMixin {
   RawAddEnumWithFieldVanilla() {
     initializeCompanionMixin(
-      PropertyDescriptorsBuilder()..addEnumWithField(name: 'propRaw'),
+      PropertyDescriptorsBuilder()..enumeratedWithField(name: 'propRaw'),
     );
   }
 
@@ -304,7 +304,7 @@ class RawAddIntWithFieldVanilla
     with CompanionPresenterMixin, FormCompanionMixin {
   RawAddIntWithFieldVanilla() {
     initializeCompanionMixin(
-      PropertyDescriptorsBuilder()..addIntWithField(name: 'propRaw'),
+      PropertyDescriptorsBuilder()..integerWithField(name: 'propRaw'),
     );
   }
 
@@ -318,7 +318,7 @@ class RawAddStringWithFieldVanilla
   RawAddStringWithFieldVanilla() {
     initializeCompanionMixin(
       PropertyDescriptorsBuilder()
-        ..addStringWithField(
+        ..stringConvertibleWithField(
           name: 'propRaw',
           stringConverter: StringConverter.fromCallbacks(
             stringify: (v, l) => v.toString(),
@@ -363,7 +363,7 @@ class RawAddBigIntWithFieldFormBuilder
     with CompanionPresenterMixin, FormBuilderCompanionMixin {
   RawAddBigIntWithFieldFormBuilder() {
     initializeCompanionMixin(
-      PropertyDescriptorsBuilder()..addBigIntWithField(name: 'propRaw'),
+      PropertyDescriptorsBuilder()..bigIntWithField(name: 'propRaw'),
     );
   }
 
@@ -376,7 +376,7 @@ class RawAddBoolListWithFieldFormBuilder
     with CompanionPresenterMixin, FormBuilderCompanionMixin {
   RawAddBoolListWithFieldFormBuilder() {
     initializeCompanionMixin(
-      PropertyDescriptorsBuilder()..addBoolListWithField(name: 'propRaw'),
+      PropertyDescriptorsBuilder()..booleanListWithField(name: 'propRaw'),
     );
   }
 
@@ -389,7 +389,7 @@ class RawAddBoolWithFieldFormBuilder
     with CompanionPresenterMixin, FormBuilderCompanionMixin {
   RawAddBoolWithFieldFormBuilder() {
     initializeCompanionMixin(
-      PropertyDescriptorsBuilder()..addBoolWithField(name: 'propRaw'),
+      PropertyDescriptorsBuilder()..booleanWithField(name: 'propRaw'),
     );
   }
 
@@ -402,7 +402,7 @@ class RawAddDoubleWithFieldFormBuilder
     with CompanionPresenterMixin, FormBuilderCompanionMixin {
   RawAddDoubleWithFieldFormBuilder() {
     initializeCompanionMixin(
-      PropertyDescriptorsBuilder()..addDoubleWithField(name: 'propRaw'),
+      PropertyDescriptorsBuilder()..realWithField(name: 'propRaw'),
     );
   }
 
@@ -415,7 +415,7 @@ class RawAddEnumListWithFieldFormBuilder
     with CompanionPresenterMixin, FormBuilderCompanionMixin {
   RawAddEnumListWithFieldFormBuilder() {
     initializeCompanionMixin(
-      PropertyDescriptorsBuilder()..addEnumListWithField(name: 'propRaw'),
+      PropertyDescriptorsBuilder()..enumeratedListWithField(name: 'propRaw'),
     );
   }
 
@@ -428,7 +428,7 @@ class RawAddEnumWithFieldFormBuilder
     with CompanionPresenterMixin, FormBuilderCompanionMixin {
   RawAddEnumWithFieldFormBuilder() {
     initializeCompanionMixin(
-      PropertyDescriptorsBuilder()..addEnumWithField(name: 'propRaw'),
+      PropertyDescriptorsBuilder()..enumeratedWithField(name: 'propRaw'),
     );
   }
 
@@ -441,7 +441,7 @@ class RawAddIntWithFieldFormBuilder
     with CompanionPresenterMixin, FormBuilderCompanionMixin {
   RawAddIntWithFieldFormBuilder() {
     initializeCompanionMixin(
-      PropertyDescriptorsBuilder()..addIntWithField(name: 'propRaw'),
+      PropertyDescriptorsBuilder()..integerWithField(name: 'propRaw'),
     );
   }
 
@@ -455,7 +455,7 @@ class RawAddStringWithFieldFormBuilder
   RawAddStringWithFieldFormBuilder() {
     initializeCompanionMixin(
       PropertyDescriptorsBuilder()
-        ..addStringWithField(
+        ..stringConvertibleWithField(
           name: 'propRaw',
           stringConverter: StringConverter.fromCallbacks(
             stringify: (v, l) => v.toString(),
@@ -475,13 +475,13 @@ class ConvinientExtensionMethod
   ConvinientExtensionMethod() {
     initializeCompanionMixin(
       PropertyDescriptorsBuilder()
-        ..addInt(name: 'propInt')
-        ..addText(name: 'propString')
-        ..addBool(name: 'propBool')
-        ..addEnum<MyEnum>(name: 'propEnum')
-        ..addEnumList<MyEnum>(name: 'propEnumList')
-        ..addDoubleWithField<FormBuilderSlider>(name: 'propDouble')
-        ..addEnumListWithField<MyEnum, FormBuilderCheckboxGroup<MyEnum>>(
+        ..integerText(name: 'propInt')
+        ..string(name: 'propString')
+        ..boolean(name: 'propBool')
+        ..enumerated<MyEnum>(name: 'propEnum')
+        ..enumeratedList<MyEnum>(name: 'propEnumList')
+        ..realWithField<FormBuilderSlider>(name: 'propDouble')
+        ..enumeratedListWithField<MyEnum, FormBuilderCheckboxGroup<MyEnum>>(
           name: 'propEnumList2',
         ),
     );

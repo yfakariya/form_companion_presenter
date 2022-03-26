@@ -3,8 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:form_companion_presenter/form_companion_presenter.dart';
 
-// TODO(yfakariya): More be DSL-ish with removing `add` prefix.
-
 /// Defines convinient extension methos for [PropertyDescriptorsBuilder] to
 /// define typical type combinations with `flutter_form_builder`.
 extension FormBuilderCompanionPropertyDescriptorsBuilderExtension
@@ -17,7 +15,7 @@ extension FormBuilderCompanionPropertyDescriptorsBuilderExtension
   /// validation framework requires live [BuildContext] to initialize validator,
   /// and current [Locale] of the application should be stored to
   /// [BuildContext].
-  void addBoolList({
+  void booleanList({
     required String name,
     List<bool>? initialValues,
   }) =>
@@ -34,7 +32,7 @@ extension FormBuilderCompanionPropertyDescriptorsBuilderExtension
   /// validation framework requires live [BuildContext] to initialize validator,
   /// and current [Locale] of the application should be stored to
   /// [BuildContext].
-  void addEnumList<T extends Enum>({
+  void enumeratedList<T extends Enum>({
     required String name,
     List<T>? initialValues,
   }) =>
@@ -48,7 +46,7 @@ extension FormBuilderCompanionPropertyDescriptorsBuilderExtension
   /// validation framework requires live [BuildContext] to initialize validator,
   /// and current [Locale] of the application should be stored to
   /// [BuildContext].
-  void addDateTime({
+  void dateTime({
     required String name,
     List<FormFieldValidatorFactory<DateTime>>? validatorFactories,
     List<AsyncValidatorFactory<DateTime>>? asyncValidatorFactories,
@@ -69,7 +67,7 @@ extension FormBuilderCompanionPropertyDescriptorsBuilderExtension
   /// validation framework requires live [BuildContext] to initialize validator,
   /// and current [Locale] of the application should be stored to
   /// [BuildContext].
-  void addDateTimeRange({
+  void dateTimeRange({
     required String name,
     List<FormFieldValidatorFactory<DateTimeRange>>? validatorFactories,
     List<AsyncValidatorFactory<DateTimeRange>>? asyncValidatorFactories,
@@ -90,7 +88,7 @@ extension FormBuilderCompanionPropertyDescriptorsBuilderExtension
   /// validation framework requires live [BuildContext] to initialize validator,
   /// and current [Locale] of the application should be stored to
   /// [BuildContext].
-  void addRangeValues({
+  void rangeValues({
     required String name,
     List<FormFieldValidatorFactory<RangeValues>>? validatorFactories,
     List<AsyncValidatorFactory<RangeValues>>? asyncValidatorFactories,

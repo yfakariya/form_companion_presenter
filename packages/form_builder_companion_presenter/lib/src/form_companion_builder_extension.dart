@@ -18,7 +18,7 @@ extension FormCompanionBuilderCompanionPropertyDescriptorsBuilderExtension
   /// [BuildContext].
   ///
   /// [TField] affects `FormFieldFactory` generation by `form_companion_generator`.
-  void addBoolListWithField<TField extends FormField<List<bool>>>({
+  void booleanListWithField<TField extends FormField<List<bool>>>({
     required String name,
     List<bool>? initialValues,
   }) =>
@@ -38,7 +38,8 @@ extension FormCompanionBuilderCompanionPropertyDescriptorsBuilderExtension
   /// [BuildContext].
   ///
   /// [TField] affects `FormFieldFactory` generation by `form_companion_generator`.
-  void addEnumListWithField<T extends Enum, TField extends FormField<List<T>>>({
+  void enumeratedListWithField<T extends Enum,
+          TField extends FormField<List<T>>>({
     required String name,
     List<T>? initialValues,
   }) =>

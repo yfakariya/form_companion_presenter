@@ -135,7 +135,7 @@ class BulkAutoValidationVanillaFormAccountPresenter
   ) : super(initialState) {
     initializeCompanionMixin(
       PropertyDescriptorsBuilder()
-        ..addText(
+        ..string(
           name: 'id',
           initialValue: initialState.id,
           validatorFactories: [
@@ -146,25 +146,24 @@ class BulkAutoValidationVanillaFormAccountPresenter
             Validator.id,
           ],
         )
-        ..addText(
+        ..string(
           name: 'name',
           initialValue: initialState.name,
           validatorFactories: [
             Validator.required,
           ],
         )
-        ..addEnum<Gender>(
+        ..enumerated<Gender>(
           name: 'gender',
           initialValue: initialState.gender,
         )
-        ..addString(
+        ..integerText(
           name: 'age',
           initialValue: initialState.age,
           validatorFactories: [
             Validator.required,
             Validator.min(0),
           ],
-          stringConverter: intStringConverter,
         ),
     );
   }
