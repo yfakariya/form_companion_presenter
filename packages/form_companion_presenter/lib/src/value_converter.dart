@@ -63,10 +63,20 @@ abstract class ValueConverter<P extends Object, F extends Object> {
 /// Default [ValueConverter] for `PropertyDescriptor`.
 /// This class just do with simple type cast, so it may throw error in many cases,
 /// but it is OK because many users do not require conversion in the first place.
-@sealed
 @internal
 class DefaultValueConverter<P extends Object, F extends Object>
     implements ValueConverter<P, F> {
+  /// Returns a [DefaultValueConverter].
+  factory DefaultValueConverter() {
+    if (F != String) {
+      return DefaultValueConverter<P, F>._();
+    } else {
+      return DefaultStringConverter<P>._() as DefaultValueConverter<P, F>;
+    }
+  }
+
+  DefaultValueConverter._();
+
   @override
   F toFieldValue(P? value, Locale locale) {
     if (value == null) {
@@ -85,6 +95,26 @@ class DefaultValueConverter<P extends Object, F extends Object>
         '${value.runtimeType} is not compatible with $P.',
       );
     }
+  }
+}
+
+/// Specialized [DefaultValueConverter] which handles null to empty [String]
+/// conversion.
+@internal
+class DefaultStringConverter<P extends Object>
+    extends DefaultValueConverter<P, String> {
+  DefaultStringConverter._() : super._();
+
+  @override
+  String toFieldValue(P? value, Locale locale) {
+    if (value == null) {
+      // Many forms have empty string as initial value,
+      // and many models have null for them.
+      // So null property value should be treated as empty String.
+      return '';
+    }
+
+    return value as String;
   }
 }
 
