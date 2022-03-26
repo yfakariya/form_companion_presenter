@@ -1102,7 +1102,7 @@ String textFormFieldFactory(
       controller: controller,
       initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       focusNode: focusNode,
-      decoration: const InputDecoration().copyWith(
+      decoration: decoration ?? const InputDecoration().copyWith(
         labelText: property.name,
       ),
       keyboardType: keyboardType,
@@ -1211,7 +1211,7 @@ String dropdownButtonFieldFactory(
       focusNode: focusNode,
       autofocus: autofocus,
       dropdownColor: dropdownColor,
-      decoration: InputDecoration(
+      decoration: decoration ?? InputDecoration(
         labelText: property.name,
       ),
       onSaved: (v) => property.setFieldValue(v, Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
@@ -1257,7 +1257,7 @@ String formBuilderCheckboxFactory(
       name: property.name,
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
-      decoration: const InputDecoration(border: InputBorder.none, focusedBorder: InputBorder.none, enabledBorder: InputBorder.none, errorBorder: InputBorder.none, disabledBorder: InputBorder.none).copyWith(
+      decoration: decoration ?? const InputDecoration(border: InputBorder.none, focusedBorder: InputBorder.none, enabledBorder: InputBorder.none, errorBorder: InputBorder.none, disabledBorder: InputBorder.none).copyWith(
         labelText: property.name,
       ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
@@ -1324,7 +1324,7 @@ String formBuilderCheckboxGroupFactory(
       name: property.name,
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
-      decoration: const InputDecoration().copyWith(
+      decoration: decoration ?? const InputDecoration().copyWith(
         labelText: property.name,
       ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
@@ -1403,7 +1403,7 @@ String formBuilderChoiceChipFactory(
       enabled: enabled,
       focusNode: focusNode,
       validator: property.getValidator(context),
-      decoration: const InputDecoration().copyWith(
+      decoration: decoration ?? const InputDecoration().copyWith(
         labelText: property.name,
       ),
       key: key,
@@ -1508,7 +1508,7 @@ String formBuilderDateRangePickerFactory(
       name: property.name,
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
-      decoration: const InputDecoration().copyWith(
+      decoration: decoration ?? const InputDecoration().copyWith(
         labelText: property.name,
       ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
@@ -1641,7 +1641,7 @@ String formBuilderDateTimePickerFactory(
       name: property.name,
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
-      decoration: const InputDecoration().copyWith(
+      decoration: decoration ?? const InputDecoration().copyWith(
         labelText: property.name,
       ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
@@ -1749,7 +1749,7 @@ String formBuilderDropdownFactory(
       name: property.name,
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
-      decoration: const InputDecoration().copyWith(
+      decoration: decoration ?? const InputDecoration().copyWith(
         labelText: property.name,
       ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
@@ -1832,7 +1832,7 @@ String formBuilderFilterChipFactory(
       enabled: enabled,
       focusNode: focusNode,
       validator: property.getValidator(context),
-      decoration: const InputDecoration().copyWith(
+      decoration: decoration ?? const InputDecoration().copyWith(
         labelText: property.name,
       ),
       key: key,
@@ -1912,7 +1912,7 @@ String formBuilderRadioGroupFactory(
       enabled: enabled,
       focusNode: focusNode,
       validator: property.getValidator(context),
-      decoration: const InputDecoration().copyWith(
+      decoration: decoration ?? const InputDecoration().copyWith(
         labelText: property.name,
       ),
       key: key,
@@ -1980,7 +1980,7 @@ String formBuilderRangeSliderFactory(
       name: property.name,
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))!,
-      decoration: const InputDecoration().copyWith(
+      decoration: decoration ?? const InputDecoration().copyWith(
         labelText: property.name,
       ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
@@ -2038,7 +2038,7 @@ String formBuilderSegmentedControlFactory(
       name: property.name,
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
-      decoration: const InputDecoration().copyWith(
+      decoration: decoration ?? const InputDecoration().copyWith(
         labelText: property.name,
       ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
@@ -2097,7 +2097,7 @@ String formBuilderSliderFactory(
       name: property.name,
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))!,
-      decoration: const InputDecoration().copyWith(
+      decoration: decoration ?? const InputDecoration().copyWith(
         labelText: property.name,
       ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
@@ -2163,7 +2163,7 @@ String formBuilderSwitchFactory(
       name: property.name,
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
-      decoration: const InputDecoration().copyWith(
+      decoration: decoration ?? const InputDecoration().copyWith(
         labelText: property.name,
       ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
@@ -2255,7 +2255,7 @@ String formBuilderTextFieldFactory(
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       readOnly: readOnly,
-      decoration: const InputDecoration().copyWith(
+      decoration: decoration ?? const InputDecoration().copyWith(
         labelText: property.name,
       ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly

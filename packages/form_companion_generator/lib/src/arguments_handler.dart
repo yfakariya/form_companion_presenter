@@ -209,12 +209,12 @@ Iterable<String>? _assignAutovalidateMode(AssignmentContext context) =>
 Iterable<String>? _assignDecoration(AssignmentContext context) =>
     context.defaultValue == null
         ? [
-            'decoration: InputDecoration(',
+            'decoration: decoration ?? InputDecoration(',
             '  labelText: ${context.propertyDescriptor}.name,',
             '),',
           ]
         : [
-            'decoration: ${context.defaultValue}.copyWith(',
+            'decoration: decoration ?? ${context.defaultValue}.copyWith(',
             '  labelText: ${context.propertyDescriptor}.name,',
             '),',
           ];
