@@ -154,9 +154,10 @@ class $AutoValidationVanillaFormAccountPresenterFieldFactories {
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       focusNode: focusNode,
-      decoration: const InputDecoration().copyWith(
-        labelText: property.name,
-      ),
+      decoration: decoration ??
+          const InputDecoration().copyWith(
+            labelText: property.name,
+          ),
       keyboardType: keyboardType,
       textCapitalization: textCapitalization,
       textInputAction: textInputAction,
@@ -265,9 +266,10 @@ class $AutoValidationVanillaFormAccountPresenterFieldFactories {
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       focusNode: focusNode,
-      decoration: const InputDecoration().copyWith(
-        labelText: property.name,
-      ),
+      decoration: decoration ??
+          const InputDecoration().copyWith(
+            labelText: property.name,
+          ),
       keyboardType: keyboardType,
       textCapitalization: textCapitalization,
       textInputAction: textInputAction,
@@ -370,9 +372,10 @@ class $AutoValidationVanillaFormAccountPresenterFieldFactories {
       focusNode: focusNode,
       autofocus: autofocus,
       dropdownColor: dropdownColor,
-      decoration: InputDecoration(
-        labelText: property.name,
-      ),
+      decoration: decoration ??
+          InputDecoration(
+            labelText: property.name,
+          ),
       onSaved: (v) => property.setFieldValue(
           v, Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       validator: property.getValidator(context),
@@ -441,9 +444,10 @@ class $AutoValidationVanillaFormAccountPresenterFieldFactories {
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       focusNode: focusNode,
-      decoration: const InputDecoration().copyWith(
-        labelText: property.name,
-      ),
+      decoration: decoration ??
+          const InputDecoration().copyWith(
+            labelText: property.name,
+          ),
       keyboardType: keyboardType,
       textCapitalization: textCapitalization,
       textInputAction: textInputAction,

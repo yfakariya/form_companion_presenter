@@ -232,9 +232,10 @@ class $BulkAutoValidationFormBuilderBookingPresenterFieldFactories {
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
-      decoration: const InputDecoration().copyWith(
-        labelText: property.name,
-      ),
+      decoration: decoration ??
+          const InputDecoration().copyWith(
+            labelText: property.name,
+          ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
       valueTransformer: valueTransformer,
       enabled: enabled,
@@ -361,9 +362,10 @@ class $BulkAutoValidationFormBuilderBookingPresenterFieldFactories {
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
-      decoration: const InputDecoration().copyWith(
-        labelText: property.name,
-      ),
+      decoration: decoration ??
+          const InputDecoration().copyWith(
+            labelText: property.name,
+          ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
       valueTransformer: valueTransformer,
       enabled: enabled,
@@ -460,9 +462,10 @@ class $BulkAutoValidationFormBuilderBookingPresenterFieldFactories {
       enabled: enabled,
       focusNode: focusNode,
       validator: property.getValidator(context),
-      decoration: const InputDecoration().copyWith(
-        labelText: property.name,
-      ),
+      decoration: decoration ??
+          const InputDecoration().copyWith(
+            labelText: property.name,
+          ),
       key: key,
       name: property.name,
       options: options,
@@ -535,9 +538,10 @@ class $BulkAutoValidationFormBuilderBookingPresenterFieldFactories {
       enabled: enabled,
       focusNode: focusNode,
       validator: property.getValidator(context),
-      decoration: const InputDecoration().copyWith(
-        labelText: property.name,
-      ),
+      decoration: decoration ??
+          const InputDecoration().copyWith(
+            labelText: property.name,
+          ),
       key: key,
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))!,
@@ -607,9 +611,10 @@ class $BulkAutoValidationFormBuilderBookingPresenterFieldFactories {
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
-      decoration: const InputDecoration().copyWith(
-        labelText: property.name,
-      ),
+      decoration: decoration ??
+          const InputDecoration().copyWith(
+            labelText: property.name,
+          ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
       valueTransformer: valueTransformer,
       enabled: enabled,
@@ -669,9 +674,10 @@ class $BulkAutoValidationFormBuilderBookingPresenterFieldFactories {
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))!,
-      decoration: const InputDecoration().copyWith(
-        labelText: property.name,
-      ),
+      decoration: decoration ??
+          const InputDecoration().copyWith(
+            labelText: property.name,
+          ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
       valueTransformer: valueTransformer,
       enabled: enabled,
@@ -724,9 +730,10 @@ class $BulkAutoValidationFormBuilderBookingPresenterFieldFactories {
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
-      decoration: const InputDecoration().copyWith(
-        labelText: property.name,
-      ),
+      decoration: decoration ??
+          const InputDecoration().copyWith(
+            labelText: property.name,
+          ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
       valueTransformer: valueTransformer,
       enabled: enabled,
@@ -777,9 +784,10 @@ class $BulkAutoValidationFormBuilderBookingPresenterFieldFactories {
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))!,
-      decoration: const InputDecoration().copyWith(
-        labelText: property.name,
-      ),
+      decoration: decoration ??
+          const InputDecoration().copyWith(
+            labelText: property.name,
+          ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
       valueTransformer: valueTransformer,
       enabled: enabled,
@@ -866,9 +874,10 @@ class $BulkAutoValidationFormBuilderBookingPresenterFieldFactories {
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       readOnly: readOnly,
-      decoration: const InputDecoration().copyWith(
-        labelText: property.name,
-      ),
+      decoration: decoration ??
+          const InputDecoration().copyWith(
+            labelText: property.name,
+          ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
       valueTransformer: valueTransformer,
       enabled: enabled,
