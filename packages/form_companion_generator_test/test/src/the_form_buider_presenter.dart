@@ -15,34 +15,34 @@ class TheFormBuilderPresenter
   TheFormBuilderPresenter() {
     initializeCompanionMixin(
       PropertyDescriptorsBuilder()
-        ..addText(name: 'propString')
-        ..addEnum<MyEnum>(name: 'propEnum')
-        ..addBool(name: 'propBool')
-        ..addDateTime(name: 'propDateTime')
-        ..addDateTimeRange(name: 'propDateTimeRange')
-        ..addRangeValues(name: 'propRangeValues')
-        ..addEnumList<MyEnum>(name: 'propEnumList')
-        ..addBoolList(name: 'propBoolList')
-        ..addBoolWithField<FormBuilderCheckbox>(name: 'propBoolCheckBox')
-        ..addEnumListWithField<MyEnum, FormBuilderCheckboxGroup<MyEnum>>(
+        ..string(name: 'propString')
+        ..enumerated<MyEnum>(name: 'propEnum')
+        ..boolean(name: 'propBool')
+        ..dateTime(name: 'propDateTime')
+        ..dateTimeRange(name: 'propDateTimeRange')
+        ..rangeValues(name: 'propRangeValues')
+        ..enumeratedList<MyEnum>(name: 'propEnumList')
+        ..booleanList(name: 'propBoolList')
+        ..booleanWithField<FormBuilderCheckbox>(name: 'propBoolCheckBox')
+        ..enumeratedListWithField<MyEnum, FormBuilderCheckboxGroup<MyEnum>>(
           name: 'propEnumListCheckBoxGroup',
         )
-        ..addEnumWithField<MyEnum, FormBuilderChoiceChip<MyEnum>>(
+        ..enumeratedWithField<MyEnum, FormBuilderChoiceChip<MyEnum>>(
           name: 'propEnumChoiceChip',
         )
-        ..addEnumListWithField<MyEnum, FormBuilderFilterChip<MyEnum>>(
+        ..enumeratedListWithField<MyEnum, FormBuilderFilterChip<MyEnum>>(
           name: 'propEnumListFilterChip',
         )
-        ..addEnumWithField<MyEnum, FormBuilderRadioGroup<MyEnum>>(
+        ..enumeratedWithField<MyEnum, FormBuilderRadioGroup<MyEnum>>(
           name: 'propEnumRadioGroup',
         )
-        ..addEnumWithField<MyEnum, FormBuilderSegmentedControl<MyEnum>>(
+        ..enumeratedWithField<MyEnum, FormBuilderSegmentedControl<MyEnum>>(
           name: 'propEnumSegmentedControl',
         )
-        ..addDoubleWithField<FormBuilderSlider>(
+        ..realWithField<FormBuilderSlider>(
           name: 'propDoubleSlider',
         )
-        ..addInt(
+        ..integerText(
           name: 'propInt',
         ),
     );

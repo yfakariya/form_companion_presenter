@@ -181,7 +181,7 @@ class AutoValidationFormBuilderAccountPresenter extends StateNotifier<Account>
   ) : super(initialState) {
     initializeCompanionMixin(
       PropertyDescriptorsBuilder()
-        ..addText(
+        ..string(
           name: 'id',
           initialValue: initialState.id,
           validatorFactories: [
@@ -192,18 +192,18 @@ class AutoValidationFormBuilderAccountPresenter extends StateNotifier<Account>
             Validator.id,
           ],
         )
-        ..addText(
+        ..string(
           name: 'name',
           initialValue: initialState.name,
           validatorFactories: [
             FormBuilderValidators.required,
           ],
         )
-        ..addEnum<Gender>(
+        ..enumerated<Gender>(
           name: 'gender',
           initialValue: initialState.gender,
         )
-        ..addString(
+        ..stringConvertible(
           name: 'age',
           initialValue: initialState.age,
           validatorFactories: [
@@ -212,7 +212,7 @@ class AutoValidationFormBuilderAccountPresenter extends StateNotifier<Account>
           ],
           stringConverter: intStringConverter,
         )
-        ..addEnumList<Region>(
+        ..enumeratedList<Region>(
           name: 'preferredRegions',
           initialValues: initialState.preferredRegsions,
         ),

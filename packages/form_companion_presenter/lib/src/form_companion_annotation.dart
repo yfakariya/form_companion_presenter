@@ -71,7 +71,8 @@ extension FormCompanionPropertyDescriptorBuilderExtensions
   /// {@macro pdb_add_remarks}
   ///
   /// [TField] affects `FormFieldFactory` generation by `form_companion_generator`.
-  void addStringWithField<P extends Object, TField extends FormField<String>>({
+  void stringConvertibleWithField<P extends Object,
+          TField extends FormField<String>>({
     required String name,
     List<FormFieldValidatorFactory<String>>? validatorFactories,
     List<AsyncValidatorFactory<String>>? asyncValidatorFactories,
@@ -92,7 +93,7 @@ extension FormCompanionPropertyDescriptorBuilderExtensions
   /// {@macro pdb_add_remarks}
   ///
   /// [TField] affects `FormFieldFactory` generation by `form_companion_generator`.
-  void addBoolWithField<TField extends FormField<bool>>({
+  void booleanWithField<TField extends FormField<bool>>({
     required String name,
     bool initialValue = false,
   }) =>
@@ -107,7 +108,7 @@ extension FormCompanionPropertyDescriptorBuilderExtensions
   /// {@macro pdb_add_remarks}
   ///
   /// [TField] affects `FormFieldFactory` generation by `form_companion_generator`.
-  void addEnumWithField<T extends Enum, TField extends FormField<T>>({
+  void enumeratedWithField<T extends Enum, TField extends FormField<T>>({
     required String name,
     T? initialValue,
   }) =>
@@ -122,7 +123,7 @@ extension FormCompanionPropertyDescriptorBuilderExtensions
   /// {@macro pdb_add_remarks}
   ///
   /// [TField] affects `FormFieldFactory` generation by `form_companion_generator`.
-  void addIntWithField<TField extends FormField<int>>({
+  void integerWithField<TField extends FormField<int>>({
     required String name,
     List<FormFieldValidatorFactory<int>>? validatorFactories,
     List<AsyncValidatorFactory<int>>? asyncValidatorFactories,
@@ -141,7 +142,7 @@ extension FormCompanionPropertyDescriptorBuilderExtensions
   /// {@macro pdb_add_remarks}
   ///
   /// [TField] affects `FormFieldFactory` generation by `form_companion_generator`.
-  void addDoubleWithField<TField extends FormField<double>>({
+  void realWithField<TField extends FormField<double>>({
     required String name,
     List<FormFieldValidatorFactory<double>>? validatorFactories,
     List<AsyncValidatorFactory<double>>? asyncValidatorFactories,
@@ -160,7 +161,7 @@ extension FormCompanionPropertyDescriptorBuilderExtensions
   /// {@macro pdb_add_remarks}
   ///
   /// [TField] affects `FormFieldFactory` generation by `form_companion_generator`.
-  void addBigIntWithField<TField extends FormField<BigInt>>({
+  void bigIntWithField<TField extends FormField<BigInt>>({
     required String name,
     List<FormFieldValidatorFactory<BigInt>>? validatorFactories,
     List<AsyncValidatorFactory<BigInt>>? asyncValidatorFactories,

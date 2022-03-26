@@ -59,7 +59,7 @@ extension FormCompanionPropertyDescriptorsBuilderExtension
   /// form field value type [String].
   ///
   /// {@macro pdb_add_remarks}
-  void addString<P extends Object>({
+  void stringConvertible<P extends Object>({
     required String name,
     List<FormFieldValidatorFactory<String>>? validatorFactories,
     List<AsyncValidatorFactory<String>>? asyncValidatorFactories,
@@ -78,7 +78,7 @@ extension FormCompanionPropertyDescriptorsBuilderExtension
   /// form field value type.
   ///
   /// {@macro pdb_add_remarks}
-  void addText({
+  void string({
     required String name,
     List<FormFieldValidatorFactory<String>>? validatorFactories,
     List<AsyncValidatorFactory<String>>? asyncValidatorFactories,
@@ -95,7 +95,7 @@ extension FormCompanionPropertyDescriptorsBuilderExtension
   /// form field value type.
   ///
   /// {@macro pdb_add_remarks}
-  void addBool({
+  void boolean({
     required String name,
     bool initialValue = false,
   }) =>
@@ -105,7 +105,7 @@ extension FormCompanionPropertyDescriptorsBuilderExtension
   /// and form field value type.
   ///
   /// {@macro pdb_add_remarks}
-  void addEnum<T extends Enum>({
+  void enumerated<T extends Enum>({
     required String name,
     T? initialValue,
   }) =>
@@ -115,7 +115,7 @@ extension FormCompanionPropertyDescriptorsBuilderExtension
   /// form field value type [String].
   ///
   /// {@macro pdb_add_remarks}
-  void addInt({
+  void integerText({
     required String name,
     List<FormFieldValidatorFactory<String>>? validatorFactories,
     List<AsyncValidatorFactory<String>>? asyncValidatorFactories,
@@ -132,7 +132,7 @@ extension FormCompanionPropertyDescriptorsBuilderExtension
   /// form field value type [String].
   ///
   /// {@macro pdb_add_remarks}
-  void addDouble({
+  void realText({
     required String name,
     List<FormFieldValidatorFactory<String>>? validatorFactories,
     List<AsyncValidatorFactory<String>>? asyncValidatorFactories,
@@ -149,7 +149,7 @@ extension FormCompanionPropertyDescriptorsBuilderExtension
   /// form field value type [String].
   ///
   /// {@macro pdb_add_remarks}
-  void addBigInt({
+  void bigIntText({
     required String name,
     List<FormFieldValidatorFactory<String>>? validatorFactories,
     List<AsyncValidatorFactory<String>>? asyncValidatorFactories,

@@ -244,23 +244,23 @@ class AutoValidationFormBuilderBookingPresenter extends StateNotifier<Booking>
   ) : super(initialState) {
     initializeCompanionMixin(
       PropertyDescriptorsBuilder()
-        ..addDateTimeRange(
+        ..dateTimeRange(
           name: 'stay',
           initialValue: initialState.stay,
         )
-        ..addDateTime(
+        ..dateTime(
           name: 'specialOfferDate',
           initialValue: initialState.specialOfferDate,
         )
-        ..addEnumWithField<RoomType, FormBuilderRadioGroup<RoomType>>(
+        ..enumeratedWithField<RoomType, FormBuilderRadioGroup<RoomType>>(
           name: 'roomType',
           initialValue: initialState.roomType,
         )
-        ..addEnumList<MealType>(
+        ..enumeratedList<MealType>(
           name: 'mealOffers',
           initialValues: initialState.mealOffers,
         )
-        ..addBool(
+        ..boolean(
           name: 'smoking',
           initialValue: initialState.smoking ?? false,
         )
@@ -269,17 +269,17 @@ class AutoValidationFormBuilderBookingPresenter extends StateNotifier<Booking>
           initialValue: initialState.persons,
           valueConverter: intDoubleConverter,
         )
-        ..addIntWithField<FormBuilderSegmentedControl<int>>(
+        ..integerWithField<FormBuilderSegmentedControl<int>>(
           name: 'babyBeds',
           initialValue: initialState.babyBeds,
         )
-        ..addRangeValues(
+        ..rangeValues(
           name: 'preferredPrice',
           initialValue: initialState.price == null
               ? const RangeValues(1000, 100000)
               : RangeValues(initialState.price!, initialState.price!),
         )
-        ..addText(
+        ..string(
           name: 'note',
           initialValue: initialState.note,
         ),
