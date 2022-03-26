@@ -109,8 +109,7 @@ import 'package:flutter_form_builder/flutter_form_builder.dart'
         OptionsOrientation,
         ValueTransformer;
 
-import 'package:form_companion_generator_test_targets/properties.dart'
-    show MyEnum;
+import 'package:form_companion_generator_test_targets/enum.dart' show MyEnum;
 
 import 'package:form_companion_presenter/form_companion_presenter.dart';
 

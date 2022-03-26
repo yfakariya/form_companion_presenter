@@ -62,19 +62,16 @@ FutureOr<LibraryElement> _getFlutterFormBuilder() async {
   return importResult.element;
 }
 
-LibraryElement? _propertiesLibrary;
+InterfaceType? _myEnumType;
 
-FutureOr<LibraryElement> _getPropertiesLibrary() async {
-  if (_propertiesLibrary != null) {
-    return _propertiesLibrary!;
+FutureOr<InterfaceType> getMyEnumType() async {
+  if (_myEnumType != null) {
+    return _myEnumType!;
   }
 
-  return _propertiesLibrary =
-      (await getResolvedLibraryResult('properties.dart')).element;
+  final enumLibrary = (await getResolvedLibraryResult('enum.dart')).element;
+  return _myEnumType = enumLibrary.lookupType('MyEnum');
 }
-
-FutureOr<InterfaceType> getMyEnumType() async =>
-    (await _getPropertiesLibrary()).lookupType('MyEnum');
 
 LibraryElement? _parametersLibrary;
 

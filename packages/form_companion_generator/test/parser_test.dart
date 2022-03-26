@@ -1,6 +1,7 @@
 // See LICENCE file in the root.
 
 import 'dart:async';
+import 'dart:math';
 
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
@@ -1273,6 +1274,7 @@ Future<void> main() async {
       List<ExpectedImport> expected,
     ) {
       result.sort((l, r) => l.library.compareTo(r.library));
+      expected.sort((l, r) => l.identifier.compareTo(r.identifier));
       expect(
         result.map((e) => e.library).toList(),
         expected.map((e) => e.identifier).toList(),
@@ -1377,6 +1379,7 @@ Future<void> main() async {
             expected,
             ExpectedImport('package:flutter/widgets.dart',
                 shows: ['BuildContext', 'Localizations']),
+            ExpectedImport('parameters.dart'),
           ],
         );
       });
@@ -1408,11 +1411,13 @@ Future<void> main() async {
               valueType.typeArguments.first == myEnumType)) {
         expected.add(
           ExpectedImport(
-            'package:form_companion_generator_test_targets/properties.dart',
+            'enum.dart',
             shows: ['MyEnum'],
           ),
         );
       }
+
+      expected.add(ExpectedImport('presenter.dart'));
 
       assertImports(result, expected);
     }
@@ -1463,6 +1468,8 @@ Future<void> main() async {
         );
       });
     }
+
+    test('relative imports should be after packages', () async {});
   });
 
   // TODO(yfakariya): field related tests.

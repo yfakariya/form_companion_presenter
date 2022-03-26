@@ -62,7 +62,12 @@ Iterable<String> emitGlobal(
 
   final dartImports =
       sortedImports.where((i) => i.library.startsWith('dart:')).toList();
-  final packageImports = sortedImports.skip(dartImports.length).toList();
+  final packageImports =
+      sortedImports.where((i) => i.library.startsWith('package:')).toList();
+  final relativeImports = sortedImports
+      .where((i) =>
+          !i.library.startsWith('dart:') && !i.library.startsWith('package:'))
+      .toList();
 
   if (config.asPart) {
     yield "// This file is part of '${sourceLibrary.source.shortName}' file,";
@@ -85,10 +90,8 @@ Iterable<String> emitGlobal(
     yield '';
   }
 
-  if (config.asPart) {
-    yield "// import '${sourceLibrary.source.shortName}';";
-  } else {
-    yield "import '${sourceLibrary.source.shortName}';";
+  for (final import in relativeImports) {
+    yield* _emitImport(import, config.asPart);
   }
 }
 

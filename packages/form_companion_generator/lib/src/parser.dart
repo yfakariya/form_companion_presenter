@@ -2,6 +2,7 @@
 
 import 'dart:async';
 
+import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:analyzer/dart/element/element.dart';
@@ -65,13 +66,16 @@ FutureOr<PresenterDefinition> parseElementAsync(
     isFormBuilder: isFormBuilder,
     doAutovalidate: annotation.autovalidate,
     warnings: warnings,
-    imports: await collectDependenciesAsync(
-      config.asPart ? element.library : null,
-      properties,
-      nodeProvider,
-      logger,
-      isFormBuilder: isFormBuilder,
-    ),
+    imports: config.asPart
+        // import directives cannot be appeared in part files.
+        ? []
+        : await collectDependenciesAsync(
+            element.library,
+            properties,
+            nodeProvider,
+            logger,
+            isFormBuilder: isFormBuilder,
+          ),
     properties: properties,
   );
 }
@@ -228,13 +232,14 @@ FutureOr<List<PropertyAndFormFieldDefinition>> getPropertiesAsync(
       .toListAsync();
 }
 
+// TODO
 /// Collects dependencies as a list of [LibraryImport] from `FormField`s
 /// constructor parameters in [properties].
 ///
 /// Of course, dependency for the library which declares the presenter, that is,
-/// dependency for [thisLibrary] will be ignored.
+/// dependency for [presenterLibrary] will be ignored.
 FutureOr<List<LibraryImport>> collectDependenciesAsync(
-  LibraryElement? thisLibrary,
+  LibraryElement presenterLibrary,
   Iterable<PropertyAndFormFieldDefinition> properties,
   NodeProvider nodeProvider,
   Logger logger, {
@@ -244,7 +249,7 @@ FutureOr<List<LibraryImport>> collectDependenciesAsync(
     nodeProvider,
     await nodeProvider.libraries.toList(),
     logger,
-    thisLibrary,
+    presenterLibrary,
   );
 
   for (final property in properties) {

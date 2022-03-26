@@ -6,7 +6,7 @@ import 'dart:io';
 
 import 'package:form_companion_presenter/form_companion_presenter.dart';
 
-enum MyEnum { one, two }
+import 'enum.dart';
 
 // Statics
 class PropertyDescritptors {

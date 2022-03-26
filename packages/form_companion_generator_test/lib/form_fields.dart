@@ -6,7 +6,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 
-import 'properties.dart';
+import 'enum.dart';
 
 // for allowing emitter testings loopup FormFields.
 
@@ -30,3 +30,5 @@ const Type dateTimeRange = DateTimeRange;
 
 const Type formBuilderDropdownOfMyEnum = FormBuilderDropdown<MyEnum>;
 const Type formBuilderFilterChipOfMyEnum = FormBuilderFilterChip<MyEnum>;
+
+const Type myEnum = MyEnum;
