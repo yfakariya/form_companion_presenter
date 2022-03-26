@@ -295,7 +295,6 @@ Future<void> main() async {
           [
             "import 'package:form_companion_presenter/form_companion_presenter.dart';",
             '',
-            "import 'form_fields.dart';",
           ],
         );
       });
@@ -323,7 +322,6 @@ Future<void> main() async {
             '// TODO(CompanionGenerator): WARNING - AAA',
             "import 'package:form_companion_presenter/form_companion_presenter.dart';",
             '',
-            "import 'form_fields.dart';",
           ],
         );
       });
@@ -352,7 +350,6 @@ Future<void> main() async {
             '// TODO(CompanionGenerator): WARNING - BBB',
             "import 'package:form_companion_presenter/form_companion_presenter.dart';",
             '',
-            "import 'form_fields.dart';",
           ],
         );
       });

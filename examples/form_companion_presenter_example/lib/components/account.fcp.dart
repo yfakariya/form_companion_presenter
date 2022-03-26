@@ -81,8 +81,7 @@ import 'package:flutter_form_builder/flutter_form_builder.dart'
 
 import 'package:form_companion_presenter/form_companion_presenter.dart';
 
-import 'package:form_companion_presenter_examples/models.dart'
-    show Gender, Region;
+import '../models.dart' show Gender, Region;
 
 import 'account.dart';
 

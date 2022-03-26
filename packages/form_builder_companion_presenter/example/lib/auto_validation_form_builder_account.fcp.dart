@@ -81,9 +81,9 @@ import 'package:flutter_form_builder/flutter_form_builder.dart'
 
 import 'package:form_companion_presenter/form_companion_presenter.dart';
 
-import 'models.dart' show Gender, Region;
-
 import 'auto_validation_form_builder_account.dart';
+
+import 'models.dart' show Gender, Region;
 
 extension $AutoValidationFormBuilderAccountPresenterPropertyExtension
     on AutoValidationFormBuilderAccountPresenter {

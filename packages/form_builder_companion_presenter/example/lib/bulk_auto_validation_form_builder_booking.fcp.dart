@@ -102,13 +102,13 @@ import 'package:flutter_form_builder/flutter_form_builder.dart'
 
 import 'package:form_companion_presenter/form_companion_presenter.dart';
 
-import 'models.dart' show MealType, RoomType;
-
 import 'package:intl/intl.dart' show DateFormat, NumberFormat;
 
 import 'package:intl/intl.dart' as intl show DateFormat;
 
 import 'bulk_auto_validation_form_builder_booking.dart';
+
+import 'models.dart' show MealType, RoomType;
 
 extension $BulkAutoValidationFormBuilderBookingPresenterPropertyExtension
     on BulkAutoValidationFormBuilderBookingPresenter {

@@ -64,9 +64,9 @@ import 'package:flutter/widgets.dart'
 
 import 'package:form_companion_presenter/form_companion_presenter.dart';
 
-import 'models.dart' show Gender;
-
 import 'manual_validation_vanilla_form.dart';
+
+import 'models.dart' show Gender;
 
 extension $ManualValidationVanillaFormAccountPresenterPropertyExtension
     on ManualValidationVanillaFormAccountPresenter {
