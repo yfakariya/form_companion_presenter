@@ -126,6 +126,7 @@ extension FormCompanionPropertyDescriptorsBuilderExtension
         validatorFactories: validatorFactories,
         asyncValidatorFactories: asyncValidatorFactories,
         initialValue: initialValue,
+        valueConverter: intStringConverter,
       );
 
   /// Defines a new property with property value type [double] and
@@ -143,6 +144,7 @@ extension FormCompanionPropertyDescriptorsBuilderExtension
         validatorFactories: validatorFactories,
         asyncValidatorFactories: asyncValidatorFactories,
         initialValue: initialValue,
+        valueConverter: doubleStringConverter,
       );
 
   /// Defines a new property with property value type [BigInt] and
@@ -160,6 +162,7 @@ extension FormCompanionPropertyDescriptorsBuilderExtension
         validatorFactories: validatorFactories,
         asyncValidatorFactories: asyncValidatorFactories,
         initialValue: initialValue,
+        valueConverter: bigIntStringConverter,
       );
 }
 
