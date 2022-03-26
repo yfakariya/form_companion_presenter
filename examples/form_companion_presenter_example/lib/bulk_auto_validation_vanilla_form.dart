@@ -157,14 +157,13 @@ class BulkAutoValidationVanillaFormAccountPresenter
           name: 'gender',
           initialValue: initialState.gender,
         )
-        ..stringConvertible(
+        ..integerText(
           name: 'age',
           initialValue: initialState.age,
           validatorFactories: [
             Validator.required,
             Validator.min(0),
           ],
-          stringConverter: intStringConverter,
         ),
     );
   }

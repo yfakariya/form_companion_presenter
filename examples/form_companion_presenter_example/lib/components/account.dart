@@ -205,7 +205,7 @@ class AccountPresenterTemplate extends StateNotifier<Account>
           name: 'gender',
           initialValue: initialState.gender,
         )
-        ..stringConvertible(
+        ..integerText(
           name: 'age',
           initialValue: initialState.age,
           validatorFactories: [
@@ -218,7 +218,6 @@ class AccountPresenterTemplate extends StateNotifier<Account>
             (context) => FormBuilderValidators.min(context, 0),
             //!macro endBuilderOnly
           ],
-          stringConverter: intStringConverter,
         )
         //!macro beginBuilderOnly
         ..enumeratedList<Region>(

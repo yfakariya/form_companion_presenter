@@ -206,14 +206,13 @@ class BulkAutoValidationFormBuilderAccountPresenter
           name: 'gender',
           initialValue: initialState.gender,
         )
-        ..stringConvertible(
+        ..integerText(
           name: 'age',
           initialValue: initialState.age,
           validatorFactories: [
             FormBuilderValidators.required,
             (context) => FormBuilderValidators.min(context, 0),
           ],
-          stringConverter: intStringConverter,
         )
         ..enumeratedList<Region>(
           name: 'preferredRegions',
