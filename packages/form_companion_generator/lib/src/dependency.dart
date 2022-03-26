@@ -94,10 +94,12 @@ class DependentLibraryCollector extends RecursiveAstVisitor<void> {
   final Logger _logger;
 
   /// `null` if `asPart` is false.
-  final String? _targetLibraryId;
+  final String? _presenterLibraryId;
   final Map<String, LibraryImport> _imports = {};
   final Map<String, String> _librarySourceMap = {};
   final Map<String, List<LibraryElement>> _librariesCache = {};
+
+  final Map<String, String> _relativeImportIdentityMap = {};
 
   /// Context class of current traversal.
   late ClassElement _contextClass;
@@ -111,14 +113,29 @@ class DependentLibraryCollector extends RecursiveAstVisitor<void> {
 
   /// Initializes a new [DependentLibraryCollector] instance.
   ///
-  /// [targetLibrary] is the library itself to be scanned.
+  /// [presenterLibrary] is the library itself to be scanned.
   /// References to this library will not be collected.
   DependentLibraryCollector(
     this._nodeProvider,
     this._allLibraries,
     this._logger,
-    LibraryElement? targetLibrary,
-  ) : _targetLibraryId = targetLibrary?.identifier;
+    LibraryElement presenterLibrary,
+  ) : _presenterLibraryId = presenterLibrary.identifier {
+    for (final import in presenterLibrary.imports) {
+      final importUri = import.uri;
+      final importedLibraryIdentifier = import.importedLibrary?.identifier;
+      if (importUri != null &&
+          importedLibraryIdentifier != null &&
+          importUri != importedLibraryIdentifier) {
+        _relativeImportIdentityMap[importedLibraryIdentifier] = importUri;
+      }
+    }
+
+    _relativeImportIdentityMap[presenterLibrary.identifier] =
+        presenterLibrary.source.shortName;
+    _imports[presenterLibrary.source.shortName] =
+        LibraryImport(presenterLibrary.source.shortName);
+  }
 
   /// Resets internal state with specified information for new session.
   ///
@@ -169,7 +186,7 @@ class DependentLibraryCollector extends RecursiveAstVisitor<void> {
     String libraryIdentifier,
     String Function()? logicalLibraryIdFinder,
   ) {
-    if (libraryIdentifier == _targetLibraryId) {
+    if (libraryIdentifier == _presenterLibraryId) {
       // Current library, so import is not necessary.
       return null;
     }
@@ -177,6 +194,14 @@ class DependentLibraryCollector extends RecursiveAstVisitor<void> {
     if (libraryIdentifier == _dartCoreLibraryId) {
       // dart:core have not been imported, so ignore it.
       return null;
+    }
+
+    // First check relative identifier map.
+    // Relative identifier (in same package) can be physical (direct) identifier
+    // for src in the first place.
+    final relativeIdentifier = _relativeImportIdentityMap[libraryIdentifier];
+    if (relativeIdentifier != null) {
+      return _imports[relativeIdentifier] ??= LibraryImport(relativeIdentifier);
     }
 
     var logicalLibraryId = _librarySourceMap[libraryIdentifier];
@@ -188,12 +213,7 @@ class DependentLibraryCollector extends RecursiveAstVisitor<void> {
       logicalLibraryId = libraryIdentifier;
     }
 
-    final entry = _imports[logicalLibraryId];
-    if (entry != null) {
-      return entry;
-    }
-
-    return _imports[logicalLibraryId] = LibraryImport(logicalLibraryId);
+    return _imports[logicalLibraryId] ??= LibraryImport(logicalLibraryId);
   }
 
   static final _src = RegExp(r'src[/\\].+\.dart$');
@@ -236,9 +256,9 @@ class DependentLibraryCollector extends RecursiveAstVisitor<void> {
           " for '$targetElement' in the directory '$libraryDirectory'. ");
     }
 
+    final result = candidates.first.identifier;
     if (candidates.length > 1) {
-      final message =
-          "Library import '${candidates.first.identifier}' may be incorrect because "
+      final message = "Library import '$result' may be incorrect because "
           'the locator failed to uniquely locate importing library for '
           "'$sourceLibraryId' for '$targetElement' in directory '$libraryDirectory'. "
           'Found libraries are: [${candidates.map((e) => e.identifier).join(', ')}]';
@@ -246,8 +266,8 @@ class DependentLibraryCollector extends RecursiveAstVisitor<void> {
       _warnings.add(message);
     }
 
-    _logger.fine('Found ${candidates.first.identifier} for $targetElement');
-    return candidates.first.identifier;
+    _logger.fine('Found $result for $targetElement');
+    return result;
   }
 
   void _processTypeAnnotation(TypeAnnotation type) {

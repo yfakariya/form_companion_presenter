@@ -20,8 +20,7 @@ final _contextCollection = AnalysisContextCollection(
   ],
 );
 
-// TODO(yfakariya): rename to getResolvedLibraryResult
-FutureOr<ResolvedLibraryResult> getElement(String fileName) =>
+FutureOr<ResolvedLibraryResult> getResolvedLibraryResult(String fileName) =>
     _getElement(path.canonicalize('$_sourceDirectory/$fileName'));
 
 final Map<String, ResolvedLibraryResult> _resolvedLibrariesCache = {};
@@ -50,7 +49,7 @@ FutureOr<LibraryElement> _getFlutterFormBuilder() async {
     return _flutterFormBuilder!;
   }
 
-  final formFields = await getElement('form_fields.dart');
+  final formFields = await getResolvedLibraryResult('form_fields.dart');
   final importResult = await formFields.session.getResolvedLibraryByElement(
     formFields.element.importedLibraries
         .singleWhere((e) => e.name == 'flutter_form_builder'),
@@ -63,18 +62,16 @@ FutureOr<LibraryElement> _getFlutterFormBuilder() async {
   return importResult.element;
 }
 
-LibraryElement? _propertiesLibrary;
+InterfaceType? _myEnumType;
 
-FutureOr<LibraryElement> _getPropertiesLibrary() async {
-  if (_propertiesLibrary != null) {
-    return _propertiesLibrary!;
+FutureOr<InterfaceType> getMyEnumType() async {
+  if (_myEnumType != null) {
+    return _myEnumType!;
   }
 
-  return _propertiesLibrary = (await getElement('properties.dart')).element;
+  final enumLibrary = (await getResolvedLibraryResult('enum.dart')).element;
+  return _myEnumType = enumLibrary.lookupType('MyEnum');
 }
-
-FutureOr<InterfaceType> getMyEnumType() async =>
-    (await _getPropertiesLibrary()).lookupType('MyEnum');
 
 LibraryElement? _parametersLibrary;
 
@@ -83,7 +80,8 @@ FutureOr<LibraryElement> getParametersLibrary() async {
     return _parametersLibrary!;
   }
 
-  return _parametersLibrary = (await getElement('parameters.dart')).element;
+  return _parametersLibrary =
+      (await getResolvedLibraryResult('parameters.dart')).element;
 }
 
 LibraryElement? _formFieldsLibrary;
@@ -93,7 +91,8 @@ FutureOr<LibraryElement> getFormFieldsLibrary() async {
     return _formFieldsLibrary!;
   }
 
-  return _formFieldsLibrary = (await getElement('form_fields.dart')).element;
+  return _formFieldsLibrary =
+      (await getResolvedLibraryResult('form_fields.dart')).element;
 }
 
 FutureOr<InterfaceType> getDateTimeType() async =>
@@ -127,7 +126,7 @@ FutureOr<ClassElement> lookupFormBuilderClass(String name) async =>
     lookupExportedClass(await _getFlutterFormBuilder(), name);
 
 FutureOr<InterfaceType> lookupFormFieldTypeInstance(String name) async =>
-    (await getElement('form_fields.dart'))
+    (await getResolvedLibraryResult('form_fields.dart'))
         .element
         .topLevelElements
         .whereType<TopLevelVariableElement>()

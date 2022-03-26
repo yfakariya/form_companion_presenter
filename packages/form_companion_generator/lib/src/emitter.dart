@@ -8,13 +8,11 @@ import 'package:meta/meta.dart';
 
 import 'config.dart';
 import 'dependency.dart';
-import 'emitter/assignment.dart';
 import 'emitter/instantiation.dart';
 import 'model.dart';
 import 'node_provider.dart';
 import 'parameter.dart';
 import 'type_instantiation.dart';
-import 'utilities.dart';
 
 part 'emitter/field_factory.dart';
 part 'emitter/typed_property.dart';
@@ -32,7 +30,7 @@ Stream<Object> emitFromData(
     yield global;
   }
 
-  yield emitPropertyAccessor(data.name, data.properties.values, config);
+  yield emitPropertyAccessor(data.name, data.properties, config);
   if (!config.suppressFieldFactory) {
     yield await emitFieldFactoriesAsync(nodeProvider, data, config);
   }
@@ -64,7 +62,12 @@ Iterable<String> emitGlobal(
 
   final dartImports =
       sortedImports.where((i) => i.library.startsWith('dart:')).toList();
-  final packageImports = sortedImports.skip(dartImports.length).toList();
+  final packageImports =
+      sortedImports.where((i) => i.library.startsWith('package:')).toList();
+  final relativeImports = sortedImports
+      .where((i) =>
+          !i.library.startsWith('dart:') && !i.library.startsWith('package:'))
+      .toList();
 
   if (config.asPart) {
     yield "// This file is part of '${sourceLibrary.source.shortName}' file,";
@@ -87,10 +90,8 @@ Iterable<String> emitGlobal(
     yield '';
   }
 
-  if (config.asPart) {
-    yield "// import '${sourceLibrary.source.shortName}';";
-  } else {
-    yield "import '${sourceLibrary.source.shortName}';";
+  for (final import in relativeImports) {
+    yield* _emitImport(import, config.asPart);
   }
 }
 

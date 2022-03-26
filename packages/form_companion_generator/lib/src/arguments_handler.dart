@@ -1,11 +1,16 @@
 // See LICENCE file in the root.
 
+import 'dart:async';
+
+import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:meta/meta.dart';
 
-import '../model.dart';
-import '../parameter.dart';
+import 'model.dart';
+import 'node_provider.dart';
+import 'parameter.dart';
+import 'utilities.dart';
 
 /// Represents context information for emitter functions.
 @sealed
@@ -59,10 +64,10 @@ class AssignmentContext {
   }
 }
 
-// TODO(yfakariya): rename to ArgumentsHandler and separate it.
-/// Implements argument emit and holds related data.
+/// Handles arguments for a constructor of form field
+/// and a form field factory which wraps the constructor.
 @sealed
-class ArgumentEmitter {
+class ArgumentsHandler {
   final bool _isFormBuilder;
   final List<ParameterInfo> _fieldConstructorParameters;
 
@@ -108,11 +113,25 @@ class ArgumentEmitter {
   /// Gets a collection of all parameters of `FormField`'s constructor.
   Iterable<ParameterInfo> get allParameters => _fieldConstructorParameters;
 
-  /// Initializes a new [ArgumentEmitter] instance.
-  ArgumentEmitter(
+  /// Initializes a new [ArgumentsHandler] instance.
+  ArgumentsHandler._(
     this._fieldConstructorParameters, {
     required bool isFormBuilder,
   }) : _isFormBuilder = isFormBuilder;
+
+  /// Creates a new [ArgumentsHandler] instance for specified [constructor].
+  static FutureOr<ArgumentsHandler> createAsync(
+    ConstructorDeclaration constructor,
+    NodeProvider nodeProvider, {
+    required bool isFormBuilder,
+  }) async =>
+      ArgumentsHandler._(
+        await constructor.parameters.parameters
+            .where((p) => !p.declaredElement!.hasDeprecated)
+            .map((p) => ParameterInfo.fromNodeAsync(nodeProvider, p))
+            .toListAsync(),
+        isFormBuilder: isFormBuilder,
+      );
 
   bool _isIntrinsic(ParameterInfo parameter) {
     if (_isFormBuilder) {
@@ -190,12 +209,12 @@ Iterable<String>? _assignAutovalidateMode(AssignmentContext context) =>
 Iterable<String>? _assignDecoration(AssignmentContext context) =>
     context.defaultValue == null
         ? [
-            'decoration: InputDecoration(',
+            'decoration: decoration ?? InputDecoration(',
             '  labelText: ${context.propertyDescriptor}.name,',
             '),',
           ]
         : [
-            'decoration: ${context.defaultValue}.copyWith(',
+            'decoration: decoration ?? ${context.defaultValue}.copyWith(',
             '  labelText: ${context.propertyDescriptor}.name,',
             '),',
           ];

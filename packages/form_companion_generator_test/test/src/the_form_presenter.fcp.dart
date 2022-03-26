@@ -62,8 +62,7 @@ import 'package:flutter/widgets.dart'
         ToolbarOptions,
         Widget;
 
-import 'package:form_companion_generator_test_targets/properties.dart'
-    show MyEnum;
+import 'package:form_companion_generator_test_targets/enum.dart' show MyEnum;
 
 import 'package:form_companion_presenter/form_companion_presenter.dart';
 

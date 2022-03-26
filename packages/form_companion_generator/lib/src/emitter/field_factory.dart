@@ -11,12 +11,12 @@ Future<String> emitFieldFactoriesAsync(
   PresenterDefinition data,
   Config config,
 ) async {
-  Stream<String> emitLinesAsync(
+  Iterable<String> emitLines(
     Iterable<PropertyAndFormFieldDefinition> properties,
-  ) async* {
+  ) sync* {
     // Note: async generator keeps the order.
 
-    for (final lines in data.properties.values.map((p) => emitFieldFactory(
+    for (final lines in properties.map((p) => emitFieldFactory(
           nodeProvider,
           data,
           p,
@@ -30,7 +30,7 @@ class \$${data.name}FieldFactories {
   final ${data.name} $_presenterField;
 
   \$${data.name}FieldFactories._(this.$_presenterField);
-${data.properties.isEmpty ? '\n  // No properties were found.' : (await emitLinesAsync(data.properties.values).toList()).join('\n')}
+${data.properties.isEmpty ? '\n  // No properties were found.' : (emitLines(data.properties)).join('\n')}
 }
 
 extension \$${data.name}FieldFactoryExtension on ${data.name} {
@@ -42,13 +42,11 @@ extension \$${data.name}FieldFactoryExtension on ${data.name} {
 
 /// Emits a field factory method lines.
 @visibleForTesting
-Stream<String> emitFieldFactory(
+Iterable<String> emitFieldFactory(
   NodeProvider nodeProvider,
   PresenterDefinition data,
   PropertyAndFormFieldDefinition property,
-) async* {
-  // Note: async generator keeps the order.
-
+) sync* {
   // For newline before lines.
   yield '';
 
@@ -61,14 +59,7 @@ Stream<String> emitFieldFactory(
     return;
   }
 
-  // TODO(yfakariya): pass from caller
-  final argumentEmitter = ArgumentEmitter(
-    await formFieldConstructor.parameters.parameters
-        .where((p) => !p.declaredElement!.hasDeprecated)
-        .map((p) => ParameterInfo.fromNodeAsync(nodeProvider, p))
-        .toListAsync(),
-    isFormBuilder: data.isFormBuilder,
-  );
+  final argumentHandler = property.argumentsHandler!;
 
   for (final warning in property.warnings) {
     yield '  // $_todoHeader WARNING - $warning';
@@ -85,20 +76,18 @@ Stream<String> emitFieldFactory(
   yield '  /// Gets a [FormField] for ${property.name} property.';
   yield '  $formFieldType ${property.name}(';
   yield '    BuildContext context, {';
-  for (final parameter in argumentEmitter.callerSuppliableParameters) {
+  for (final parameter in argumentHandler.callerSuppliableParameters) {
     yield '    ${emitParameter(instantiationContext, parameter)},';
   }
   yield '  }) {';
   yield '    final property = $_presenterField.${property.name};';
   yield '    return $formFieldType(';
-  yield* Stream.fromIterable(
-    argumentEmitter.emitAssignments(
-      data: data,
-      buildContext: 'context',
-      presenter: _presenterField,
-      propertyDescriptor: 'property',
-      indent: '      ',
-    ),
+  yield* argumentHandler.emitAssignments(
+    data: data,
+    buildContext: 'context',
+    presenter: _presenterField,
+    propertyDescriptor: 'property',
+    indent: '      ',
   );
   yield '    );';
   yield '  }';

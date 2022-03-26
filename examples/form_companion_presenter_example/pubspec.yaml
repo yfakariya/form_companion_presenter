@@ -28,6 +28,8 @@ dev_dependencies:
   flutter_lints: ^1.0.4
   flutter_test:
     sdk: flutter
+  form_companion_generator:
+    path: ../../packages/form_companion_generator
   format: ^1.1.1
   freezed: ^1.1.1
   grinder: ^0.9.0

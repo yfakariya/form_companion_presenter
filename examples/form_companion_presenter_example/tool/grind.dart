@@ -10,13 +10,27 @@ import 'grinder_tasks/distribute.dart';
 Future<dynamic> main(List<String> args) => grind(args);
 
 @Task()
-Future<dynamic> test() => TestRunner().testAsync();
+Future<dynamic> test() => runAsync(
+      'fvm',
+      arguments: [
+        'flutter',
+        'test',
+        '--reporter=expanded',
+      ],
+    );
 
 @DefaultTask()
-@Depends(clean, test, assemble, distribute)
-void build() {
-  Pub.build();
-}
+@Depends(clean, assemble, runBuildRunner, test, distribute)
+void buildAll() {}
+
+@Task()
+void build() => runAsync(
+      'fvm',
+      arguments: [
+        'flutter',
+        'build',
+      ],
+    );
 
 @Task()
 void clean() => defaultClean();
@@ -71,8 +85,9 @@ Future<void> easyL10n() async {
   );
 }
 
-@Task('Run freezed. Specify --watch to run with watch mode.')
-Future<void> runFreezed() async {
+@Task(
+    'Run freezed and form_companion_generator. Specify --watch to run with watch mode.')
+Future<void> runBuildRunner() async {
   final command =
       context.invocation.arguments.getFlag('watch') ? 'watch' : 'build';
   await runAsync(

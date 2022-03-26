@@ -10,13 +10,12 @@ import 'package:logging/logging.dart' show Logger;
 import 'package:meta/meta.dart';
 import 'package:source_gen/source_gen.dart';
 
+import 'arguments_handler.dart';
 import 'config.dart';
 import 'dependency.dart';
-import 'emitter/assignment.dart';
 import 'form_field_locator.dart';
 import 'model.dart';
 import 'node_provider.dart';
-import 'parameter.dart';
 import 'parser_data.dart';
 import 'parser_node.dart';
 import 'type_instantiation.dart';
@@ -66,13 +65,16 @@ FutureOr<PresenterDefinition> parseElementAsync(
     isFormBuilder: isFormBuilder,
     doAutovalidate: annotation.autovalidate,
     warnings: warnings,
-    imports: await collectDependenciesAsync(
-      config.asPart ? element.library : null,
-      properties.values,
-      nodeProvider,
-      logger,
-      isFormBuilder: isFormBuilder,
-    ),
+    imports: config.asPart
+        // import directives cannot be appeared in part files.
+        ? []
+        : await collectDependenciesAsync(
+            element.library,
+            properties,
+            nodeProvider,
+            logger,
+            isFormBuilder: isFormBuilder,
+          ),
     properties: properties,
   );
 }
@@ -160,7 +162,7 @@ ConstructorElement findConstructor(
 ///
 /// If any global warnings is issued, the message will be added to [globalWarnings].
 @visibleForTesting
-FutureOr<Map<String, PropertyAndFormFieldDefinition>> getPropertiesAsync(
+FutureOr<List<PropertyAndFormFieldDefinition>> getPropertiesAsync(
   NodeProvider nodeProvider,
   FormFieldLocator formFieldLocator,
   ConstructorElement constructor,
@@ -215,31 +217,28 @@ FutureOr<Map<String, PropertyAndFormFieldDefinition>> getPropertiesAsync(
     );
   }
 
-  final result = <String, PropertyAndFormFieldDefinition>{};
-//test
-  for (final source in _parseMethodInvocations(
+  return _toUniquePropertyDefinitions(
     context,
     building.buildings,
     constructor,
     isFormBuilder: isFormBuilder,
-  )) {
-    result[source.name] = await resolveFormFieldAsync(
-      context,
-      source,
-      isFormBuilder: isFormBuilder,
-    );
-  }
-
-  return result;
+  )
+      .map((m) async => await resolveFormFieldAsync(
+            context,
+            m,
+            isFormBuilder: isFormBuilder,
+          ))
+      .toListAsync();
 }
 
+// TODO
 /// Collects dependencies as a list of [LibraryImport] from `FormField`s
 /// constructor parameters in [properties].
 ///
 /// Of course, dependency for the library which declares the presenter, that is,
-/// dependency for [thisLibrary] will be ignored.
+/// dependency for [presenterLibrary] will be ignored.
 FutureOr<List<LibraryImport>> collectDependenciesAsync(
-  LibraryElement? thisLibrary,
+  LibraryElement presenterLibrary,
   Iterable<PropertyAndFormFieldDefinition> properties,
   NodeProvider nodeProvider,
   Logger logger, {
@@ -249,23 +248,17 @@ FutureOr<List<LibraryImport>> collectDependenciesAsync(
     nodeProvider,
     await nodeProvider.libraries.toList(),
     logger,
-    thisLibrary,
+    presenterLibrary,
   );
 
   for (final property in properties) {
     final formFieldConstructor = property.formFieldConstructor;
     if (formFieldConstructor != null) {
+      final argumentsHandler = property.argumentsHandler!;
+
       collector.reset(
         formFieldConstructor.declaredElement!.enclosingElement,
         property.warnings,
-      );
-
-      // TODO(yfakariya): Move to PropertyAndField field to avoid reconstruction.
-      final argumentsHandler = ArgumentEmitter(
-        await formFieldConstructor.parameters.parameters
-            .map((e) => ParameterInfo.fromNodeAsync(nodeProvider, e))
-            .toListAsync(),
-        isFormBuilder: isFormBuilder,
       );
       // Visit only parameters instead of constructor to avoid collecting
       // types used in super invocation, initializers, and body.

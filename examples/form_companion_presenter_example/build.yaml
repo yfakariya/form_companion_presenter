@@ -1,7 +1,23 @@
 targets:
   $default:
     builders:
-      freezed:freezed:
+      freezed:
         generate_for:
           include:
             - lib/models.dart
+      form_companion_generator:
+        enabled: true
+        generate_for:
+          exclude:
+            - lib/l10n/*
+            - lib/home.dart
+            - lib/main.dart
+            - lib/models.dart
+            - lib/routes.dart
+            - lib/screen.dart
+            - lib/validators.dart
+            - lib/*.freezed.dart
+            - lib/**/*.freezed.dart
+          include:
+            - lib/*.dart
+            - lib/components/*.dart

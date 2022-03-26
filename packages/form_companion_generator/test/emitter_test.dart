@@ -5,12 +5,14 @@ import 'dart:async';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
+import 'package:form_companion_generator/src/arguments_handler.dart';
 import 'package:form_companion_generator/src/config.dart';
 import 'package:form_companion_generator/src/emitter.dart';
 import 'package:form_companion_generator/src/model.dart';
 import 'package:form_companion_generator/src/node_provider.dart';
 import 'package:form_companion_generator/src/parser.dart';
 import 'package:form_companion_generator/src/type_instantiation.dart';
+import 'package:form_companion_generator/src/utilities.dart';
 import 'package:logging/logging.dart';
 import 'package:test/test.dart';
 import 'package:tuple/tuple.dart';
@@ -67,55 +69,61 @@ Future<void> main() async {
   final formBuilderTextField =
       await lookupFormBuilderClass('FormBuilderTextField');
 
-  FutureOr<Map<String, PropertyAndFormFieldDefinition>> makePropertiesFully(
-    Iterable<PropertyDefinitionSpec> specs,
-  ) async =>
-      {
-        await for (final d in Stream.fromFutures(
-          specs.map((spec) async {
-            final name = spec.item1;
-            final propertyValueType = spec.item2;
-            final fieldValueType = spec.item3;
-            final formField = spec.item4;
-            final preferredFormFieldType = spec.item5;
-            final warnings = spec.item6;
+  FutureOr<List<PropertyAndFormFieldDefinition>> makePropertiesFully(
+    Iterable<PropertyDefinitionSpec> specs, {
+    required bool isFormBuilder,
+  }) async =>
+      await specs.map((spec) async {
+        final name = spec.item1;
+        final propertyValueType = spec.item2;
+        final fieldValueType = spec.item3;
+        final formField = spec.item4;
+        final preferredFormFieldType = spec.item5;
+        final warnings = spec.item6;
 
-            final property = PropertyDefinition(
-              name: name,
-              propertyType: GenericInterfaceType(propertyValueType, []),
-              fieldType: GenericInterfaceType(fieldValueType, []),
-              preferredFormFieldType: preferredFormFieldType,
-              warnings: warnings,
-            );
-            return PropertyAndFormFieldDefinition(
-              property: property,
-              formFieldTypeName: preferredFormFieldType?.toString() ??
-                  formField?.name ??
-                  '<UNRESOLVED>', // This value is actually 'TextFormField' or 'FormBuilderTextField'.
-              formFieldConstructor: formField == null
-                  ? null
-                  : await _getConstructorNode(
-                      nodeProvider,
-                      formField.unnamedConstructor,
-                    ),
-              formFieldType: formField?.thisType,
-              instantiationContext: formField == null
-                  ? null
-                  : TypeInstantiationContext.create(
-                      nodeProvider,
-                      property,
-                      formField.thisType,
-                      logger,
-                    ),
-            );
-          }),
-        ))
-          d.name: d
-      };
+        final property = PropertyDefinition(
+          name: name,
+          propertyType: GenericInterfaceType(propertyValueType, []),
+          fieldType: GenericInterfaceType(fieldValueType, []),
+          preferredFormFieldType: preferredFormFieldType,
+          warnings: warnings,
+        );
 
-  FutureOr<Map<String, PropertyAndFormFieldDefinition>> makeProperties(
-    Iterable<Tuple4<String, InterfaceType, InterfaceType, ClassElement>> specs,
-  ) =>
+        final formFieldConstructor = formField == null
+            ? null
+            : await _getConstructorNode(
+                nodeProvider,
+                formField.unnamedConstructor,
+              );
+
+        return PropertyAndFormFieldDefinition(
+          property: property,
+          formFieldTypeName: preferredFormFieldType?.toString() ??
+              formField?.name ??
+              '<UNRESOLVED>', // This value is actually 'TextFormField' or 'FormBuilderTextField'.
+          formFieldConstructor: formFieldConstructor,
+          formFieldType: formField?.thisType,
+          argumentsHandler: formFieldConstructor == null
+              ? null
+              : await ArgumentsHandler.createAsync(
+                  formFieldConstructor, nodeProvider,
+                  isFormBuilder: isFormBuilder),
+          instantiationContext: formField == null
+              ? null
+              : TypeInstantiationContext.create(
+                  nodeProvider,
+                  property,
+                  formField.thisType,
+                  logger,
+                ),
+        );
+      }).toListAsync();
+
+  FutureOr<List<PropertyAndFormFieldDefinition>> makeProperties(
+    Iterable<Tuple4<String, InterfaceType, InterfaceType, ClassElement>>
+        specs, {
+    required bool isFormBuilder,
+  }) =>
       makePropertiesFully(
         specs.map(
           (e) => PropertyDefinitionSpec(
@@ -127,16 +135,19 @@ Future<void> main() async {
             [],
           ),
         ),
+        isFormBuilder: isFormBuilder,
       );
 
-  FutureOr<Map<String, PropertyAndFormFieldDefinition>> makeProperty(
+  FutureOr<List<PropertyAndFormFieldDefinition>> makeProperty(
     String name,
     InterfaceType propertyValueType,
     InterfaceType fieldValueType,
-    ClassElement formField,
-  ) =>
+    ClassElement formField, {
+    required bool isFormBuilder,
+  }) =>
       makeProperties(
         [Tuple4(name, propertyValueType, fieldValueType, formField)],
+        isFormBuilder: isFormBuilder,
       );
 
   group('emitPropertyAccessor', () {
@@ -146,6 +157,7 @@ Future<void> main() async {
         library.typeProvider.stringType,
         library.typeProvider.stringType,
         textFormField,
+        isFormBuilder: false,
       );
       final data = PresenterDefinition(
         name: 'Test01',
@@ -154,7 +166,7 @@ Future<void> main() async {
         warnings: [],
         imports: await collectDependenciesAsync(
           library,
-          properties.values,
+          properties,
           nodeProvider,
           logger,
           isFormBuilder: false,
@@ -162,7 +174,7 @@ Future<void> main() async {
         properties: properties,
       );
       expect(
-        emitPropertyAccessor(data.name, data.properties.values, emptyConfig),
+        emitPropertyAccessor(data.name, data.properties, emptyConfig),
         equals(typedProperties('Test01', [Tuple3('prop', 'String', 'String')])),
       );
     });
@@ -183,6 +195,7 @@ Future<void> main() async {
             textFormField,
           ),
         ],
+        isFormBuilder: false,
       );
       final data = PresenterDefinition(
         name: 'Test02',
@@ -191,7 +204,7 @@ Future<void> main() async {
         warnings: [],
         imports: await collectDependenciesAsync(
           library,
-          properties.values,
+          properties,
           nodeProvider,
           logger,
           isFormBuilder: false,
@@ -199,7 +212,7 @@ Future<void> main() async {
         properties: properties,
       );
       expect(
-        emitPropertyAccessor(data.name, data.properties.values, emptyConfig),
+        emitPropertyAccessor(data.name, data.properties, emptyConfig),
         equals(
           typedProperties(
             'Test02',
@@ -218,6 +231,7 @@ Future<void> main() async {
         library.typeProvider.listType(myEnumType),
         library.typeProvider.listType(myEnumType),
         dropdownButtonFormField,
+        isFormBuilder: false,
       );
       final data = PresenterDefinition(
         name: 'Test01',
@@ -226,7 +240,7 @@ Future<void> main() async {
         warnings: [],
         imports: await collectDependenciesAsync(
           library,
-          properties.values,
+          properties,
           nodeProvider,
           logger,
           isFormBuilder: false,
@@ -234,7 +248,7 @@ Future<void> main() async {
         properties: properties,
       );
       expect(
-        emitPropertyAccessor(data.name, data.properties.values, emptyConfig),
+        emitPropertyAccessor(data.name, data.properties, emptyConfig),
         equals(typedProperties(
           'Test01',
           [Tuple3('prop', 'List<MyEnum>', 'List<MyEnum>')],
@@ -249,10 +263,10 @@ Future<void> main() async {
         doAutovalidate: false,
         warnings: [],
         imports: [],
-        properties: {},
+        properties: [],
       );
       expect(
-        emitPropertyAccessor(data.name, data.properties.values, emptyConfig),
+        emitPropertyAccessor(data.name, data.properties, emptyConfig),
         equals(typedProperties('Test03', [])),
       );
     });
@@ -266,6 +280,7 @@ Future<void> main() async {
           library.typeProvider.stringType,
           library.typeProvider.stringType,
           textFormField,
+          isFormBuilder: false,
         );
         final data = PresenterDefinition(
           name: 'Test',
@@ -280,7 +295,6 @@ Future<void> main() async {
           [
             "import 'package:form_companion_presenter/form_companion_presenter.dart';",
             '',
-            "import 'form_fields.dart';",
           ],
         );
       });
@@ -291,6 +305,7 @@ Future<void> main() async {
           library.typeProvider.stringType,
           library.typeProvider.stringType,
           textFormField,
+          isFormBuilder: false,
         );
         final data = PresenterDefinition(
           name: 'Test',
@@ -307,7 +322,6 @@ Future<void> main() async {
             '// TODO(CompanionGenerator): WARNING - AAA',
             "import 'package:form_companion_presenter/form_companion_presenter.dart';",
             '',
-            "import 'form_fields.dart';",
           ],
         );
       });
@@ -318,6 +332,7 @@ Future<void> main() async {
           library.typeProvider.stringType,
           library.typeProvider.stringType,
           textFormField,
+          isFormBuilder: false,
         );
         final data = PresenterDefinition(
           name: 'Test',
@@ -335,7 +350,6 @@ Future<void> main() async {
             '// TODO(CompanionGenerator): WARNING - BBB',
             "import 'package:form_companion_presenter/form_companion_presenter.dart';",
             '',
-            "import 'form_fields.dart';",
           ],
         );
       });
@@ -348,6 +362,7 @@ Future<void> main() async {
           library.typeProvider.stringType,
           library.typeProvider.stringType,
           textFormField,
+          isFormBuilder: false,
         );
         final data = PresenterDefinition(
           name: 'Test',
@@ -356,7 +371,7 @@ Future<void> main() async {
           warnings: [],
           imports: await collectDependenciesAsync(
             library,
-            properties.values,
+            properties,
             nodeProvider,
             logger,
             isFormBuilder: false,
@@ -388,6 +403,7 @@ Future<void> main() async {
           dateTimeType,
           dateTimeType,
           formBuilderDateTimePicker,
+          isFormBuilder: true,
         );
         final data = PresenterDefinition(
           name: 'Test',
@@ -396,7 +412,7 @@ Future<void> main() async {
           warnings: [],
           imports: await collectDependenciesAsync(
             library,
-            properties.values,
+            properties,
             nodeProvider,
             logger,
             isFormBuilder: true,
@@ -432,6 +448,7 @@ Future<void> main() async {
           dateTimeType,
           dateTimeType,
           formBuilderDateTimePicker,
+          isFormBuilder: true,
         );
         final data = PresenterDefinition(
           name: 'Test',
@@ -440,7 +457,7 @@ Future<void> main() async {
           warnings: ['AAA', 'BBB'],
           imports: await collectDependenciesAsync(
             library,
-            properties.values,
+            properties,
             nodeProvider,
             logger,
             isFormBuilder: true,
@@ -480,6 +497,7 @@ Future<void> main() async {
         library.typeProvider.stringType,
         library.typeProvider.stringType,
         textFormField,
+        isFormBuilder: false,
       );
       final data = PresenterDefinition(
         name: 'Test01',
@@ -488,7 +506,7 @@ Future<void> main() async {
         warnings: [],
         imports: await collectDependenciesAsync(
           library,
-          properties.values,
+          properties,
           nodeProvider,
           logger,
           isFormBuilder: false,
@@ -517,6 +535,7 @@ Future<void> main() async {
             dropdownButtonFormField,
           ),
         ],
+        isFormBuilder: false,
       );
       final data = PresenterDefinition(
         name: 'Test02',
@@ -525,7 +544,7 @@ Future<void> main() async {
         warnings: [],
         imports: await collectDependenciesAsync(
           library,
-          properties.values,
+          properties,
           nodeProvider,
           logger,
           isFormBuilder: false,
@@ -551,7 +570,7 @@ Future<void> main() async {
         doAutovalidate: false,
         warnings: [],
         imports: [],
-        properties: {},
+        properties: [],
       );
       await expectLater(
         await emitFieldFactoriesAsync(nodeProvider, data, emptyConfig),
@@ -582,6 +601,7 @@ Future<void> main() async {
             realWarnings,
           )
         ],
+        isFormBuilder: isFormBuilder,
       );
       final data = PresenterDefinition(
         name: 'Test',
@@ -590,7 +610,7 @@ Future<void> main() async {
         warnings: [],
         imports: await collectDependenciesAsync(
           library,
-          properties.values,
+          properties,
           nodeProvider,
           logger,
           isFormBuilder: isFormBuilder,
@@ -598,10 +618,10 @@ Future<void> main() async {
         properties: properties,
       );
 
-      final lines = await emitFieldFactory(
+      final lines = emitFieldFactory(
         nodeProvider,
         data,
-        properties.values.first,
+        properties.first,
       ).toList();
 
       expect(lines.isNotEmpty, isTrue);
@@ -1082,7 +1102,7 @@ String textFormFieldFactory(
       controller: controller,
       initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       focusNode: focusNode,
-      decoration: const InputDecoration().copyWith(
+      decoration: decoration ?? const InputDecoration().copyWith(
         labelText: property.name,
       ),
       keyboardType: keyboardType,
@@ -1191,7 +1211,7 @@ String dropdownButtonFieldFactory(
       focusNode: focusNode,
       autofocus: autofocus,
       dropdownColor: dropdownColor,
-      decoration: InputDecoration(
+      decoration: decoration ?? InputDecoration(
         labelText: property.name,
       ),
       onSaved: (v) => property.setFieldValue(v, Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
@@ -1237,7 +1257,7 @@ String formBuilderCheckboxFactory(
       name: property.name,
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
-      decoration: const InputDecoration(border: InputBorder.none, focusedBorder: InputBorder.none, enabledBorder: InputBorder.none, errorBorder: InputBorder.none, disabledBorder: InputBorder.none).copyWith(
+      decoration: decoration ?? const InputDecoration(border: InputBorder.none, focusedBorder: InputBorder.none, enabledBorder: InputBorder.none, errorBorder: InputBorder.none, disabledBorder: InputBorder.none).copyWith(
         labelText: property.name,
       ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
@@ -1304,7 +1324,7 @@ String formBuilderCheckboxGroupFactory(
       name: property.name,
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
-      decoration: const InputDecoration().copyWith(
+      decoration: decoration ?? const InputDecoration().copyWith(
         labelText: property.name,
       ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
@@ -1383,7 +1403,7 @@ String formBuilderChoiceChipFactory(
       enabled: enabled,
       focusNode: focusNode,
       validator: property.getValidator(context),
-      decoration: const InputDecoration().copyWith(
+      decoration: decoration ?? const InputDecoration().copyWith(
         labelText: property.name,
       ),
       key: key,
@@ -1488,7 +1508,7 @@ String formBuilderDateRangePickerFactory(
       name: property.name,
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
-      decoration: const InputDecoration().copyWith(
+      decoration: decoration ?? const InputDecoration().copyWith(
         labelText: property.name,
       ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
@@ -1621,7 +1641,7 @@ String formBuilderDateTimePickerFactory(
       name: property.name,
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
-      decoration: const InputDecoration().copyWith(
+      decoration: decoration ?? const InputDecoration().copyWith(
         labelText: property.name,
       ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
@@ -1729,7 +1749,7 @@ String formBuilderDropdownFactory(
       name: property.name,
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
-      decoration: const InputDecoration().copyWith(
+      decoration: decoration ?? const InputDecoration().copyWith(
         labelText: property.name,
       ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
@@ -1812,7 +1832,7 @@ String formBuilderFilterChipFactory(
       enabled: enabled,
       focusNode: focusNode,
       validator: property.getValidator(context),
-      decoration: const InputDecoration().copyWith(
+      decoration: decoration ?? const InputDecoration().copyWith(
         labelText: property.name,
       ),
       key: key,
@@ -1892,7 +1912,7 @@ String formBuilderRadioGroupFactory(
       enabled: enabled,
       focusNode: focusNode,
       validator: property.getValidator(context),
-      decoration: const InputDecoration().copyWith(
+      decoration: decoration ?? const InputDecoration().copyWith(
         labelText: property.name,
       ),
       key: key,
@@ -1960,7 +1980,7 @@ String formBuilderRangeSliderFactory(
       name: property.name,
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))!,
-      decoration: const InputDecoration().copyWith(
+      decoration: decoration ?? const InputDecoration().copyWith(
         labelText: property.name,
       ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
@@ -2018,7 +2038,7 @@ String formBuilderSegmentedControlFactory(
       name: property.name,
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
-      decoration: const InputDecoration().copyWith(
+      decoration: decoration ?? const InputDecoration().copyWith(
         labelText: property.name,
       ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
@@ -2077,7 +2097,7 @@ String formBuilderSliderFactory(
       name: property.name,
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))!,
-      decoration: const InputDecoration().copyWith(
+      decoration: decoration ?? const InputDecoration().copyWith(
         labelText: property.name,
       ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
@@ -2143,7 +2163,7 @@ String formBuilderSwitchFactory(
       name: property.name,
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
-      decoration: const InputDecoration().copyWith(
+      decoration: decoration ?? const InputDecoration().copyWith(
         labelText: property.name,
       ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
@@ -2235,7 +2255,7 @@ String formBuilderTextFieldFactory(
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       readOnly: readOnly,
-      decoration: const InputDecoration().copyWith(
+      decoration: decoration ?? const InputDecoration().copyWith(
         labelText: property.name,
       ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly

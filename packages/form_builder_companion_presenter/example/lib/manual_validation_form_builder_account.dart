@@ -9,16 +9,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:form_builder_companion_presenter/form_builder_companion_presenter.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:form_companion_presenter/async_validation_indicator.dart';
-import 'package:form_companion_presenter/form_companion_extension.dart';
+import 'package:form_companion_presenter/form_companion_annotation.dart';
 import 'package:form_companion_presenter/form_companion_presenter.dart';
 
 import 'l10n/locale_keys.g.dart';
+import 'manual_validation_form_builder_account.fcp.dart';
 import 'models.dart';
 import 'routes.dart';
 import 'screen.dart';
 import 'validators.dart';
-
-// TODO(yfakariya): use generator
 
 //------------------------------------------------------------------------------
 // In this example, [AutovalidateMode] of the form and fields are disabled (default value).
@@ -57,17 +56,13 @@ class ManualValidationFormBuilderAccountPage extends Screen {
 class _ManualValidationFormBuilderAccountPane extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(_presenter);
     final presenter = ref.watch(_presenter.notifier);
 
     return SingleChildScrollView(
       child: Column(
         children: [
-          FormBuilderTextField(
-            name: 'id',
-            initialValue: state.id,
-            validator: presenter.getPropertyValidator('id', context),
-            keyboardType: TextInputType.emailAddress,
+          presenter.fields.id(
+            context,
             decoration: InputDecoration(
               labelText: LocaleKeys.id_label.tr(),
               hintText: LocaleKeys.id_hint.tr(),
@@ -77,21 +72,15 @@ class _ManualValidationFormBuilderAccountPane extends ConsumerWidget {
               ),
             ),
           ),
-          FormBuilderTextField(
-            name: 'name',
-            initialValue: state.name,
-            validator: presenter.getPropertyValidator('name', context),
+          presenter.fields.name(
+            context,
             decoration: InputDecoration(
               labelText: LocaleKeys.name_label.tr(),
               hintText: LocaleKeys.name_hint.tr(),
             ),
           ),
-          FormBuilderDropdown<Gender>(
-            name: 'gender',
-            initialValue: state.gender,
-            onSaved: presenter.savePropertyValue('gender', context),
-            // Tip: required to work
-            onChanged: (_) {},
+          presenter.fields.gender(
+            context,
             decoration: InputDecoration(
               labelText: LocaleKeys.gender_label.tr(),
               hintText: LocaleKeys.gender_hint.tr(),
@@ -115,18 +104,13 @@ class _ManualValidationFormBuilderAccountPane extends ConsumerWidget {
               ),
             ],
           ),
-          FormBuilderTextField(
-            name: 'age',
-            initialValue: state.age.toString(),
-            validator: presenter.getPropertyValidator('age', context),
-            decoration: InputDecoration(
-              labelText: LocaleKeys.age_label.tr(),
-              hintText: LocaleKeys.age_hint.tr(),
-            ),
-          ),
-          FormBuilderCheckboxGroup<Region>(
-            name: 'preferredRegions',
-            initialValue: state.preferredRegsions,
+          presenter.fields.age(context,
+              decoration: InputDecoration(
+                labelText: LocaleKeys.age_label.tr(),
+                hintText: LocaleKeys.age_hint.tr(),
+              )),
+          presenter.fields.preferredRegions(
+            context,
             decoration: InputDecoration(
               labelText: LocaleKeys.preferredRegions_label.tr(),
               hintText: LocaleKeys.preferredRegions_hint.tr(),
@@ -182,8 +166,8 @@ class _ManualValidationFormBuilderAccountPane extends ConsumerWidget {
   }
 }
 
-/// Testable presenter.
-@visibleForTesting
+/// Presenter which holds form properties.
+@FormCompanion(autovalidate: false)
 class ManualValidationFormBuilderAccountPresenter extends StateNotifier<Account>
     with CompanionPresenterMixin, FormBuilderCompanionMixin {
   final Reader _read;
@@ -197,6 +181,7 @@ class ManualValidationFormBuilderAccountPresenter extends StateNotifier<Account>
       PropertyDescriptorsBuilder()
         ..addText(
           name: 'id',
+          initialValue: initialState.id,
           validatorFactories: [
             FormBuilderValidators.required,
             FormBuilderValidators.email,
@@ -207,36 +192,39 @@ class ManualValidationFormBuilderAccountPresenter extends StateNotifier<Account>
         )
         ..addText(
           name: 'name',
+          initialValue: initialState.name,
           validatorFactories: [
             FormBuilderValidators.required,
           ],
         )
         ..addEnum<Gender>(
           name: 'gender',
+          initialValue: initialState.gender,
         )
         ..addString(
           name: 'age',
+          initialValue: initialState.age,
           validatorFactories: [
             FormBuilderValidators.required,
             (context) => FormBuilderValidators.min(context, 0),
           ],
-          initialValue: 20,
           stringConverter: intStringConverter,
         )
-        ..addEnumList<Region>(name: 'preferredRegions'),
+        ..addEnumList<Region>(
+          name: 'preferredRegions',
+          initialValues: initialState.preferredRegsions,
+        ),
     );
   }
 
   @override
   FutureOr<void> doSubmit() async {
     // Get saved values here to call business logic.
-    final id = getSavedPropertyValue<String>('id')!;
-    final name = getSavedPropertyValue<String>('name')!;
-    final gender = getSavedPropertyValue<Gender>('gender')!;
-    // You can omit generic type argument occasionally.
-    final age = getSavedPropertyValue<int>('age')!;
-    final preferredRegions =
-        getSavedPropertyValue<List<Region>>('preferredRegions')!;
+    final id = this.id.value!;
+    final name = this.name.value!;
+    final gender = this.gender.value!;
+    final age = this.age.value!;
+    final preferredRegions = this.preferredRegions.value!;
 
     // Call business logic.
     if (!(await doSubmitLogic(id, name, gender, age, preferredRegions))) {

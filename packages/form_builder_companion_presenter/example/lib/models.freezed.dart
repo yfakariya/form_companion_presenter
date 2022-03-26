@@ -1,5 +1,6 @@
 // coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target
 
 part of 'models.dart';
@@ -133,7 +134,8 @@ class _$AccountEmpty extends AccountEmpty {
 
   @override
   bool operator ==(dynamic other) {
-    return identical(this, other) || (other is AccountEmpty);
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType && other is AccountEmpty);
   }
 
   @override
@@ -299,28 +301,24 @@ class _$AccountRegistered extends AccountRegistered {
   @override
   bool operator ==(dynamic other) {
     return identical(this, other) ||
-        (other is AccountRegistered &&
-            (identical(other.id, id) ||
-                const DeepCollectionEquality().equals(other.id, id)) &&
-            (identical(other.name, name) ||
-                const DeepCollectionEquality().equals(other.name, name)) &&
-            (identical(other.gender, gender) ||
-                const DeepCollectionEquality().equals(other.gender, gender)) &&
-            (identical(other.age, age) ||
-                const DeepCollectionEquality().equals(other.age, age)) &&
-            (identical(other.preferredRegions, preferredRegions) ||
-                const DeepCollectionEquality()
-                    .equals(other.preferredRegions, preferredRegions)));
+        (other.runtimeType == runtimeType &&
+            other is AccountRegistered &&
+            const DeepCollectionEquality().equals(other.id, id) &&
+            const DeepCollectionEquality().equals(other.name, name) &&
+            const DeepCollectionEquality().equals(other.gender, gender) &&
+            const DeepCollectionEquality().equals(other.age, age) &&
+            const DeepCollectionEquality()
+                .equals(other.preferredRegions, preferredRegions));
   }
 
   @override
-  int get hashCode =>
-      runtimeType.hashCode ^
-      const DeepCollectionEquality().hash(id) ^
-      const DeepCollectionEquality().hash(name) ^
-      const DeepCollectionEquality().hash(gender) ^
-      const DeepCollectionEquality().hash(age) ^
-      const DeepCollectionEquality().hash(preferredRegions);
+  int get hashCode => Object.hash(
+      runtimeType,
+      const DeepCollectionEquality().hash(id),
+      const DeepCollectionEquality().hash(name),
+      const DeepCollectionEquality().hash(gender),
+      const DeepCollectionEquality().hash(age),
+      const DeepCollectionEquality().hash(preferredRegions));
 
   @JsonKey(ignore: true)
   @override
@@ -405,11 +403,11 @@ abstract class AccountRegistered extends Account {
       required List<Region> preferredRegions}) = _$AccountRegistered;
   AccountRegistered._() : super._();
 
-  String get id => throw _privateConstructorUsedError;
-  String get name => throw _privateConstructorUsedError;
-  Gender get gender => throw _privateConstructorUsedError;
-  int get age => throw _privateConstructorUsedError;
-  List<Region> get preferredRegions => throw _privateConstructorUsedError;
+  String get id;
+  String get name;
+  Gender get gender;
+  int get age;
+  List<Region> get preferredRegions;
   @JsonKey(ignore: true)
   $AccountRegisteredCopyWith<AccountRegistered> get copyWith =>
       throw _privateConstructorUsedError;
@@ -577,7 +575,8 @@ class _$BookingEmpty extends BookingEmpty {
 
   @override
   bool operator ==(dynamic other) {
-    return identical(this, other) || (other is BookingEmpty);
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType && other is BookingEmpty);
   }
 
   @override
@@ -827,52 +826,37 @@ class _$BookingRegistered extends BookingRegistered {
   @override
   bool operator ==(dynamic other) {
     return identical(this, other) ||
-        (other is BookingRegistered &&
-            (identical(other.bookingId, bookingId) ||
-                const DeepCollectionEquality()
-                    .equals(other.bookingId, bookingId)) &&
-            (identical(other.userId, userId) ||
-                const DeepCollectionEquality().equals(other.userId, userId)) &&
-            (identical(other.stay, stay) ||
-                const DeepCollectionEquality().equals(other.stay, stay)) &&
-            (identical(other.specialOfferDate, specialOfferDate) ||
-                const DeepCollectionEquality()
-                    .equals(other.specialOfferDate, specialOfferDate)) &&
-            (identical(other.roomType, roomType) ||
-                const DeepCollectionEquality()
-                    .equals(other.roomType, roomType)) &&
-            (identical(other.mealOffers, mealOffers) ||
-                const DeepCollectionEquality()
-                    .equals(other.mealOffers, mealOffers)) &&
-            (identical(other.persons, persons) ||
-                const DeepCollectionEquality()
-                    .equals(other.persons, persons)) &&
-            (identical(other.babyBeds, babyBeds) ||
-                const DeepCollectionEquality()
-                    .equals(other.babyBeds, babyBeds)) &&
-            (identical(other.smoking, smoking) ||
-                const DeepCollectionEquality()
-                    .equals(other.smoking, smoking)) &&
-            (identical(other.price, price) ||
-                const DeepCollectionEquality().equals(other.price, price)) &&
-            (identical(other.note, note) ||
-                const DeepCollectionEquality().equals(other.note, note)));
+        (other.runtimeType == runtimeType &&
+            other is BookingRegistered &&
+            const DeepCollectionEquality().equals(other.bookingId, bookingId) &&
+            const DeepCollectionEquality().equals(other.userId, userId) &&
+            const DeepCollectionEquality().equals(other.stay, stay) &&
+            const DeepCollectionEquality()
+                .equals(other.specialOfferDate, specialOfferDate) &&
+            const DeepCollectionEquality().equals(other.roomType, roomType) &&
+            const DeepCollectionEquality()
+                .equals(other.mealOffers, mealOffers) &&
+            const DeepCollectionEquality().equals(other.persons, persons) &&
+            const DeepCollectionEquality().equals(other.babyBeds, babyBeds) &&
+            const DeepCollectionEquality().equals(other.smoking, smoking) &&
+            const DeepCollectionEquality().equals(other.price, price) &&
+            const DeepCollectionEquality().equals(other.note, note));
   }
 
   @override
-  int get hashCode =>
-      runtimeType.hashCode ^
-      const DeepCollectionEquality().hash(bookingId) ^
-      const DeepCollectionEquality().hash(userId) ^
-      const DeepCollectionEquality().hash(stay) ^
-      const DeepCollectionEquality().hash(specialOfferDate) ^
-      const DeepCollectionEquality().hash(roomType) ^
-      const DeepCollectionEquality().hash(mealOffers) ^
-      const DeepCollectionEquality().hash(persons) ^
-      const DeepCollectionEquality().hash(babyBeds) ^
-      const DeepCollectionEquality().hash(smoking) ^
-      const DeepCollectionEquality().hash(price) ^
-      const DeepCollectionEquality().hash(note);
+  int get hashCode => Object.hash(
+      runtimeType,
+      const DeepCollectionEquality().hash(bookingId),
+      const DeepCollectionEquality().hash(userId),
+      const DeepCollectionEquality().hash(stay),
+      const DeepCollectionEquality().hash(specialOfferDate),
+      const DeepCollectionEquality().hash(roomType),
+      const DeepCollectionEquality().hash(mealOffers),
+      const DeepCollectionEquality().hash(persons),
+      const DeepCollectionEquality().hash(babyBeds),
+      const DeepCollectionEquality().hash(smoking),
+      const DeepCollectionEquality().hash(price),
+      const DeepCollectionEquality().hash(note));
 
   @JsonKey(ignore: true)
   @override
@@ -996,17 +980,17 @@ abstract class BookingRegistered extends Booking {
       required String note}) = _$BookingRegistered;
   BookingRegistered._() : super._();
 
-  String get bookingId => throw _privateConstructorUsedError;
-  String get userId => throw _privateConstructorUsedError;
-  DateTimeRange get stay => throw _privateConstructorUsedError;
-  DateTime get specialOfferDate => throw _privateConstructorUsedError;
-  RoomType get roomType => throw _privateConstructorUsedError;
-  List<MealType> get mealOffers => throw _privateConstructorUsedError;
-  int get persons => throw _privateConstructorUsedError;
-  int get babyBeds => throw _privateConstructorUsedError;
-  bool get smoking => throw _privateConstructorUsedError;
-  double get price => throw _privateConstructorUsedError;
-  String get note => throw _privateConstructorUsedError;
+  String get bookingId;
+  String get userId;
+  DateTimeRange get stay;
+  DateTime get specialOfferDate;
+  RoomType get roomType;
+  List<MealType> get mealOffers;
+  int get persons;
+  int get babyBeds;
+  bool get smoking;
+  double get price;
+  String get note;
   @JsonKey(ignore: true)
   $BookingRegisteredCopyWith<BookingRegistered> get copyWith =>
       throw _privateConstructorUsedError;

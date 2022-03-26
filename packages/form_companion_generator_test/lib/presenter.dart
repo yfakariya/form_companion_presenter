@@ -13,6 +13,7 @@ import 'package:form_builder_companion_presenter/form_builder_companion_presente
 import 'package:form_companion_presenter/form_companion_annotation.dart';
 import 'package:form_companion_presenter/form_companion_presenter.dart';
 
+import 'enum.dart';
 import 'properties.dart';
 
 // for detectMixinType() / getProperties() testing
