@@ -48,3 +48,8 @@ Iterable<String> findDependentPackages(
     }
   }
 }
+
+final _packagesShouldNotBeTweakedPubSpecs = {'form_companion_generator_test'};
+
+bool shouldEnablePubGetTargets(String package) =>
+    !_packagesShouldNotBeTweakedPubSpecs.contains(package);

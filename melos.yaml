@@ -11,7 +11,7 @@ scripts:
     description: Run `flutter analyze` in all packages.
 
   analyze:core:
-    run: melos exec -c 1 -- flutter analyze .
+    run: melos exec -c 1 -- fvm flutter analyze .
     description: Run `flutter analyze` in all packages.
     select-package:
       flutter: true
@@ -19,23 +19,30 @@ scripts:
       ignore: dev_env
 
   test:
-    run: melos run test:core --no-select
+    run: melos run test:flutter --no-select && melos run test:dart --no-select
     description: Run Flutter tests for a specific package in this project.
 
-  test:core:
+  test:flutter:
     run: melos exec -c 1 --fail-fast -- fvm flutter test --reporter=expanded --coverage
     description: Run Flutter tests for a specific package in this project.
     select-package:
       flutter: true
       dir-exists: test
-      # TEMP
-      ignore: '*examples'
+      ignore:
+        - 'form_companion_generator_test_targets'
+
+  test:dart:
+    run: melos exec -c 1 --fail-fast -- fvm dart test --reporter=expanded --coverage=coverage
+    description: Run Dart tests for a specific package in this project.
+    select-package:
+      flutter: false
+      dir-exists: test
 
   build_runner:
-    run: melos run freezed:generate --no-select
+    run: melos run build_runner:core --no-select
     description: Do source generation for freezed
   
-  freezed:generate:
+  build_runner:core:
     run: melos exec -c 1 --fail-fast -- fvm flutter pub run build_runner build --delete-conflicting-outputs
     select-package:
       flutter: true

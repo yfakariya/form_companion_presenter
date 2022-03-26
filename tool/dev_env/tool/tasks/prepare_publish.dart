@@ -47,6 +47,22 @@ Future<void> _assembleExamples({
     );
 
     await runAsync(
+      'fvm',
+      arguments: [
+        'flutter',
+        'pub',
+        'run',
+        'build_runner',
+        'build',
+      ],
+      runOptions: RunOptions(
+        stdoutEncoding: utf8,
+        stderrEncoding: utf8,
+      ),
+      workingDirectory: '../../examples/$example',
+    );
+
+    await runAsync(
       'grind',
       arguments: ['distribute'],
       runOptions: RunOptions(
@@ -79,6 +95,7 @@ Future<void> _runMelosScript(String scriptName) => runAsync(
 Future<void> _revertEnablingPubGet(List<String> packages) async {
   for (final package in packages) {
     await _restoreEnablePubGetCore(
+      package,
       '../../packages/$package',
       packages,
     );
@@ -86,27 +103,30 @@ Future<void> _revertEnablingPubGet(List<String> packages) async {
 }
 
 Future<void> _restoreEnablePubGetCore(
+  String package,
   String directory,
   List<String> packages,
 ) async {
-  final pubspecFile = getFile('$directory/pubspec.yaml');
-  final yamlContent = await pubspecFile.readAsString();
-  final pubspec = Pubspec.parse(yamlContent);
-  final pubspecEditor = YamlEditor(yamlContent);
+  if (shouldEnablePubGetTargets(package)) {
+    final pubspecFile = getFile('$directory/pubspec.yaml');
+    final yamlContent = await pubspecFile.readAsString();
+    final pubspec = Pubspec.parse(yamlContent);
+    final pubspecEditor = YamlEditor(yamlContent);
 
-  final dependentPackages = findDependentPackages(
-    packages,
-    pubspec,
-  );
+    final dependentPackages = findDependentPackages(
+      packages,
+      pubspec,
+    );
 
-  _revertEnabledLocalPackageDependencies(
-    dependentPackages,
-    pubspec,
-    pubspecEditor,
-  );
+    _revertEnabledLocalPackageDependencies(
+      dependentPackages,
+      pubspec,
+      pubspecEditor,
+    );
 
-  await pubspecFile.writeAsString(pubspecEditor.toString());
-  log('`pub get` is enabled for `${path.canonicalize(pubspecFile.path)}`.');
+    await pubspecFile.writeAsString(pubspecEditor.toString());
+    log('revert `pub get` enabling for `${path.canonicalize(pubspecFile.path)}`.');
+  }
 }
 
 void _revertEnabledLocalPackageDependencies(

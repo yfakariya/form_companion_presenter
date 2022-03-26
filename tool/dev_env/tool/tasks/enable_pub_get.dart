@@ -12,6 +12,7 @@ Future<void> enablePubGetCore({required bool runPubGet}) async {
   final packages = await getPackages('../../packages').toList();
   for (final package in packages) {
     await _enablePubGetCore(
+      package,
       '../../packages/$package',
       packages,
       runPubGet: runPubGet,
@@ -26,28 +27,31 @@ Future<void> enablePubGetCore({required bool runPubGet}) async {
 }
 
 Future<void> _enablePubGetCore(
+  String package,
   String directory,
   List<String> packages, {
   bool runPubGet = false,
 }) async {
-  final pubspecFile = getFile('$directory/pubspec.yaml');
-  final yamlContent = await pubspecFile.readAsString();
-  final pubspec = Pubspec.parse(yamlContent);
-  final pubspecEditor = YamlEditor(yamlContent);
+  if (shouldEnablePubGetTargets(package)) {
+    final pubspecFile = getFile('$directory/pubspec.yaml');
+    final yamlContent = await pubspecFile.readAsString();
+    final pubspec = Pubspec.parse(yamlContent);
+    final pubspecEditor = YamlEditor(yamlContent);
 
-  final dependentPackages = findDependentPackages(
-    packages,
-    pubspec,
-  );
+    final dependentPackages = findDependentPackages(
+      packages,
+      pubspec,
+    );
 
-  _enableLocalPackageDepencendies(
-    dependentPackages.toList(),
-    pubspec,
-    pubspecEditor,
-  );
+    _enableLocalPackageDepencendies(
+      dependentPackages.toList(),
+      pubspec,
+      pubspecEditor,
+    );
 
-  await pubspecFile.writeAsString(pubspecEditor.toString());
-  log('`pub get` is enabled for `${path.canonicalize(pubspecFile.path)}`.');
+    await pubspecFile.writeAsString(pubspecEditor.toString());
+    log('`pub get` is enabled for `${path.canonicalize(pubspecFile.path)}`.');
+  }
 
   if (runPubGet) {
     await _runPubGet(directory);
