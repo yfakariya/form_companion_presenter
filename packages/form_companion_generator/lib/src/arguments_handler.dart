@@ -80,28 +80,9 @@ class ArgumentsHandler {
       }
 
       if (_mightMakeOmittable(parameter)) {
-        if (parameter.requirability == ParameterRequirability.required) {
-          yield ParameterInfo(
-            parameter.node,
-            parameter.name,
-            parameter.type,
-            parameter.typeAnnotation,
-            parameter.functionTypedParameter,
-            null,
-            ParameterRequirability.forciblyOptional,
-          );
-          continue;
-        }
-        if (parameter.hasDefaultValue) {
-          yield ParameterInfo(
-            parameter.node,
-            parameter.name,
-            parameter.type,
-            parameter.typeAnnotation,
-            parameter.functionTypedParameter,
-            null,
-            ParameterRequirability.forciblyOptional,
-          );
+        if (parameter.requirability == ParameterRequirability.required ||
+            parameter.hasDefaultValue) {
+          yield parameter.asForciblyOptional();
           continue;
         }
       }

@@ -42,7 +42,7 @@ class ParameterInfo {
   bool get hasDefaultValue => defaultValue != null;
 
   /// Initializes a new [ParameterInfo] instance.
-  ParameterInfo(
+  ParameterInfo._(
     this.node,
     this.name,
     this.type,
@@ -62,7 +62,7 @@ class ParameterInfo {
       final base =
           await ParameterInfo.fromNodeAsync(nodeProvider, node.parameter);
       // But, use original DefaultFormatlParameter for node for DependencyCollector.
-      return ParameterInfo(
+      return ParameterInfo._(
         node,
         base.name,
         base.type,
@@ -75,7 +75,7 @@ class ParameterInfo {
 
     if (node is SimpleFormalParameter) {
       final element = node.declaredElement!;
-      return ParameterInfo(
+      return ParameterInfo._(
         node,
         node.identifier!.name,
         element.type,
@@ -95,7 +95,7 @@ class ParameterInfo {
         node,
         parameterElement,
       );
-      return ParameterInfo(
+      return ParameterInfo._(
         node,
         node.identifier.name,
         parameterElement.type,
@@ -110,7 +110,7 @@ class ParameterInfo {
 
     if (node is FunctionTypedFormalParameter) {
       final element = node.declaredElement!;
-      return ParameterInfo(
+      return ParameterInfo._(
         node,
         node.identifier.name,
         element.type,
@@ -129,6 +129,18 @@ class ParameterInfo {
       element: node.declaredElement,
     );
   }
+
+  /// Returns a copy of this instance clearing [defaultValue] and setting
+  /// [ParameterRequirability.forciblyOptional].
+  ParameterInfo asForciblyOptional() => ParameterInfo._(
+        node,
+        name,
+        type,
+        typeAnnotation,
+        functionTypedParameter,
+        null,
+        ParameterRequirability.forciblyOptional,
+      );
 }
 
 FutureOr<TypeAnnotation> _getFieldTypeAnnotationAsync(
