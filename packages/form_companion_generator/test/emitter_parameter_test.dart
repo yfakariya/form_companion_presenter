@@ -406,7 +406,7 @@ Future<void> main() async {
     }
   });
 
-  group('processTypeAnnotationWithValueType', () {
+  group('processTypeAnnotation', () {
     for (final nullability in ['simple', 'nullable']) {
       for (final constructorSpec
           in constructorParameters[nullability]!.entries) {
