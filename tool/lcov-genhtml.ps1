@@ -26,17 +26,19 @@ function ShouldGenerateLcovInfo {
     )
     
     if (!(Test-Path $lcovFilePath -PathType Leaf)) {
+        Write-Verbose "$lcovFilePath is not found."
         return $true
     }
 
     [datetime]$lastLcovFileModified = [FileInfo]::New($lcovFilePath).LastWriteTimeUtc
     [datetime]$lastAnyJsonFileModified = [DateTime]::New(1, 1, 1)
     foreach ($file in [DirectoryInfo]::New($inputPath).EnumerateFiles('*.vm.json', [SearchOption]::AllDirectories)) {
-        if ($file.LastWriteTimeUtc -lt $lastAnyJsonFileModified) {
+        if ($file.LastWriteTimeUtc -gt $lastAnyJsonFileModified) {
             $lastAnyJsonFileModified = $file.LastWriteTimeUtc
         }
     }
 
+    Write-Verbose "Compare $lastLcovFileModified -lt $lastAnyJsonFileModified -> $($lastLcovFileModified -lt $lastAnyJsonFileModified)"
     return $lastLcovFileModified -lt $lastAnyJsonFileModified
 }
 
