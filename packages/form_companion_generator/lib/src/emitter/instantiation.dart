@@ -235,11 +235,7 @@ void _processParameterElementsOfFunctionType(
         ..write(parameter.name);
     }
 
-    if (parameter.defaultValueCode != null) {
-      sink
-        ..write(' = ')
-        ..write(parameter.defaultValueCode);
-    }
+    // NOTE: Parameter in function type signature never have default value.
   }
 
   if (!isRequiredPositional) {
@@ -280,12 +276,7 @@ void processTypeAnnotation(
 
     _processAnnotationNullability(parameterTypeAnnotation, sink);
   } else {
-    // coverage:ignore-line
-    assert(
-      parameterTypeAnnotation is GenericFunctionType,
-      '$parameterTypeAnnotation (${parameterTypeAnnotation.runtimeType}) is not GenericFunctionType.',
-    );
-
+    // TypeAnnotation in parameter always be NamedType or GenericFunctionType.
     _processGenericFunctionType(
       context,
       parameterTypeAnnotation as GenericFunctionType,
@@ -415,7 +406,8 @@ void _processGenericFunctionTypeFormalParameter(
     return;
   }
 
-  assert(parameter is NormalFormalParameter);
+  // Formal parameter in function type signature never be FieldFormalParameter
+  // nor SuperFormalParameter, so parameter is always NormalFormalParameter here.
   _processGenericFunctionTypeNormalFormalParameter(
     context,
     parameter as NormalFormalParameter,
@@ -435,7 +427,6 @@ void _processGenericFunctionTypeNormalFormalParameter(
   //       In addition, "nested" function type parameter in function type's
   //       formal parameter list is treated as SimpleFormalParameter rather than
   //       FunctionTypedFormalParameter.
-  assert(parameter is SimpleFormalParameter);
 
   if (parameter is SimpleFormalParameter) {
     // NOTE: Function type's formal parameter cannot have keyword like `final`.
