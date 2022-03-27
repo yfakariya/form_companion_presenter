@@ -85,10 +85,6 @@ class FormCompanionAnnotation {
   /// Whether the presenter prefers autovalidate or not.
   bool get autovalidate => _annotation.read('autovalidate').boolValue;
 
-  /// Whether the presenter prefers suppressing field factory generation or not.
-  bool get suppressFieldFactory =>
-      _annotation.read('suppressFieldFactory').boolValue;
-
   /// Initializes a new instance which wraps specified [ConstantReader] for a `FormCompanion` annotation.
   FormCompanionAnnotation(this._annotation);
 }

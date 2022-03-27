@@ -31,9 +31,8 @@ Stream<Object> emitFromData(
   }
 
   yield emitPropertyAccessor(data.name, data.properties, config);
-  if (!config.suppressFieldFactory) {
-    yield await emitFieldFactoriesAsync(nodeProvider, data, config);
-  }
+
+  yield await emitFieldFactoriesAsync(nodeProvider, data, config);
 }
 
 final _formCompanionPresenterImport = LibraryImport(

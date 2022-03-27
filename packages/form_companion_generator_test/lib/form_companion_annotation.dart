@@ -17,11 +17,5 @@ class AutovalidateIsFalse {}
 @FormCompanion(autovalidate: true)
 class AutovalidateIsTrue {}
 
-@FormCompanion(suppressFieldFactory: true)
-class SuppressFieldFactoryIsTrue {}
-
-@FormCompanion(suppressFieldFactory: false)
-class SuppressFieldFactoryIsFalse {}
-
 @visibleForTesting
 class AnotherAnnotation {}
