@@ -136,6 +136,13 @@ class ParameterHolder<T> extends FormField<T> {
     List<int>? instantiatedNamedFunction(Map<String, int>? p)? = null,
     ui.BoxWidthStyle? prefixedNamedFunction(ui.BoxHeightStyle? p)? = null,
   }) {}
+
+  void complexFunction({
+    void Function({required String required, int optional})? hasNamed,
+    void Function([int p])? hasDefault,
+    void Function(String Function(int Function()))? nestedFunction,
+    final void Function()? withKeyword,
+  }) {}
 }
 
 class ParameterListHolder<T> extends FormBuilderField<List<T>> {

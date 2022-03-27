@@ -1,7 +1,6 @@
 // See LICENCE file in the root.
 
 import 'package:analyzer/dart/ast/ast.dart';
-import 'package:analyzer/dart/ast/token.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
@@ -9,6 +8,17 @@ import 'package:analyzer/dart/element/type.dart';
 import '../type_instantiation.dart';
 
 // TODO(yfakariya): Refactoring (It looks there are a lot of dead code).
+/// Represents context when the parameter is emitted.
+enum EmitParameterContext {
+  /// Parameter is normal, formal parameter of
+  /// declared method or function signature.
+  methodOrFunctionParameter,
+
+  /// Parameter is in formal parameter list of another function type.
+  /// Names will be omitted except for named parameters, and default values
+  /// should be omitted because noone can specify them.
+  functionTypeParameter,
+}
 
 void _processTypeNullability(DartType type, StringSink sink) {
   if (type.nullabilitySuffix == NullabilitySuffix.question) {
@@ -92,18 +102,6 @@ void _processTypeArguments(
       sink,
     );
 
-void _processTypeArgumentElements(
-  TypeInstantiationContext context,
-  Iterable<TypeParameterElement> elements,
-  StringSink sink,
-) =>
-    _processCollection(
-      context,
-      elements,
-      _processTypeArgumentElement,
-      sink,
-    );
-
 void _processTypeArgumentElement(
   TypeInstantiationContext context,
   TypeParameterElement element,
@@ -118,6 +116,7 @@ void _processTypeArgumentElement(
 void _processGenericFunctionType(
   TypeInstantiationContext context,
   GenericFunctionType type,
+  EmitParameterContext emitParameterContext,
   StringSink sink,
 ) {
   processTypeAnnotation(
@@ -128,26 +127,22 @@ void _processGenericFunctionType(
   );
   sink.write(' Function');
   _processTypeParameters(context, type.typeParameters?.typeParameters, sink);
-  _processFormalParameters(
+  _processGenericFunctionTypeFormalParameters(
     context,
     type.parameters.parameters,
+    emitParameterContext,
     sink,
-    forParameterSignature: false,
   );
   _processAnnotationNullability(type, sink);
 }
 
 /// Processes spcifieid [FunctionTypedFormalParameter] and emits to [sink].
-///
-/// If [forParameterSignature] is `true`, the identifier of [FunctionTypedFormalParameter]
-/// and its parameters will be emit to the output. Otherwise, these identifiers
-/// will be omitted, that is, the output will be pure function type representation.
 void processFunctionTypeFormalParameter(
   TypeInstantiationContext context,
   FunctionTypedFormalParameter parameter,
-  StringSink sink, {
-  required bool forParameterSignature,
-}) {
+  EmitParameterContext emitParameterContext,
+  StringSink sink,
+) {
   processTypeAnnotation(
     context,
     parameter.returnType,
@@ -156,7 +151,10 @@ void processFunctionTypeFormalParameter(
   );
   sink
     ..write(' ')
-    ..write(forParameterSignature ? parameter.identifier.name : 'Function');
+    ..write(
+        emitParameterContext == EmitParameterContext.methodOrFunctionParameter
+            ? parameter.identifier.name
+            : 'Function');
   _processTypeParameters(
     context,
     parameter.typeParameters?.typeParameters,
@@ -164,11 +162,11 @@ void processFunctionTypeFormalParameter(
   );
   sink.write('(');
   for (final parameter in parameter.parameters.parameters) {
-    _processFormalParameter(
+    _processGenericFunctionTypeFormalParameter(
       context,
       parameter,
+      emitParameterContext,
       sink,
-      forParameterSignature: forParameterSignature,
     );
   }
   sink.write(')');
@@ -184,14 +182,74 @@ void _processFunctionType(
 ) {
   processTypeWithValueType(context, type.returnType, sink);
   sink.write(' Function');
-  _processTypeArgumentElements(context, type.typeFormals, sink);
-  _processParameterElements(
+
+  _processCollection(
+    context,
+    type.typeFormals,
+    _processTypeArgumentElement,
+    sink,
+  );
+
+  _processParameterElementsOfFunctionType(
     context,
     type.parameters,
     sink,
-    isInFunctionType: true,
   );
+
   _processTypeNullability(type, sink);
+}
+
+void _processParameterElementsOfFunctionType(
+  TypeInstantiationContext context,
+  Iterable<ParameterElement> parameters,
+  StringSink sink,
+) {
+  sink.write('(');
+
+  var isFirst = true;
+  var isRequiredPositional = true;
+  var isNamed = false;
+  for (final parameter in parameters) {
+    if (isFirst) {
+      isFirst = false;
+    } else {
+      sink.write(', ');
+    }
+
+    if (!parameter.isRequiredPositional && isRequiredPositional) {
+      isRequiredPositional = false;
+      if (parameter.isNamed) {
+        isNamed = true;
+      }
+
+      sink.write(isNamed ? '{' : '[');
+    }
+
+    if (parameter.isRequiredNamed) {
+      sink.write('required ');
+    }
+
+    processTypeWithValueType(context, parameter.type, sink);
+
+    // This function should not emit parameter names without named parameters.
+    if (parameter.isNamed) {
+      sink
+        ..write(' ')
+        ..write(parameter.name);
+    }
+
+    if (parameter.defaultValueCode != null) {
+      sink
+        ..write(' = ')
+        ..write(parameter.defaultValueCode);
+    }
+  }
+
+  if (!isRequiredPositional) {
+    sink.write(isNamed ? '}' : ']');
+  }
+
+  sink.write(')');
 }
 
 /// Processes a specified [TypeAnnotation] and emits to [sink].
@@ -245,6 +303,7 @@ void _processTypeAnnotation(
 
     _processAnnotationNullability(parameterTypeAnnotation, sink);
   } else {
+    // coverage:ignore-line
     assert(
       parameterTypeAnnotation is GenericFunctionType,
       '$parameterTypeAnnotation (${parameterTypeAnnotation.runtimeType}) is not GenericFunctionType.',
@@ -253,6 +312,7 @@ void _processTypeAnnotation(
     _processGenericFunctionType(
       context,
       parameterTypeAnnotation as GenericFunctionType,
+      EmitParameterContext.functionTypeParameter,
       sink,
     );
   }
@@ -312,64 +372,16 @@ void _processFunctionAliasType(
   _processTypeNullability(parameterType, sink);
 }
 
-void _processParameterElements(
-  TypeInstantiationContext context,
-  Iterable<ParameterElement> parameters,
-  StringSink sink, {
-  bool isInFunctionType = false,
-}) {
-  sink.write('(');
-
-  var isFirst = true;
-  var isRequiredPositional = true;
-  var isNamed = false;
-  for (final parameter in parameters) {
-    if (isFirst) {
-      isFirst = false;
-    } else {
-      sink.write(', ');
-    }
-
-    if (!parameter.isRequiredPositional && isRequiredPositional) {
-      isRequiredPositional = false;
-      if (parameter.isNamed) {
-        isNamed = true;
-      }
-
-      sink.write(isNamed ? '{' : '[');
-    }
-
-    processTypeWithValueType(context, parameter.type, sink);
-    if (!isInFunctionType && parameter.name.isNotEmpty) {
-      sink
-        ..write(' ')
-        ..write(parameter.name);
-    }
-
-    if (parameter.defaultValueCode != null) {
-      sink
-        ..write(' = ')
-        ..write(parameter.defaultValueCode);
-    }
-  }
-
-  if (!isRequiredPositional) {
-    sink.write(isNamed ? '}' : ']');
-  }
-
-  sink.write(')');
-}
-
 /// Processes a specified collection of [FormalParameter] and emits them with
 /// preceding and trailing punctuations.
 ///
 /// This function also handles braces of named and optional parameters.
-void _processFormalParameters(
+void _processGenericFunctionTypeFormalParameters(
   TypeInstantiationContext context,
   Iterable<FormalParameter> parameters,
-  StringSink sink, {
-  required bool forParameterSignature,
-}) {
+  EmitParameterContext emitParameterContext,
+  StringSink sink,
+) {
   sink.write('(');
 
   var isFirst = true;
@@ -391,11 +403,11 @@ void _processFormalParameters(
       sink.write(isNamed ? '{' : '[');
     }
 
-    _processFormalParameter(
+    _processGenericFunctionTypeFormalParameter(
       context,
       parameter,
+      emitParameterContext,
       sink,
-      forParameterSignature: forParameterSignature,
     );
   }
 
@@ -406,45 +418,53 @@ void _processFormalParameters(
   sink.write(')');
 }
 
-void _processFormalParameter(
+void _processGenericFunctionTypeFormalParameter(
   TypeInstantiationContext context,
   FormalParameter parameter,
-  StringSink sink, {
-  required bool forParameterSignature,
-}) {
+  EmitParameterContext emitParameterContext,
+  StringSink sink,
+) {
   if (parameter is DefaultFormalParameter) {
-    _processNormalFormalParameter(
+    _processGenericFunctionTypeNormalFormalParameter(
       context,
       parameter.parameter,
+      emitParameterContext,
       sink,
-      forParameterSignature: forParameterSignature,
     );
-    sink
-      ..write(' = ')
-      ..write(parameter.defaultValue);
+
+    // NOTE: defaultValue should be emitted only if the formal parameter
+    //       is in declared method or function parameter list, not in formal
+    //       parameter list of function type.
     return;
   }
 
   assert(parameter is NormalFormalParameter);
-  _processNormalFormalParameter(
+  _processGenericFunctionTypeNormalFormalParameter(
     context,
     parameter as NormalFormalParameter,
+    emitParameterContext,
     sink,
-    forParameterSignature: forParameterSignature,
   );
 }
 
-void _processNormalFormalParameter(
+void _processGenericFunctionTypeNormalFormalParameter(
   TypeInstantiationContext context,
   NormalFormalParameter parameter,
-  StringSink sink, {
-  required bool forParameterSignature,
-}) {
+  EmitParameterContext emitParameterContext,
+  StringSink sink,
+) {
+  // NOTE: FieldFormalParameter or SuperFormalParameter never appear in
+  //       formal parameter list of generic function type.
+  //       In addition, "nested" function type parameter in function type's
+  //       formal parameter list is treated as SimpleFormalParameter rather than
+  //       FunctionTypedFormalParameter.
+  assert(parameter is SimpleFormalParameter);
+
   if (parameter is SimpleFormalParameter) {
-    if (parameter.keyword != null) {
-      sink
-        ..write(parameter.keyword)
-        ..write(' ');
+    // NOTE: Function type's formal parameter cannot have keyword like `final`.
+    //       So, omit keyword emit here, but requiredKeyword is required.
+    if (parameter.requiredKeyword != null) {
+      sink.write('required ');
     }
 
     if (parameter.type != null) {
@@ -455,8 +475,8 @@ void _processNormalFormalParameter(
         sink,
       );
 
-      if (parameter.identifier == null || !forParameterSignature) {
-        // Parameter of function type does not have identifier
+      if (parameter.identifier == null) {
+        // Parameter of function type may not have identifier
         // such as 'Function(int, String)'.
         return;
       }
@@ -465,70 +485,5 @@ void _processNormalFormalParameter(
     }
 
     sink.write(parameter.identifier!.name);
-    return;
-  }
-
-  if (parameter is FunctionTypedFormalParameter) {
-    processFunctionTypeFormalParameter(
-      context,
-      parameter,
-      sink,
-      forParameterSignature: false,
-    );
-    return;
-  }
-
-  void processFieldOrSuperFormalParameter(
-    TypeInstantiationContext context,
-    Token? keyword,
-    TypeAnnotation? type,
-    String prefix,
-    SimpleIdentifier identifier,
-    StringSink sink,
-  ) {
-    if (keyword != null) {
-      sink
-        ..write(keyword.toString())
-        ..write(' ');
-    }
-
-    if (type != null) {
-      processTypeAnnotation(
-        context,
-        type,
-        type.type!,
-        sink,
-      );
-      sink.write(' ');
-    }
-
-    sink
-      ..write(prefix)
-      ..write('.')
-      ..write(identifier);
-  }
-
-  if (parameter is FieldFormalParameter) {
-    processFieldOrSuperFormalParameter(
-      context,
-      parameter.keyword,
-      parameter.type,
-      'this',
-      parameter.identifier,
-      sink,
-    );
-    return;
-  }
-
-  if (parameter is SuperFormalParameter) {
-    processFieldOrSuperFormalParameter(
-      context,
-      parameter.keyword,
-      parameter.type,
-      'super',
-      parameter.identifier,
-      sink,
-    );
-    return;
   }
 }

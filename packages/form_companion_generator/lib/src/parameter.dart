@@ -32,6 +32,9 @@ class ParameterInfo {
   /// `null` if parameter is not a function type formal parameter like `int foo(String bar)`.
   final FunctionTypedFormalParameter? functionTypedParameter;
 
+  /// Gets a extra keyword like `final`.
+  final String? keyword;
+
   /// Gets a requiability of this parameter.
   final ParameterRequirability requirability;
 
@@ -48,6 +51,7 @@ class ParameterInfo {
     this.type,
     this.typeAnnotation,
     this.functionTypedParameter,
+    this.keyword,
     this.defaultValue,
     this.requirability,
   );
@@ -68,6 +72,7 @@ class ParameterInfo {
         base.type,
         base.typeAnnotation,
         base.functionTypedParameter,
+        base.keyword,
         base.defaultValue,
         base.requirability,
       );
@@ -81,6 +86,7 @@ class ParameterInfo {
         element.type,
         node.type,
         null,
+        node.keyword?.stringValue,
         element.defaultValueCode,
         element.isRequiredNamed
             ? ParameterRequirability.required
@@ -101,6 +107,7 @@ class ParameterInfo {
         parameterElement.type,
         fieldType,
         null,
+        node.keyword?.stringValue,
         parameterElement.defaultValueCode,
         parameterElement.isRequiredNamed
             ? ParameterRequirability.required
@@ -116,6 +123,7 @@ class ParameterInfo {
         element.type,
         null,
         node,
+        null,
         element.defaultValueCode,
         element.isRequiredNamed
             ? ParameterRequirability.required
@@ -138,6 +146,7 @@ class ParameterInfo {
         type,
         typeAnnotation,
         functionTypedParameter,
+        keyword,
         null,
         ParameterRequirability.forciblyOptional,
       );

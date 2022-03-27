@@ -306,7 +306,7 @@ Future<void> main() async {
       }
     }
 
-    for (final nullability in ['simple', 'nullable']) {
+    for (final nullability in ['simple', 'nullable', 'hasDefault', 'complex']) {
       for (final parameterSpec
           in methodParameters['${nullability}Function']!.entries) {
         final description = '$nullability, ${parameterSpec.key}';
@@ -444,7 +444,7 @@ Future<void> main() async {
       }
     }
 
-    for (final nullability in ['simple', 'nullable']) {
+    for (final nullability in ['simple', 'nullable', 'hasDefault', 'complex']) {
       for (final parameterSpec
           in methodParameters['${nullability}Function']!.entries) {
         final description = '$nullability, ${parameterSpec.key}';
@@ -471,8 +471,8 @@ Future<void> main() async {
             processFunctionTypeFormalParameter(
               context,
               parameterInfo.functionTypedParameter!,
+              EmitParameterContext.functionTypeParameter,
               sink,
-              forParameterSignature: false,
             );
           } else {
             processTypeAnnotation(
@@ -549,12 +549,22 @@ Future<void> main() async {
             await ParameterInfo.fromNodeAsync(nodeProvider, node);
         final sink = StringBuffer();
 
-        processTypeAnnotation(
-          context,
-          parameterInfo.typeAnnotation,
-          parameterInfo.type,
-          sink,
-        );
+        if (parameterInfo.functionTypedParameter != null) {
+          processFunctionTypeFormalParameter(
+            context,
+            parameterInfo.functionTypedParameter!,
+            EmitParameterContext.functionTypeParameter,
+            sink,
+          );
+        } else {
+          processTypeAnnotation(
+            context,
+            parameterInfo.typeAnnotation,
+            parameterInfo.type,
+            sink,
+          );
+        }
+
         expect(
           sink.toString(),
           equals(expected),
@@ -658,7 +668,15 @@ const functionExpected = {
         'List<int>? instantiatedNamedFunction(Map<String, int>? p)? = null',
     'prefixedNamedFunction':
         'ui.BoxWidthStyle? prefixedNamedFunction(ui.BoxHeightStyle? p)? = null',
-  }
+  },
+  'complexFunction': {
+    'hasNamed':
+        'void Function({required String required, int optional})? hasNamed',
+    'hasDefault': 'void Function([int p])? hasDefault',
+    'nestedFunction':
+        'void Function(String Function(int Function()))? nestedFunction',
+    'withKeyword': 'final void Function()? withKeyword',
+  },
 };
 
 const typeExpected = {
@@ -711,6 +729,29 @@ const typeExpected = {
       'instantiatedNamedFunction': 'List<int>? Function(Map<String, int>?)?',
       'prefixedNamedFunction': 'BoxWidthStyle? Function(BoxHeightStyle?)?',
     },
+    'hasDefault': {
+      'alias': 'NonGenericCallback?',
+      'genericAlias': 'GenericCallback<bool>?',
+      'instantiatedAlias': 'GenericCallback<int>?',
+      'prefixedAlias': 'VoidCallback?',
+      'function': 'int? Function(String?)?',
+      'genericFunction': 'bool? Function(bool?)?',
+      'parameterizedFunction': 'S? Function<S>(S?)?',
+      'instantiatedFunction': 'List<int>? Function(Map<String?, int?>?)?',
+      'prefixedFunction': 'BoxWidthStyle? Function(BoxHeightStyle?)?',
+      'namedFunction': 'int? Function(String?)?',
+      'genericNamedFunction': 'bool? Function(bool?)?',
+      'parameterizedNamedFunction': 'S? Function<S>(S?)?',
+      'instantiatedNamedFunction': 'List<int>? Function(Map<String, int>?)?',
+      'prefixedNamedFunction': 'BoxWidthStyle? Function(BoxHeightStyle?)?',
+    },
+    'complex': {
+      // parameters are lexically ordered in element type.
+      'hasNamed': 'void Function({int optional, required String required})?',
+      'hasDefault': 'void Function([int])?',
+      'nestedFunction': 'void Function(String Function(int Function()))?',
+      'withKeyword': 'void Function()?',
+    },
   }
 };
 
@@ -742,11 +783,11 @@ const typeAnnotationExpected = {
       'parameterizedFunction': 'S Function<S>(S)',
       'instantiatedFunction': 'List<int> Function(Map<String, int>)',
       'prefixedFunction': 'ui.BoxWidthStyle Function(ui.BoxHeightStyle)',
-      'namedFunction': 'int Function(String)',
-      'genericNamedFunction': 'bool Function(bool)',
-      'parameterizedNamedFunction': 'S Function<S>(S)',
-      'instantiatedNamedFunction': 'List<int> Function(Map<String, int>)',
-      'prefixedNamedFunction': 'ui.BoxWidthStyle Function(ui.BoxHeightStyle)',
+      'namedFunction': 'int Function(String p)',
+      'genericNamedFunction': 'bool Function(bool p)',
+      'parameterizedNamedFunction': 'S Function<S>(S p)',
+      'instantiatedNamedFunction': 'List<int> Function(Map<String, int> p)',
+      'prefixedNamedFunction': 'ui.BoxWidthStyle Function(ui.BoxHeightStyle p)',
     },
     'nullable': {
       'alias': 'NonGenericCallback?',
@@ -758,12 +799,35 @@ const typeAnnotationExpected = {
       'parameterizedFunction': 'S? Function<S>(S?)?',
       'instantiatedFunction': 'List<int>? Function(Map<String?, int?>?)?',
       'prefixedFunction': 'ui.BoxWidthStyle? Function(ui.BoxHeightStyle?)?',
-      'namedFunction': 'int? Function(String?)?',
-      'genericNamedFunction': 'bool? Function(bool?)?',
-      'parameterizedNamedFunction': 'S? Function<S>(S?)?',
-      'instantiatedNamedFunction': 'List<int>? Function(Map<String, int>?)?',
+      'namedFunction': 'int? Function(String? p)?',
+      'genericNamedFunction': 'bool? Function(bool? p)?',
+      'parameterizedNamedFunction': 'S? Function<S>(S? p)?',
+      'instantiatedNamedFunction': 'List<int>? Function(Map<String, int>? p)?',
       'prefixedNamedFunction':
-          'ui.BoxWidthStyle? Function(ui.BoxHeightStyle?)?',
+          'ui.BoxWidthStyle? Function(ui.BoxHeightStyle? p)?',
+    },
+    'hasDefault': {
+      'alias': 'NonGenericCallback?',
+      'genericAlias': 'GenericCallback<bool>?',
+      'instantiatedAlias': 'GenericCallback<int>?',
+      'prefixedAlias': 'ui.VoidCallback?',
+      'function': 'int? Function(String?)?',
+      'genericFunction': 'bool? Function(bool?)?',
+      'parameterizedFunction': 'S? Function<S>(S?)?',
+      'instantiatedFunction': 'List<int>? Function(Map<String?, int?>?)?',
+      'prefixedFunction': 'ui.BoxWidthStyle? Function(ui.BoxHeightStyle?)?',
+      'namedFunction': 'int? Function(String? p)?',
+      'genericNamedFunction': 'bool? Function(bool? p)?',
+      'parameterizedNamedFunction': 'S? Function<S>(S? p)?',
+      'instantiatedNamedFunction': 'List<int>? Function(Map<String, int>? p)?',
+      'prefixedNamedFunction':
+          'ui.BoxWidthStyle? Function(ui.BoxHeightStyle? p)?',
+    },
+    'complex': {
+      'hasNamed': 'void Function({required String required, int optional})?',
+      'hasDefault': 'void Function([int p])?',
+      'nestedFunction': 'void Function(String Function(int Function()))?',
+      'withKeyword': 'void Function()?',
     },
   }
 };
@@ -795,6 +859,6 @@ const listTypeForParameterTypeExpected = {
   'alias': 'GenericCallback<List<bool>>',
   'function': 'List<bool> Function(List<bool>)',
   'parameterizedFunction': 'List<S> Function<S>(List<S>)',
-  'namedFunction': 'List<bool> Function(List<bool>)',
-  'parameterizedNamedFunction': 'List<S> Function<S>(List<S>)',
+  'namedFunction': 'List<bool> Function(List<bool> p)',
+  'parameterizedNamedFunction': 'List<S> Function<S>(List<S> p)',
 };

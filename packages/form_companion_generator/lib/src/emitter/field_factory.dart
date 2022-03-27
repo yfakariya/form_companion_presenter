@@ -105,14 +105,20 @@ String emitParameter(
     sink.write('required ');
   }
 
+  if (parameter.keyword != null) {
+    sink
+      ..write(parameter.keyword)
+      ..write(' ');
+  }
+
   final functionTypedParameter = parameter.functionTypedParameter;
 
   if (functionTypedParameter != null) {
     processFunctionTypeFormalParameter(
       context,
       functionTypedParameter,
+      EmitParameterContext.methodOrFunctionParameter,
       sink,
-      forParameterSignature: true,
     );
 
     if (functionTypedParameter.question == null &&
