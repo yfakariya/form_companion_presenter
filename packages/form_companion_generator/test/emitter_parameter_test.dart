@@ -311,7 +311,7 @@ Future<void> main() async {
         'function',
         () => testForciblyOptional(
           methodParameters['simpleFunction']!['namedFunction']!,
-          'int namedFunction(String)?',
+          'int namedFunction(String p)?',
         ),
       );
     });
@@ -715,7 +715,9 @@ const functionExpected = {
         'void Function({required String required, int optional})? hasNamed',
     'hasDefault': 'void Function([int p])? hasDefault',
     'nestedFunction':
-        'void Function(String Function(int Function()))? nestedFunction',
+        'void Function(String Function(int Function() f1) f2)? nestedFunction',
+    'namedNestedFunction':
+        'void namedNestedFunction(String Function(int Function() f1) f2)?',
     'withKeyword': 'final void Function()? withKeyword',
   },
 };
@@ -791,6 +793,7 @@ const typeExpected = {
       'hasNamed': 'void Function({int optional, required String required})?',
       'hasDefault': 'void Function([int])?',
       'nestedFunction': 'void Function(String Function(int Function()))?',
+      'namedNestedFunction': 'void Function(String Function(int Function()))?',
       'withKeyword': 'void Function()?',
     },
   }
@@ -867,7 +870,9 @@ const typeAnnotationExpected = {
     'complex': {
       'hasNamed': 'void Function({required String required, int optional})?',
       'hasDefault': 'void Function([int p])?',
-      'nestedFunction': 'void Function(String Function(int Function()))?',
+      'nestedFunction': 'void Function(String Function(int Function() f1) f2)?',
+      'namedNestedFunction':
+          'void Function(String Function(int Function() f1) f2)?',
       'withKeyword': 'void Function()?',
     },
   }

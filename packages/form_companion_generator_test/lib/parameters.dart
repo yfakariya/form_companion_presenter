@@ -140,7 +140,8 @@ class ParameterHolder<T> extends FormField<T> {
   void complexFunction({
     void Function({required String required, int optional})? hasNamed,
     void Function([int p])? hasDefault,
-    void Function(String Function(int Function()))? nestedFunction,
+    void Function(String Function(int Function() f1) f2)? nestedFunction,
+    void namedNestedFunction(String Function(int Function() f1) f2)?,
     final void Function()? withKeyword,
   }) {}
 }

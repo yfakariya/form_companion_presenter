@@ -425,8 +425,10 @@ void _processGenericFunctionTypeNormalFormalParameter(
   // NOTE: FieldFormalParameter or SuperFormalParameter never appear in
   //       formal parameter list of generic function type.
   //       In addition, "nested" function type parameter in function type's
-  //       formal parameter list is treated as SimpleFormalParameter rather than
-  //       FunctionTypedFormalParameter.
+  //       formal parameter list never becomes FunctionTypedFormalParameter
+  //       because they must be represented as
+  //       `R Function(...) p` (SimpleFormalParameter with function type)
+  //       instead of `R p(...)` (FunctionTypedFormalParameter).
 
   if (parameter is SimpleFormalParameter) {
     // NOTE: Function type's formal parameter cannot have keyword like `final`.
