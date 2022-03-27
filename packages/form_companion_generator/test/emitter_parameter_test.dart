@@ -1,6 +1,7 @@
 // See LICENCE file in the root.
 
 import 'package:analyzer/dart/ast/ast.dart';
+import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:form_companion_generator/src/emitter.dart';
 import 'package:form_companion_generator/src/emitter/instantiation.dart';
@@ -267,6 +268,50 @@ Future<void> main() async {
           library.typeProvider.listType(myEnumType),
           formBuilderFilterChipOfMyEnum,
           myEnumType,
+        ),
+      );
+    });
+
+    group('forcibly optional', () {
+      Future<void> testForciblyOptional(
+        ParameterElement element,
+        String expected,
+      ) async {
+        final node = await nodeProvider
+            .getElementDeclarationAsync<FormalParameter>(element);
+        final context = TypeInstantiationContext.create(
+          nodeProvider,
+          makeProperty(
+            library.typeProvider.boolType,
+            library.typeProvider.boolType,
+          ),
+          holder.thisType,
+          logger,
+        );
+
+        expect(
+          emitParameter(
+            context,
+            (await ParameterInfo.fromNodeAsync(nodeProvider, node))
+                .asForciblyOptional(),
+          ),
+          expected,
+        );
+      }
+
+      test(
+        'non-function',
+        () => testForciblyOptional(
+          constructorParameters['simple']!['nonPrefixed']!,
+          'String? nonPrefixed',
+        ),
+      );
+
+      test(
+        'function',
+        () => testForciblyOptional(
+          methodParameters['simpleFunction']!['namedFunction']!,
+          'int namedFunction(String)?',
         ),
       );
     });
