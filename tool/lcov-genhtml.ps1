@@ -18,6 +18,28 @@ $VerbosePreference = 'SilentlyContinue'
 $InformationPreference = 'Continue'
 $ErrorActionPreference = 'Stop'
 
+function ShouldGenerateLcovInfo {
+    [OutputType([bool])]
+    param (
+        [String][Parameter(Mandatory)][ValidateNotNullOrEmpty()]$inputPath,
+        [String][Parameter(Mandatory)][ValidateNotNullOrEmpty()]$lcovFilePath
+    )
+    
+    if (!(Test-Path $lcovFilePath -PathType Leaf)) {
+        return $true
+    }
+
+    [datetime]$lastLcovFileModified = [FileInfo]::New($lcovFilePath).LastWriteTimeUtc
+    [datetime]$lastAnyJsonFileModified = [DateTime]::New(1, 1, 1)
+    foreach ($file in [DirectoryInfo]::New($inputPath).EnumerateFiles('*.vm.json', [SearchOption]::AllDirectories)) {
+        if ($file.LastWriteTimeUtc -lt $lastAnyJsonFileModified) {
+            $lastAnyJsonFileModified = $file.LastWriteTimeUtc
+        }
+    }
+
+    return $lastLcovFileModified -lt $lastAnyJsonFileModified
+}
+
 [Stopwatch]$sw = [Stopwatch]::StartNew()
 
 [string]$originalCurrentDirectory = [Environment]::CurrentDirectory
@@ -34,11 +56,10 @@ try {
         throw "$inputDirectory does not exist."
     }
 
-    [string]$lcovFilePath = [Path]::Combine($InputDirectory, 'lcov.info')
+    [string]$lcovFilePath = [Path]::Combine($inputPath, 'lcov.info')
     
-    if (!(Test-Path $lcovFilePath -PathType Leaf)) {
-        if ((Test-Path "$inputPath/test" -PathType Container) -and
-            [Directory]::GetFiles("$inputPath", '*.vm.json', [SearchOption]::AllDirectories).Count -eq 0) {
+    if (ShouldGenerateLcovInfo $inputPath $lcovFilePath) {
+        if ([Directory]::GetFiles($inputPath, '*.vm.json', [SearchOption]::AllDirectories).Count -eq 0) {
             throw "$inputPath does not have any file."
         }
 
