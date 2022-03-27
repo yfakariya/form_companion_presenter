@@ -250,18 +250,11 @@ void _processTypeAnnotation(
       '$parameterTypeAnnotation (${parameterTypeAnnotation.runtimeType}) is not GenericFunctionType.',
     );
 
-    final asFuntionType = parameterTypeAnnotation as GenericFunctionType;
-    final alias = asFuntionType.type?.alias;
-    if (alias != null) {
-      _processAliasedFunctionTypeAnnotation(
-        context,
-        context.getElementDeclaration<FunctionTypeAlias>(alias.element),
-        asFuntionType.type! as FunctionType,
-        sink,
-      );
-    } else {
-      _processGenericFunctionType(context, asFuntionType, sink);
-    }
+    _processGenericFunctionType(
+      context,
+      parameterTypeAnnotation as GenericFunctionType,
+      sink,
+    );
   }
 }
 
@@ -317,17 +310,6 @@ void _processFunctionAliasType(
   sink.write(alias.element.name);
   _processTypeArguments(context, alias.typeArguments, sink);
   _processTypeNullability(parameterType, sink);
-}
-
-void _processAliasedFunctionTypeAnnotation(
-  TypeInstantiationContext context,
-  FunctionTypeAlias alias,
-  FunctionType type,
-  StringSink sink,
-) {
-  sink.write(alias.name);
-  _processTypeParameters(context, alias.typeParameters!.typeParameters, sink);
-  _processTypeNullability(type, sink);
 }
 
 void _processParameterElements(
