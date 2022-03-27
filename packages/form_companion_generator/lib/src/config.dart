@@ -30,6 +30,12 @@ class Config {
 
   /// Ordered list of extra libraries to resolve `preferredFieldType`s.
   /// Each entries must be specified as 'package:` form URI.
+  ///
+  /// Dependencies in generating source is basically resolved from depdency
+  /// resolution for source file, which declares presenter(s) decorated with
+  /// `@formCompanion` annotation. In some situations, this stragety does not
+  /// work, so resolution of `FormField` can be failed. If so, you specify this
+  /// property to help generator.
   List<String> get extraLibraries {
     final dynamic mayBeExtraLibraries = _underlying[_extraLibrariesKey];
     if (mayBeExtraLibraries is List) {

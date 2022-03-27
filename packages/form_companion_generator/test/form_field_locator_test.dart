@@ -23,7 +23,7 @@ Future<void> main() async {
       await FormFieldLocator.createAsync(resolver, [], logger);
     });
 
-    test('package is not in project dependency', () async {
+    test('package is not in presenter dependency', () async {
       await expectLater(
         FormFieldLocator.createAsync(
           resolver,
