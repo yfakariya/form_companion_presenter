@@ -128,7 +128,7 @@ void _processGenericFunctionType(
   );
   sink.write(' Function');
   _processTypeParameters(context, type.typeParameters?.typeParameters, sink);
-  processFormalParameters(
+  _processFormalParameters(
     context,
     type.parameters.parameters,
     sink,
@@ -382,7 +382,7 @@ void _processParameterElements(
 /// preceding and trailing punctuations.
 ///
 /// This function also handles braces of named and optional parameters.
-void processFormalParameters(
+void _processFormalParameters(
   TypeInstantiationContext context,
   Iterable<FormalParameter> parameters,
   StringSink sink, {
