@@ -126,14 +126,9 @@ String emitParameter(
       sink.write('?');
     }
   } else {
-    // This method is partially a clone of a processFormalParameter function
-    // in instantiation.dart, but this block have ParameterRequirability.forciblyOptional
-    // between type emit and name emit.
-
     processTypeAnnotation(
       context,
-      parameter.typeAnnotation,
-      parameter.type,
+      parameter.typeAnnotation!,
       sink,
     );
 

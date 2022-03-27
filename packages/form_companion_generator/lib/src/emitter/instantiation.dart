@@ -7,7 +7,6 @@ import 'package:analyzer/dart/element/type.dart';
 
 import '../type_instantiation.dart';
 
-// TODO(yfakariya): Refactoring (It looks there are a lot of dead code).
 /// Represents context when the parameter is emitted.
 enum EmitParameterContext {
   /// Parameter is normal, formal parameter of
@@ -66,7 +65,7 @@ void _processTypeArgumentAnnotations(
     _processCollection(
       context,
       typeArguments,
-      _processTypeAnnotation,
+      processTypeAnnotation,
       sink,
     );
 
@@ -121,8 +120,7 @@ void _processGenericFunctionType(
 ) {
   processTypeAnnotation(
     context,
-    type.returnType,
-    type.returnType!.type!,
+    type.returnType!,
     sink,
   );
   sink.write(' Function');
@@ -145,8 +143,7 @@ void processFunctionTypeFormalParameter(
 ) {
   processTypeAnnotation(
     context,
-    parameter.returnType,
-    parameter.returnType!.type!,
+    parameter.returnType!,
     sink,
   );
   sink
@@ -253,27 +250,7 @@ void _processParameterElementsOfFunctionType(
 }
 
 /// Processes a specified [TypeAnnotation] and emits to [sink].
-///
-/// If [parameterTypeAnnotation] is `null`, this method fallbacks to
-/// [processTypeWithValueType] with [parameterType].
 void processTypeAnnotation(
-  TypeInstantiationContext context,
-  TypeAnnotation? parameterTypeAnnotation,
-  DartType parameterType,
-  StringSink sink,
-) {
-  if (parameterTypeAnnotation == null) {
-    return processTypeWithValueType(context, parameterType, sink);
-  } else {
-    _processTypeAnnotation(
-      context,
-      parameterTypeAnnotation,
-      sink,
-    );
-  }
-}
-
-void _processTypeAnnotation(
   TypeInstantiationContext context,
   TypeAnnotation parameterTypeAnnotation,
   StringSink sink,
@@ -470,8 +447,7 @@ void _processGenericFunctionTypeNormalFormalParameter(
     if (parameter.type != null) {
       processTypeAnnotation(
         context,
-        parameter.type,
-        parameter.type!.type!,
+        parameter.type!,
         sink,
       );
 

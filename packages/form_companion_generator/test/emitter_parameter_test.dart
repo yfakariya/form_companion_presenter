@@ -432,8 +432,7 @@ Future<void> main() async {
 
           processTypeAnnotation(
             context,
-            parameterInfo.typeAnnotation,
-            parameterInfo.type,
+            parameterInfo.typeAnnotation!,
             sink,
           );
           expect(
@@ -477,8 +476,7 @@ Future<void> main() async {
           } else {
             processTypeAnnotation(
               context,
-              parameterInfo.typeAnnotation,
-              parameterInfo.type,
+              parameterInfo.typeAnnotation!,
               sink,
             );
           }
@@ -515,8 +513,7 @@ Future<void> main() async {
 
         processTypeAnnotation(
           context,
-          parameterInfo.typeAnnotation,
-          parameterInfo.type,
+          parameterInfo.typeAnnotation!,
           sink,
         );
         expect(
@@ -559,8 +556,7 @@ Future<void> main() async {
         } else {
           processTypeAnnotation(
             context,
-            parameterInfo.typeAnnotation,
-            parameterInfo.type,
+            parameterInfo.typeAnnotation!,
             sink,
           );
         }
