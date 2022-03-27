@@ -34,14 +34,14 @@ Future<void> main() async {
   }
 
   group('FormCompanionAnnotation', () {
-    test('default -> autovalidate is true', () {
+    test('default -> autovalidate is null', () {
       final target = FormCompanionAnnotation(findAnnotationValue('Default'));
-      expect(target.autovalidate, isTrue);
+      expect(target.autovalidate, isNull);
     });
 
-    test('empty -> autovalidate is true', () {
+    test('empty -> autovalidate is null', () {
       final target = FormCompanionAnnotation(findAnnotationValue('Empty'));
-      expect(target.autovalidate, isTrue);
+      expect(target.autovalidate, isNull);
     });
 
     test('autovalidate is true', () {

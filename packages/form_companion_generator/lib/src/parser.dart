@@ -63,7 +63,7 @@ FutureOr<PresenterDefinition> parseElementAsync(
   return PresenterDefinition(
     name: element.name,
     isFormBuilder: isFormBuilder,
-    doAutovalidate: annotation.autovalidate,
+    doAutovalidate: annotation.autovalidate ?? config.autovalidateByDefault,
     warnings: warnings,
     imports: config.asPart
         // import directives cannot be appeared in part files.

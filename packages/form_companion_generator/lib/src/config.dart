@@ -4,12 +4,27 @@
 /// A configuration is specified through builder option,
 /// but they can be overriden via annotation.
 class Config {
+  static const _autovalidateByDefaultKey = 'autovalidate_by_default';
   static const _extraLibrariesKey = 'extra_libraries';
 
   /// Key of [asPart] in config.
   static const asPartKey = 'as_part';
 
   final Map<String, dynamic> _underlying;
+
+  /// Whether autovalidate for each `FormField` should be `true` when each
+  /// applications of `@FormCompanion` annotations do not specify their own
+  /// configuration.
+  /// The default is `true`, so each `FormField` will do auto-validation as
+  /// `AutovalidateMode.onUserInteraction` when form field factory callers
+  /// do not specify `AutovalidateMode`.
+  ///
+  /// Note that this configuration and `@FormCompanion` setting do **NOT**
+  /// affect `autovalidateMode` of `Form` (or `FormBuilder`) itself.
+  /// You must specify it when you want to validate all fields at once rather
+  /// than auto-validating each field individually.
+  bool get autovalidateByDefault =>
+      _underlying[_autovalidateByDefaultKey] != false;
 
   /// Whether the file should be generated as part of target library
   /// rather than individual library file.
@@ -32,7 +47,9 @@ class Config {
   /// property to help generator.
   List<String> get extraLibraries {
     final dynamic mayBeExtraLibraries = _underlying[_extraLibrariesKey];
-    if (mayBeExtraLibraries is List) {
+    if (mayBeExtraLibraries is String) {
+      return [mayBeExtraLibraries];
+    } else if (mayBeExtraLibraries is List) {
       return mayBeExtraLibraries.whereType<String>().toList();
     } else {
       return [];

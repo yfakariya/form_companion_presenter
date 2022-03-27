@@ -83,7 +83,14 @@ class FormCompanionAnnotation {
   final ConstantReader _annotation;
 
   /// Whether the presenter prefers autovalidate or not.
-  bool get autovalidate => _annotation.read('autovalidate').boolValue;
+  bool? get autovalidate {
+    final value = _annotation.read('autovalidate');
+    if (value.isNull) {
+      return null;
+    } else {
+      return value.boolValue;
+    }
+  }
 
   /// Initializes a new instance which wraps specified [ConstantReader] for a `FormCompanion` annotation.
   FormCompanionAnnotation(this._annotation);
