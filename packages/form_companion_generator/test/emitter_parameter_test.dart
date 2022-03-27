@@ -248,7 +248,7 @@ Future<void> main() async {
             context,
             await ParameterInfo.fromNodeAsync(nodeProvider, node),
           ),
-          equals(expected),
+          expected,
         );
       }
 
