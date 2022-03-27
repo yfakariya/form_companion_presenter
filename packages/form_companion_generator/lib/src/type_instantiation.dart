@@ -1,32 +1,26 @@
 // See LICENCE file in the root.
 
-import 'package:analyzer/dart/ast/ast.dart';
-import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
 import 'package:source_gen/source_gen.dart';
 
 import 'model.dart';
-import 'node_provider.dart';
 
 /// A context information holder of type instantiaion.
 @sealed
 class TypeInstantiationContext {
   static final _formFieldPattern = RegExp(RegExp.escape('FormField<'));
 
-  final NodeProvider _nodeProvider;
   final Map<String, String> _typeArgumentsMappings;
 
   TypeInstantiationContext._(
-    this._nodeProvider,
     this._typeArgumentsMappings,
   );
 
   /// Creates a new [TypeInstantiationContext] instance
   /// for the [PropertyDefinition].
   factory TypeInstantiationContext.create(
-    NodeProvider nodeProvider,
     PropertyDefinition property,
     InterfaceType formFieldType,
     Logger logger,
@@ -58,7 +52,7 @@ class TypeInstantiationContext {
 
       logger.finer("Form field type '$formFieldType' is not generic.");
 
-      return TypeInstantiationContext._(nodeProvider, {});
+      return TypeInstantiationContext._({});
     }
 
     final mapping = <String, String>{};
@@ -73,7 +67,7 @@ class TypeInstantiationContext {
       "Create type arguments mapping between field type argument '$formFieldTypeArgument' "
       "and specified field value type '${property.fieldType}': $mapping",
     );
-    return TypeInstantiationContext._(nodeProvider, mapping);
+    return TypeInstantiationContext._(mapping);
   }
 
   static void _buildTypeArgumentMappings(
@@ -222,10 +216,4 @@ class TypeInstantiationContext {
   /// This method is a core of type instantiation.
   String getMappedType(String mayBeTypeParameter) =>
       _typeArgumentsMappings[mayBeTypeParameter] ?? mayBeTypeParameter;
-
-  /// Get an [AstNode] for specified [Element].
-  ///
-  /// This method assumes that caller passes resolved element only.
-  T getElementDeclaration<T extends AstNode>(Element element) =>
-      _nodeProvider.getElementDeclarationSync<T>(element);
 }

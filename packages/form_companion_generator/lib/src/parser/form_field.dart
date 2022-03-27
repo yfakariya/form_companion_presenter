@@ -44,7 +44,6 @@ FutureOr<PropertyAndFormFieldDefinition> resolveFormFieldAsync(
     }
 
     instantiationContext = TypeInstantiationContext.create(
-      context.nodeProvider,
       property,
       formFieldType,
       context.logger,

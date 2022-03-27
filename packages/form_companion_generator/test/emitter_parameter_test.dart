@@ -105,7 +105,6 @@ Future<void> main() async {
             final node = await nodeProvider
                 .getElementDeclarationAsync<FormalParameter>(element);
             final context = TypeInstantiationContext.create(
-              nodeProvider,
               makeProperty(
                 library.typeProvider.boolType,
                 library.typeProvider.boolType,
@@ -136,7 +135,6 @@ Future<void> main() async {
             final node = await nodeProvider
                 .getElementDeclarationAsync<FormalParameter>(element);
             final context = TypeInstantiationContext.create(
-              nodeProvider,
               makeProperty(
                 library.typeProvider.boolType,
                 library.typeProvider.boolType,
@@ -166,7 +164,6 @@ Future<void> main() async {
           final node = await nodeProvider
               .getElementDeclarationAsync<FormalParameter>(element);
           final context = TypeInstantiationContext.create(
-            nodeProvider,
             makeProperty(
               library.typeProvider.boolType,
               library.typeProvider.boolType,
@@ -196,7 +193,6 @@ Future<void> main() async {
             final node = await nodeProvider
                 .getElementDeclarationAsync<FormalParameter>(element);
             final context = TypeInstantiationContext.create(
-              nodeProvider,
               makeProperty(
                 library.typeProvider.boolType,
                 library.typeProvider.boolType,
@@ -228,7 +224,6 @@ Future<void> main() async {
         final node = await nodeProvider
             .getElementDeclarationAsync<FormalParameter>(parameterElement);
         final context = TypeInstantiationContext.create(
-          nodeProvider,
           PropertyDefinition(
             name: 'prop',
             propertyType: GenericInterfaceType(propertyAndFieldValueType, []),
@@ -280,7 +275,6 @@ Future<void> main() async {
         final node = await nodeProvider
             .getElementDeclarationAsync<FormalParameter>(element);
         final context = TypeInstantiationContext.create(
-          nodeProvider,
           makeProperty(
             library.typeProvider.boolType,
             library.typeProvider.boolType,
@@ -328,7 +322,6 @@ Future<void> main() async {
         test(description, () {
           final element = constructorSpec.value;
           final context = TypeInstantiationContext.create(
-            nodeProvider,
             makeProperty(
               library.typeProvider.boolType,
               library.typeProvider.boolType,
@@ -361,7 +354,6 @@ Future<void> main() async {
         test(description, () {
           final element = parameterSpec.value;
           final context = TypeInstantiationContext.create(
-            nodeProvider,
             makeProperty(
               library.typeProvider.boolType,
               library.typeProvider.boolType,
@@ -394,7 +386,6 @@ Future<void> main() async {
       test(description, () {
         final element = listConstructorParameters[typeKind]!;
         final context = TypeInstantiationContext.create(
-          nodeProvider,
           makeProperty(
             library.typeProvider.boolType,
             library.typeProvider.boolType,
@@ -428,7 +419,6 @@ Future<void> main() async {
       test(description, () {
         final element = listMethodParameters[typeKind]!;
         final context = TypeInstantiationContext.create(
-          nodeProvider,
           makeProperty(
             library.typeProvider.boolType,
             library.typeProvider.boolType,
@@ -463,7 +453,6 @@ Future<void> main() async {
           final node =
               constructorParameterNodes[nullability]![constructorSpec.key]!;
           final context = TypeInstantiationContext.create(
-            nodeProvider,
             makeProperty(
               library.typeProvider.boolType,
               library.typeProvider.boolType,
@@ -499,7 +488,6 @@ Future<void> main() async {
           final node = methodParameterNodes['${nullability}Function']![
               parameterSpec.key]!;
           final context = TypeInstantiationContext.create(
-            nodeProvider,
             makeProperty(
               library.typeProvider.boolType,
               library.typeProvider.boolType,
@@ -544,7 +532,6 @@ Future<void> main() async {
       test(description, () async {
         final node = listConstructorParameterNodes[typeKind]!;
         final context = TypeInstantiationContext.create(
-          nodeProvider,
           makeProperty(
             library.typeProvider.boolType,
             library.typeProvider.boolType,
@@ -579,7 +566,6 @@ Future<void> main() async {
       test(description, () async {
         final node = listMethodParameterNodes[typeKind]!;
         final context = TypeInstantiationContext.create(
-          nodeProvider,
           makeProperty(
             library.typeProvider.boolType,
             library.typeProvider.boolType,

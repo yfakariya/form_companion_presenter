@@ -111,7 +111,6 @@ Future<void> main() async {
           instantiationContext: formField == null
               ? null
               : TypeInstantiationContext.create(
-                  nodeProvider,
                   property,
                   formField.thisType,
                   logger,

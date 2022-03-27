@@ -31,23 +31,6 @@ class NodeProvider {
   NodeProvider(this._resolver);
 
   /// Returns a [AstNode] which is associated to specified [element].
-  ///
-  /// This method just returns from library resolution cache synchronously.
-  /// If the library resolution is not cached, throws [StateError].
-  @optionalTypeArgs
-  T getElementDeclarationSync<T extends AstNode>(
-    Element element,
-  ) {
-    final key = element.nonSynthetic.source!.uri;
-    final cache = _caches[key];
-    if (cache == null) {
-      throw StateError("Library '${element.library}' is not resolved yet.");
-    }
-
-    return cache.getElementDeclarationSync<T>(element);
-  }
-
-  /// Returns a [AstNode] which is associated to specified [element].
   @optionalTypeArgs
   FutureOr<T> getElementDeclarationAsync<T extends AstNode>(
     Element element,
@@ -67,19 +50,6 @@ class _NodeCache {
   final Map<int, AstNode> _cache = {};
 
   _NodeCache(this.key, this._resolver);
-
-  @optionalTypeArgs
-  T getElementDeclarationSync<T extends AstNode>(
-    Element element,
-  ) {
-    final realElement = element.nonSynthetic;
-    final cache = _cache[realElement.nameOffset];
-    if (cache == null) {
-      throw StateError("Node for element '$element' is not resolved yet.");
-    }
-
-    return cache as T;
-  }
 
   @optionalTypeArgs
   FutureOr<T> getElementDeclarationAsync<T extends AstNode>(
