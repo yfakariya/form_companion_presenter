@@ -174,7 +174,7 @@ Future<void> main() async {
       );
       expect(
         emitPropertyAccessor(data.name, data.properties, emptyConfig),
-        equals(typedProperties('Test01', [Tuple3('prop', 'String', 'String')])),
+        typedProperties('Test01', [Tuple3('prop', 'String', 'String')]),
       );
     });
 
@@ -212,14 +212,12 @@ Future<void> main() async {
       );
       expect(
         emitPropertyAccessor(data.name, data.properties, emptyConfig),
-        equals(
-          typedProperties(
-            'Test02',
-            [
-              Tuple3('prop1', 'String', 'String'),
-              Tuple3('prop2', 'int', 'String'),
-            ],
-          ),
+        typedProperties(
+          'Test02',
+          [
+            Tuple3('prop1', 'String', 'String'),
+            Tuple3('prop2', 'int', 'String'),
+          ],
         ),
       );
     });
@@ -248,10 +246,10 @@ Future<void> main() async {
       );
       expect(
         emitPropertyAccessor(data.name, data.properties, emptyConfig),
-        equals(typedProperties(
+        typedProperties(
           'Test01',
           [Tuple3('prop', 'List<MyEnum>', 'List<MyEnum>')],
-        )),
+        ),
       );
     });
 
@@ -266,7 +264,7 @@ Future<void> main() async {
       );
       expect(
         emitPropertyAccessor(data.name, data.properties, emptyConfig),
-        equals(typedProperties('Test03', [])),
+        typedProperties('Test03', []),
       );
     });
   });
@@ -514,7 +512,7 @@ Future<void> main() async {
       );
       await expectLater(
         await emitFieldFactoriesAsync(nodeProvider, data, emptyConfig),
-        equals(fieldFactories('Test01', [textFormFieldFactory('prop')])),
+        fieldFactories('Test01', [textFormFieldFactory('prop')]),
       );
     });
 
@@ -552,13 +550,13 @@ Future<void> main() async {
       );
       await expectLater(
         await emitFieldFactoriesAsync(nodeProvider, data, emptyConfig),
-        equals(fieldFactories(
+        fieldFactories(
           'Test02',
           [
             textFormFieldFactory('prop1'),
             dropdownButtonFieldFactory('prop2', 'bool'),
           ],
-        )),
+        ),
       );
     });
 
@@ -573,10 +571,11 @@ Future<void> main() async {
       );
       await expectLater(
         await emitFieldFactoriesAsync(nodeProvider, data, emptyConfig),
-        equals(fieldFactories('Test03', [])),
+        fieldFactories('Test03', []),
       );
     });
   });
+
   group('emitFieldFactory', () {
     FutureOr<void> _testEmitFieldFactory({
       required bool isFormBuilder,
@@ -629,16 +628,16 @@ Future<void> main() async {
       final warningLines = lines.skip(1).take(realWarnings.length).toList();
       final body = lines.skip(realWarnings.length + 1).join('\n');
 
-      expect(warningLines.length, equals(realWarnings.length));
+      expect(warningLines.length, realWarnings.length);
       for (final i in List.generate(realWarnings.length, (i) => i)) {
         expect(
           warningLines[i],
-          equals('  // TODO(CompanionGenerator): WARNING - ${realWarnings[i]}'),
+          '  // TODO(CompanionGenerator): WARNING - ${realWarnings[i]}',
           reason: 'warnings[$i]',
         );
       }
 
-      expect(body, equals(expectedBody));
+      expect(body, expectedBody);
     }
 
     group('vanilla form', () {
@@ -1008,6 +1007,7 @@ class FormBuilderTestSpec {
   );
 }
 
+/// Each tuples in [propertyTypes] are: `name`, `propertyType`, and `fieldType`.
 String typedProperties(
   String className,
   Iterable<Tuple3<String, String, String>> propertyTypes,
