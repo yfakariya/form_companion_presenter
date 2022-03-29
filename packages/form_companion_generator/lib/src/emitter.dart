@@ -71,6 +71,7 @@ Iterable<String> emitGlobal(
   if (config.asPart) {
     yield "// This file is part of '${sourceLibrary.source.shortName}' file,";
     yield '// so you have to declare following import directives in it.';
+    yield '';
   }
 
   for (final import in dartImports) {
