@@ -7,6 +7,7 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:form_companion_generator/src/arguments_handler.dart';
 import 'package:form_companion_generator/src/config.dart';
+import 'package:form_companion_generator/src/dependency.dart';
 import 'package:form_companion_generator/src/emitter.dart';
 import 'package:form_companion_generator/src/model.dart';
 import 'package:form_companion_generator/src/node_provider.dart';
@@ -1033,6 +1034,53 @@ Future<void> main() async {
         );
       }
     });
+  });
+
+  group('emitFromData', () {
+    test(
+      'builder - warnings, imports, typed property accessors, and field factories',
+      () async => expect(
+        await emitFromData(
+          library,
+          nodeProvider,
+          PresenterDefinition(
+            name: 'Test',
+            isFormBuilder: true,
+            doAutovalidate: true,
+            warnings: ['AAA'],
+            imports: [LibraryImport('dart:ui')],
+            properties: await makeProperty(
+              'prop1',
+              library.typeProvider.stringType,
+              library.typeProvider.stringType,
+              formBuilderTextField,
+              isFormBuilder: true,
+            ),
+          ),
+          emptyConfig,
+        ).join('\n'),
+        [
+          '// TODO(CompanionGenerator): WARNING - AAA',
+          '',
+          "import 'dart:ui';",
+          '',
+          "import 'package:form_companion_presenter/form_companion_presenter.dart';",
+          '',
+          typedProperties(
+            'Test',
+            [
+              Tuple3('prop1', 'String', 'String'),
+            ],
+          ),
+          fieldFactories(
+            'Test',
+            [
+              formBuilderTextFieldFactory('prop1', isAutovalidate: true),
+            ],
+          )
+        ].join('\n'),
+      ),
+    );
   });
 }
 
