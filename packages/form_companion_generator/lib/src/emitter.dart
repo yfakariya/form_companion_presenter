@@ -26,11 +26,18 @@ Stream<Object> emitFromData(
   PresenterDefinition data,
   Config config,
 ) async* {
+  if (data.properties.isEmpty) {
+    for (final warning in data.warnings) {
+      yield '// $_todoHeader WARNING - $warning';
+    }
+
+    yield '// TODO(CompanionGenerator): WARNING - No properties are found in ${data.name} class.\n';
+    return;
+  }
+
   for (final global in emitGlobal(sourceLibrary, data, config)) {
     yield global;
   }
-
-  // TODO(yfakariya): Should emit no properties warning here.
 
   yield emitPropertyAccessor(data.name, data.properties, config);
 

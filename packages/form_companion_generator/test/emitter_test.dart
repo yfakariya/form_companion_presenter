@@ -264,21 +264,6 @@ Future<void> main() async {
         ),
       );
     });
-
-    test('no properties - empty', () {
-      final data = PresenterDefinition(
-        name: 'Test03',
-        isFormBuilder: false,
-        doAutovalidate: false,
-        warnings: [],
-        imports: [],
-        properties: [],
-      );
-      expect(
-        emitPropertyAccessor(data.name, data.properties, emptyConfig),
-        typedProperties('Test03', []),
-      );
-    });
   });
 
   group('emitGlobal', () {
@@ -623,21 +608,6 @@ Future<void> main() async {
             dropdownButtonFieldFactory('prop2', 'bool'),
           ],
         ),
-      );
-    });
-
-    test('no properties - empty class and extensions', () async {
-      final data = PresenterDefinition(
-        name: 'Test03',
-        isFormBuilder: false,
-        doAutovalidate: false,
-        warnings: [],
-        imports: [],
-        properties: [],
-      );
-      await expectLater(
-        await emitFieldFactoriesAsync(nodeProvider, data, emptyConfig),
-        '// TODO(CompanionGenerator): WARNING - No properties were found in Test03 class.\n',
       );
     });
 
@@ -1332,6 +1302,29 @@ ${spec.item3.map((p) => '      ${p.item2}: ${p.item2}').join(',\n')},
             ],
           )
         ].join('\n'),
+      ),
+    );
+
+    test(
+      'no properties -- warnings',
+      () async => expect(
+        await emitFromData(
+          library,
+          nodeProvider,
+          PresenterDefinition(
+            name: 'Test',
+            isFormBuilder: true,
+            doAutovalidate: true,
+            warnings: ['AAA'],
+            imports: [LibraryImport('dart:ui')],
+            properties: [],
+          ),
+          emptyConfig,
+        ).join('\n'),
+        '''
+// TODO(CompanionGenerator): WARNING - AAA
+// TODO(CompanionGenerator): WARNING - No properties are found in Test class.
+''',
       ),
     );
   });

@@ -9,11 +9,12 @@ String emitPropertyAccessor(
   Iterable<PropertyAndFormFieldDefinition> properties,
   Config config,
 ) {
-  // TODO(yfakariya): Emitting no properties warnings should be assertion here -- warning should be emit in the root.
+  assert(properties.isNotEmpty);
+
   return '''
 /// Defines typed property accessors as extension properties for [$baseName].
 extension \$${baseName}PropertyExtension on $baseName {
-${properties.isEmpty ? '  // No properties were found.' : _emitPropertyAccessors(properties).join('\n')}
+${_emitPropertyAccessors(properties).join('\n')}
 }
 ''';
 }

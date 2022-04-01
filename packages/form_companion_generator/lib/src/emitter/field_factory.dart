@@ -11,10 +11,7 @@ Future<String> emitFieldFactoriesAsync(
   PresenterDefinition data,
   Config config,
 ) async {
-  if (data.properties.isEmpty) {
-    // TODO(yfakariya): Should be assertion here -- warning should be emit in the root.
-    return '// TODO(CompanionGenerator): WARNING - No properties were found in ${data.name} class.\n';
-  }
+  assert(data.properties.isNotEmpty);
 
   return '''
 ${_emitFieldFactoriesClasses(nodeProvider, data).join('\n')}
