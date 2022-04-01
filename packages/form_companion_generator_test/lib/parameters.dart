@@ -4,7 +4,6 @@
 
 import 'dart:collection' as col;
 import 'dart:ui' as ui;
-import 'dart:ui' show Color, VoidCallback;
 
 import 'package:flutter/material.dart';
 
@@ -195,4 +194,101 @@ class DependencyHolder<T> extends FormField<T> {
     this.functionDartCore,
     this.functionHasSelf,
   });
+}
+
+class OnlyAnonymousFactory extends FormField<String> {
+  OnlyAnonymousFactory._();
+
+  factory OnlyAnonymousFactory({
+    InputDecoration? inputDecoration,
+    String? factoryParameter,
+  }) =>
+      OnlyAnonymousFactory._();
+}
+
+class OnlyNamedConstructor extends FormField<String> {
+  OnlyNamedConstructor._();
+
+  OnlyNamedConstructor.generative({
+    InputDecoration? inputDecoration,
+    String? namedContructorParameter,
+  }) {}
+}
+
+class OnlyNamedFactory extends FormField<String> {
+  OnlyNamedFactory._();
+
+  factory OnlyNamedFactory.factory({
+    InputDecoration? inputDecoration,
+    String? namedFactoryParameter,
+  }) =>
+      OnlyNamedFactory._();
+}
+
+class ConstructorWithNamedConstructors extends FormField<String> {
+  ConstructorWithNamedConstructors({
+    InputDecoration? inputDecoration,
+    String? contructorParameter,
+  });
+
+  ConstructorWithNamedConstructors.generative({
+    InputDecoration? inputDecoration,
+    String? namedContructorParameter,
+  }) {}
+
+  factory ConstructorWithNamedConstructors.factory({
+    InputDecoration? inputDecoration,
+    String? namedFactoryParameter,
+  }) =>
+      ConstructorWithNamedConstructors();
+}
+
+class FactoryWithNamedConstructors extends FormField<String> {
+  FactoryWithNamedConstructors._();
+
+  factory FactoryWithNamedConstructors({
+    InputDecoration? inputDecoration,
+    String? factoryParameter,
+  }) =>
+      FactoryWithNamedConstructors._();
+
+  FactoryWithNamedConstructors.generative({
+    InputDecoration? inputDecoration,
+    String? namedContructorParameter,
+  }) {}
+
+  factory FactoryWithNamedConstructors.factory({
+    InputDecoration? inputDecoration,
+    String? namedFactoryParameter,
+  }) =>
+      FactoryWithNamedConstructors._();
+}
+
+class ConstructorWithMultipleNamedConstructors extends FormField<String> {
+  ConstructorWithMultipleNamedConstructors({
+    InputDecoration? inputDecoration,
+    String? contructorParameter,
+  });
+
+  ConstructorWithMultipleNamedConstructors.generative1({
+    InputDecoration? inputDecoration,
+    String? namedContructorParameter1,
+  }) {}
+
+  ConstructorWithMultipleNamedConstructors.generative2({
+    InputDecoration? inputDecoration,
+    String? namedContructorParameter2,
+  }) {}
+
+  factory ConstructorWithMultipleNamedConstructors.factory1({
+    InputDecoration? inputDecoration,
+    String? namedFactoryParameter1,
+  }) =>
+      ConstructorWithMultipleNamedConstructors();
+
+  factory ConstructorWithMultipleNamedConstructors.factory2({
+    InputDecoration? inputDecoration,
+    String? namedFactoryParameter2,
+  }) =>
+      ConstructorWithMultipleNamedConstructors();
 }

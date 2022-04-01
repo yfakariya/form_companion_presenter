@@ -24,6 +24,9 @@ import 'test_helpers.dart';
 typedef PropertyDefinitionSpec = Tuple6<String, InterfaceType, InterfaceType,
     ClassElement?, GenericInterfaceType?, List<String>>;
 
+typedef FactoryParameterSpec = Tuple2<String, String>;
+typedef NamedFactorySpec = Tuple3<String?, String, List<FactoryParameterSpec>>;
+
 const emptyConfig = Config(<String, dynamic>{});
 
 // TODO(yfakariya): DropdownItems support w/ label template
@@ -70,6 +73,8 @@ Future<void> main() async {
   final formBuilderTextField =
       await lookupFormBuilderClass('FormBuilderTextField');
 
+  final parametersLibrary = await getParametersLibrary();
+
   FutureOr<List<PropertyAndFormFieldDefinition>> makePropertiesFully(
     Iterable<PropertyDefinitionSpec> specs, {
     required bool isFormBuilder,
@@ -102,13 +107,19 @@ Future<void> main() async {
           formFieldTypeName: preferredFormFieldType?.toString() ??
               formField?.name ??
               '<UNRESOLVED>', // This value is actually 'TextFormField' or 'FormBuilderTextField'.
-          formFieldConstructor: formFieldConstructor,
+          formFieldConstructors: formFieldConstructor == null
+              ? []
+              : [
+                  FormFieldConstructorDefinition(
+                    formFieldConstructor,
+                    await ArgumentsHandler.createAsync(
+                      formFieldConstructor,
+                      nodeProvider,
+                      isFormBuilder: isFormBuilder,
+                    ),
+                  ),
+                ],
           formFieldType: formField?.thisType,
-          argumentsHandler: formFieldConstructor == null
-              ? null
-              : await ArgumentsHandler.createAsync(
-                  formFieldConstructor, nodeProvider,
-                  isFormBuilder: isFormBuilder),
           instantiationContext: formField == null
               ? null
               : TypeInstantiationContext.create(
@@ -626,7 +637,248 @@ Future<void> main() async {
       );
       await expectLater(
         await emitFieldFactoriesAsync(nodeProvider, data, emptyConfig),
-        fieldFactories('Test03', []),
+        '// TODO(CompanionGenerator): WARNING - No properties were found in Test03 class.\n',
+      );
+    });
+
+    group('multiple constructors', () {
+      /// [construtorAndDescriptionAndKeyParameterNames] contains
+      /// expected constructor name,
+      /// description suffix (with leading space and without trailing period),
+      /// and parameter spec(type and name)s.
+      Future<void> testMultipleConstructors(
+        String formFieldClassName,
+        List<Tuple3<String?, String, String>>
+            construtorAndDescriptionAndKeyParameterNames,
+      ) async {
+        final formFieldClass =
+            lookupExportedClass(parametersLibrary, formFieldClassName);
+        const propertyName = 'prop';
+        const isFormBuilder = false;
+        final hasNamedConstructors =
+            construtorAndDescriptionAndKeyParameterNames
+                .any((e) => e.item1?.isNotEmpty ?? false);
+        final expectedConstructorNameAndParameters =
+            construtorAndDescriptionAndKeyParameterNames
+                .map(
+                  (e) => NamedFactorySpec(
+                    e.item1,
+                    e.item2,
+                    [
+                      FactoryParameterSpec(
+                          'InputDecoration?', 'inputDecoration'),
+                      FactoryParameterSpec('String?', e.item3),
+                    ],
+                  ),
+                )
+                .toList();
+
+        final property = PropertyDefinition(
+          name: propertyName,
+          propertyType: GenericInterfaceType(
+              parametersLibrary.typeProvider.stringType, []),
+          fieldType: GenericInterfaceType(
+              parametersLibrary.typeProvider.stringType, []),
+          preferredFormFieldType:
+              GenericInterfaceType(formFieldClass.thisType, []),
+          warnings: [],
+        );
+        final data = PresenterDefinition(
+          name: 'Test',
+          isFormBuilder: isFormBuilder,
+          doAutovalidate: false,
+          warnings: [],
+          imports: [],
+          properties: [
+            PropertyAndFormFieldDefinition(
+              property: property,
+              formFieldType: formFieldClass.thisType,
+              formFieldTypeName: formFieldClass.name,
+              formFieldConstructors: await formFieldClass.constructors
+                  .where((e) => e.isPublic)
+                  .map(
+                    (e) async => await nodeProvider
+                        .getElementDeclarationAsync<ConstructorDeclaration>(e),
+                  )
+                  .map(
+                (e) async {
+                  final constructor = await e;
+                  return FormFieldConstructorDefinition(
+                    constructor,
+                    await ArgumentsHandler.createAsync(
+                      constructor,
+                      nodeProvider,
+                      isFormBuilder: isFormBuilder,
+                    ),
+                  );
+                },
+              ).toListAsync(),
+              instantiationContext: TypeInstantiationContext.create(
+                property,
+                formFieldClass.thisType,
+                logger,
+              ),
+            )
+          ],
+        );
+
+        String fieldFactory(NamedFactorySpec spec,
+            {required bool hasNamedConstructors}) {
+          final methodName = spec.item1 ??
+              (hasNamedConstructors ? 'withDefaultConstructor' : propertyName);
+          return '''
+  /// Gets a [FormField] for `$propertyName` property${spec.item2}.
+  ${formFieldClass.thisType.getDisplayString(withNullability: true)} $methodName(
+    BuildContext context, {
+${spec.item3.map((p) => '    ${p.item1} ${p.item2}').join(',\n')},
+  }) {
+    final property = _presenter.$propertyName;
+    return ${formFieldClass.thisType.getDisplayString(withNullability: false)}(
+${spec.item3.map((p) => '      ${p.item2}: ${p.item2}').join(',\n')},
+    );
+  }''';
+        }
+
+        await expectLater(
+          await emitFieldFactoriesAsync(nodeProvider, data, emptyConfig),
+          (expectedConstructorNameAndParameters.length == 1 &&
+                  expectedConstructorNameAndParameters[0].item1 == null)
+              ? fieldFactories(
+                  'Test',
+                  expectedConstructorNameAndParameters
+                      .map((e) => fieldFactory(e,
+                          hasNamedConstructors: hasNamedConstructors))
+                      .toList(),
+                )
+              : multiFieldFactories(
+                  'Test',
+                  [propertyName],
+                  {
+                    propertyName: expectedConstructorNameAndParameters
+                        .map((e) => fieldFactory(e,
+                            hasNamedConstructors: hasNamedConstructors))
+                        .toList()
+                  },
+                ),
+        );
+      }
+
+      test(
+        'only anonymous factory',
+        () async => testMultipleConstructors(
+          'OnlyAnonymousFactory',
+          [Tuple3(null, '', 'factoryParameter')],
+        ),
+      );
+
+      test(
+        'only named constructor',
+        () async => testMultipleConstructors(
+          'OnlyNamedConstructor',
+          [
+            Tuple3(
+              'generative',
+              ' with [OnlyNamedConstructor.generative] constructor',
+              'namedContructorParameter',
+            )
+          ],
+        ),
+      );
+
+      test(
+        'only named factory',
+        () async => testMultipleConstructors(
+          'OnlyNamedFactory',
+          [
+            Tuple3(
+              'factory',
+              ' with [OnlyNamedFactory.factory] constructor',
+              'namedFactoryParameter',
+            )
+          ],
+        ),
+      );
+
+      test(
+        'constructor with named constructor and named factory',
+        () async => testMultipleConstructors(
+          'ConstructorWithNamedConstructors',
+          [
+            Tuple3(
+              null,
+              ' with [ConstructorWithNamedConstructors.new] constructor',
+              'contructorParameter',
+            ),
+            Tuple3(
+              'generative',
+              ' with [ConstructorWithNamedConstructors.generative] constructor',
+              'namedContructorParameter',
+            ),
+            Tuple3(
+              'factory',
+              ' with [ConstructorWithNamedConstructors.factory] constructor',
+              'namedFactoryParameter',
+            )
+          ],
+        ),
+      );
+
+      test(
+        'factory with named constructor and named factory',
+        () async => testMultipleConstructors(
+          'FactoryWithNamedConstructors',
+          [
+            Tuple3(
+              null,
+              ' with [FactoryWithNamedConstructors.new] constructor',
+              'factoryParameter',
+            ),
+            Tuple3(
+              'generative',
+              ' with [FactoryWithNamedConstructors.generative] constructor',
+              'namedContructorParameter',
+            ),
+            Tuple3(
+              'factory',
+              ' with [FactoryWithNamedConstructors.factory] constructor',
+              'namedFactoryParameter',
+            )
+          ],
+        ),
+      );
+
+      test(
+        'constructor with multiple named constructor and named factory',
+        () async => testMultipleConstructors(
+          'ConstructorWithMultipleNamedConstructors',
+          [
+            Tuple3(
+              null,
+              ' with [ConstructorWithMultipleNamedConstructors.new] constructor',
+              'contructorParameter',
+            ),
+            Tuple3(
+              'generative1',
+              ' with [ConstructorWithMultipleNamedConstructors.generative1] constructor',
+              'namedContructorParameter1',
+            ),
+            Tuple3(
+              'generative2',
+              ' with [ConstructorWithMultipleNamedConstructors.generative2] constructor',
+              'namedContructorParameter2',
+            ),
+            Tuple3(
+              'factory1',
+              ' with [ConstructorWithMultipleNamedConstructors.factory1] constructor',
+              'namedFactoryParameter1',
+            ),
+            Tuple3(
+              'factory2',
+              ' with [ConstructorWithMultipleNamedConstructors.factory2] constructor',
+              'namedFactoryParameter2',
+            ),
+          ],
+        ),
       );
     });
   });
@@ -678,10 +930,11 @@ Future<void> main() async {
       ).toList();
 
       expect(lines.isNotEmpty, isTrue);
-      expect(lines.first.isEmpty, isTrue);
 
-      final warningLines = lines.skip(1).take(realWarnings.length).toList();
-      final body = lines.skip(realWarnings.length + 1).join('\n');
+      final warningLines = lines.take(realWarnings.length).toList();
+      final body =
+          (realWarnings.isEmpty ? lines : lines.skip(realWarnings.length + 1))
+              .join('\n');
 
       expect(warningLines.length, realWarnings.length);
       for (final i in List.generate(realWarnings.length, (i) => i)) {
@@ -1115,38 +1368,82 @@ String typedProperties(
   Iterable<Tuple3<String, String, String>> propertyTypes,
 ) =>
     '''
+/// Defines typed property accessors as extension properties for [$className].
 extension \$${className}PropertyExtension on $className {
 ${propertyTypes.isEmpty ? '  // No properties were found.' : propertyTypes.map((e) => typedProperty(e.item1, e.item2, e.item3)).join('\n\n')}
 }
 ''';
 
 String typedProperty(String name, String propertyType, String fieldType) => '''
-  /// Gets a [PropertyDescriptor] of $name property.
+  /// Gets a [PropertyDescriptor] of `$name` property.
   PropertyDescriptor<$propertyType, $fieldType> get $name =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
       properties['$name']! as PropertyDescriptor<$propertyType, $fieldType>;''';
 
-String fieldFactories(String className, Iterable<String> factories) => '''
-class \$${className}FieldFactories {
+String fieldFactories(
+  String className,
+  Iterable<String> factories,
+) =>
+    '''
+/// Defines [FormField] factory methods for properties of [$className].
+class \$${className}FieldFactory {
   final $className _presenter;
 
-  \$${className}FieldFactories._(this._presenter);
+  \$${className}FieldFactory._(this._presenter);
 
 ${factories.isEmpty ? '  // No properties were found.' : factories.join('\n\n')}
 }
 
+/// Defines an extension property to get [\$${className}FieldFactory] from [$className].
 extension \$${className}FieldFactoryExtension on $className {
-  /// Gets a form field factories.
-  \$${className}FieldFactories get fields => \$${className}FieldFactories._(this);
+  /// Gets a [FormField] factory.
+  \$${className}FieldFactory get fields => \$${className}FieldFactory._(this);
 }
 ''';
+
+String multiFieldFactories(
+  String className,
+  List<String> propertyNames,
+  Map<String, List<String>> factories,
+) {
+  String childFieldFactory(String propertyName) {
+    return '''
+/// A [FormField] factory for `$propertyName` property of [$className].
+class \$\$$className${pascalize(propertyName)}FieldFactory {
+  final $className _presenter;
+
+  \$\$$className${pascalize(propertyName)}FieldFactory._(this._presenter);
+
+${factories.isEmpty ? '  // No properties were found.' : factories[propertyName]!.join('\n\n')}
+}
+''';
+  }
+
+  return '''
+/// Defines [FormField] factory methods for properties of [$className].
+class \$${className}FieldFactory {
+${propertyNames.map((e) => '  /// Gets a [FormField] factory for `$e` property.\n'
+          '  final \$\$$className${pascalize(e)}FieldFactory $e;').join('\n')}
+
+  \$${className}FieldFactory._($className presenter) :
+    ${propertyNames.map((e) => '$e = \$\$$className${pascalize(e)}FieldFactory(presenter)').join(',\n      ')};
+}
+
+${propertyNames.map(childFieldFactory).join('\n')}
+/// Defines an extension property to get [\$${className}FieldFactory] from [$className].
+extension \$${className}FieldFactoryExtension on $className {
+  /// Gets a [FormField] factory.
+  \$${className}FieldFactory get fields => \$${className}FieldFactory._(this);
+}
+''';
+}
 
 String textFormFieldFactory(
   String propertyName, {
   bool isAutovalidate = false,
 }) =>
     '''
-  /// Gets a [FormField] for $propertyName property.
+  /// Gets a [FormField] for `$propertyName` property.
   TextFormField $propertyName(
     BuildContext context, {
     TextEditingController? controller,
@@ -1261,7 +1558,7 @@ String dropdownButtonFieldFactory(
   bool isAutovalidate = false,
 }) =>
     '''
-  /// Gets a [FormField] for $propertyName property.
+  /// Gets a [FormField] for `$propertyName` property.
   DropdownButtonFormField<$propertyType> $propertyName(
     BuildContext context, {
     required List<DropdownMenuItem<$propertyType>>? items,
@@ -1329,7 +1626,7 @@ String formBuilderCheckboxFactory(
   bool isAutovalidate = false,
 }) =>
     '''
-  /// Gets a [FormField] for $propertyName property.
+  /// Gets a [FormField] for `$propertyName` property.
   FormBuilderCheckbox $propertyName(
     BuildContext context, {
     Key? key,
@@ -1387,7 +1684,7 @@ String formBuilderCheckboxGroupFactory(
   bool isAutovalidate = false,
 }) =>
     '''
-  /// Gets a [FormField] for $propertyName property.
+  /// Gets a [FormField] for `$propertyName` property.
   FormBuilderCheckboxGroup<$propertyElementType> $propertyName(
     BuildContext context, {
     Key? key,
@@ -1463,7 +1760,7 @@ String formBuilderChoiceChipFactory(
   bool isAutovalidate = false,
 }) =>
     '''
-  /// Gets a [FormField] for $propertyName property.
+  /// Gets a [FormField] for `$propertyName` property.
   FormBuilderChoiceChip<$propertyType> $propertyName(
     BuildContext context, {
     AutovalidateMode? autovalidateMode,
@@ -1544,7 +1841,7 @@ String formBuilderDateRangePickerFactory(
   bool isAutovalidate = false,
 }) =>
     '''
-  /// Gets a [FormField] for $propertyName property.
+  /// Gets a [FormField] for `$propertyName` property.
   FormBuilderDateRangePicker $propertyName(
     BuildContext context, {
     Key? key,
@@ -1673,7 +1970,7 @@ String formBuilderDateTimePickerFactory(
   bool isAutovalidate = false,
 }) =>
     '''
-  /// Gets a [FormField] for $propertyName property.
+  /// Gets a [FormField] for `$propertyName` property.
   FormBuilderDateTimePicker $propertyName(
     BuildContext context, {
     Key? key,
@@ -1811,7 +2108,7 @@ String formBuilderDropdownFactory(
   bool isAutovalidate = false,
 }) =>
     '''
-  /// Gets a [FormField] for $propertyName property.
+  /// Gets a [FormField] for `$propertyName` property.
   FormBuilderDropdown<$propertyType> $propertyName(
     BuildContext context, {
     Key? key,
@@ -1889,7 +2186,7 @@ String formBuilderFilterChipFactory(
   bool isAutovalidate = false,
 }) =>
     '''
-  /// Gets a [FormField] for $propertyName property.
+  /// Gets a [FormField] for `$propertyName` property.
   FormBuilderFilterChip<$propertyElementType> $propertyName(
     BuildContext context, {
     AutovalidateMode? autovalidateMode,
@@ -1977,7 +2274,7 @@ String formBuilderRadioGroupFactory(
   bool isAutovalidate = false,
 }) =>
     '''
-  /// Gets a [FormField] for $propertyName property.
+  /// Gets a [FormField] for `$propertyName` property.
   FormBuilderRadioGroup<$propertyType> $propertyName(
     BuildContext context, {
     AutovalidateMode? autovalidateMode,
@@ -2048,7 +2345,7 @@ String formBuilderRangeSliderFactory(
   bool isAutovalidate = false,
 }) =>
     '''
-  /// Gets a [FormField] for $propertyName property.
+  /// Gets a [FormField] for `$propertyName` property.
   FormBuilderRangeSlider $propertyName(
     BuildContext context, {
     Key? key,
@@ -2114,7 +2411,7 @@ String formBuilderSegmentedControlFactory(
   bool isAutovalidate = false,
 }) =>
     '''
-  /// Gets a [FormField] for $propertyName property.
+  /// Gets a [FormField] for `$propertyName` property.
   FormBuilderSegmentedControl<$propertyType> $propertyName(
     BuildContext context, {
     Key? key,
@@ -2163,8 +2460,8 @@ String formBuilderSliderFactory(
   bool isAutovalidate = false,
 }) =>
     '''
-  /// Gets a [FormField] for prop property.
-  FormBuilderSlider prop(
+  /// Gets a [FormField] for `$propertyName` property.
+  FormBuilderSlider $propertyName(
     BuildContext context, {
     Key? key,
     InputDecoration? decoration,
@@ -2232,8 +2529,8 @@ String formBuilderSwitchFactory(
   bool isAutovalidate = false,
 }) =>
     '''
-  /// Gets a [FormField] for prop property.
-  FormBuilderSwitch prop(
+  /// Gets a [FormField] for `$propertyName` property.
+  FormBuilderSwitch $propertyName(
     BuildContext context, {
     Key? key,
     InputDecoration? decoration,
@@ -2295,7 +2592,7 @@ String formBuilderTextFieldFactory(
   bool isAutovalidate = false,
 }) =>
     '''
-  /// Gets a [FormField] for $propertyName property.
+  /// Gets a [FormField] for `$propertyName` property.
   FormBuilderTextField $propertyName(
     BuildContext context, {
     Key? key,

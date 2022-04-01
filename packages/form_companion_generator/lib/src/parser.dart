@@ -231,7 +231,6 @@ FutureOr<List<PropertyAndFormFieldDefinition>> getPropertiesAsync(
       .toListAsync();
 }
 
-// TODO
 /// Collects dependencies as a list of [LibraryImport] from `FormField`s
 /// constructor parameters in [properties].
 ///
@@ -252,12 +251,11 @@ FutureOr<List<LibraryImport>> collectDependenciesAsync(
   );
 
   for (final property in properties) {
-    final formFieldConstructor = property.formFieldConstructor;
-    if (formFieldConstructor != null) {
-      final argumentsHandler = property.argumentsHandler!;
+    for (final formFieldConstructor in property.formFieldConstructors) {
+      final argumentsHandler = formFieldConstructor.argumentsHandler;
 
       collector.reset(
-        formFieldConstructor.declaredElement!.enclosingElement,
+        formFieldConstructor.constructor.declaredElement!.enclosingElement,
         property.warnings,
       );
       // Visit only parameters instead of constructor to avoid collecting
@@ -268,7 +266,8 @@ FutureOr<List<LibraryImport>> collectDependenciesAsync(
       }
 
       // Add form field itself.
-      final classDeclaration = formFieldConstructor.parent! as ClassDeclaration;
+      final classDeclaration =
+          formFieldConstructor.constructor.parent! as ClassDeclaration;
       collector
         ..recordTypeId(
           classDeclaration.declaredElement!,

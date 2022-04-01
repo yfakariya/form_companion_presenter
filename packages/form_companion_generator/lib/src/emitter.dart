@@ -30,6 +30,8 @@ Stream<Object> emitFromData(
     yield global;
   }
 
+  // TODO(yfakariya): Should emit no properties warning here.
+
   yield emitPropertyAccessor(data.name, data.properties, config);
 
   yield await emitFieldFactoriesAsync(nodeProvider, data, config);

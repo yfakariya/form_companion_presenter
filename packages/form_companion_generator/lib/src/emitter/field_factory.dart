@@ -11,33 +11,131 @@ Future<String> emitFieldFactoriesAsync(
   PresenterDefinition data,
   Config config,
 ) async {
-  Iterable<String> emitLines(
-    Iterable<PropertyAndFormFieldDefinition> properties,
-  ) sync* {
-    // Note: async generator keeps the order.
-
-    for (final lines in properties.map((p) => emitFieldFactory(
-          nodeProvider,
-          data,
-          p,
-        ))) {
-      yield* lines;
-    }
+  if (data.properties.isEmpty) {
+    // TODO(yfakariya): Should be assertion here -- warning should be emit in the root.
+    return '// TODO(CompanionGenerator): WARNING - No properties were found in ${data.name} class.\n';
   }
 
   return '''
-class \$${data.name}FieldFactories {
-  final ${data.name} $_presenterField;
+${_emitFieldFactoriesClasses(nodeProvider, data).join('\n')}
 
-  \$${data.name}FieldFactories._(this.$_presenterField);
-${data.properties.isEmpty ? '\n  // No properties were found.' : (emitLines(data.properties)).join('\n')}
-}
-
+/// Defines an extension property to get [\$${data.name}FieldFactory] from [${data.name}].
 extension \$${data.name}FieldFactoryExtension on ${data.name} {
-  /// Gets a form field factories.
-  \$${data.name}FieldFactories get fields => \$${data.name}FieldFactories._(this);
+  /// Gets a [FormField] factory.
+  \$${data.name}FieldFactory get fields => \$${data.name}FieldFactory._(this);
 }
 ''';
+}
+
+Iterable<String> _emitFieldFactoriesClasses(
+  NodeProvider nodeProvider,
+  PresenterDefinition data,
+) sync* {
+  final propertyWithComplexFormFields =
+      data.properties.where((p) => !p.isSimpleFormField).toList();
+  final hasSimpleProperties =
+      propertyWithComplexFormFields.length != data.properties.length;
+
+  yield '/// Defines [FormField] factory methods for properties of [${data.name}].';
+  yield 'class \$${data.name}FieldFactory {';
+  if (hasSimpleProperties) {
+    yield '  final ${data.name} $_presenterField;';
+
+    // blank line
+    yield '';
+  }
+
+  for (final property in propertyWithComplexFormFields) {
+    yield '  /// Gets a [FormField] factory for `${property.name}` property.';
+    yield '  final ${_getNamedFormFactoryClassName(data.name, property)} ${property.name};';
+
+    // For newline after lines.
+    yield '';
+  }
+
+  // constructor
+  if (propertyWithComplexFormFields.isEmpty) {
+    yield '  \$${data.name}FieldFactory._(this.$_presenterField);';
+  } else {
+    yield '  \$${data.name}FieldFactory._(${data.name} presenter) :';
+    if (hasSimpleProperties) {
+      yield '    this.$_presenterField = presenter,';
+    }
+
+    for (var i = 0; i < propertyWithComplexFormFields.length - 1; i++) {
+      yield '    ${propertyWithComplexFormFields[i].name} = '
+          '${_getNamedFormFactoryClassName(data.name, propertyWithComplexFormFields[i])}'
+          '(presenter),';
+    }
+
+    yield '    ${propertyWithComplexFormFields.last.name} = '
+        '${_getNamedFormFactoryClassName(data.name, propertyWithComplexFormFields.last)}'
+        '(presenter);';
+  }
+
+  for (final property in data.properties.where((p) => p.isSimpleFormField)) {
+    // For newline before lines.
+    yield '';
+
+    yield* emitFieldFactory(nodeProvider, data, property);
+  }
+
+  yield '}';
+
+  if (propertyWithComplexFormFields.isEmpty) {
+    return;
+  }
+
+  for (final property in propertyWithComplexFormFields) {
+    final className = _getNamedFormFactoryClassName(data.name, property);
+    // For newline before lines.
+    yield '';
+
+    yield '/// A [FormField] factory for `${property.name}` property of [${data.name}].';
+    yield 'class $className {';
+    yield '  final ${data.name} $_presenterField;';
+
+    // blank line
+    yield '';
+
+    yield '  $className._(this.$_presenterField);';
+
+    if (property.warnings.isNotEmpty) {
+      // For newline before warnings.
+      yield '';
+    }
+
+    yield* _emitPropertyWarnings(property);
+
+    for (final constructor in property.formFieldConstructors) {
+      // For newline before lines.
+      yield '';
+
+      yield* _emitFieldFactoryCore(
+        nodeProvider,
+        data,
+        property,
+        constructor,
+      );
+    }
+
+    yield '}';
+  }
+}
+
+String _getNamedFormFactoryClassName(
+  String className,
+  PropertyAndFormFieldDefinition property,
+) {
+  late final String pascalPropertyName;
+  if (property.name.length < 2) {
+    pascalPropertyName = property.name.toUpperCase();
+  } else {
+    pascalPropertyName = property.name.substring(0, 1).toUpperCase() +
+        property.name.substring(1);
+  }
+
+  return '\$\$$className${pascalPropertyName}FieldFactory';
 }
 
 /// Emits a field factory method lines.
@@ -47,23 +145,32 @@ Iterable<String> emitFieldFactory(
   PresenterDefinition data,
   PropertyAndFormFieldDefinition property,
 ) sync* {
-  // For newline before lines.
-  yield '';
+  yield* _emitPropertyWarnings(property);
 
-  final formFieldConstructor = property.formFieldConstructor;
-  final instantiationContext = property.instantiationContext;
-  if (instantiationContext == null || formFieldConstructor == null) {
-    // We cannot handle this pattern.
-    yield "  // $_todoHeader ERROR - Cannot generate field factory for '${property.name}' "
-        "property, because FormField type '${property.formFieldTypeName}' is unknown.";
+  if (property.formFieldConstructors.isEmpty) {
     return;
   }
 
-  final argumentHandler = property.argumentsHandler!;
+  yield* _emitFieldFactoryCore(
+    nodeProvider,
+    data,
+    property,
+    property.formFieldConstructors.single,
+  );
+}
 
-  for (final warning in property.warnings) {
-    yield '  // $_todoHeader WARNING - $warning';
+Iterable<String> _emitFieldFactoryCore(
+  NodeProvider nodeProvider,
+  PresenterDefinition data,
+  PropertyAndFormFieldDefinition property,
+  FormFieldConstructorDefinition constructor,
+) sync* {
+  final instantiationContext = property.instantiationContext;
+  if (instantiationContext == null) {
+    return;
   }
+
+  final argumentHandler = constructor.argumentsHandler;
 
   final sink = StringBuffer();
   processTypeWithValueType(
@@ -73,8 +180,17 @@ Iterable<String> emitFieldFactory(
   );
   final formFieldType = sink.toString();
 
-  yield '  /// Gets a [FormField] for ${property.name} property.';
-  yield '  $formFieldType ${property.name}(';
+  late final String methodName;
+  if (property.isSimpleFormField) {
+    yield '  /// Gets a [FormField] for `${property.name}` property.';
+    methodName = property.name;
+  } else {
+    yield '  /// Gets a [FormField] for `${property.name}` property '
+        'with [$formFieldType.${constructor.constructor.name ?? 'new'}] constructor.';
+    methodName = constructor.constructor.name?.name ?? 'withDefaultConstructor';
+  }
+
+  yield '  $formFieldType $methodName(';
   yield '    BuildContext context, {';
   for (final parameter in argumentHandler.callerSuppliableParameters) {
     yield '    ${emitParameter(instantiationContext, parameter)},';
@@ -91,6 +207,26 @@ Iterable<String> emitFieldFactory(
   );
   yield '    );';
   yield '  }';
+}
+
+Iterable<String> _emitPropertyWarnings(
+    PropertyAndFormFieldDefinition property) sync* {
+  if (property.instantiationContext == null ||
+      property.formFieldConstructors.isEmpty) {
+    // We cannot handle this pattern.
+    yield "  // $_todoHeader ERROR - Cannot generate field factory for '${property.name}' "
+        "property, because FormField type '${property.formFieldTypeName}' is unknown.";
+    return;
+  }
+
+  for (final warning in property.warnings) {
+    yield '  // $_todoHeader WARNING - $warning';
+  }
+
+  if (property.warnings.isNotEmpty) {
+    // blank line.
+    yield '';
+  }
 }
 
 /// Emits specified parameter information with type argument.

@@ -7,6 +7,8 @@ import 'package:source_gen/source_gen.dart';
 
 import 'model.dart';
 
+// TODO(yfakariya): It looks that _throwTypeMismatch can be replaced with assert()
+
 /// A context information holder of type instantiaion.
 @sealed
 class TypeInstantiationContext {
@@ -40,15 +42,10 @@ class TypeInstantiationContext {
     // We use element here to erase generic argument information, which may be
     // specified via generic type argument of addWithField.
     if (formFieldType.element.typeParameters.isEmpty) {
-      if (formFieldTypeArgument.getDisplayString(withNullability: true) !=
-          property.fieldType.toString()) {
-        _throwTypeMismatch(
-          detail:
-              "The type is '${property.fieldType}', but resolved field value type is '$formFieldTypeArgument' "
-              "for form field type '$formFieldType'.",
-          propertyName: property.name,
-        );
-      }
+      assert(
+        formFieldTypeArgument.getDisplayString(withNullability: true) ==
+            property.fieldType.getDisplayString(withNullability: true),
+      );
 
       logger.finer("Form field type '$formFieldType' is not generic.");
 
