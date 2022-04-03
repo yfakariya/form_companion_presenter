@@ -14,6 +14,13 @@ import 'package:tuple/tuple.dart';
 import 'file_resolver.dart';
 import 'test_helpers.dart';
 
+class FailureFormFieldLocator implements FormFieldLocator {
+  const FailureFormFieldLocator();
+
+  @override
+  InterfaceType? resolveFormFieldType(String typeName) => null;
+}
+
 Future<void> main() async {
   final logger = Logger('parser_test');
   Logger.root.level = Level.INFO;
@@ -200,6 +207,42 @@ Future<void> main() async {
         isFormBuilder: false,
         shouldBeContructorFound: true,
       ),
+    );
+  });
+
+  group('errors', () {
+    test(
+      'failed to resolve form field type',
+      () async {
+        const isFormBuilder = false;
+        final context = ParseContext(
+          logger,
+          nodeProvider,
+          const FailureFormFieldLocator(),
+          typeProvider,
+          library.typeSystem,
+          [],
+          isFormBuilder: isFormBuilder,
+        );
+
+        final property = PropertyDefinition(
+          name: 'prop',
+          propertyType: GenericInterfaceType(typeProvider.stringType, []),
+          fieldType: GenericInterfaceType(typeProvider.stringType, []),
+          preferredFormFieldType: null,
+          warnings: [],
+        );
+
+        final result = await resolveFormFieldAsync(
+          context,
+          property,
+          isFormBuilder: isFormBuilder,
+        );
+
+        expect(result.formFieldType, isNull);
+        expect(result.formFieldTypeName, 'TextFormField');
+        expect(result.formFieldConstructors, isEmpty);
+      },
     );
   });
 
