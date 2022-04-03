@@ -21,6 +21,12 @@ import 'package:tuple/tuple.dart';
 import 'file_resolver.dart';
 import 'test_helpers.dart';
 
+/// 1. Name of property.
+/// 2. Value type of property.
+/// 3. Value type of form field.
+/// 4. Form field class element resolved by preceding processes.
+/// 5. Form field type specified with addWithField.
+/// 6. Warnings emitted by preceding processes.
 typedef PropertyDefinitionSpec = Tuple6<String, InterfaceType, InterfaceType,
     ClassElement?, GenericInterfaceType?, List<String>>;
 
@@ -83,7 +89,7 @@ Future<void> main() async {
         final name = spec.item1;
         final propertyValueType = spec.item2;
         final fieldValueType = spec.item3;
-        final formField = spec.item4;
+        final formFieldClass = spec.item4;
         final preferredFormFieldType = spec.item5;
         final warnings = spec.item6;
 
@@ -95,36 +101,38 @@ Future<void> main() async {
           warnings: warnings,
         );
 
-        final formFieldConstructor = formField == null
-            ? null
-            : await _getConstructorNode(
-                nodeProvider,
-                formField.unnamedConstructor,
-              );
-
         return PropertyAndFormFieldDefinition(
           property: property,
           formFieldTypeName: preferredFormFieldType?.toString() ??
-              formField?.name ??
+              formFieldClass?.name ??
               '<UNRESOLVED>', // This value is actually 'TextFormField' or 'FormBuilderTextField'.
-          formFieldConstructors: formFieldConstructor == null
+          formFieldConstructors: formFieldClass == null
               ? []
-              : [
-                  FormFieldConstructorDefinition(
-                    formFieldConstructor,
-                    await ArgumentsHandler.createAsync(
-                      formFieldConstructor,
-                      nodeProvider,
-                      isFormBuilder: isFormBuilder,
-                    ),
-                  ),
-                ],
-          formFieldType: formField?.thisType,
-          instantiationContext: formField == null
+              : await formFieldClass.constructors
+                  .where((e) => e.isPublic)
+                  .map(
+                    (e) async => await nodeProvider
+                        .getElementDeclarationAsync<ConstructorDeclaration>(e),
+                  )
+                  .map(
+                  (e) async {
+                    final constructor = await e;
+                    return FormFieldConstructorDefinition(
+                      constructor,
+                      await ArgumentsHandler.createAsync(
+                        constructor,
+                        nodeProvider,
+                        isFormBuilder: isFormBuilder,
+                      ),
+                    );
+                  },
+                ).toListAsync(),
+          formFieldType: formFieldClass?.thisType,
+          instantiationContext: formFieldClass == null
               ? null
               : TypeInstantiationContext.create(
                   property,
-                  formField.thisType,
+                  formFieldClass.thisType,
                   logger,
                 ),
         );
@@ -851,6 +859,191 @@ ${spec.item3.map((p) => '      ${p.item2}: ${p.item2}').join(',\n')},
         ),
       );
     });
+
+    test(
+      'mixed constructors',
+      () async {
+        const isFormBuilder = false;
+        final constructorWithNamedConstructorsClass = lookupExportedClass(
+            parametersLibrary, 'ConstructorWithNamedConstructors');
+        final factoryWithNamedConstructorsClass = lookupExportedClass(
+            parametersLibrary, 'FactoryWithNamedConstructors');
+
+        final data = PresenterDefinition(
+          name: 'Test',
+          isFormBuilder: isFormBuilder,
+          doAutovalidate: false,
+          warnings: [],
+          imports: [],
+          properties: await makePropertiesFully(
+            [
+              PropertyDefinitionSpec(
+                'prop1',
+                library.typeProvider.stringType,
+                library.typeProvider.stringType,
+                textFormField,
+                null,
+                [],
+              ),
+              PropertyDefinitionSpec(
+                'prop2',
+                library.typeProvider.stringType,
+                library.typeProvider.stringType,
+                constructorWithNamedConstructorsClass,
+                GenericInterfaceType(
+                  constructorWithNamedConstructorsClass.thisType,
+                  [],
+                ),
+                [],
+              ),
+              PropertyDefinitionSpec(
+                'prop3',
+                library.typeProvider.boolType,
+                library.typeProvider.boolType,
+                dropdownButtonFormField,
+                null,
+                [],
+              ),
+              PropertyDefinitionSpec(
+                'prop4',
+                library.typeProvider.stringType,
+                library.typeProvider.stringType,
+                factoryWithNamedConstructorsClass,
+                GenericInterfaceType(
+                  factoryWithNamedConstructorsClass.thisType,
+                  [],
+                ),
+                [],
+              ),
+            ],
+            isFormBuilder: isFormBuilder,
+          ),
+        );
+
+        await expectLater(
+          await emitFieldFactoriesAsync(nodeProvider, data, emptyConfig),
+          '''
+/// Defines [FormField] factory methods for properties of [Test].
+class \$TestFieldFactory {
+  final Test _presenter;
+
+  /// Gets a [FormField] factory for `prop2` property.
+  final \$\$TestProp2FieldFactory prop2;
+
+  /// Gets a [FormField] factory for `prop4` property.
+  final \$\$TestProp4FieldFactory prop4;
+
+  \$TestFieldFactory._(Test presenter) :
+    _presenter = presenter,
+    prop2 = \$\$TestProp2FieldFactory(presenter),
+    prop4 = \$\$TestProp4FieldFactory(presenter);
+
+${textFormFieldFactory('prop1')}
+
+${dropdownButtonFieldFactory('prop3', 'bool')}
+}
+
+/// A [FormField] factory for `prop2` property of [Test].
+class \$\$TestProp2FieldFactory {
+  final Test _presenter;
+
+  \$\$TestProp2FieldFactory._(this._presenter);
+
+  /// Gets a [FormField] for `prop2` property with [ConstructorWithNamedConstructors.new] constructor.
+  ConstructorWithNamedConstructors withDefaultConstructor(
+    BuildContext context, {
+    InputDecoration? inputDecoration,
+    String? constructorParameter,
+  }) {
+    final property = _presenter.prop2;
+    return ConstructorWithNamedConstructors(
+      inputDecoration: inputDecoration,
+      constructorParameter: constructorParameter,
+    );
+  }
+
+  /// Gets a [FormField] for `prop2` property with [ConstructorWithNamedConstructors.generative] constructor.
+  ConstructorWithNamedConstructors generative(
+    BuildContext context, {
+    InputDecoration? inputDecoration,
+    String? namedConstructorParameter,
+  }) {
+    final property = _presenter.prop2;
+    return ConstructorWithNamedConstructors.generative(
+      inputDecoration: inputDecoration,
+      namedConstructorParameter: namedConstructorParameter,
+    );
+  }
+
+  /// Gets a [FormField] for `prop2` property with [ConstructorWithNamedConstructors.factory] constructor.
+  ConstructorWithNamedConstructors factory(
+    BuildContext context, {
+    InputDecoration? inputDecoration,
+    String? namedFactoryParameter,
+  }) {
+    final property = _presenter.prop2;
+    return ConstructorWithNamedConstructors.factory(
+      inputDecoration: inputDecoration,
+      namedFactoryParameter: namedFactoryParameter,
+    );
+  }
+}
+
+/// A [FormField] factory for `prop4` property of [Test].
+class \$\$TestProp4FieldFactory {
+  final Test _presenter;
+
+  \$\$TestProp4FieldFactory._(this._presenter);
+
+  /// Gets a [FormField] for `prop4` property with [FactoryWithNamedConstructors.new] constructor.
+  FactoryWithNamedConstructors withDefaultConstructor(
+    BuildContext context, {
+    InputDecoration? inputDecoration,
+    String? factoryParameter,
+  }) {
+    final property = _presenter.prop4;
+    return FactoryWithNamedConstructors(
+      inputDecoration: inputDecoration,
+      factoryParameter: factoryParameter,
+    );
+  }
+
+  /// Gets a [FormField] for `prop4` property with [FactoryWithNamedConstructors.generative] constructor.
+  FactoryWithNamedConstructors generative(
+    BuildContext context, {
+    InputDecoration? inputDecoration,
+    String? namedConstructorParameter,
+  }) {
+    final property = _presenter.prop4;
+    return FactoryWithNamedConstructors.generative(
+      inputDecoration: inputDecoration,
+      namedConstructorParameter: namedConstructorParameter,
+    );
+  }
+
+  /// Gets a [FormField] for `prop4` property with [FactoryWithNamedConstructors.factory] constructor.
+  FactoryWithNamedConstructors factory(
+    BuildContext context, {
+    InputDecoration? inputDecoration,
+    String? namedFactoryParameter,
+  }) {
+    final property = _presenter.prop4;
+    return FactoryWithNamedConstructors.factory(
+      inputDecoration: inputDecoration,
+      namedFactoryParameter: namedFactoryParameter,
+    );
+  }
+}
+
+/// Defines an extension property to get [\$TestFieldFactory] from [Test].
+extension \$TestFieldFactoryExtension on Test {
+  /// Gets a [FormField] factory.
+  \$TestFieldFactory get fields => \$TestFieldFactory._(this);
+}
+''',
+        );
+      },
+    );
   });
 
   group('emitFieldFactory', () {
@@ -1328,18 +1521,6 @@ ${spec.item3.map((p) => '      ${p.item2}: ${p.item2}').join(',\n')},
       ),
     );
   });
-}
-
-FutureOr<ConstructorDeclaration?> _getConstructorNode(
-  NodeProvider nodeProvider,
-  ConstructorElement? element,
-) async {
-  if (element == null) {
-    return null;
-  }
-
-  return await nodeProvider
-      .getElementDeclarationAsync<ConstructorDeclaration>(element);
 }
 
 class FormBuilderTestSpec {
