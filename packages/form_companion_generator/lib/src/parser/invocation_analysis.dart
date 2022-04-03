@@ -1,53 +1,40 @@
 // See LICENCE file in the root.
 
-part of '../parser.dart';
+import 'dart:async';
 
-// Defines _parseMethodInvocations and its sub functions.
+import 'package:analyzer/dart/ast/ast.dart';
+import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/type.dart';
 
-Iterable<PropertyDefinition> _toUniquePropertyDefinitions(
-  ParseContext context,
-  Iterable<PropertyDefinitionAndSource> definitions,
-  Element contextElement, {
-  required bool isFormBuilder,
-}) sync* {
-  final names = <String>{};
-  for (final definition in definitions) {
-    final property = definition.property;
-    final element = _getDeclaringElement(definition.source);
-    if (!names.add(property.name)) {
-      throwError(
-        message:
-            "Property '${property.name}' is defined more than once ${getNodeLocation(definition.source, element)}.",
-        todo: 'Fix to define each properties only once for given $pdbTypeName.',
-        element: element,
-      );
-    }
+import '../model.dart';
+import '../utilities.dart';
+import 'parser_data.dart';
+import 'parser_helpers.dart';
+import 'parser_node.dart';
 
-    yield property;
-  }
-}
-
-FutureOr<PropertyDefinitionAndSource> _getRealMethodAsync(
+/// Resolves [MethodInvocation] to [PropertyDefinitionAndSource].
+FutureOr<PropertyDefinitionAndSource> resolvePropertyDefinitionAsync(
   ParseContext context,
   Element contextElement,
-  MethodInvocation method,
-  ExecutableElement methodElement,
+  MethodInvocation methodInvocation,
   ClassElement? targetClass,
+  ExecutableElement targetMethodElement,
   String? propertyName,
   List<GenericInterfaceType> typeArguments, {
   required bool isInferred,
 }) async {
   context.logger.finer(
-    "Resolve invocation chain '$method$typeArguments', found name: '$propertyName'.",
+    "Resolve invocation chain '$methodInvocation$typeArguments', found name: '$propertyName'.",
   );
-  if (method.methodName.name == PropertyDescriptorsBuilderMethods.add ||
-      method.methodName.name ==
+  if (methodInvocation.methodName.name ==
+          PropertyDescriptorsBuilderMethods.add ||
+      methodInvocation.methodName.name ==
           PropertyDescriptorsBuilderMethods.addWithField) {
     return _createPropertyDefinition(
       context,
       contextElement,
-      method,
-      methodElement,
+      methodInvocation,
+      targetMethodElement,
       propertyName,
       typeArguments,
       isInferred: isInferred,
@@ -55,72 +42,70 @@ FutureOr<PropertyDefinitionAndSource> _getRealMethodAsync(
   }
 
   final passingPropertyName = propertyName ??
-      _getPropertyNameFromInvocation(method, contextElement, mayNotExist: true);
-
-  final targetMethodElement =
-      _lookupMethod(contextElement, targetClass, method.methodName.name);
-
-  assert(
-    targetMethodElement != null,
-    "Failed to lookup method '${method.methodName.name}' for class "
-    "'${targetClass?.name}' and library '${contextElement.library?.source.fullName}'.",
-  );
+      _getPropertyNameFromInvocation(
+        methodInvocation,
+        contextElement,
+        mayNotExist: true,
+      );
 
   final targetMethodNode = ExecutableNode(
     context.nodeProvider,
     await context.nodeProvider.getElementDeclarationAsync(
-      targetMethodElement!,
+      targetMethodElement,
     ),
     targetMethodElement,
   );
 
   final targetMethodBody = targetMethodNode.body;
   if (targetMethodBody is! ExpressionFunctionBody) {
-    throwNotSupportedYet(
-      node: targetMethodNode.body,
-      contextElement: targetMethodElement,
+    throwError(
+      message:
+          "PropertyDescriptorsBuilder's extension method must have expression body, "
+          "but method '$targetMethodNode' at "
+          '${getNodeLocation(targetMethodNode.body, targetMethodElement)} is not.',
+      todo:
+          "Declare method '$targetMethodNode' as an expression bodied method.",
     );
   }
 
   final targetMethodBodyExpression =
       targetMethodBody.expression.unParenthesized;
   if (targetMethodBodyExpression is! MethodInvocation) {
-    throwNotSupportedYet(
-      node: targetMethodBodyExpression,
-      contextElement: targetMethodElement,
+    throwError(
+      message:
+          "PropertyDescriptorsBuilder's extension method must have expression "
+          "body with another PropertyDescriptorsBuilder's (extension) method invocation, "
+          "but expresion '$targetMethodBodyExpression' at "
+          '${getNodeLocation(targetMethodNode.body, targetMethodElement)} is not.',
+      todo:
+          "Declare method '$targetMethodNode' as an expression bodied method with "
+          " another PropertyDescriptorsBuilder's (extension) method invocation.",
     );
   }
 
   final invocationTypeArguments = _mapTypeArguments(
-    methodElement,
+    targetMethodElement,
     targetMethodBodyExpression,
     targetMethodElement,
     typeArguments,
   );
 
-  final invocationTargetClass =
-      _getTargetClass(methodElement, targetMethodBodyExpression);
+  final nextTargetClass =
+      lookupTargetClass(targetMethodElement, targetMethodBodyExpression);
 
-  final invocationTargetElement = _lookupMethod(
-    methodElement,
-    invocationTargetClass,
+  final nextTargetMethodElement = lookupMethod(
+    targetMethodElement,
+    nextTargetClass,
     targetMethodBodyExpression.methodName.name,
+    targetMethodBodyExpression,
   );
 
-  if (invocationTargetElement == null) {
-    throwError(
-      message:
-          "Failed to resolve invocation target method or function '$targetMethodBodyExpression'.",
-      element: methodElement,
-    );
-  }
-
-  return await _getRealMethodAsync(
+  return await resolvePropertyDefinitionAsync(
     context,
     targetMethodElement,
     targetMethodBodyExpression,
-    invocationTargetElement,
     targetClass,
+    nextTargetMethodElement,
     passingPropertyName,
     invocationTypeArguments,
     isInferred: isInferred,
@@ -130,8 +115,8 @@ FutureOr<PropertyDefinitionAndSource> _getRealMethodAsync(
 PropertyDefinitionAndSource _createPropertyDefinition(
   ParseContext context,
   Element contextElement,
-  MethodInvocation method,
-  ExecutableElement methodElement,
+  MethodInvocation methodInvocation,
+  ExecutableElement targetMethodElement,
   String? propertyName,
   List<GenericInterfaceType> typeArguments, {
   required bool isInferred,
@@ -155,7 +140,7 @@ PropertyDefinitionAndSource _createPropertyDefinition(
       }
 
       return false;
-    }
+    } // isGenericRawType
 
     final rawType = type.rawType;
     if (isGenericRawType(rawType) && type.typeArguments.isEmpty) {
@@ -167,36 +152,32 @@ PropertyDefinitionAndSource _createPropertyDefinition(
     }
 
     return false;
-  }
+  } // isGenericType
 
-  final typeArgumentsMap = _buildTypeArgumentsMap(methodElement, typeArguments);
+  final typeArgumentsMap =
+      _buildTypeArgumentsMap(targetMethodElement, typeArguments);
   final warnings = <String>[];
 
-  final typeArgument1 =
-      // ignore: prefer_is_empty
-      (typeArguments.length > 0 ? typeArguments[0] : null) ??
-          _getTypeFromTypeArgument(
-            context,
-            method,
-            0,
-            typeArgumentsMap,
-            warnings,
-          );
-  final typeArgument2 = (typeArguments.length > 1 ? typeArguments[1] : null) ??
+  GenericInterfaceType getRequiredTypeArgument(int index) =>
+      (typeArguments.length > index ? typeArguments[index] : null) ??
       _getTypeFromTypeArgument(
         context,
-        method,
-        1,
+        methodInvocation,
+        index,
         typeArgumentsMap,
         warnings,
-      );
+      ); // getRequiredTypeArgument
+
+  final typeArgument1 = getRequiredTypeArgument(0);
+  final typeArgument2 = getRequiredTypeArgument(1);
   final typeArgument3 = (typeArguments.length > 2 ? typeArguments[2] : null) ??
       _tryGetTypeFromTypeArgument(
         context,
-        method,
+        methodInvocation,
         2,
         typeArgumentsMap,
       );
+
   if (isInferred) {
     if (isGenericType(typeArgument1)) {
       warnings.add(
@@ -215,7 +196,8 @@ PropertyDefinitionAndSource _createPropertyDefinition(
         '`F` explicitly.',
       );
 
-      if (method.methodName.name == PropertyDescriptorsBuilderMethods.add) {
+      if (methodInvocation.methodName.name ==
+          PropertyDescriptorsBuilderMethods.add) {
         warnings.add(
           '`${context.isFormBuilder ? 'FormBuilderField' : 'FormField'}'
           '<${typeArgument2.getDisplayString(withNullability: true)}>` is used '
@@ -235,11 +217,12 @@ PropertyDefinitionAndSource _createPropertyDefinition(
       );
     }
   }
+
   return PropertyDefinitionAndSource(
     PropertyDefinition(
       name: propertyName ??
           _getPropertyNameFromInvocation(
-            method,
+            methodInvocation,
             contextElement,
             mayNotExist: false,
           )!,
@@ -248,7 +231,7 @@ PropertyDefinitionAndSource _createPropertyDefinition(
       preferredFormFieldType: typeArgument3,
       warnings: warnings,
     ),
-    method,
+    methodInvocation,
   );
 }
 
@@ -395,33 +378,6 @@ GenericInterfaceType _getTypeFromTypeArgument(
       return GenericInterfaceType(type, []);
     }
   }
-}
-
-Element _getDeclaringElement(Expression expression) {
-  for (AstNode? node = expression; node != null; node = node.parent) {
-    if (node is Declaration && node is! VariableDeclaration) {
-      // Any declaration other than local variable
-      if (node is TopLevelVariableDeclaration) {
-        // Manually look up because declaredElement is always null
-        return (node.root as CompilationUnit)
-            .declaredElement!
-            .library
-            .scope
-            .lookup(node.variables.variables.first.name.name)
-            .getter!;
-      } else {
-        return node.declaredElement!;
-      }
-    }
-
-    if (node is CompilationUnit) {
-      return node.declaredElement!;
-    }
-  }
-
-  throw Exception(
-    "Failed to get declered element of '$expression'.",
-  );
 }
 
 String? _extractLiteralStringValue(

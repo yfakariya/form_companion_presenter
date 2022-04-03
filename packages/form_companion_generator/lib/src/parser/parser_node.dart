@@ -6,9 +6,9 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 
-import 'node_provider.dart';
-import 'parameter.dart';
-import 'utilities.dart';
+import '../model.dart';
+import '../node_provider.dart';
+import '../utilities.dart';
 
 /// Represents an any kind variable.
 abstract class VariableNode {

@@ -11,7 +11,6 @@ import 'dependency.dart';
 import 'emitter/instantiation.dart';
 import 'model.dart';
 import 'node_provider.dart';
-import 'parameter.dart';
 import 'type_instantiation.dart';
 
 part 'emitter/field_factory.dart';

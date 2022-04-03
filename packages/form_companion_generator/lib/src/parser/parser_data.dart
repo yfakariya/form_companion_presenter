@@ -8,10 +8,10 @@ import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
 import 'package:source_gen/source_gen.dart';
 
-import 'form_field_locator.dart';
-import 'model.dart';
-import 'node_provider.dart';
-import 'utilities.dart';
+import '../form_field_locator.dart';
+import '../model.dart';
+import '../node_provider.dart';
+import '../utilities.dart';
 
 /// Represents a context information of parsing.
 @sealed

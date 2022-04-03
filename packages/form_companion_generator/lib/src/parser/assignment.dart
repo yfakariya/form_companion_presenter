@@ -11,7 +11,7 @@ FutureOr<PropertyDescriptorsBuilding> _processAssignmentAsync(
   String leftHand,
   Expression rightHand,
 ) async {
-  assert(_isPropertyDescriptorsBuilder(rightHand.staticType));
+  assert(isPropertyDescriptorsBuilder(rightHand.staticType));
 
   late final PropertyDescriptorsBuilding? rightHandBuilding;
   if (rightHand is Identifier) {

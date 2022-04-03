@@ -16,17 +16,17 @@ import 'dependency.dart';
 import 'form_field_locator.dart';
 import 'model.dart';
 import 'node_provider.dart';
-import 'parser_data.dart';
-import 'parser_node.dart';
+import 'parser/invocation_analysis.dart';
+import 'parser/parser_data.dart';
+import 'parser/parser_helpers.dart';
+import 'parser/parser_node.dart';
 import 'type_instantiation.dart';
 import 'utilities.dart';
 
 part 'parser/assignment.dart';
 part 'parser/expression.dart';
 part 'parser/form_field.dart';
-part 'parser/helpers.dart';
 part 'parser/identifier.dart';
-part 'parser/invocation_analysis.dart';
 part 'parser/presenter_constructor.dart';
 part 'parser/statement.dart';
 
@@ -229,6 +229,56 @@ FutureOr<List<PropertyAndFormFieldDefinition>> getPropertiesAsync(
             isFormBuilder: isFormBuilder,
           ))
       .toListAsync();
+}
+
+Iterable<PropertyDefinition> _toUniquePropertyDefinitions(
+  ParseContext context,
+  Iterable<PropertyDefinitionAndSource> definitions,
+  Element contextElement, {
+  required bool isFormBuilder,
+}) sync* {
+  final names = <String>{};
+  for (final definition in definitions) {
+    final property = definition.property;
+    final element = _getDeclaringElement(definition.source);
+    if (!names.add(property.name)) {
+      throwError(
+        message:
+            "Property '${property.name}' is defined more than once ${getNodeLocation(definition.source, element)}.",
+        todo: 'Fix to define each properties only once for given $pdbTypeName.',
+        element: element,
+      );
+    }
+
+    yield property;
+  }
+}
+
+Element _getDeclaringElement(MethodInvocation expression) {
+  for (AstNode? node = expression; node != null; node = node.parent) {
+    if (node is Declaration && node is! VariableDeclaration) {
+      // Any declaration other than local variable
+      if (node is TopLevelVariableDeclaration) {
+        // Manually look up because declaredElement is always null
+        return (node.root as CompilationUnit)
+            .declaredElement!
+            .library
+            .scope
+            .lookup(node.variables.variables.first.name.name)
+            .getter!;
+      } else {
+        return node.declaredElement!;
+      }
+    }
+
+    if (node is CompilationUnit) {
+      return node.declaredElement!;
+    }
+  }
+
+  throw Exception(
+    "Failed to get declered element of '$expression'.",
+  );
 }
 
 /// Collects dependencies as a list of [LibraryImport] from `FormField`s

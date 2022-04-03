@@ -7,7 +7,6 @@ import 'package:form_companion_generator/src/emitter.dart';
 import 'package:form_companion_generator/src/emitter/instantiation.dart';
 import 'package:form_companion_generator/src/model.dart';
 import 'package:form_companion_generator/src/node_provider.dart';
-import 'package:form_companion_generator/src/parameter.dart';
 import 'package:form_companion_generator/src/type_instantiation.dart';
 import 'package:logging/logging.dart';
 import 'package:test/expect.dart';

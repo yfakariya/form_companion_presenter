@@ -9,7 +9,6 @@ import 'package:meta/meta.dart';
 
 import 'model.dart';
 import 'node_provider.dart';
-import 'parameter.dart';
 import 'utilities.dart';
 
 /// Represents context information for emitter functions.

@@ -6,7 +6,7 @@ import 'package:form_companion_generator/src/form_field_locator.dart';
 import 'package:form_companion_generator/src/model.dart';
 import 'package:form_companion_generator/src/node_provider.dart';
 import 'package:form_companion_generator/src/parser.dart';
-import 'package:form_companion_generator/src/parser_data.dart';
+import 'package:form_companion_generator/src/parser/parser_data.dart';
 import 'package:logging/logging.dart';
 import 'package:test/test.dart';
 import 'package:tuple/tuple.dart';
