@@ -889,7 +889,7 @@ ${spec.item3.map((p) => '      ${p.item2}: ${p.item2}').join(',\n')},
                 [],
               ),
               PropertyDefinitionSpec(
-                'prop2',
+                'p',
                 library.typeProvider.stringType,
                 library.typeProvider.stringType,
                 constructorWithNamedConstructorsClass,
@@ -908,7 +908,7 @@ ${spec.item3.map((p) => '      ${p.item2}: ${p.item2}').join(',\n')},
                 [],
               ),
               PropertyDefinitionSpec(
-                'prop4',
+                'p4',
                 library.typeProvider.stringType,
                 library.typeProvider.stringType,
                 factoryWithNamedConstructorsClass,
@@ -930,61 +930,61 @@ ${spec.item3.map((p) => '      ${p.item2}: ${p.item2}').join(',\n')},
 class \$TestFieldFactory {
   final Test _presenter;
 
-  /// Gets a [FormField] factory for `prop2` property.
-  final \$\$TestProp2FieldFactory prop2;
+  /// Gets a [FormField] factory for `p` property.
+  final \$\$TestPFieldFactory p;
 
-  /// Gets a [FormField] factory for `prop4` property.
-  final \$\$TestProp4FieldFactory prop4;
+  /// Gets a [FormField] factory for `p4` property.
+  final \$\$TestP4FieldFactory p4;
 
   \$TestFieldFactory._(Test presenter) :
     _presenter = presenter,
-    prop2 = \$\$TestProp2FieldFactory(presenter),
-    prop4 = \$\$TestProp4FieldFactory(presenter);
+    p = \$\$TestPFieldFactory(presenter),
+    p4 = \$\$TestP4FieldFactory(presenter);
 
 ${textFormFieldFactory('prop1')}
 
 ${dropdownButtonFieldFactory('prop3', 'bool')}
 }
 
-/// A [FormField] factory for `prop2` property of [Test].
-class \$\$TestProp2FieldFactory {
+/// A [FormField] factory for `p` property of [Test].
+class \$\$TestPFieldFactory {
   final Test _presenter;
 
-  \$\$TestProp2FieldFactory._(this._presenter);
+  \$\$TestPFieldFactory._(this._presenter);
 
-  /// Gets a [FormField] for `prop2` property with [ConstructorWithNamedConstructors.new] constructor.
+  /// Gets a [FormField] for `p` property with [ConstructorWithNamedConstructors.new] constructor.
   ConstructorWithNamedConstructors withDefaultConstructor(
     BuildContext context, {
     InputDecoration? inputDecoration,
     String? constructorParameter,
   }) {
-    final property = _presenter.prop2;
+    final property = _presenter.p;
     return ConstructorWithNamedConstructors(
       inputDecoration: inputDecoration,
       constructorParameter: constructorParameter,
     );
   }
 
-  /// Gets a [FormField] for `prop2` property with [ConstructorWithNamedConstructors.generative] constructor.
+  /// Gets a [FormField] for `p` property with [ConstructorWithNamedConstructors.generative] constructor.
   ConstructorWithNamedConstructors generative(
     BuildContext context, {
     InputDecoration? inputDecoration,
     String? namedConstructorParameter,
   }) {
-    final property = _presenter.prop2;
+    final property = _presenter.p;
     return ConstructorWithNamedConstructors.generative(
       inputDecoration: inputDecoration,
       namedConstructorParameter: namedConstructorParameter,
     );
   }
 
-  /// Gets a [FormField] for `prop2` property with [ConstructorWithNamedConstructors.factory] constructor.
+  /// Gets a [FormField] for `p` property with [ConstructorWithNamedConstructors.factory] constructor.
   ConstructorWithNamedConstructors factory(
     BuildContext context, {
     InputDecoration? inputDecoration,
     String? namedFactoryParameter,
   }) {
-    final property = _presenter.prop2;
+    final property = _presenter.p;
     return ConstructorWithNamedConstructors.factory(
       inputDecoration: inputDecoration,
       namedFactoryParameter: namedFactoryParameter,
@@ -992,45 +992,45 @@ class \$\$TestProp2FieldFactory {
   }
 }
 
-/// A [FormField] factory for `prop4` property of [Test].
-class \$\$TestProp4FieldFactory {
+/// A [FormField] factory for `p4` property of [Test].
+class \$\$TestP4FieldFactory {
   final Test _presenter;
 
-  \$\$TestProp4FieldFactory._(this._presenter);
+  \$\$TestP4FieldFactory._(this._presenter);
 
-  /// Gets a [FormField] for `prop4` property with [FactoryWithNamedConstructors.new] constructor.
+  /// Gets a [FormField] for `p4` property with [FactoryWithNamedConstructors.new] constructor.
   FactoryWithNamedConstructors withDefaultConstructor(
     BuildContext context, {
     InputDecoration? inputDecoration,
     String? factoryParameter,
   }) {
-    final property = _presenter.prop4;
+    final property = _presenter.p4;
     return FactoryWithNamedConstructors(
       inputDecoration: inputDecoration,
       factoryParameter: factoryParameter,
     );
   }
 
-  /// Gets a [FormField] for `prop4` property with [FactoryWithNamedConstructors.generative] constructor.
+  /// Gets a [FormField] for `p4` property with [FactoryWithNamedConstructors.generative] constructor.
   FactoryWithNamedConstructors generative(
     BuildContext context, {
     InputDecoration? inputDecoration,
     String? namedConstructorParameter,
   }) {
-    final property = _presenter.prop4;
+    final property = _presenter.p4;
     return FactoryWithNamedConstructors.generative(
       inputDecoration: inputDecoration,
       namedConstructorParameter: namedConstructorParameter,
     );
   }
 
-  /// Gets a [FormField] for `prop4` property with [FactoryWithNamedConstructors.factory] constructor.
+  /// Gets a [FormField] for `p4` property with [FactoryWithNamedConstructors.factory] constructor.
   FactoryWithNamedConstructors factory(
     BuildContext context, {
     InputDecoration? inputDecoration,
     String? namedFactoryParameter,
   }) {
-    final property = _presenter.prop4;
+    final property = _presenter.p4;
     return FactoryWithNamedConstructors.factory(
       inputDecoration: inputDecoration,
       namedFactoryParameter: namedFactoryParameter,
