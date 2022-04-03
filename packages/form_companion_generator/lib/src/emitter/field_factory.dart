@@ -56,7 +56,7 @@ Iterable<String> _emitFieldFactoriesClasses(
   } else {
     yield '  \$${data.name}FieldFactory._(${data.name} presenter) :';
     if (hasSimpleProperties) {
-      yield '    this.$_presenterField = presenter,';
+      yield '    $_presenterField = presenter,';
     }
 
     for (var i = 0; i < propertyWithComplexFormFields.length - 1; i++) {
