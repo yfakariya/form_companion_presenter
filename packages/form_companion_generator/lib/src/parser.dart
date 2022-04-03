@@ -16,10 +16,10 @@ import 'dependency.dart';
 import 'form_field_locator.dart';
 import 'model.dart';
 import 'node_provider.dart';
-import 'parser/invocation_analysis.dart';
 import 'parser/parser_data.dart';
 import 'parser/parser_helpers.dart';
 import 'parser/parser_node.dart';
+import 'parser/resolve_property.dart';
 import 'type_instantiation.dart';
 import 'utilities.dart';
 
