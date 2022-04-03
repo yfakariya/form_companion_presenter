@@ -68,35 +68,37 @@ import 'package:form_companion_presenter/form_companion_presenter.dart';
 
 import 'the_form_presenter.dart';
 
+/// Defines typed property accessors as extension properties for [TheFormPresenter].
 extension $TheFormPresenterPropertyExtension on TheFormPresenter {
-  /// Gets a [PropertyDescriptor] of propString property.
+  /// Gets a [PropertyDescriptor] of `propString` property.
   PropertyDescriptor<String, String> get propString =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
       properties['propString']! as PropertyDescriptor<String, String>;
 
-  /// Gets a [PropertyDescriptor] of propEnum property.
+  /// Gets a [PropertyDescriptor] of `propEnum` property.
   PropertyDescriptor<MyEnum, MyEnum> get propEnum =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
       properties['propEnum']! as PropertyDescriptor<MyEnum, MyEnum>;
 
-  /// Gets a [PropertyDescriptor] of propStringList property.
+  /// Gets a [PropertyDescriptor] of `propStringList` property.
   PropertyDescriptor<List<String>, List<String>> get propStringList =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
       properties['propStringList']!
           as PropertyDescriptor<List<String>, List<String>>;
 
-  /// Gets a [PropertyDescriptor] of propInt property.
+  /// Gets a [PropertyDescriptor] of `propInt` property.
   PropertyDescriptor<int, String> get propInt =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
       properties['propInt']! as PropertyDescriptor<int, String>;
 }
 
-class $TheFormPresenterFieldFactories {
+/// Defines [FormField] factory methods for properties of [TheFormPresenter].
+class $TheFormPresenterFieldFactory {
   final TheFormPresenter _presenter;
 
-  $TheFormPresenterFieldFactories._(this._presenter);
+  $TheFormPresenterFieldFactory._(this._presenter);
 
-  /// Gets a [FormField] for propString property.
+  /// Gets a [FormField] for `propString` property.
   TextFormField propString(
     BuildContext context, {
     TextEditingController? controller,
@@ -154,9 +156,10 @@ class $TheFormPresenterFieldFactories {
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       focusNode: focusNode,
-      decoration: const InputDecoration().copyWith(
-        labelText: property.name,
-      ),
+      decoration: decoration ??
+          const InputDecoration().copyWith(
+            labelText: property.name,
+          ),
       keyboardType: keyboardType,
       textCapitalization: textCapitalization,
       textInputAction: textInputAction,
@@ -207,7 +210,7 @@ class $TheFormPresenterFieldFactories {
     );
   }
 
-  /// Gets a [FormField] for propEnum property.
+  /// Gets a [FormField] for `propEnum` property.
   DropdownButtonFormField<MyEnum> propEnum(
     BuildContext context, {
     required List<DropdownMenuItem<MyEnum>>? items,
@@ -259,9 +262,10 @@ class $TheFormPresenterFieldFactories {
       focusNode: focusNode,
       autofocus: autofocus,
       dropdownColor: dropdownColor,
-      decoration: InputDecoration(
-        labelText: property.name,
-      ),
+      decoration: decoration ??
+          InputDecoration(
+            labelText: property.name,
+          ),
       onSaved: (v) => property.setFieldValue(
           v, Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       validator: property.getValidator(context),
@@ -272,7 +276,7 @@ class $TheFormPresenterFieldFactories {
     );
   }
 
-  /// Gets a [FormField] for propStringList property.
+  /// Gets a [FormField] for `propStringList` property.
   DropdownButtonFormField<List<String>> propStringList(
     BuildContext context, {
     required List<DropdownMenuItem<List<String>>>? items,
@@ -324,9 +328,10 @@ class $TheFormPresenterFieldFactories {
       focusNode: focusNode,
       autofocus: autofocus,
       dropdownColor: dropdownColor,
-      decoration: InputDecoration(
-        labelText: property.name,
-      ),
+      decoration: decoration ??
+          InputDecoration(
+            labelText: property.name,
+          ),
       onSaved: (v) => property.setFieldValue(
           v, Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       validator: property.getValidator(context),
@@ -337,7 +342,7 @@ class $TheFormPresenterFieldFactories {
     );
   }
 
-  /// Gets a [FormField] for propInt property.
+  /// Gets a [FormField] for `propInt` property.
   TextFormField propInt(
     BuildContext context, {
     TextEditingController? controller,
@@ -395,9 +400,10 @@ class $TheFormPresenterFieldFactories {
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       focusNode: focusNode,
-      decoration: const InputDecoration().copyWith(
-        labelText: property.name,
-      ),
+      decoration: decoration ??
+          const InputDecoration().copyWith(
+            labelText: property.name,
+          ),
       keyboardType: keyboardType,
       textCapitalization: textCapitalization,
       textInputAction: textInputAction,
@@ -449,8 +455,9 @@ class $TheFormPresenterFieldFactories {
   }
 }
 
+/// Defines an extension property to get [$TheFormPresenterFieldFactory] from [TheFormPresenter].
 extension $TheFormPresenterFieldFactoryExtension on TheFormPresenter {
-  /// Gets a form field factories.
-  $TheFormPresenterFieldFactories get fields =>
-      $TheFormPresenterFieldFactories._(this);
+  /// Gets a [FormField] factory.
+  $TheFormPresenterFieldFactory get fields =>
+      $TheFormPresenterFieldFactory._(this);
 }

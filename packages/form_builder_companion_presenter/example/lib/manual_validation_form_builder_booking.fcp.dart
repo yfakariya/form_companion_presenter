@@ -110,62 +110,64 @@ import 'manual_validation_form_builder_booking.dart';
 
 import 'models.dart' show MealType, RoomType;
 
+/// Defines typed property accessors as extension properties for [ManualValidationFormBuilderBookingPresenter].
 extension $ManualValidationFormBuilderBookingPresenterPropertyExtension
     on ManualValidationFormBuilderBookingPresenter {
-  /// Gets a [PropertyDescriptor] of stay property.
+  /// Gets a [PropertyDescriptor] of `stay` property.
   PropertyDescriptor<DateTimeRange, DateTimeRange> get stay =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
       properties['stay']! as PropertyDescriptor<DateTimeRange, DateTimeRange>;
 
-  /// Gets a [PropertyDescriptor] of specialOfferDate property.
+  /// Gets a [PropertyDescriptor] of `specialOfferDate` property.
   PropertyDescriptor<DateTime, DateTime> get specialOfferDate =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
       properties['specialOfferDate']! as PropertyDescriptor<DateTime, DateTime>;
 
-  /// Gets a [PropertyDescriptor] of roomType property.
+  /// Gets a [PropertyDescriptor] of `roomType` property.
   PropertyDescriptor<RoomType, RoomType> get roomType =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
       properties['roomType']! as PropertyDescriptor<RoomType, RoomType>;
 
-  /// Gets a [PropertyDescriptor] of mealOffers property.
+  /// Gets a [PropertyDescriptor] of `mealOffers` property.
   PropertyDescriptor<List<MealType>, List<MealType>> get mealOffers =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
       properties['mealOffers']!
           as PropertyDescriptor<List<MealType>, List<MealType>>;
 
-  /// Gets a [PropertyDescriptor] of smoking property.
+  /// Gets a [PropertyDescriptor] of `smoking` property.
   PropertyDescriptor<bool, bool> get smoking =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
       properties['smoking']! as PropertyDescriptor<bool, bool>;
 
-  /// Gets a [PropertyDescriptor] of persons property.
+  /// Gets a [PropertyDescriptor] of `persons` property.
   PropertyDescriptor<int, double> get persons =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
       properties['persons']! as PropertyDescriptor<int, double>;
 
-  /// Gets a [PropertyDescriptor] of babyBeds property.
+  /// Gets a [PropertyDescriptor] of `babyBeds` property.
   PropertyDescriptor<int, int> get babyBeds =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
       properties['babyBeds']! as PropertyDescriptor<int, int>;
 
-  /// Gets a [PropertyDescriptor] of preferredPrice property.
+  /// Gets a [PropertyDescriptor] of `preferredPrice` property.
   PropertyDescriptor<RangeValues, RangeValues> get preferredPrice =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
       properties['preferredPrice']!
           as PropertyDescriptor<RangeValues, RangeValues>;
 
-  /// Gets a [PropertyDescriptor] of note property.
+  /// Gets a [PropertyDescriptor] of `note` property.
   PropertyDescriptor<String, String> get note =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
       properties['note']! as PropertyDescriptor<String, String>;
 }
 
-class $ManualValidationFormBuilderBookingPresenterFieldFactories {
+/// Defines [FormField] factory methods for properties of [ManualValidationFormBuilderBookingPresenter].
+class $ManualValidationFormBuilderBookingPresenterFieldFactory {
   final ManualValidationFormBuilderBookingPresenter _presenter;
 
-  $ManualValidationFormBuilderBookingPresenterFieldFactories._(this._presenter);
+  $ManualValidationFormBuilderBookingPresenterFieldFactory._(this._presenter);
 
-  /// Gets a [FormField] for stay property.
+  /// Gets a [FormField] for `stay` property.
   FormBuilderDateRangePicker stay(
     BuildContext context, {
     Key? key,
@@ -291,7 +293,7 @@ class $ManualValidationFormBuilderBookingPresenterFieldFactories {
     );
   }
 
-  /// Gets a [FormField] for specialOfferDate property.
+  /// Gets a [FormField] for `specialOfferDate` property.
   FormBuilderDateTimePicker specialOfferDate(
     BuildContext context, {
     Key? key,
@@ -425,7 +427,7 @@ class $ManualValidationFormBuilderBookingPresenterFieldFactories {
     );
   }
 
-  /// Gets a [FormField] for roomType property.
+  /// Gets a [FormField] for `roomType` property.
   FormBuilderRadioGroup<RoomType> roomType(
     BuildContext context, {
     AutovalidateMode? autovalidateMode,
@@ -493,7 +495,7 @@ class $ManualValidationFormBuilderBookingPresenterFieldFactories {
     );
   }
 
-  /// Gets a [FormField] for mealOffers property.
+  /// Gets a [FormField] for `mealOffers` property.
   FormBuilderFilterChip<MealType> mealOffers(
     BuildContext context, {
     AutovalidateMode? autovalidateMode,
@@ -577,7 +579,7 @@ class $ManualValidationFormBuilderBookingPresenterFieldFactories {
     );
   }
 
-  /// Gets a [FormField] for smoking property.
+  /// Gets a [FormField] for `smoking` property.
   FormBuilderSwitch smoking(
     BuildContext context, {
     Key? key,
@@ -637,7 +639,7 @@ class $ManualValidationFormBuilderBookingPresenterFieldFactories {
     );
   }
 
-  /// Gets a [FormField] for persons property.
+  /// Gets a [FormField] for `persons` property.
   FormBuilderSlider persons(
     BuildContext context, {
     Key? key,
@@ -703,7 +705,7 @@ class $ManualValidationFormBuilderBookingPresenterFieldFactories {
     );
   }
 
-  /// Gets a [FormField] for babyBeds property.
+  /// Gets a [FormField] for `babyBeds` property.
   FormBuilderSegmentedControl<int> babyBeds(
     BuildContext context, {
     Key? key,
@@ -749,7 +751,7 @@ class $ManualValidationFormBuilderBookingPresenterFieldFactories {
     );
   }
 
-  /// Gets a [FormField] for preferredPrice property.
+  /// Gets a [FormField] for `preferredPrice` property.
   FormBuilderRangeSlider preferredPrice(
     BuildContext context, {
     Key? key,
@@ -811,7 +813,7 @@ class $ManualValidationFormBuilderBookingPresenterFieldFactories {
     );
   }
 
-  /// Gets a [FormField] for note property.
+  /// Gets a [FormField] for `note` property.
   FormBuilderTextField note(
     BuildContext context, {
     Key? key,
@@ -928,9 +930,10 @@ class $ManualValidationFormBuilderBookingPresenterFieldFactories {
   }
 }
 
+/// Defines an extension property to get [$ManualValidationFormBuilderBookingPresenterFieldFactory] from [ManualValidationFormBuilderBookingPresenter].
 extension $ManualValidationFormBuilderBookingPresenterFieldFactoryExtension
     on ManualValidationFormBuilderBookingPresenter {
-  /// Gets a form field factories.
-  $ManualValidationFormBuilderBookingPresenterFieldFactories get fields =>
-      $ManualValidationFormBuilderBookingPresenterFieldFactories._(this);
+  /// Gets a [FormField] factory.
+  $ManualValidationFormBuilderBookingPresenterFieldFactory get fields =>
+      $ManualValidationFormBuilderBookingPresenterFieldFactory._(this);
 }
