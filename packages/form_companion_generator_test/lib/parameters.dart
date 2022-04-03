@@ -211,7 +211,7 @@ class OnlyNamedConstructor extends FormField<String> {
 
   OnlyNamedConstructor.generative({
     InputDecoration? inputDecoration,
-    String? namedContructorParameter,
+    String? namedConstructorParameter,
   }) {}
 }
 
@@ -228,12 +228,12 @@ class OnlyNamedFactory extends FormField<String> {
 class ConstructorWithNamedConstructors extends FormField<String> {
   ConstructorWithNamedConstructors({
     InputDecoration? inputDecoration,
-    String? contructorParameter,
+    String? constructorParameter,
   });
 
   ConstructorWithNamedConstructors.generative({
     InputDecoration? inputDecoration,
-    String? namedContructorParameter,
+    String? namedConstructorParameter,
   }) {}
 
   factory ConstructorWithNamedConstructors.factory({
@@ -254,7 +254,7 @@ class FactoryWithNamedConstructors extends FormField<String> {
 
   FactoryWithNamedConstructors.generative({
     InputDecoration? inputDecoration,
-    String? namedContructorParameter,
+    String? namedConstructorParameter,
   }) {}
 
   factory FactoryWithNamedConstructors.factory({
@@ -267,17 +267,17 @@ class FactoryWithNamedConstructors extends FormField<String> {
 class ConstructorWithMultipleNamedConstructors extends FormField<String> {
   ConstructorWithMultipleNamedConstructors({
     InputDecoration? inputDecoration,
-    String? contructorParameter,
+    String? constructorParameter,
   });
 
   ConstructorWithMultipleNamedConstructors.generative1({
     InputDecoration? inputDecoration,
-    String? namedContructorParameter1,
+    String? namedConstructorParameter1,
   }) {}
 
   ConstructorWithMultipleNamedConstructors.generative2({
     InputDecoration? inputDecoration,
-    String? namedContructorParameter2,
+    String? namedConstructorParameter2,
   }) {}
 
   factory ConstructorWithMultipleNamedConstructors.factory1({

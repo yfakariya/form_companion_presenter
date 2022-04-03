@@ -749,7 +749,7 @@ ${spec.item3.map((p) => '      ${p.item2}: ${p.item2}').join(',\n')},
             Tuple3(
               'generative',
               ' with [OnlyNamedConstructor.generative] constructor',
-              'namedContructorParameter',
+              'namedConstructorParameter',
             )
           ],
         ),
@@ -777,12 +777,12 @@ ${spec.item3.map((p) => '      ${p.item2}: ${p.item2}').join(',\n')},
             Tuple3(
               null,
               ' with [ConstructorWithNamedConstructors.new] constructor',
-              'contructorParameter',
+              'constructorParameter',
             ),
             Tuple3(
               'generative',
               ' with [ConstructorWithNamedConstructors.generative] constructor',
-              'namedContructorParameter',
+              'namedConstructorParameter',
             ),
             Tuple3(
               'factory',
@@ -806,7 +806,7 @@ ${spec.item3.map((p) => '      ${p.item2}: ${p.item2}').join(',\n')},
             Tuple3(
               'generative',
               ' with [FactoryWithNamedConstructors.generative] constructor',
-              'namedContructorParameter',
+              'namedConstructorParameter',
             ),
             Tuple3(
               'factory',
@@ -825,17 +825,17 @@ ${spec.item3.map((p) => '      ${p.item2}: ${p.item2}').join(',\n')},
             Tuple3(
               null,
               ' with [ConstructorWithMultipleNamedConstructors.new] constructor',
-              'contructorParameter',
+              'constructorParameter',
             ),
             Tuple3(
               'generative1',
               ' with [ConstructorWithMultipleNamedConstructors.generative1] constructor',
-              'namedContructorParameter1',
+              'namedConstructorParameter1',
             ),
             Tuple3(
               'generative2',
               ' with [ConstructorWithMultipleNamedConstructors.generative2] constructor',
-              'namedContructorParameter2',
+              'namedConstructorParameter2',
             ),
             Tuple3(
               'factory1',
