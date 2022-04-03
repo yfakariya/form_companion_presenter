@@ -704,6 +704,9 @@ Future<void> main() async {
             {required bool hasNamedConstructors}) {
           final methodName = spec.item1 ??
               (hasNamedConstructors ? 'withDefaultConstructor' : propertyName);
+          final construtorName = spec.item1 == null
+              ? formFieldClass.thisType.getDisplayString(withNullability: false)
+              : '${formFieldClass.thisType.getDisplayString(withNullability: false)}.${spec.item1}';
           return '''
   /// Gets a [FormField] for `$propertyName` property${spec.item2}.
   ${formFieldClass.thisType.getDisplayString(withNullability: true)} $methodName(
@@ -711,7 +714,7 @@ Future<void> main() async {
 ${spec.item3.map((p) => '    ${p.item1} ${p.item2}').join(',\n')},
   }) {
     final property = _presenter.$propertyName;
-    return ${formFieldClass.thisType.getDisplayString(withNullability: false)}(
+    return $construtorName(
 ${spec.item3.map((p) => '      ${p.item2}: ${p.item2}').join(',\n')},
     );
   }''';

@@ -177,14 +177,18 @@ Iterable<String> _emitFieldFactoryCore(
   );
   final formFieldType = sink.toString();
 
-  late final String methodName;
+  late final String methodName, constructorName;
   if (property.isSimpleFormField) {
     yield '  /// Gets a [FormField] for `${property.name}` property.';
     methodName = property.name;
+    constructorName = formFieldType;
   } else {
     yield '  /// Gets a [FormField] for `${property.name}` property '
         'with [$formFieldType.${constructor.constructor.name ?? 'new'}] constructor.';
     methodName = constructor.constructor.name?.name ?? 'withDefaultConstructor';
+    constructorName = constructor.constructor.name == null
+        ? formFieldType
+        : '$formFieldType.${constructor.constructor.name?.name}';
   }
 
   yield '  $formFieldType $methodName(';
@@ -194,7 +198,7 @@ Iterable<String> _emitFieldFactoryCore(
   }
   yield '  }) {';
   yield '    final property = $_presenterField.${property.name};';
-  yield '    return $formFieldType(';
+  yield '    return $constructorName(';
   yield* argumentHandler.emitAssignments(
     data: data,
     buildContext: 'context',
