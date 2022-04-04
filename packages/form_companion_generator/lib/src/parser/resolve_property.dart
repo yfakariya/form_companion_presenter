@@ -157,29 +157,13 @@ PropertyDefinitionWithSource _createPropertyDefinition({
     return false;
   } // isGenericType
 
-  final typeArgumentsMap =
-      _buildTypeArgumentsMap(targetMethodElement, typeArguments);
   final warnings = <String>[];
 
-  GenericInterfaceType getRequiredTypeArgument(int index) =>
-      (typeArguments.length > index ? typeArguments[index] : null) ??
-      _getTypeFromTypeArgument(
-        context,
-        methodInvocation,
-        index,
-        typeArgumentsMap,
-        warnings,
-      ); // getRequiredTypeArgument
+  assert(typeArguments.length > 1);
 
-  final typeArgument1 = getRequiredTypeArgument(0);
-  final typeArgument2 = getRequiredTypeArgument(1);
-  final typeArgument3 = (typeArguments.length > 2 ? typeArguments[2] : null) ??
-      _tryGetTypeFromTypeArgument(
-        context,
-        methodInvocation,
-        2,
-        typeArgumentsMap,
-      );
+  final typeArgument1 = typeArguments[0];
+  final typeArgument2 = typeArguments[1];
+  final typeArgument3 = typeArguments.length > 2 ? typeArguments[2] : null;
 
   if (isInferred) {
     if (isGenericType(typeArgument1)) {
@@ -322,63 +306,6 @@ Iterable<GenericInterfaceType> _resolveTypeArguments(
       );
     } else {
       yield GenericInterfaceType(typeArgument, []);
-    }
-  }
-}
-
-GenericInterfaceType? _tryGetTypeFromTypeArgument(
-  ParseContext context,
-  MethodInvocation methodInvocation,
-  int position,
-  Map<String, GenericInterfaceType> typeArguments,
-) {
-  final invocationTypeArguments = methodInvocation.typeArguments;
-  if (invocationTypeArguments == null ||
-      invocationTypeArguments.arguments.length <= position) {
-    // Because add method is declared as add<T extends Object>,
-    // so raw type will be Object rather than dynamic here.
-    return null;
-  } else {
-    final invocationTypeArgument =
-        invocationTypeArguments.arguments[position].type;
-    if (invocationTypeArgument is InterfaceType) {
-      return GenericInterfaceType(
-        invocationTypeArgument,
-        _resolveTypeArguments(invocationTypeArgument, typeArguments).toList(),
-      );
-    } else {
-      return null;
-    }
-  }
-}
-
-GenericInterfaceType _getTypeFromTypeArgument(
-  ParseContext context,
-  MethodInvocation methodInvocation,
-  int position,
-  Map<String, GenericInterfaceType> typeArguments,
-  List<String> warnings,
-) {
-  final invocationTypeArguments = methodInvocation.typeArguments;
-  if (invocationTypeArguments == null ||
-      invocationTypeArguments.length <= position) {
-    // Because add method is declared as add<T extends Object>,
-    // so raw type will be Object rather than dynamic here.
-    return GenericInterfaceType(context.typeProvider.objectType, []);
-  } else {
-    final typeArgument = invocationTypeArguments.arguments[position].type;
-    if (typeArgument is InterfaceType) {
-      return GenericInterfaceType(
-        typeArgument,
-        _resolveTypeArguments(typeArgument, typeArguments).toList(),
-      );
-    } else {
-      final type = context.typeProvider.objectType;
-      final failedToResolveTypeMessage =
-          "Failed to resolve type argument at ${position + 1} of $pdbTypeName.${methodInvocation.methodName}${methodInvocation.typeArguments}(): '$typeArgument'.";
-      warnings.add(failedToResolveTypeMessage);
-      context.logger.warning(failedToResolveTypeMessage);
-      return GenericInterfaceType(type, []);
     }
   }
 }
