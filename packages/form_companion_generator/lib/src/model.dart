@@ -442,15 +442,15 @@ class PropertyDefinition {
 
 /// A pair of [PropertyDefinition] and its source [MethodInvocation].
 @sealed
-class PropertyDefinitionAndSource {
+class PropertyDefinitionWithSource {
   /// [PropertyDefinition] created by [source].
   final PropertyDefinition property;
 
   /// Source [MethodInvocation] for reporting.
   final MethodInvocation source;
 
-  /// Initializes a new [PropertyDefinitionAndSource] instance.
-  PropertyDefinitionAndSource(this.property, this.source);
+  /// Initializes a new [PropertyDefinitionWithSource] instance.
+  PropertyDefinitionWithSource(this.property, this.source);
 }
 
 /// A property definition with resolved `FormField` information.

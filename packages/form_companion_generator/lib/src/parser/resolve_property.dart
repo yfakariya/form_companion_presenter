@@ -12,8 +12,6 @@ import 'parser_data.dart';
 import 'parser_helpers.dart';
 import 'parser_node.dart';
 
-/// Resolves [MethodInvocation] to [PropertyDefinitionAndSource].
-FutureOr<PropertyDefinitionAndSource> resolvePropertyDefinitionAsync(
   ParseContext context,
   Element contextElement,
   MethodInvocation methodInvocation,
@@ -21,6 +19,8 @@ FutureOr<PropertyDefinitionAndSource> resolvePropertyDefinitionAsync(
   ExecutableElement targetMethodElement,
   String? propertyName,
   List<GenericInterfaceType> typeArguments, {
+/// Resolves [MethodInvocation] to [PropertyDefinitionWithSource].
+FutureOr<PropertyDefinitionWithSource> resolvePropertyDefinitionAsync({
   required bool isInferred,
 }) async {
   context.logger.finer(
@@ -112,13 +112,13 @@ FutureOr<PropertyDefinitionAndSource> resolvePropertyDefinitionAsync(
   );
 }
 
-PropertyDefinitionAndSource _createPropertyDefinition(
   ParseContext context,
   Element contextElement,
   MethodInvocation methodInvocation,
   ExecutableElement targetMethodElement,
   String? propertyName,
   List<GenericInterfaceType> typeArguments, {
+PropertyDefinitionWithSource _createPropertyDefinition({
   required bool isInferred,
 }) {
   bool isGenericType(GenericInterfaceType type) {
@@ -218,7 +218,7 @@ PropertyDefinitionAndSource _createPropertyDefinition(
     }
   }
 
-  return PropertyDefinitionAndSource(
+  return PropertyDefinitionWithSource(
     PropertyDefinition(
       name: propertyName ??
           _getPropertyNameFromInvocation(

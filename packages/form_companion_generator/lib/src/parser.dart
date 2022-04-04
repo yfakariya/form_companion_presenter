@@ -233,7 +233,7 @@ FutureOr<List<PropertyAndFormFieldDefinition>> getPropertiesAsync(
 
 Iterable<PropertyDefinition> _toUniquePropertyDefinitions(
   ParseContext context,
-  Iterable<PropertyDefinitionAndSource> definitions,
+  Iterable<PropertyDefinitionWithSource> definitions,
   Element contextElement, {
   required bool isFormBuilder,
 }) sync* {
