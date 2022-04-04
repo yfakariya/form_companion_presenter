@@ -61,10 +61,10 @@ FutureOr<PropertyDefinitionWithSource> resolvePropertyDefinitionAsync({
     throwError(
       message:
           "PropertyDescriptorsBuilder's extension method must have expression body, "
-          "but method '$targetMethodNode' at "
+          "but method '$targetMethodElement' at "
           '${getNodeLocation(targetMethodNode.body, targetMethodElement)} is not.',
       todo:
-          "Declare method '$targetMethodNode' as an expression bodied method.",
+          "Declare method '$targetMethodElement' as an expression bodied method.",
     );
   }
 
@@ -78,8 +78,8 @@ FutureOr<PropertyDefinitionWithSource> resolvePropertyDefinitionAsync({
           "but expresion '$targetMethodBodyExpression' at "
           '${getNodeLocation(targetMethodNode.body, targetMethodElement)} is not.',
       todo:
-          "Declare method '$targetMethodNode' as an expression bodied method with "
-          " another PropertyDescriptorsBuilder's (extension) method invocation.",
+          "Declare method '$targetMethodElement' as an expression bodied method with "
+          "another PropertyDescriptorsBuilder's (extension) method invocation.",
     );
   }
 
