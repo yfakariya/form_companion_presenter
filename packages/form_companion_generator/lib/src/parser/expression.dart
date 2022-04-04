@@ -98,13 +98,18 @@ FutureOr<PropertyDescriptorsBuilding?> _parseExpressionAsync(
           .whereType<MethodInvocation>()
           .map(
             (e) => resolvePropertyDefinitionAsync(
-              context,
-              contextElement,
-              e,
-              targetClass,
-              lookupMethod(contextElement, targetClass, e.methodName.name, e),
-              null,
-              e.typeArgumentTypes
+              context: context,
+              contextElement: contextElement,
+              methodInvocation: e,
+              targetClass: targetClass,
+              targetMethodElement: lookupMethod(
+                contextElement,
+                targetClass,
+                e.methodName.name,
+                e,
+              ),
+              propertyName: null,
+              typeArguments: e.typeArgumentTypes
                       ?.map((e) => GenericInterfaceType(e, []))
                       .toList() ??
                   [],
@@ -149,18 +154,18 @@ FutureOr<PropertyDescriptorsBuilding?> _parseExpressionAsync(
           // Found PDB method call.
           context.buildings[target.name]!.add(
             await resolvePropertyDefinitionAsync(
-              context,
-              contextElement,
-              unparenthesized,
-              targetClass,
-              lookupMethod(
+              context: context,
+              contextElement: contextElement,
+              methodInvocation: unparenthesized,
+              targetClass: targetClass,
+              targetMethodElement: lookupMethod(
                 contextElement,
                 targetClass,
                 unparenthesized.methodName.name,
                 unparenthesized,
               ),
-              null,
-              unparenthesized.typeArgumentTypes
+              propertyName: null,
+              typeArguments: unparenthesized.typeArgumentTypes
                       ?.map((e) => GenericInterfaceType(e, []))
                       .toList() ??
                   [],

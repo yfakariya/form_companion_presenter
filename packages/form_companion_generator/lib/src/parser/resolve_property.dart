@@ -12,15 +12,15 @@ import 'parser_data.dart';
 import 'parser_helpers.dart';
 import 'parser_node.dart';
 
-  ParseContext context,
-  Element contextElement,
-  MethodInvocation methodInvocation,
-  ClassElement? targetClass,
-  ExecutableElement targetMethodElement,
-  String? propertyName,
-  List<GenericInterfaceType> typeArguments, {
 /// Resolves [MethodInvocation] to [PropertyDefinitionWithSource].
 FutureOr<PropertyDefinitionWithSource> resolvePropertyDefinitionAsync({
+  required ParseContext context,
+  required Element contextElement,
+  required MethodInvocation methodInvocation,
+  required ClassElement? targetClass,
+  required ExecutableElement targetMethodElement,
+  required String? propertyName,
+  required List<GenericInterfaceType> typeArguments,
   required bool isInferred,
 }) async {
   context.logger.finer(
@@ -31,12 +31,12 @@ FutureOr<PropertyDefinitionWithSource> resolvePropertyDefinitionAsync({
       methodInvocation.methodName.name ==
           PropertyDescriptorsBuilderMethods.addWithField) {
     return _createPropertyDefinition(
-      context,
-      contextElement,
-      methodInvocation,
-      targetMethodElement,
-      propertyName,
-      typeArguments,
+      context: context,
+      contextElement: contextElement,
+      methodInvocation: methodInvocation,
+      targetMethodElement: targetMethodElement,
+      propertyName: propertyName,
+      typeArguments: typeArguments,
       isInferred: isInferred,
     );
   }
@@ -101,24 +101,24 @@ FutureOr<PropertyDefinitionWithSource> resolvePropertyDefinitionAsync({
   );
 
   return await resolvePropertyDefinitionAsync(
-    context,
-    targetMethodElement,
-    targetMethodBodyExpression,
-    targetClass,
-    nextTargetMethodElement,
-    passingPropertyName,
-    invocationTypeArguments,
+    context: context,
+    contextElement: targetMethodElement,
+    methodInvocation: targetMethodBodyExpression,
+    targetClass: targetClass,
+    targetMethodElement: nextTargetMethodElement,
+    propertyName: passingPropertyName,
+    typeArguments: invocationTypeArguments,
     isInferred: isInferred,
   );
 }
 
-  ParseContext context,
-  Element contextElement,
-  MethodInvocation methodInvocation,
-  ExecutableElement targetMethodElement,
-  String? propertyName,
-  List<GenericInterfaceType> typeArguments, {
 PropertyDefinitionWithSource _createPropertyDefinition({
+  required ParseContext context,
+  required Element contextElement,
+  required MethodInvocation methodInvocation,
+  required ExecutableElement targetMethodElement,
+  required String? propertyName,
+  required List<GenericInterfaceType> typeArguments,
   required bool isInferred,
 }) {
   bool isGenericType(GenericInterfaceType type) {
