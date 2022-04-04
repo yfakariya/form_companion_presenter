@@ -247,11 +247,7 @@ List<GenericInterfaceType> _mapTypeArguments(
   ExecutableElement targetMethod,
   List<GenericInterfaceType> typeArguments,
 ) {
-  final invocationTypeArguments = invocation.typeArgumentTypes;
-  if (invocationTypeArguments == null) {
-    return [];
-  }
-
+  final invocationTypeArguments = invocation.typeArgumentTypes!;
   final typeArgumentsMap = _buildTypeArgumentsMap(current, typeArguments);
 
   final result = <GenericInterfaceType>[];
