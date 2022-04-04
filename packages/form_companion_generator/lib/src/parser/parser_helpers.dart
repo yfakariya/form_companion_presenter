@@ -47,14 +47,15 @@ ExecutableElement lookupMethod(
 ) {
   final found =
       targetClass?.lookUpMethod(methodName, contextElement.library!) ??
-          contextElement.library!.scope.lookup(methodName).getter
-              as ExecutableElement? ??
           contextElement.library!.accessibleExtensions
+              .where((x) => x.extendedType == targetClass?.thisType)
               .expand<MethodElement?>((x) => x.methods)
               .firstWhere(
                 (m) => m?.name == methodName,
                 orElse: () => null,
-              );
+              ) ??
+          contextElement.library!.scope.lookup(methodName).getter
+              as ExecutableElement?;
 
   if (found == null) {
     throwError(
