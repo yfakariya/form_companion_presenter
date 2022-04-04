@@ -106,7 +106,7 @@ FutureOr<PropertyDefinitionWithSource> resolvePropertyDefinitionAsync({
     context: context,
     contextElement: targetMethodElement,
     methodInvocation: targetMethodBodyExpression,
-    targetClass: targetClass,
+    targetClass: nextTargetClass,
     propertyName: passingPropertyName,
     typeArguments: invocationTypeArguments,
     originalMethodInvocation: originalMethodInvocation,
