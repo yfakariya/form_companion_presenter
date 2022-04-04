@@ -93,10 +93,13 @@ Future<void> main() async {
   final boolean = builtIns[3];
   final stringConvertible = builtIns[4];
   final enumerated = builtIns[5];
+  final id = findMethodInvocations('id').single;
   final withTextField = findMethodInvocations('withTextField').single;
   final withBlockBody = findMethodInvocations('withBlockBody').single;
   final withNoChainExpression =
       findMethodInvocations('withNoChainExpression').single;
+  final withNever = findMethodInvocations('withNever').single;
+  final withNeverList = findMethodInvocations('withNeverList').single;
 
   Future<void> testResolvePropertyDefinitionAsync(
     Element contextElement,
@@ -225,6 +228,14 @@ Future<void> main() async {
         typeProvider.stringType,
         'TextFormField',
       ),
+      NormalTestSpec(
+        'via non generic method',
+        id,
+        'id',
+        typeProvider.stringType,
+        typeProvider.stringType,
+        null,
+      ),
     ]) {
       test(
         spec.item1,
@@ -267,6 +278,26 @@ Future<void> main() async {
             "<P extends Object, F extends Object>({required String name})' as "
             'an expression bodied method with another '
             "PropertyDescriptorsBuilder's (extension) method invocation.",
+      ),
+      ErrorTestSpec(
+        'method contains unsupported type argument',
+        withNever,
+        'withNever',
+        'Failed to parse complex source code '
+            "'add<Never, Never>(name: name)' (MethodInvocationImpl) at ",
+        '.',
+        'Avoid using this expression or statement here, or file the issue for '
+            'this message if you truly want to use this code.',
+      ),
+      ErrorTestSpec(
+        'method contains type argument with unsupported type argument',
+        withNeverList,
+        'withNeverList',
+        'Failed to parse complex source code '
+            "'add<List<Never>, List<Never>>(name: name)' (MethodInvocationImpl) at ",
+        '.',
+        'Avoid using this expression or statement here, or file the issue for '
+            'this message if you truly want to use this code.',
       ),
     ]) {
       test(

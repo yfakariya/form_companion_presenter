@@ -35,6 +35,10 @@ void builtin() {
     );
 }
 
+void id() {
+  PropertyDescriptorsBuilder()..id();
+}
+
 void withTextField() {
   PropertyDescriptorsBuilder()
     ..withTextField(name: 'withTextField', valueConverter: intStringConverter);
@@ -49,6 +53,14 @@ void withNoChainExpression() {
     ..withNoChainExpression(name: 'withNoChainExpression');
 }
 
+void withNever() {
+  PropertyDescriptorsBuilder()..withNever(name: 'withNever');
+}
+
+void withNeverList() {
+  PropertyDescriptorsBuilder()..withNeverList(name: 'withNeverList');
+}
+
 extension _CustomExtensions on PropertyDescriptorsBuilder {
   void withTextField<P extends Object>({
     required String name,
@@ -61,6 +73,9 @@ extension _CustomExtensions on PropertyDescriptorsBuilder {
         valueConverter: valueConverter,
       );
 
+  // via non generic method
+  void id() => string(name: 'id');
+
   void withBlockBody<P extends Object, F extends Object>({
     required String name,
   }) {
@@ -71,4 +86,9 @@ extension _CustomExtensions on PropertyDescriptorsBuilder {
     required String name,
   }) =>
       throw UnimplementedError('intentionally');
+
+  void withNever({required String name}) => add<Never, Never>(name: name);
+
+  void withNeverList({required String name}) =>
+      add<List<Never>, List<Never>>(name: name);
 }
