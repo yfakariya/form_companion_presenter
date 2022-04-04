@@ -125,12 +125,6 @@ Future<void> main() async {
         contextElement: contextElement,
         methodInvocation: invocation,
         targetClass: targetClass,
-        targetMethodElement: lookupMethod(
-          contextElement,
-          targetClass,
-          invocation.methodName.name,
-          invocation,
-        ),
         propertyName: null,
         typeArguments: invocation.typeArgumentTypes
                 ?.map((e) => GenericInterfaceType(e, []))

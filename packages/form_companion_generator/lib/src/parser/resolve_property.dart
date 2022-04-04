@@ -18,7 +18,6 @@ FutureOr<PropertyDefinitionWithSource> resolvePropertyDefinitionAsync({
   required Element contextElement,
   required MethodInvocation methodInvocation,
   required ClassElement? targetClass,
-  required ExecutableElement targetMethodElement,
   required String? propertyName,
   required List<GenericInterfaceType> typeArguments,
   required MethodInvocation originalMethodInvocation,
@@ -27,6 +26,14 @@ FutureOr<PropertyDefinitionWithSource> resolvePropertyDefinitionAsync({
   context.logger.finer(
     "Resolve invocation chain '$methodInvocation$typeArguments', found name: '$propertyName'.",
   );
+
+  final targetMethodElement = lookupMethod(
+    contextElement,
+    targetClass,
+    methodInvocation.methodName.name,
+    methodInvocation,
+  );
+
   if (methodInvocation.methodName.name ==
           PropertyDescriptorsBuilderMethods.add ||
       methodInvocation.methodName.name ==
@@ -95,19 +102,11 @@ FutureOr<PropertyDefinitionWithSource> resolvePropertyDefinitionAsync({
   final nextTargetClass =
       lookupTargetClass(targetMethodElement, targetMethodBodyExpression);
 
-  final nextTargetMethodElement = lookupMethod(
-    targetMethodElement,
-    nextTargetClass,
-    targetMethodBodyExpression.methodName.name,
-    targetMethodBodyExpression,
-  );
-
   return await resolvePropertyDefinitionAsync(
     context: context,
     contextElement: targetMethodElement,
     methodInvocation: targetMethodBodyExpression,
     targetClass: targetClass,
-    targetMethodElement: nextTargetMethodElement,
     propertyName: passingPropertyName,
     typeArguments: invocationTypeArguments,
     originalMethodInvocation: originalMethodInvocation,

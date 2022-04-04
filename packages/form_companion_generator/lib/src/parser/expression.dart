@@ -102,12 +102,6 @@ FutureOr<PropertyDescriptorsBuilding?> _parseExpressionAsync(
               contextElement: contextElement,
               methodInvocation: e,
               targetClass: targetClass,
-              targetMethodElement: lookupMethod(
-                contextElement,
-                targetClass,
-                e.methodName.name,
-                e,
-              ),
               propertyName: null,
               typeArguments: e.typeArgumentTypes
                       ?.map((e) => GenericInterfaceType(e, []))
@@ -159,12 +153,6 @@ FutureOr<PropertyDescriptorsBuilding?> _parseExpressionAsync(
               contextElement: contextElement,
               methodInvocation: unparenthesized,
               targetClass: targetClass,
-              targetMethodElement: lookupMethod(
-                contextElement,
-                targetClass,
-                unparenthesized.methodName.name,
-                unparenthesized,
-              ),
               propertyName: null,
               typeArguments: unparenthesized.typeArgumentTypes
                       ?.map((e) => GenericInterfaceType(e, []))
