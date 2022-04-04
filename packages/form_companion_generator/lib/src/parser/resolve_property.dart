@@ -257,8 +257,12 @@ List<GenericInterfaceType> _mapTypeArguments(
       result.add(
         GenericInterfaceType(
           invocationTypeArgument,
-          _resolveTypeArguments(invocationTypeArgument, typeArgumentsMap)
-              .toList(),
+          _resolveTypeArguments(
+            invocationTypeArgument,
+            typeArgumentsMap,
+            invocation,
+            current,
+          ).toList(),
         ),
       );
     } else if (invocationTypeArgument is TypeParameterType) {
@@ -277,10 +281,7 @@ Map<String, GenericInterfaceType> _buildTypeArgumentsMap(
   ExecutableElement method,
   List<GenericInterfaceType> typeArguments,
 ) {
-  assert(
-    method.typeParameters.length == typeArguments.length,
-    '$method (${method.typeParameters.length}) != $typeArguments',
-  );
+  assert(method.typeParameters.length == typeArguments.length);
   final typeArgumentsMap = <String, GenericInterfaceType>{};
   for (var i = 0; i < method.typeParameters.length; i++) {
     typeArgumentsMap[method.typeParameters[i].name] = typeArguments[i];
@@ -291,6 +292,8 @@ Map<String, GenericInterfaceType> _buildTypeArgumentsMap(
 Iterable<GenericInterfaceType> _resolveTypeArguments(
   InterfaceType currentType,
   Map<String, GenericInterfaceType> typeArguments,
+  AstNode node,
+  Element contextElement,
 ) sync* {
   for (final typeArgument in currentType.typeArguments) {
     if (typeArgument is TypeParameterType) {
@@ -298,10 +301,15 @@ Iterable<GenericInterfaceType> _resolveTypeArguments(
     } else if (typeArgument is InterfaceType) {
       yield GenericInterfaceType(
         typeArgument,
-        _resolveTypeArguments(typeArgument, typeArguments).toList(),
+        _resolveTypeArguments(
+          typeArgument,
+          typeArguments,
+          node,
+          contextElement,
+        ).toList(),
       );
     } else {
-      yield GenericInterfaceType(typeArgument, []);
+      throwNotSupportedYet(node: node, contextElement: contextElement);
     }
   }
 }
