@@ -240,8 +240,8 @@ Iterable<PropertyDefinition> _toUniquePropertyDefinitions(
   final names = <String>{};
   for (final definition in definitions) {
     final property = definition.property;
-    final element = _getDeclaringElement(definition.source);
     if (!names.add(property.name)) {
+      final element = _getDeclaringElement(definition.source);
       throwError(
         message:
             "Property '${property.name}' is defined more than once ${getNodeLocation(definition.source, element)}.",
