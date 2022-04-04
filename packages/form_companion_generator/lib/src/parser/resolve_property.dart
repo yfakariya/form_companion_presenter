@@ -21,6 +21,7 @@ FutureOr<PropertyDefinitionWithSource> resolvePropertyDefinitionAsync({
   required ExecutableElement targetMethodElement,
   required String? propertyName,
   required List<GenericInterfaceType> typeArguments,
+  required MethodInvocation originalMethodInvocation,
   required bool isInferred,
 }) async {
   context.logger.finer(
@@ -37,6 +38,7 @@ FutureOr<PropertyDefinitionWithSource> resolvePropertyDefinitionAsync({
       targetMethodElement: targetMethodElement,
       propertyName: propertyName,
       typeArguments: typeArguments,
+      originalMethodInvocation: originalMethodInvocation,
       isInferred: isInferred,
     );
   }
@@ -108,6 +110,7 @@ FutureOr<PropertyDefinitionWithSource> resolvePropertyDefinitionAsync({
     targetMethodElement: nextTargetMethodElement,
     propertyName: passingPropertyName,
     typeArguments: invocationTypeArguments,
+    originalMethodInvocation: originalMethodInvocation,
     isInferred: isInferred,
   );
 }
@@ -119,6 +122,7 @@ PropertyDefinitionWithSource _createPropertyDefinition({
   required ExecutableElement targetMethodElement,
   required String? propertyName,
   required List<GenericInterfaceType> typeArguments,
+  required MethodInvocation originalMethodInvocation,
   required bool isInferred,
 }) {
   bool isGenericType(GenericInterfaceType type) {
@@ -231,7 +235,7 @@ PropertyDefinitionWithSource _createPropertyDefinition({
       preferredFormFieldType: typeArgument3,
       warnings: warnings,
     ),
-    methodInvocation,
+    originalMethodInvocation,
   );
 }
 

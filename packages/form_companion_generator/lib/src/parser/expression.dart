@@ -113,6 +113,7 @@ FutureOr<PropertyDescriptorsBuilding?> _parseExpressionAsync(
                       ?.map((e) => GenericInterfaceType(e, []))
                       .toList() ??
                   [],
+              originalMethodInvocation: e,
               isInferred:
                   e.typeArguments?.length != e.typeArgumentTypes?.length,
             ),
@@ -169,6 +170,7 @@ FutureOr<PropertyDescriptorsBuilding?> _parseExpressionAsync(
                       ?.map((e) => GenericInterfaceType(e, []))
                       .toList() ??
                   [],
+              originalMethodInvocation: unparenthesized,
               isInferred: unparenthesized.typeArguments?.length !=
                   unparenthesized.typeArgumentTypes?.length,
             ),
