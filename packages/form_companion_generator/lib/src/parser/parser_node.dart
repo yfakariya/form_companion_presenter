@@ -65,6 +65,9 @@ abstract class VariableNode {
   }
 
   VariableNode._();
+
+  @override
+  String toString() => element.toString();
 }
 
 class _TopLevelVariableNode extends VariableNode {
