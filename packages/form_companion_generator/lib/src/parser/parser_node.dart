@@ -88,6 +88,7 @@ class _TopLevelVariableNode extends VariableNode {
 
 class _VariableNode extends VariableNode {
   final VariableDeclaration _declaration;
+  final Element _element;
 
   @override
   String get name => _declaration.name.name;
@@ -96,9 +97,9 @@ class _VariableNode extends VariableNode {
   Expression? get initializer => _declaration.initializer;
 
   @override
-  Element get element => _declaration.declaredElement!;
+  Element get element => _element;
 
-  _VariableNode(this._declaration) : super._();
+  _VariableNode(this._declaration, this._element) : super._();
 }
 
 class _FieldNode extends VariableNode {
