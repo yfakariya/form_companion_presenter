@@ -57,7 +57,8 @@ abstract class VariableNode {
     } else {
       throwError(
         message:
-            "Unexpected node '$node' (${node.runtimeType} from ${sourceElement.runtimeType}), it is not field or property.",
+            "Unexpected node '$node' (${node.runtimeType} from ${sourceElement.runtimeType}), "
+            'it is not a single field or property reference.',
         element: sourceElement,
       );
     }
