@@ -156,6 +156,9 @@ abstract class ExecutableNode {
 
     return [];
   }
+
+  @override
+  String toString() => element.toString();
 }
 
 class _FunctionNode extends ExecutableNode {
