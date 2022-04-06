@@ -3,11 +3,8 @@
 import 'package:analyzer/dart/element/type.dart';
 import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
-import 'package:source_gen/source_gen.dart';
 
 import 'model.dart';
-
-// TODO(yfakariya): It looks that _throwTypeMismatch can be replaced with assert()
 
 /// A context information holder of type instantiaion.
 @sealed
@@ -81,11 +78,7 @@ class TypeInstantiationContext {
     DartType formFieldType,
   ) {
     if (parameter is TypeParameterType) {
-      // `SomeFormField<V> extends FormField<V>` case.
-      // Map `V` and `T` of original declaration `FormField<T>` here.
-      // Note that this method is called recusively for `Foo<T>`,
-      // so `SomeFormField<V> extends FormField<Foo<V>>` case also reaches here.
-      assert(argument.rawType is TypeParameterType);
+      // Map `Foo` to `T` here.
       mapping[parameter.getDisplayString(withNullability: false)] =
           argument.getDisplayString(withNullability: false);
       return;
@@ -96,39 +89,20 @@ class TypeInstantiationContext {
     final argumentType = argument.rawType;
 
     if (parameter is ParameterizedType) {
-      if (argumentType is! ParameterizedType) {
-        _throwTypeMismatch(
-          detail:
-              "Kinds of type parts are not match between the type argument type '$argument' and the type parameter type '$parameter'. "
-              "Argument's kind is '${argumentType.element!.kind}' but parameter's kind is '${parameter.element!.kind}'.",
-          propertyName: propertyName,
-        );
-      }
-
-      if (parameter.element!.name! != argumentType.element!.name!) {
-        _throwTypeMismatch(
-          detail:
-              "Names of type parts are not match between the type argument type '$argument' and the type parameter type '$parameter'. "
-              "Argument's name is '${argumentType.element!.name}' but parameter's name is '${parameter.element!.name}'.",
-          propertyName: propertyName,
-        );
-      }
-
-      if (parameter.typeArguments.length != argumentType.typeArguments.length) {
-        _throwTypeMismatch(
-          detail:
-              "Types parameters arity of type parts are not match between the type argument type '$argument' and the type parameter type '$parameter'. "
-              "Argument's arity is '${argumentType.typeArguments.length}' but parameter's arity is '${parameter.typeArguments.length}'.",
-          propertyName: propertyName,
-        );
-      }
+      assert(argumentType is ParameterizedType);
+      assert(parameter.element!.name == argumentType.element!.name);
+      assert(
+        parameter.typeArguments.length ==
+            (argumentType as ParameterizedType).typeArguments.length,
+      );
 
       if (parameter.typeArguments.isNotEmpty) {
         late final List<GenericInterfaceType> argumentTypeArguments;
         if (argument.typeArguments.isNotEmpty) {
           argumentTypeArguments = argument.typeArguments;
         } else {
-          argumentTypeArguments = argumentType.typeArguments
+          argumentTypeArguments = (argumentType as ParameterizedType)
+              .typeArguments
               .map((e) => GenericInterfaceType(e, []))
               .toList();
         }
@@ -148,47 +122,18 @@ class TypeInstantiationContext {
     }
 
     if (parameter is FunctionType) {
-      if (argumentType is! FunctionType) {
-        _throwTypeMismatch(
-          detail:
-              "Kinds of type parts are not match between the type argument type '$argument' and the type parameter type '$parameter'. "
-              "Argument's kind is '${argumentType.element!.kind}' but parameter's kind is '${parameter.element!.kind}'.",
-          propertyName: propertyName,
-        );
-      }
+      assert(argumentType is FunctionType);
+      assert(parameter.returnType == (argumentType as FunctionType).returnType);
 
-      if (parameter.returnType != argumentType.returnType) {
-        _throwTypeMismatch(
-          detail:
-              "Return types of function types are not match between the type argument type '$argument' and the type parameter type '$parameter'. "
-              "Argument's return type is '${argumentType.returnType}' but parameter's return type is '${parameter.returnType}'.",
-          propertyName: propertyName,
-        );
-      }
-
-      if (parameter.typeFormals.isNotEmpty) {
-        // We believe that we cannot declare generic function type
-        // like `Foo<T> extends Bar<T Function<S>(S)>`...
-        throw InvalidGenerationSourceError(
-          "Failed to parse complex type '$formFieldType'. "
-          'Generic type parameter with generic function type is not supported yet.',
-          todo:
-              'Please report the issue with sample code to reproduce this problem with description of the scenario which you want to do.',
-        );
-      }
-
-      if (parameter.parameters.length != argumentType.parameters.length) {
-        _throwTypeMismatch(
-          detail:
-              "Parameters counts of function types are not match between the type argument type '$argument' and the type parameter type '$parameter'. "
-              "Argument's parameters count is '${argumentType.parameters.length}' but parameter's parameters count is '${parameter.parameters.length}'.",
-          propertyName: propertyName,
-        );
-      }
+      // We believe that we cannot declare generic function type
+      // like `Foo<T> extends Bar<T Function<S>(S)>`...
+      assert(parameter.typeFormals.isEmpty);
+      assert(parameter.parameters.length ==
+          (argumentType as FunctionType).parameters.length);
 
       _buildTypeArgumentMappings(
         parameter.returnType,
-        GenericInterfaceType(argumentType.returnType, []),
+        GenericInterfaceType((argumentType as FunctionType).returnType, []),
         mapping,
         propertyName,
         formFieldType,
@@ -207,17 +152,6 @@ class TypeInstantiationContext {
 
     // Do nothing for NeverType, DynamicType, and VoidType.
   }
-
-  static Never _throwTypeMismatch({
-    required String detail,
-    required String propertyName,
-  }) =>
-      throw InvalidGenerationSourceError(
-        "Failed to parse property '$propertyName'. $detail",
-        todo: 'Ensure specifying type parameter `TField` which is subtype of '
-            'FormField<T> where `T` is same as type parameter `F`. '
-            "Don't forget specify generic type arguments.",
-      );
 
   /// Gets a mapped type string which was specified as type argument.
   /// If the [mayBeTypeParameter] is not a type parameter,
