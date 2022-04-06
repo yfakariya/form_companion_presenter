@@ -32,3 +32,7 @@ const Type formBuilderDropdownOfMyEnum = FormBuilderDropdown<MyEnum>;
 const Type formBuilderFilterChipOfMyEnum = FormBuilderFilterChip<MyEnum>;
 
 const Type myEnum = MyEnum;
+
+typedef _StringComparison = int Function(String, String);
+
+const Type stringComparison = _StringComparison;

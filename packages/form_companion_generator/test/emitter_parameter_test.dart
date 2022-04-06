@@ -73,6 +73,29 @@ Future<void> main() async {
       p.identifier!.name: p
   };
 
+  final functionHolder = library.getType('ParameterFunctionHolder')!;
+  final functionHolderNode = await nodeProvider
+      .getElementDeclarationAsync<ClassDeclaration>(functionHolder);
+  final functionConstructorParameters = {
+    for (final p in functionHolder.constructors.single.parameters) p.name: p
+  };
+  final functionConstructorParameterNodes = {
+    for (final p in functionHolderNode.childEntities
+        .whereType<ConstructorDeclaration>()
+        .single
+        .parameters
+        .parameters)
+      p.identifier!.name: p
+  };
+  final stringComparisonType =
+      (await getResolvedLibraryResult('form_fields.dart'))
+          .element
+          .topLevelElements
+          .whereType<TopLevelVariableElement>()
+          .singleWhere((e) => e.name == 'stringComparison')
+          .computeConstantValue()!
+          .toTypeValue()! as FunctionType;
+
   final myEnumType = await getMyEnumType();
   final formBuilderDropdownOfMyEnum =
       await lookupFormFieldTypeInstance('formBuilderDropdownOfMyEnum');
@@ -80,8 +103,8 @@ Future<void> main() async {
       await lookupFormFieldTypeInstance('formBuilderFilterChipOfMyEnum');
 
   PropertyDefinition makeProperty(
-    InterfaceType propertyValueType,
-    InterfaceType fieldValueType,
+    DartType propertyValueType,
+    DartType fieldValueType,
   ) =>
       PropertyDefinition(
         name: 'prop',
@@ -193,10 +216,10 @@ Future<void> main() async {
                 .getElementDeclarationAsync<FormalParameter>(element);
             final context = TypeInstantiationContext.create(
               makeProperty(
-                library.typeProvider.boolType,
-                library.typeProvider.boolType,
+                library.typeProvider.listType(library.typeProvider.boolType),
+                library.typeProvider.listType(library.typeProvider.boolType),
               ),
-              holder.thisType,
+              listHolder.thisType,
               logger,
             );
             expect(
@@ -386,10 +409,10 @@ Future<void> main() async {
         final element = listConstructorParameters[typeKind]!;
         final context = TypeInstantiationContext.create(
           makeProperty(
-            library.typeProvider.boolType,
-            library.typeProvider.boolType,
+            library.typeProvider.listType(library.typeProvider.boolType),
+            library.typeProvider.listType(library.typeProvider.boolType),
           ),
-          holder.thisType,
+          listHolder.thisType,
           logger,
         );
         final sink = StringBuffer();
@@ -419,10 +442,10 @@ Future<void> main() async {
         final element = listMethodParameters[typeKind]!;
         final context = TypeInstantiationContext.create(
           makeProperty(
-            library.typeProvider.boolType,
-            library.typeProvider.boolType,
+            library.typeProvider.listType(library.typeProvider.boolType),
+            library.typeProvider.listType(library.typeProvider.boolType),
           ),
-          holder.thisType,
+          listHolder.thisType,
           logger,
         );
         final sink = StringBuffer();
@@ -436,6 +459,28 @@ Future<void> main() async {
           sink.toString(),
           equals(expected),
         );
+      });
+    }
+
+    for (final spec in functionConstructorParameters.entries) {
+      test('function type argument ${spec.key}', () {
+        final element = spec.value;
+        final context = TypeInstantiationContext.create(
+          makeProperty(
+            stringComparisonType,
+            stringComparisonType,
+          ),
+          functionHolder.thisType,
+          logger,
+        );
+        final sink = StringBuffer();
+
+        processTypeWithValueType(
+          context,
+          element.type,
+          sink,
+        );
+        expect(sink.toString(), functionParameterTypeExpected[spec.key]);
       });
     }
   });
@@ -532,10 +577,10 @@ Future<void> main() async {
         final node = listConstructorParameterNodes[typeKind]!;
         final context = TypeInstantiationContext.create(
           makeProperty(
-            library.typeProvider.boolType,
-            library.typeProvider.boolType,
+            library.typeProvider.listType(library.typeProvider.boolType),
+            library.typeProvider.listType(library.typeProvider.boolType),
           ),
-          holder.thisType,
+          listHolder.thisType,
           logger,
         );
         final parameterInfo =
@@ -566,10 +611,10 @@ Future<void> main() async {
         final node = listMethodParameterNodes[typeKind]!;
         final context = TypeInstantiationContext.create(
           makeProperty(
-            library.typeProvider.boolType,
-            library.typeProvider.boolType,
+            library.typeProvider.listType(library.typeProvider.boolType),
+            library.typeProvider.listType(library.typeProvider.boolType),
           ),
-          holder.thisType,
+          listHolder.thisType,
           logger,
         );
         final parameterInfo =
@@ -595,6 +640,40 @@ Future<void> main() async {
           sink.toString(),
           equals(expected),
         );
+      });
+    }
+
+    for (final spec in functionConstructorParameterNodes.entries) {
+      test('function type argument ${spec.key}', () async {
+        final node = spec.value;
+        final context = TypeInstantiationContext.create(
+          makeProperty(
+            stringComparisonType,
+            stringComparisonType,
+          ),
+          functionHolder.thisType,
+          logger,
+        );
+        final parameterInfo =
+            await ParameterInfo.fromNodeAsync(nodeProvider, node);
+        final sink = StringBuffer();
+
+        if (parameterInfo.functionTypedParameter != null) {
+          processFunctionTypeFormalParameter(
+            context,
+            parameterInfo.functionTypedParameter!,
+            EmitParameterContext.functionTypeParameter,
+            sink,
+          );
+        } else {
+          processTypeAnnotation(
+            context,
+            parameterInfo.typeAnnotation!,
+            sink,
+          );
+        }
+
+        expect(sink.toString(), functionParameterTypeExpected[spec.key]);
       });
     }
   });
@@ -892,4 +971,9 @@ const listTypeForParameterTypeExpected = {
   'parameterizedFunction': 'List<S> Function<S>(List<S>)',
   'namedFunction': 'List<bool> Function(List<bool> p)',
   'parameterizedNamedFunction': 'List<S> Function<S>(List<S> p)',
+};
+
+const functionParameterTypeExpected = {
+  'nonAlias': 'int Function(String, String)',
+  'alias': 'ParameterFunction<String>',
 };

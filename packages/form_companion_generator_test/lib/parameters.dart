@@ -164,6 +164,20 @@ class ParameterListHolder<T> extends FormBuilderField<List<T>> {
   ) {}
 }
 
+typedef ParameterFunction<T> = int Function(T, T);
+
+class ParameterFunctionHolder<T>
+    extends FormBuilderField<int Function<T>(T, T)> {
+  final int Function<T>(T, T)? nonAlias;
+  final ParameterFunction<T> alias;
+
+  ParameterFunctionHolder.simple(
+    int Function<T>(T, T) nonAlias,
+    ParameterFunction<T> alias,
+  )   : this.nonAlias = nonAlias,
+        this.alias = alias;
+}
+
 class DependencyHolder<T> extends FormField<T> {
   Color? normalImported;
   String? normalDartCore;
