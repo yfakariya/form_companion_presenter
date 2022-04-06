@@ -37,6 +37,12 @@ class TypeInstantiationContext {
       currentType = currentType.superclass!;
     }
 
+    // T, List<T>, or some type, which is specified as `T` of `FormField<T>`.
+    // This is `ParameterizedType` if 1) the `formFieldType` is non generic or
+    // 2) `T` is some generic type such as `List<E>`,
+    // else 3) it is `TypeParameterType` for generic `formFieldType`.
+    // Example of 1) is `TextFormField`, 2) is `FormBuilderCheckboxGroup`,
+    // and 3) is `DropdownButtonFormField` respectively.
     final formFieldTypeArgument = currentType.typeArguments.single;
 
     // We use element here to erase generic argument information, which may be
@@ -75,10 +81,17 @@ class TypeInstantiationContext {
     DartType formFieldType,
   ) {
     if (parameter is TypeParameterType) {
+      // `SomeFormField<V> extends FormField<V>` case.
+      // Map `V` and `T` of original declaration `FormField<T>` here.
+      // Note that this method is called recusively for `Foo<T>`,
+      // so `SomeFormField<V> extends FormField<Foo<V>>` case also reaches here.
+      assert(argument.rawType is TypeParameterType);
       mapping[parameter.getDisplayString(withNullability: false)] =
           argument.getDisplayString(withNullability: false);
       return;
     }
+
+    // Start generic type comparsion like `Foo<T> extends FormField<List<T>>`
 
     final argumentType = argument.rawType;
 
