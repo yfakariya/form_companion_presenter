@@ -72,7 +72,7 @@ class TypeInstantiationContext {
 
   static void _buildTypeArgumentMappings(
     DartType parameter,
-    GenericInterfaceType argument,
+    GenericType argument,
     Map<String, String> mapping,
     String propertyName,
     DartType formFieldType,
@@ -86,30 +86,20 @@ class TypeInstantiationContext {
 
     // Start generic type comparsion like `Foo<T> extends FormField<List<T>>`
 
-    final argumentType = argument.rawType;
+    final parameterType = parameter.alias?.element.aliasedType ?? parameter;
 
-    if (parameter is ParameterizedType) {
-      assert(argumentType is ParameterizedType);
-      assert(parameter.element!.name == argumentType.element!.name);
+    if (parameterType is ParameterizedType) {
+      assert(argument.maybeAsInterfaceType != null);
+      assert(parameterType.element!.name == argument.rawTypeName);
       assert(
-        parameter.typeArguments.length ==
-            (argumentType as ParameterizedType).typeArguments.length,
+        parameterType.typeArguments.length == argument.typeArguments.length,
       );
 
-      if (parameter.typeArguments.isNotEmpty) {
-        late final List<GenericInterfaceType> argumentTypeArguments;
-        if (argument.typeArguments.isNotEmpty) {
-          argumentTypeArguments = argument.typeArguments;
-        } else {
-          argumentTypeArguments = (argumentType as ParameterizedType)
-              .typeArguments
-              .map((e) => GenericInterfaceType(e, []))
-              .toList();
-        }
-
-        for (var i = 0; i < parameter.typeArguments.length; i++) {
+      if (parameterType.typeArguments.isNotEmpty) {
+        final argumentTypeArguments = argument.typeArguments;
+        for (var i = 0; i < parameterType.typeArguments.length; i++) {
           _buildTypeArgumentMappings(
-            parameter.typeArguments[i],
+            parameterType.typeArguments[i],
             argumentTypeArguments[i],
             mapping,
             propertyName,
@@ -121,32 +111,52 @@ class TypeInstantiationContext {
       return;
     }
 
-    if (parameter is FunctionType) {
-      assert(argumentType is FunctionType);
-      assert(parameter.returnType == (argumentType as FunctionType).returnType);
+    if (parameterType is FunctionType) {
+      assert(argument is GenericFunctionType);
+      assert(parameterType.parameters.length ==
+          (argument as GenericFunctionType).rawFunctionType.parameters.length);
 
-      // We believe that we cannot declare generic function type
-      // like `Foo<T> extends Bar<T Function<S>(S)>`...
-      assert(parameter.typeFormals.isEmpty);
-      assert(parameter.parameters.length ==
-          (argumentType as FunctionType).parameters.length);
+      if (parameterType.typeFormals.isNotEmpty &&
+          parameterType.typeFormals.length ==
+              (argument as GenericFunctionType)
+                  .rawFunctionType
+                  .typeFormals
+                  .length) {
+        late final List<String> argumentTypeArgumentNames;
+        if (argument.typeArguments.isNotEmpty) {
+          argumentTypeArgumentNames = argument.typeArguments
+              .map((e) => e.getDisplayString(withNullability: false))
+              .toList();
+        } else {
+          argumentTypeArgumentNames = argument.rawFunctionType.typeFormals
+              .map((e) => e.getDisplayString(withNullability: false))
+              .toList();
+        }
 
-      _buildTypeArgumentMappings(
-        parameter.returnType,
-        GenericInterfaceType((argumentType as FunctionType).returnType, []),
-        mapping,
-        propertyName,
-        formFieldType,
-      );
-
-      for (var i = 0; i < parameter.parameters.length; i++) {
+        for (var i = 0; i < parameterType.typeFormals.length; i++) {
+          // Map `Foo` to `T` here.
+          mapping[parameterType.typeFormals[i].getDisplayString(
+              withNullability: false)] = argumentTypeArgumentNames[i];
+        }
+      } else {
         _buildTypeArgumentMappings(
-          parameter.parameters[i].type,
-          GenericInterfaceType(argumentType.parameters[i].type, []),
+          parameterType.returnType,
+          (argument as GenericFunctionType).returnType,
           mapping,
           propertyName,
           formFieldType,
         );
+
+        final argumentParameterTypes = argument.parameterTypes.toList();
+        for (var i = 0; i < parameterType.parameters.length; i++) {
+          _buildTypeArgumentMappings(
+            parameterType.parameters[i].type,
+            argumentParameterTypes[i],
+            mapping,
+            propertyName,
+            formFieldType,
+          );
+        }
       }
     }
 
@@ -160,4 +170,9 @@ class TypeInstantiationContext {
   /// This method is a core of type instantiation.
   String getMappedType(String mayBeTypeParameter) =>
       _typeArgumentsMappings[mayBeTypeParameter] ?? mayBeTypeParameter;
+
+  /// Returns `true` if this instance can return a mapped type string
+  /// which was specified as type argument.
+  bool isMapped(String mayBeTypeParameter) =>
+      _typeArgumentsMappings.containsKey(mayBeTypeParameter);
 }

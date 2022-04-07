@@ -19,7 +19,7 @@ FutureOr<PropertyDefinitionWithSource> resolvePropertyDefinitionAsync({
   required MethodInvocation methodInvocation,
   required ClassElement? targetClass,
   required String? propertyName,
-  required List<GenericInterfaceType> typeArguments,
+  required List<GenericType> typeArguments,
   required MethodInvocation originalMethodInvocation,
   required bool isInferred,
 }) async {
@@ -120,11 +120,11 @@ PropertyDefinitionWithSource _createPropertyDefinition({
   required MethodInvocation methodInvocation,
   required ExecutableElement targetMethodElement,
   required String? propertyName,
-  required List<GenericInterfaceType> typeArguments,
+  required List<GenericType> typeArguments,
   required MethodInvocation originalMethodInvocation,
   required bool isInferred,
 }) {
-  bool isGenericType(GenericInterfaceType type) {
+  bool isGenericType(GenericType type) {
     bool isGenericRawType(DartType rawType) {
       if (rawType.isDartCoreObject || rawType.isDartCoreEnum) {
         return true;
@@ -241,21 +241,21 @@ String? _getPropertyNameFromInvocation(
   );
 }
 
-List<GenericInterfaceType> _mapTypeArguments(
+List<GenericType> _mapTypeArguments(
   ExecutableElement current,
   MethodInvocation invocation,
   ExecutableElement targetMethod,
-  List<GenericInterfaceType> typeArguments,
+  List<GenericType> typeArguments,
 ) {
   final invocationTypeArguments = invocation.typeArgumentTypes!;
   final typeArgumentsMap = _buildTypeArgumentsMap(current, typeArguments);
 
-  final result = <GenericInterfaceType>[];
+  final result = <GenericType>[];
   for (var i = 0; i < invocationTypeArguments.length; i++) {
     final invocationTypeArgument = invocationTypeArguments[i];
     if (invocationTypeArgument is InterfaceType) {
       result.add(
-        GenericInterfaceType(
+        GenericType.generic(
           invocationTypeArgument,
           _resolveTypeArguments(
             invocationTypeArgument,
@@ -277,21 +277,21 @@ List<GenericInterfaceType> _mapTypeArguments(
   return result;
 }
 
-Map<String, GenericInterfaceType> _buildTypeArgumentsMap(
+Map<String, GenericType> _buildTypeArgumentsMap(
   ExecutableElement method,
-  List<GenericInterfaceType> typeArguments,
+  List<GenericType> typeArguments,
 ) {
   assert(method.typeParameters.length == typeArguments.length);
-  final typeArgumentsMap = <String, GenericInterfaceType>{};
+  final typeArgumentsMap = <String, GenericType>{};
   for (var i = 0; i < method.typeParameters.length; i++) {
     typeArgumentsMap[method.typeParameters[i].name] = typeArguments[i];
   }
   return typeArgumentsMap;
 }
 
-Iterable<GenericInterfaceType> _resolveTypeArguments(
+Iterable<GenericType> _resolveTypeArguments(
   InterfaceType currentType,
-  Map<String, GenericInterfaceType> typeArguments,
+  Map<String, GenericType> typeArguments,
   AstNode node,
   Element contextElement,
 ) sync* {
@@ -299,7 +299,7 @@ Iterable<GenericInterfaceType> _resolveTypeArguments(
     if (typeArgument is TypeParameterType) {
       yield typeArguments[typeArgument.element.name]!;
     } else if (typeArgument is InterfaceType) {
-      yield GenericInterfaceType(
+      yield GenericType.generic(
         typeArgument,
         _resolveTypeArguments(
           typeArgument,

@@ -10,6 +10,7 @@ import 'package:form_companion_generator/src/model.dart';
 import 'package:form_companion_generator/src/type_instantiation.dart';
 import 'package:logging/logging.dart';
 import 'package:test/test.dart';
+import 'package:tuple/tuple.dart';
 
 Future<void> main() async {
   final logger = Logger('instantiation_context_test');
@@ -18,11 +19,10 @@ Future<void> main() async {
 
   FutureOr<void> testCore({
     required String code,
-    required GenericInterfaceType Function(LibraryElement) valueTypeProvider,
+    required GenericType Function(LibraryElement) valueTypeProvider,
     required ClassElement Function(LibraryElement) classFinder,
     required void Function(TypeInstantiationContext) assertion,
-    List<GenericInterfaceType> Function(TypeProvider)?
-        formFieldGenericArgumentsProvider,
+    List<GenericType> Function(TypeProvider)? formFieldGenericArgumentsProvider,
   }) async {
     final disposeResolver = Completer<void>();
     try {
@@ -52,7 +52,7 @@ $code
           name: 'prop',
           propertyType: valueType,
           fieldType: valueType,
-          preferredFormFieldType: GenericInterfaceType(
+          preferredFormFieldType: GenericType.generic(
             formFieldType.thisType,
             formFieldGenericArgumentsProvider?.call(library.typeProvider) ?? [],
           ),
@@ -77,7 +77,7 @@ class TextFormField extends FormField<String> {}
 ''',
       classFinder: (l) => l.getType('TextFormField')!,
       valueTypeProvider: (l) =>
-          GenericInterfaceType(l.typeProvider.stringType, []),
+          GenericType.fromDartType(l.typeProvider.stringType),
       assertion: (x) {
         expect(x.getMappedType('T'), 'T');
       },
@@ -93,9 +93,9 @@ class DropdownButtonFormField<T> extends FormField<T> {}
 ''',
       classFinder: (l) => l.getType('DropdownButtonFormField')!,
       valueTypeProvider: (l) =>
-          GenericInterfaceType(l.typeProvider.stringType, []),
+          GenericType.fromDartType(l.typeProvider.stringType),
       formFieldGenericArgumentsProvider: (t) =>
-          [GenericInterfaceType(t.stringType, [])],
+          [GenericType.fromDartType(t.stringType)],
       assertion: (x) {
         expect(x.getMappedType('T'), 'String');
       },
@@ -110,82 +110,226 @@ class FormField<T> {}
 class FormBuilderCheckBoxGroup<T> extends FormField<List<T>> {}
 ''',
       classFinder: (l) => l.getType('FormBuilderCheckBoxGroup')!,
-      valueTypeProvider: (l) => GenericInterfaceType(
-          l.typeProvider.listType(l.typeProvider.stringType), []),
+      valueTypeProvider: (l) => GenericType.fromDartType(
+          l.typeProvider.listType(l.typeProvider.stringType)),
       formFieldGenericArgumentsProvider: (t) =>
-          [GenericInterfaceType(t.stringType, [])],
+          [GenericType.fromDartType(t.stringType)],
       assertion: (x) {
         expect(x.getMappedType('T'), 'String');
       },
     ),
   );
 
-  test(
-    'non generic function',
-    () => testCore(
-      code: '''
+  group('non generic function', () {
+    for (final spec in [
+      Tuple3('aliased -> non-aliased', 'Callback', 'void Function()'),
+      Tuple3('non-aliased -> aliased', 'void Function()', 'Callback'),
+      Tuple3('aliased -> aliased', 'Callback', 'Callback'),
+      Tuple3(
+          'non-aliased -> non-aliased', 'void Function()', 'void Function()'),
+    ]) {
+      test(
+        spec.item1,
+        () => testCore(
+          code: '''
 typedef Callback = void Function();
-const Type callbackType = Callback;
 class FormField<T> {}
-class FunctionFormField extends FormField<Callback> {}
+class FunctionFormField extends FormField<${spec.item3}> {}
+final ${spec.item2} callback = () {};
 ''',
-      classFinder: (l) => l.getType('FunctionFormField')!,
-      valueTypeProvider: (l) => GenericInterfaceType(
-        l.topLevelElements.whereType<TypeAliasElement>().single.aliasedType,
-        [],
-      ),
-      assertion: (x) {
-        expect(x.getMappedType('T'), 'T');
-      },
-    ),
-  );
-
-  test(
-    'simple generic function',
-    () => testCore(
-      code: '''
-typedef Callback<T> = T Function<T>();
-const Type callbackType = Callback<String>;
-class FormField<T> {}
-class FunctionFormField<T> extends FormField<Callback<T>> {}
-''',
-      classFinder: (l) => l.getType('FunctionFormField')!,
-      valueTypeProvider: (l) => GenericInterfaceType(
-        l.topLevelElements.whereType<TypeAliasElement>().single.aliasedType,
-        [GenericInterfaceType(l.typeProvider.stringType, [])],
-      ),
-      formFieldGenericArgumentsProvider: (t) =>
-          [GenericInterfaceType(t.stringType, [])],
-      assertion: (x) {
-        expect(x.getMappedType('T'), 'String');
-      },
-    ),
-  );
-
-  test(
-    'nested generic function',
-    () => testCore(
-      code: '''
-typedef Callback<T> = void Function<T>(T);
-const Type callbackType = Callback<String>;
-class FormField<T> {}
-class FunctionFormField<T> extends FormField<List<Callback<T>>>> {}
-''',
-      classFinder: (l) => l.getType('FunctionFormField')!,
-      valueTypeProvider: (l) => GenericInterfaceType(
-        l.typeProvider.listElement.thisType,
-        [
-          GenericInterfaceType(
-            l.topLevelElements.whereType<TypeAliasElement>().single.aliasedType,
-            [GenericInterfaceType(l.typeProvider.stringType, [])],
+          classFinder: (l) => l.getType('FunctionFormField')!,
+          valueTypeProvider: (l) => GenericType.fromDartType(
+            l.topLevelElements.whereType<TopLevelVariableElement>().single.type,
           ),
-        ],
+          assertion: (x) {
+            expect(x.getMappedType('T'), 'T');
+          },
+        ),
+      );
+    }
+  });
+
+  group('simple generic function', () {
+    for (final spec in [
+      Tuple3(
+        'aliased -> non-aliased',
+        'Callback<String>',
+        'T Function<T>(T)',
       ),
-      formFieldGenericArgumentsProvider: (t) =>
-          [GenericInterfaceType(t.stringType, [])],
-      assertion: (x) {
-        expect(x.getMappedType('T'), 'String');
-      },
-    ),
-  );
+      Tuple3(
+        'non-aliased -> aliased',
+        'String Function(String)',
+        'Callback<T>',
+      ),
+      Tuple3(
+        'aliased -> aliased',
+        'Callback<String>',
+        'Callback<T>',
+      ),
+      Tuple3(
+        'non-aliased -> non-aliased',
+        'String Function(String)',
+        'T Function<T>(T)',
+      ),
+    ]) {
+      test(
+        spec.item1,
+        () => testCore(
+          code: '''
+typedef Callback<T> = T Function(T);
+class FormField<T> {}
+class FunctionFormField<T> extends FormField<${spec.item3}> {}
+final ${spec.item2} callback = (_) => '';
+''',
+          classFinder: (l) => l.getType('FunctionFormField')!,
+          valueTypeProvider: (l) => GenericType.fromDartType(
+            l.topLevelElements.whereType<TopLevelVariableElement>().single.type,
+          ),
+          formFieldGenericArgumentsProvider: (t) =>
+              [GenericType.fromDartType(t.stringType)],
+          assertion: (x) {
+            expect(x.getMappedType('T'), 'String');
+          },
+        ),
+      );
+    }
+  });
+
+  group('nested generic function', () {
+    for (final spec in [
+      Tuple3(
+        'aliased -> non-aliased',
+        'Callback<String>',
+        'T Function<T>(T)',
+      ),
+      Tuple3(
+        'non-aliased -> aliased',
+        'String Function(String)',
+        'Callback<T>',
+      ),
+      Tuple3(
+        'aliased -> aliased',
+        'Callback<String>',
+        'Callback<T>',
+      ),
+      Tuple3(
+        'non-aliased -> non-aliased',
+        'String Function(String)',
+        'T Function<T>(T)',
+      ),
+    ]) {
+      test(
+        spec.item1,
+        () => testCore(
+          code: '''
+typedef Callback<T> = T Function(T);
+class FormField<T> {}
+class FunctionFormField<T> extends FormField<List<${spec.item3}>> {}
+final List<${spec.item2}> callback = [];
+''',
+          classFinder: (l) => l.getType('FunctionFormField')!,
+          valueTypeProvider: (l) => GenericType.fromDartType(
+            l.topLevelElements.whereType<TopLevelVariableElement>().single.type,
+          ),
+          formFieldGenericArgumentsProvider: (t) =>
+              [GenericType.fromDartType(t.stringType)],
+          assertion: (x) {
+            expect(x.getMappedType('T'), 'String');
+          },
+        ),
+      );
+    }
+  });
+
+  group('generic function mapped with return type', () {
+    for (final spec in [
+      Tuple3(
+        'aliased -> non-aliased',
+        'Callback<String>',
+        'T Function<T>()',
+      ),
+      Tuple3(
+        'non-aliased -> aliased',
+        'String Function()',
+        'Callback<T>',
+      ),
+      Tuple3(
+        'aliased -> aliased',
+        'Callback<String>',
+        'Callback<T>',
+      ),
+      Tuple3(
+        'non-aliased -> non-aliased',
+        'String Function()',
+        'T Function<T>()',
+      ),
+    ]) {
+      test(
+        spec.item1,
+        () => testCore(
+          code: '''
+typedef Callback<T> = T Function();
+class FormField<T> {}
+class FunctionFormField<T> extends FormField<${spec.item3}> {}
+final ${spec.item2} callback = () => '';
+''',
+          classFinder: (l) => l.getType('FunctionFormField')!,
+          valueTypeProvider: (l) => GenericType.fromDartType(
+            l.topLevelElements.whereType<TopLevelVariableElement>().single.type,
+          ),
+          formFieldGenericArgumentsProvider: (t) =>
+              [GenericType.fromDartType(t.stringType)],
+          assertion: (x) {
+            expect(x.getMappedType('T'), 'String');
+          },
+        ),
+      );
+    }
+  });
+
+  group('generic function mapped with parameter type', () {
+    for (final spec in [
+      Tuple3(
+        'aliased -> non-aliased',
+        'Callback<String>',
+        'void Function<T>(T)',
+      ),
+      Tuple3(
+        'non-aliased -> aliased',
+        'void Function(String)',
+        'Callback<T>',
+      ),
+      Tuple3(
+        'aliased -> aliased',
+        'Callback<String>',
+        'Callback<T>',
+      ),
+      Tuple3(
+        'non-aliased -> non-aliased',
+        'void Function(String)',
+        'void Function<T>(T)',
+      ),
+    ]) {
+      test(
+        spec.item1,
+        () => testCore(
+          code: '''
+typedef Callback<T> = void Function(T);
+class FormField<T> {}
+class FunctionFormField<T> extends FormField<${spec.item3}> {}
+final ${spec.item2} callback = (_) {};
+''',
+          classFinder: (l) => l.getType('FunctionFormField')!,
+          valueTypeProvider: (l) => GenericType.fromDartType(
+            l.topLevelElements.whereType<TopLevelVariableElement>().single.type,
+          ),
+          formFieldGenericArgumentsProvider: (t) =>
+              [GenericType.fromDartType(t.stringType)],
+          assertion: (x) {
+            expect(x.getMappedType('T'), 'String');
+          },
+        ),
+      );
+    }
+  });
 }

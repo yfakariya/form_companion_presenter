@@ -70,8 +70,8 @@ FutureOr<PropertyAndFormFieldDefinition> resolveFormFieldAsync(
 
 String _determineFormFieldTypeName(
   ParseContext context,
-  GenericInterfaceType fieldValueType,
-  GenericInterfaceType? preferredFormFieldType, {
+  GenericType fieldValueType,
+  GenericType? preferredFormFieldType, {
   required bool isFormBuilder,
 }) {
   if (preferredFormFieldType != null) {

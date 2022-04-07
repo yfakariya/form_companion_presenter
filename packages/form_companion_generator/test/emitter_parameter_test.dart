@@ -108,8 +108,8 @@ Future<void> main() async {
   ) =>
       PropertyDefinition(
         name: 'prop',
-        propertyType: GenericInterfaceType(propertyValueType, []),
-        fieldType: GenericInterfaceType(fieldValueType, []),
+        propertyType: GenericType.fromDartType(propertyValueType),
+        fieldType: GenericType.fromDartType(fieldValueType),
         preferredFormFieldType: null,
         warnings: [],
       );
@@ -248,14 +248,14 @@ Future<void> main() async {
         final context = TypeInstantiationContext.create(
           PropertyDefinition(
             name: 'prop',
-            propertyType: GenericInterfaceType(propertyAndFieldValueType, []),
-            fieldType: GenericInterfaceType(propertyAndFieldValueType, []),
+            propertyType: GenericType.fromDartType(propertyAndFieldValueType),
+            fieldType: GenericType.fromDartType(propertyAndFieldValueType),
             preferredFormFieldType:
                 // POINT: With instantiated InterfaceType without type arguments
                 //        rather than generic type definition and type arguments.
                 //        That is, specify DropdownButtonFormField<bool>
                 //        instead of DropdownButtonFormField<T>, for example.
-                GenericInterfaceType(preferredFieldType, []),
+                GenericType.fromDartType(preferredFieldType),
             warnings: [],
           ),
           preferredFieldType,

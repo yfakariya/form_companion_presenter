@@ -31,7 +31,7 @@ void _processAnnotationNullability(TypeAnnotation type, StringSink sink) {
   }
 }
 
-void _processCollection<T>(
+void _processTypeArgumentKinds<T>(
   TypeInstantiationContext context,
   Iterable<T>? arguments,
   void Function(TypeInstantiationContext, T, StringSink) processor,
@@ -62,7 +62,7 @@ void _processTypeArgumentAnnotations(
   Iterable<TypeAnnotation> typeArguments,
   StringSink sink,
 ) =>
-    _processCollection(
+    _processTypeArgumentKinds(
       context,
       typeArguments,
       processTypeAnnotation,
@@ -74,7 +74,7 @@ void _processTypeParameters(
   Iterable<TypeParameter>? parameters,
   StringSink sink,
 ) =>
-    _processCollection(
+    _processTypeArgumentKinds(
       context,
       parameters,
       _processTypeParameter,
@@ -94,7 +94,7 @@ void _processTypeArguments(
   Iterable<DartType> typeArguments,
   StringSink sink,
 ) =>
-    _processCollection(
+    _processTypeArgumentKinds(
       context,
       typeArguments,
       processTypeWithValueType,
@@ -108,7 +108,6 @@ void _processTypeArgumentElement(
 ) {
   // A type parameter should never be imported,
   // so we do not call context.recordUsedXxx() here.
-
   sink.write(context.getMappedType(element.name));
 }
 
@@ -124,7 +123,13 @@ void _processGenericFunctionType(
     sink,
   );
   sink.write(' Function');
-  _processTypeParameters(context, type.typeParameters?.typeParameters, sink);
+
+  if (type.typeParameters?.typeParameters
+          .any((t) => !context.isMapped(t.name.name)) ??
+      false) {
+    _processTypeParameters(context, type.typeParameters?.typeParameters, sink);
+  }
+
   _processGenericFunctionTypeFormalParameters(
     context,
     type.parameters.parameters,
@@ -180,12 +185,14 @@ void _processFunctionType(
   processTypeWithValueType(context, type.returnType, sink);
   sink.write(' Function');
 
-  _processCollection(
-    context,
-    type.typeFormals,
-    _processTypeArgumentElement,
-    sink,
-  );
+  if (type.typeFormals.any((t) => !context.isMapped(t.name))) {
+    _processTypeArgumentKinds(
+      context,
+      type.typeFormals,
+      _processTypeArgumentElement,
+      sink,
+    );
+  }
 
   _processParameterElementsOfFunctionType(
     context,

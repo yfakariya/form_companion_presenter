@@ -28,7 +28,7 @@ import 'test_helpers.dart';
 /// 5. Form field type specified with addWithField.
 /// 6. Warnings emitted by preceding processes.
 typedef PropertyDefinitionSpec = Tuple6<String, InterfaceType, InterfaceType,
-    ClassElement?, GenericInterfaceType?, List<String>>;
+    ClassElement?, GenericType?, List<String>>;
 
 typedef FactoryParameterSpec = Tuple2<String, String>;
 typedef NamedFactorySpec = Tuple3<String?, String, List<FactoryParameterSpec>>;
@@ -95,8 +95,8 @@ Future<void> main() async {
 
         final property = PropertyDefinition(
           name: name,
-          propertyType: GenericInterfaceType(propertyValueType, []),
-          fieldType: GenericInterfaceType(fieldValueType, []),
+          propertyType: GenericType.fromDartType(propertyValueType),
+          fieldType: GenericType.fromDartType(fieldValueType),
           preferredFormFieldType: preferredFormFieldType,
           warnings: warnings,
         );
@@ -653,12 +653,15 @@ Future<void> main() async {
 
         final property = PropertyDefinition(
           name: propertyName,
-          propertyType: GenericInterfaceType(
-              parametersLibrary.typeProvider.stringType, []),
-          fieldType: GenericInterfaceType(
-              parametersLibrary.typeProvider.stringType, []),
-          preferredFormFieldType:
-              GenericInterfaceType(formFieldClass.thisType, []),
+          propertyType: GenericType.fromDartType(
+            parametersLibrary.typeProvider.stringType,
+          ),
+          fieldType: GenericType.fromDartType(
+            parametersLibrary.typeProvider.stringType,
+          ),
+          preferredFormFieldType: GenericType.fromDartType(
+            formFieldClass.thisType,
+          ),
           warnings: [],
         );
         final data = PresenterDefinition(
@@ -893,9 +896,8 @@ ${spec.item3.map((p) => '      ${p.item2}: ${p.item2}').join(',\n')},
                 library.typeProvider.stringType,
                 library.typeProvider.stringType,
                 constructorWithNamedConstructorsClass,
-                GenericInterfaceType(
+                GenericType.fromDartType(
                   constructorWithNamedConstructorsClass.thisType,
-                  [],
                 ),
                 [],
               ),
@@ -912,9 +914,8 @@ ${spec.item3.map((p) => '      ${p.item2}: ${p.item2}').join(',\n')},
                 library.typeProvider.stringType,
                 library.typeProvider.stringType,
                 factoryWithNamedConstructorsClass,
-                GenericInterfaceType(
+                GenericType.fromDartType(
                   factoryWithNamedConstructorsClass.thisType,
-                  [],
                 ),
                 [],
               ),
@@ -1055,7 +1056,7 @@ extension \$TestFieldFactoryExtension on Test {
       required InterfaceType propertyValueType,
       required InterfaceType fieldValueType,
       required ClassElement? formFieldClass,
-      GenericInterfaceType? preferredFieldType,
+      GenericType? preferredFieldType,
       bool doAutovalidate = false,
       List<String>? warnings,
       required String expectedBody,
@@ -1155,9 +1156,9 @@ extension \$TestFieldFactoryExtension on Test {
           propertyValueType: library.typeProvider.stringType,
           fieldValueType: library.typeProvider.stringType,
           formFieldClass: dropdownButtonFormField,
-          preferredFieldType: GenericInterfaceType(
+          preferredFieldType: GenericType.generic(
             dropdownButtonFormField.thisType,
-            [GenericInterfaceType(library.typeProvider.stringType, [])],
+            [GenericType.fromDartType(library.typeProvider.stringType)],
           ),
           expectedBody: dropdownButtonFieldFactory('prop', 'String'),
         ),
@@ -1170,9 +1171,9 @@ extension \$TestFieldFactoryExtension on Test {
           propertyValueType: library.typeProvider.intType,
           fieldValueType: library.typeProvider.intType,
           formFieldClass: dropdownButtonFormField,
-          preferredFieldType: GenericInterfaceType(
+          preferredFieldType: GenericType.generic(
             dropdownButtonFormField.thisType,
-            [GenericInterfaceType(library.typeProvider.intType, [])],
+            [GenericType.fromDartType(library.typeProvider.intType)],
           ),
           expectedBody: dropdownButtonFieldFactory('prop', 'int'),
         ),
@@ -1185,8 +1186,9 @@ extension \$TestFieldFactoryExtension on Test {
           propertyValueType: library.typeProvider.stringType,
           fieldValueType: library.typeProvider.stringType,
           formFieldClass: null,
-          preferredFieldType:
-              GenericInterfaceType(library.typeProvider.objectType, []),
+          preferredFieldType: GenericType.fromDartType(
+            library.typeProvider.objectType,
+          ),
           expectedBody:
               "  // TODO(CompanionGenerator): ERROR - Cannot generate field factory for 'prop' property, because FormField type 'Object' is unknown.",
         ),
@@ -1288,9 +1290,9 @@ extension \$TestFieldFactoryExtension on Test {
           propertyValueType: library.typeProvider.stringType,
           fieldValueType: library.typeProvider.stringType,
           formFieldClass: formBuilderDropdown,
-          preferredFieldType: GenericInterfaceType(
+          preferredFieldType: GenericType.generic(
             formBuilderDropdown.thisType,
-            [GenericInterfaceType(library.typeProvider.stringType, [])],
+            [GenericType.fromDartType(library.typeProvider.stringType)],
           ),
           expectedBody: formBuilderDropdownFactory('prop', 'String'),
         ),
@@ -1303,9 +1305,8 @@ extension \$TestFieldFactoryExtension on Test {
           propertyValueType: library.typeProvider.boolType,
           fieldValueType: library.typeProvider.stringType,
           formFieldClass: formBuilderTextField,
-          preferredFieldType: GenericInterfaceType(
+          preferredFieldType: GenericType.fromDartType(
             formBuilderTextField.thisType,
-            [],
           ),
           expectedBody: formBuilderTextFieldFactory('prop'),
         ),
@@ -1333,9 +1334,8 @@ extension \$TestFieldFactoryExtension on Test {
             propertyValueType: spec.type,
             fieldValueType: spec.type,
             formFieldClass: spec.formFieldClass,
-            preferredFieldType: GenericInterfaceType(
+            preferredFieldType: GenericType.fromDartType(
               spec.formFieldClass.thisType,
-              [],
             ),
             expectedBody: spec.expectedBody,
           ),
@@ -1365,9 +1365,8 @@ extension \$TestFieldFactoryExtension on Test {
             propertyValueType: spec.type,
             fieldValueType: spec.type,
             formFieldClass: spec.formFieldClass,
-            preferredFieldType: GenericInterfaceType(
+            preferredFieldType: GenericType.fromDartType(
               spec.formFieldClass.thisType,
-              [],
             ),
             expectedBody: spec.expectedBody,
           ),
@@ -1413,9 +1412,9 @@ extension \$TestFieldFactoryExtension on Test {
             propertyValueType: spec.type,
             fieldValueType: spec.type,
             formFieldClass: spec.formFieldClass,
-            preferredFieldType: GenericInterfaceType(
+            preferredFieldType: GenericType.generic(
               spec.formFieldClass.thisType,
-              [GenericInterfaceType(spec.type, [])],
+              [GenericType.fromDartType(spec.type)],
             ),
             expectedBody: spec.expectedBody,
           ),
@@ -1429,9 +1428,8 @@ extension \$TestFieldFactoryExtension on Test {
           propertyValueType: library.typeProvider.stringType,
           fieldValueType: library.typeProvider.stringType,
           formFieldClass: null,
-          preferredFieldType: GenericInterfaceType(
+          preferredFieldType: GenericType.fromDartType(
             library.typeProvider.objectType,
-            [],
           ),
           expectedBody:
               "  // TODO(CompanionGenerator): ERROR - Cannot generate field factory for 'prop' property, because FormField type 'Object' is unknown.",

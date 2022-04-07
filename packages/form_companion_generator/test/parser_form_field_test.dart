@@ -50,7 +50,7 @@ Future<void> main() async {
   Future<void> testResolveMultiConstructorsFormFieldAsync(
     InterfaceType propertyType,
     InterfaceType fieldType,
-    GenericInterfaceType? preferredFormFieldType,
+    GenericType? preferredFormFieldType,
     String expectedFormFieldTypeName, {
     required bool isFormBuilder,
     required bool shouldBeContructorFound,
@@ -59,8 +59,8 @@ Future<void> main() async {
   }) async {
     final input = PropertyDefinition(
       name: 'prop',
-      propertyType: GenericInterfaceType(propertyType, []),
-      fieldType: GenericInterfaceType(fieldType, []),
+      propertyType: GenericType.fromDartType(propertyType),
+      fieldType: GenericType.fromDartType(fieldType),
       preferredFormFieldType: preferredFormFieldType,
       warnings: [],
     );
@@ -123,7 +123,7 @@ Future<void> main() async {
   Future<void> testResolveFormFieldAsync(
     InterfaceType propertyType,
     InterfaceType fieldType,
-    GenericInterfaceType? preferredFormFieldType,
+    GenericType? preferredFormFieldType,
     String expectedFormFieldTypeName, {
     required bool isFormBuilder,
     required bool shouldBeContructorFound,
@@ -176,7 +176,7 @@ Future<void> main() async {
       () => testResolveFormFieldAsync(
         typeProvider.boolType,
         typeProvider.boolType,
-        GenericInterfaceType(formBuilderCheckbox.thisType, []),
+        GenericType.fromDartType(formBuilderCheckbox.thisType),
         'FormBuilderCheckbox',
         isFormBuilder: true,
         shouldBeContructorFound: true,
@@ -188,9 +188,9 @@ Future<void> main() async {
       () => testResolveFormFieldAsync(
         typeProvider.stringType,
         typeProvider.stringType,
-        GenericInterfaceType(
+        GenericType.generic(
           dropdownButtonFormField.thisType,
-          [GenericInterfaceType(typeProvider.stringType, [])],
+          [GenericType.fromDartType(typeProvider.stringType)],
         ),
         'DropdownButtonFormField',
         isFormBuilder: false,
@@ -227,8 +227,8 @@ Future<void> main() async {
 
         final property = PropertyDefinition(
           name: 'prop',
-          propertyType: GenericInterfaceType(typeProvider.stringType, []),
-          fieldType: GenericInterfaceType(typeProvider.stringType, []),
+          propertyType: GenericType.fromDartType(typeProvider.stringType),
+          fieldType: GenericType.fromDartType(typeProvider.stringType),
           preferredFormFieldType: null,
           warnings: [],
         );
@@ -258,7 +258,7 @@ Future<void> main() async {
       return testResolveMultiConstructorsFormFieldAsync(
         typeProvider.stringType,
         typeProvider.stringType,
-        GenericInterfaceType(formFieldClass.thisType, []),
+        GenericType.fromDartType(formFieldClass.thisType),
         formFieldClass.thisType.getDisplayString(withNullability: false),
         isFormBuilder: false,
         shouldBeContructorFound: true,

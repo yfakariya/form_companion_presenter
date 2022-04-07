@@ -285,30 +285,22 @@ enum MixinType {
   formBuilderCompanionMixin,
 }
 
-/// Represents generic interface type as transparent structured object.
-@sealed
-class GenericInterfaceType {
+/// Represents interface type as transparent structured object.
+abstract class GenericType {
   /// Raw type part of generic type.
   ///
   /// This can be instantiated generic type.
-  final DartType rawType;
+  DartType get rawType;
 
   /// Type arguments part of generic type.
   ///
   /// This value will be empty when the type is non-generic types and [rawType]
   /// is instantiated generic type.
-  final List<GenericInterfaceType> typeArguments;
+  List<GenericType> get typeArguments;
 
   /// Gets a [rawType] as [InterfaceType] or `null` when [rawType] is not an
   /// [InterfaceType].
-  InterfaceType? get maybeAsInterfaceType {
-    final type = rawType;
-    if (type is InterfaceType) {
-      return type;
-    } else {
-      return null;
-    }
-  }
+  InterfaceType? get maybeAsInterfaceType;
 
   /// Gets a raw type name without generic type parameters and arguments of
   /// [rawType].
@@ -321,18 +313,77 @@ class GenericInterfaceType {
     }
   }
 
-  /// Initializes a new [GenericInterfaceType] instance.
-  GenericInterfaceType(
-    this.rawType,
-    this.typeArguments,
-  );
+  /// Initializes a new [GenericType] instance.
+  factory GenericType.generic(
+    DartType rawType,
+    List<GenericType> typeArguments,
+  ) {
+    if (rawType is InterfaceType) {
+      return _InstantiatedGenericInterfaceType(
+        _toRawInterfaceType(rawType),
+        typeArguments,
+      );
+    } else if (rawType is FunctionType) {
+      final functionType = _toNonAliasedFunctionType(rawType);
+      return _InstantiatedGenericFunctionType(
+        functionType,
+        typeArguments,
+        _buildFunctionTypeGenericArguments(
+          functionType.typeFormals,
+          typeArguments,
+        ),
+      );
+    } else {
+      return _NonGenericType(rawType);
+    }
+  }
+
+  /// Initializes a new [GenericType] instance from
+  /// [FunctionType] or [InterfaceType].
+  ///
+  /// If [type] is another type, [ArgumentError] will be thrown.
+  factory GenericType.fromDartType(DartType type) {
+    if (type is InterfaceType &&
+        type.typeArguments.any((t) => t is TypeParameterType)) {
+      return _GenericInterfaceTypeDefinition(
+        _toRawInterfaceType(type),
+      );
+    } else if (type is FunctionType) {
+      if (type.typeFormals.isNotEmpty) {
+        return _GenericFunctionTypeDefinition(
+          _toNonAliasedFunctionType(type),
+        );
+      } else {
+        return _InstantiatedGenericFunctionType(type, [], {});
+      }
+    } else {
+      return _NonGenericType(type);
+    }
+  }
+
+  GenericType._();
+
+  static InterfaceType _toRawInterfaceType(
+          InterfaceType mayBeAliasedOrGenericType) =>
+      ((mayBeAliasedOrGenericType.alias?.element.aliasedType
+                  as InterfaceType?) ??
+              mayBeAliasedOrGenericType)
+          .element
+          .thisType;
+
+  static FunctionType _toNonAliasedFunctionType(
+          FunctionType mayBeAliasedType) =>
+      mayBeAliasedType.alias?.element.aliasedType as FunctionType? ??
+      mayBeAliasedType;
 
   @override
+  @nonVirtual
   String toString() => getDisplayString(withNullability: true);
 
   /// Returns a [String] to display this type.
   ///
   /// This method simulates [DartType.getDisplayString].
+  @nonVirtual
   String getDisplayString({
     required bool withNullability,
   }) {
@@ -345,11 +396,107 @@ class GenericInterfaceType {
   void writeTo(
     StringSink sink, {
     required bool withNullability,
+  });
+}
+
+/// Represents non generic type.
+@sealed
+class _NonGenericType extends GenericType {
+  /// Gets a wrapped [DartType].
+  final DartType type;
+
+  @override
+  DartType get rawType => (type.element as ClassElement?)?.thisType ?? type;
+
+  @override
+  InterfaceType? get maybeAsInterfaceType {
+    final type = this.type;
+    if (type is InterfaceType) {
+      return type;
+    } else {
+      return null;
+    }
+  }
+
+  @override
+  List<GenericType> get typeArguments {
+    final type = this.type;
+    return type is InterfaceType
+        ? type.typeArguments.map(GenericType.fromDartType).toList()
+        : [];
+  }
+
+  _NonGenericType(this.type)
+      : assert(type is! FunctionType),
+        super._();
+
+  @override
+  void writeTo(
+    StringSink sink, {
+    required bool withNullability,
+  }) =>
+      sink.write(type.getDisplayString(withNullability: withNullability));
+}
+
+/// Represents generic interface type without type arguments.
+@sealed
+class _GenericInterfaceTypeDefinition extends GenericType {
+  final InterfaceType _interfaceType;
+  @override
+  DartType get rawType => _interfaceType;
+
+  @override
+  List<GenericType> get typeArguments =>
+      throw UnsupportedError('Cannot call this property in $runtimeType.');
+
+  @override
+  InterfaceType? get maybeAsInterfaceType => _interfaceType;
+
+  _GenericInterfaceTypeDefinition(this._interfaceType)
+      : assert(_interfaceType.typeArguments.any((t) => t is TypeParameterType)),
+        super._();
+
+  @override
+  void writeTo(StringSink sink, {required bool withNullability}) => sink
+      .write(_interfaceType.getDisplayString(withNullability: withNullability));
+}
+
+/// Represents generic interface type with type arguments.
+@sealed
+class _InstantiatedGenericInterfaceType extends GenericType {
+  final InterfaceType _interfaceType;
+
+  @override
+  DartType get rawType => _interfaceType;
+
+  @override
+  final List<GenericType> typeArguments;
+
+  @override
+  InterfaceType? get maybeAsInterfaceType => _interfaceType;
+
+  _InstantiatedGenericInterfaceType(
+    this._interfaceType,
+    this.typeArguments,
+  )   : assert(
+          _interfaceType.typeArguments.whereType<TypeParameterType>().length ==
+              typeArguments.length,
+        ),
+        super._();
+
+  @override
+  void writeTo(
+    StringSink sink, {
+    required bool withNullability,
   }) {
     final type = rawType;
     if (type is InterfaceType) {
       sink.write(type.element.name);
-      _writeTypeArgumentsTo(sink, withNullability: withNullability);
+      _writeTypeArgumentsTo(
+        sink,
+        typeArguments,
+        withNullability: withNullability,
+      );
       if (withNullability && type.nullabilitySuffix != NullabilitySuffix.none) {
         sink.write('?');
       }
@@ -361,7 +508,8 @@ class GenericInterfaceType {
   }
 
   void _writeTypeArgumentsTo(
-    StringSink sink, {
+    StringSink sink,
+    List<GenericType> typeArguments, {
     required bool withNullability,
   }) {
     if (typeArguments.isNotEmpty) {
@@ -408,6 +556,135 @@ class GenericInterfaceType {
   }
 }
 
+/// Represents generic function type.
+abstract class GenericFunctionType extends GenericType {
+  /// Gets an underlying [FunctionType].
+  final FunctionType rawFunctionType;
+
+  @override
+  @nonVirtual
+  DartType get rawType => rawFunctionType;
+
+  @override
+  @nonVirtual
+  InterfaceType? get maybeAsInterfaceType => null;
+
+  /// Gets a return type of the function type.
+  GenericType get returnType;
+
+  /// Gets a list of parameter types of the function type.
+  Iterable<GenericType> get parameterTypes;
+
+  GenericFunctionType._(this.rawFunctionType) : super._();
+
+  @override
+  void writeTo(StringSink sink, {required bool withNullability}) {
+    sink
+      ..write(returnType.getDisplayString(withNullability: withNullability))
+      ..write(' Function(');
+
+    var isFirst = true;
+    var isRequiredPositional = true;
+    var isNamed = false;
+    final parameterTypes = this.parameterTypes.toList();
+    for (var i = 0; i < rawFunctionType.parameters.length; i++) {
+      final parameter = rawFunctionType.parameters[i];
+      if (isFirst) {
+        isFirst = false;
+      } else {
+        sink.write(', ');
+      }
+
+      if (!parameter.isRequiredPositional && isRequiredPositional) {
+        isRequiredPositional = false;
+        if (parameter.isNamed) {
+          isNamed = true;
+        } else {}
+
+        sink.write(isNamed ? '{' : '[');
+      }
+
+      if (parameter.isRequiredNamed) {
+        sink.write('required ');
+      }
+
+      sink.write(
+        parameterTypes[i].getDisplayString(withNullability: withNullability),
+      );
+    }
+
+    if (!isRequiredPositional) {
+      sink.write(isNamed ? '}' : ']');
+    }
+
+    sink.write(')');
+  }
+}
+
+/// Represents generic function type without type arguments.
+@sealed
+class _GenericFunctionTypeDefinition extends GenericFunctionType {
+  @override
+  List<GenericType> get typeArguments =>
+      throw UnsupportedError('Cannot call this property in $runtimeType.');
+
+  @override
+  GenericType get returnType =>
+      GenericType.fromDartType(rawFunctionType.returnType);
+
+  @override
+  Iterable<GenericType> get parameterTypes =>
+      rawFunctionType.parameters.map((p) => GenericType.fromDartType(p.type));
+
+  _GenericFunctionTypeDefinition(FunctionType functionType)
+      : assert(functionType.typeFormals.isNotEmpty),
+        super._(functionType);
+}
+
+/// Represents generic function type with type arguments.
+@sealed
+class _InstantiatedGenericFunctionType extends GenericFunctionType {
+  final Map<String, GenericType> _genericArguments;
+
+  @override
+  List<GenericType> typeArguments;
+
+  @override
+  GenericType get returnType => _instantiate(rawFunctionType.returnType);
+
+  @override
+  Iterable<GenericType> get parameterTypes =>
+      rawFunctionType.parameters.map((p) => _instantiate(p.type));
+
+  _InstantiatedGenericFunctionType(
+    FunctionType functionType,
+    this.typeArguments,
+    this._genericArguments,
+  )   : assert(functionType.typeFormals.isEmpty),
+        super._(functionType);
+
+  GenericType _instantiate(DartType mayBeTypeParameter) =>
+      ((mayBeTypeParameter is TypeParameterType)
+          ? _genericArguments[
+              mayBeTypeParameter.getDisplayString(withNullability: false)]
+          : null) ??
+      GenericType.fromDartType(mayBeTypeParameter);
+}
+
+Map<String, GenericType> _buildFunctionTypeGenericArguments(
+  List<TypeParameterElement> typeFormals,
+  List<GenericType> typeArguments,
+) {
+  assert(typeArguments.length == typeArguments.length);
+
+  final result = <String, GenericType>{};
+  for (var i = 0; i < typeArguments.length; i++) {
+    result[typeFormals[i].name] = typeArguments[i];
+  }
+
+  return result;
+}
+
 /// Represents definition of a property.
 @sealed
 class PropertyDefinition {
@@ -416,16 +693,15 @@ class PropertyDefinition {
 
   /// A type of the property.
   /// This may not be equal to the type of `FormField`'s value.
-  final GenericInterfaceType propertyType;
+  final GenericType propertyType;
 
   /// A type of the value of the form field.
   /// This may not be equal to the type of property's value.
-  final GenericInterfaceType fieldType;
+  final GenericType fieldType;
 
-  // TODO(yfakariya): can be InterfaceType
   /// Preferred type of `FormField`, which is specified as type arguments
   /// of `addWithField` extension method.
-  final GenericInterfaceType? preferredFormFieldType;
+  final GenericType? preferredFormFieldType;
 
   /// Gets a property specific warnings generated by parser.
   final List<String> warnings;
@@ -463,11 +739,11 @@ class PropertyAndFormFieldDefinition {
 
   /// A type of the property.
   /// This may not be equal to the type of `FormField`'s value.
-  GenericInterfaceType get propertyValueType => _property.propertyType;
+  GenericType get propertyValueType => _property.propertyType;
 
   /// A type of the value of the form field.
   /// This may not be equal to the type of property's value.
-  GenericInterfaceType get fieldValueType => _property.fieldType;
+  GenericType get fieldValueType => _property.fieldType;
 
   /// A type name of `FormField`.
   /// Note that this field should not include generic type parameters.

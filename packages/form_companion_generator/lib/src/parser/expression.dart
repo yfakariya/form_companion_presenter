@@ -103,10 +103,9 @@ FutureOr<PropertyDescriptorsBuilding?> _parseExpressionAsync(
               methodInvocation: e,
               targetClass: targetClass,
               propertyName: null,
-              typeArguments: e.typeArgumentTypes
-                      ?.map((e) => GenericInterfaceType(e, []))
-                      .toList() ??
-                  [],
+              typeArguments:
+                  e.typeArgumentTypes?.map(GenericType.fromDartType).toList() ??
+                      [],
               originalMethodInvocation: e,
               isInferred:
                   e.typeArguments?.length != e.typeArgumentTypes?.length,
@@ -155,7 +154,7 @@ FutureOr<PropertyDescriptorsBuilding?> _parseExpressionAsync(
               targetClass: targetClass,
               propertyName: null,
               typeArguments: unparenthesized.typeArgumentTypes
-                      ?.map((e) => GenericInterfaceType(e, []))
+                      ?.map(GenericType.fromDartType)
                       .toList() ??
                   [],
               originalMethodInvocation: unparenthesized,
