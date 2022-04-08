@@ -177,7 +177,8 @@ Iterable<String> _emitFieldFactoryCore(
   );
   final formFieldType = sink.toString();
 
-  late final String methodName, constructorName;
+  late final String methodName;
+  late final String constructorName;
   if (property.isSimpleFormField) {
     yield '  /// Gets a [FormField] for `${property.name}` property.';
     methodName = property.name;
