@@ -139,3 +139,13 @@ extension LibraryElementExtensions on LibraryElement {
       scope.lookup(className).getter!.thisOrAncestorOfType<ClassElement>()!;
   InterfaceType lookupType(String className) => lookupClass(className).thisType;
 }
+
+String pascalize(String value) {
+  if (value.isEmpty) {
+    return value;
+  } else if (value.length == 1) {
+    return value.toUpperCase();
+  } else {
+    return value.substring(0, 1).toUpperCase() + value.substring(1);
+  }
+}

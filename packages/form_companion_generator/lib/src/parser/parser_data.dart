@@ -8,10 +8,10 @@ import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
 import 'package:source_gen/source_gen.dart';
 
-import 'form_field_locator.dart';
-import 'model.dart';
-import 'node_provider.dart';
-import 'utilities.dart';
+import '../form_field_locator.dart';
+import '../model.dart';
+import '../node_provider.dart';
+import '../utilities.dart';
 
 /// Represents a context information of parsing.
 @sealed
@@ -141,10 +141,10 @@ class PropertyDescriptorsBuilding {
   /// Gets a name of variable which is operated in.
   final String variableName;
 
-  final List<PropertyDefinitionAndSource> _buildings;
+  final List<PropertyDefinitionWithSource> _buildings;
 
   /// Gets a series of property building operations in order.
-  Iterable<PropertyDefinitionAndSource> get buildings => _buildings;
+  Iterable<PropertyDefinitionWithSource> get buildings => _buildings;
 
   /// Effiently gets a value  whether [buildings] is empty or not.
   bool get isEmpty => _buildings.isEmpty;
@@ -174,7 +174,7 @@ class PropertyDescriptorsBuilding {
   /// If the operation is attempted to shared instance,
   /// [InvalidGenerationSourceError] will be thrown.
   void add(
-    PropertyDefinitionAndSource definition,
+    PropertyDefinitionWithSource definition,
     Element contextElement,
   ) {
     if (_isMutable) {
@@ -198,7 +198,7 @@ class PropertyDescriptorsBuilding {
   /// If the operation is attempted to shared instance,
   /// [InvalidGenerationSourceError] will be thrown.
   void addAll(
-    Iterable<PropertyDefinitionAndSource> definitions,
+    Iterable<PropertyDefinitionWithSource> definitions,
     Element contextElement,
   ) {
     for (final definition in definitions) {

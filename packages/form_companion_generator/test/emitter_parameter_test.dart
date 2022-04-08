@@ -1,18 +1,18 @@
 // See LICENCE file in the root.
 
 import 'package:analyzer/dart/ast/ast.dart';
+import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:form_companion_generator/src/emitter.dart';
 import 'package:form_companion_generator/src/emitter/instantiation.dart';
 import 'package:form_companion_generator/src/model.dart';
 import 'package:form_companion_generator/src/node_provider.dart';
-import 'package:form_companion_generator/src/parameter.dart';
 import 'package:form_companion_generator/src/type_instantiation.dart';
 import 'package:logging/logging.dart';
 import 'package:test/expect.dart';
 import 'package:test/scaffolding.dart';
 
-import 'file_resolver.dart';
+import 'session_resolver.dart';
 import 'test_helpers.dart';
 
 Future<void> main() async {
@@ -21,7 +21,7 @@ Future<void> main() async {
   logger.onRecord.listen(print);
 
   final library = await getParametersLibrary();
-  final nodeProvider = NodeProvider(FileResolver(library));
+  final nodeProvider = NodeProvider(SessionResolver(library));
   final holder = library.getType('ParameterHolder')!;
   final holderNode =
       await nodeProvider.getElementDeclarationAsync<ClassDeclaration>(holder);
@@ -73,6 +73,29 @@ Future<void> main() async {
       p.identifier!.name: p
   };
 
+  final functionHolder = library.getType('ParameterFunctionHolder')!;
+  final functionHolderNode = await nodeProvider
+      .getElementDeclarationAsync<ClassDeclaration>(functionHolder);
+  final functionConstructorParameters = {
+    for (final p in functionHolder.constructors.single.parameters) p.name: p
+  };
+  final functionConstructorParameterNodes = {
+    for (final p in functionHolderNode.childEntities
+        .whereType<ConstructorDeclaration>()
+        .single
+        .parameters
+        .parameters)
+      p.identifier!.name: p
+  };
+  final stringComparisonType =
+      (await getResolvedLibraryResult('form_fields.dart'))
+          .element
+          .topLevelElements
+          .whereType<TopLevelVariableElement>()
+          .singleWhere((e) => e.name == 'stringComparison')
+          .computeConstantValue()!
+          .toTypeValue()! as FunctionType;
+
   final myEnumType = await getMyEnumType();
   final formBuilderDropdownOfMyEnum =
       await lookupFormFieldTypeInstance('formBuilderDropdownOfMyEnum');
@@ -80,13 +103,13 @@ Future<void> main() async {
       await lookupFormFieldTypeInstance('formBuilderFilterChipOfMyEnum');
 
   PropertyDefinition makeProperty(
-    InterfaceType propertyValueType,
-    InterfaceType fieldValueType,
+    DartType propertyValueType,
+    DartType fieldValueType,
   ) =>
       PropertyDefinition(
         name: 'prop',
-        propertyType: GenericInterfaceType(propertyValueType, []),
-        fieldType: GenericInterfaceType(fieldValueType, []),
+        propertyType: GenericType.fromDartType(propertyValueType),
+        fieldType: GenericType.fromDartType(fieldValueType),
         preferredFormFieldType: null,
         warnings: [],
       );
@@ -104,7 +127,6 @@ Future<void> main() async {
             final node = await nodeProvider
                 .getElementDeclarationAsync<FormalParameter>(element);
             final context = TypeInstantiationContext.create(
-              nodeProvider,
               makeProperty(
                 library.typeProvider.boolType,
                 library.typeProvider.boolType,
@@ -135,7 +157,6 @@ Future<void> main() async {
             final node = await nodeProvider
                 .getElementDeclarationAsync<FormalParameter>(element);
             final context = TypeInstantiationContext.create(
-              nodeProvider,
               makeProperty(
                 library.typeProvider.boolType,
                 library.typeProvider.boolType,
@@ -165,7 +186,6 @@ Future<void> main() async {
           final node = await nodeProvider
               .getElementDeclarationAsync<FormalParameter>(element);
           final context = TypeInstantiationContext.create(
-            nodeProvider,
             makeProperty(
               library.typeProvider.boolType,
               library.typeProvider.boolType,
@@ -195,12 +215,11 @@ Future<void> main() async {
             final node = await nodeProvider
                 .getElementDeclarationAsync<FormalParameter>(element);
             final context = TypeInstantiationContext.create(
-              nodeProvider,
               makeProperty(
-                library.typeProvider.boolType,
-                library.typeProvider.boolType,
+                library.typeProvider.listType(library.typeProvider.boolType),
+                library.typeProvider.listType(library.typeProvider.boolType),
               ),
-              holder.thisType,
+              listHolder.thisType,
               logger,
             );
             expect(
@@ -227,17 +246,16 @@ Future<void> main() async {
         final node = await nodeProvider
             .getElementDeclarationAsync<FormalParameter>(parameterElement);
         final context = TypeInstantiationContext.create(
-          nodeProvider,
           PropertyDefinition(
             name: 'prop',
-            propertyType: GenericInterfaceType(propertyAndFieldValueType, []),
-            fieldType: GenericInterfaceType(propertyAndFieldValueType, []),
+            propertyType: GenericType.fromDartType(propertyAndFieldValueType),
+            fieldType: GenericType.fromDartType(propertyAndFieldValueType),
             preferredFormFieldType:
                 // POINT: With instantiated InterfaceType without type arguments
                 //        rather than generic type definition and type arguments.
                 //        That is, specify DropdownButtonFormField<bool>
                 //        instead of DropdownButtonFormField<T>, for example.
-                GenericInterfaceType(preferredFieldType, []),
+                GenericType.fromDartType(preferredFieldType),
             warnings: [],
           ),
           preferredFieldType,
@@ -248,7 +266,7 @@ Future<void> main() async {
             context,
             await ParameterInfo.fromNodeAsync(nodeProvider, node),
           ),
-          equals(expected),
+          expected,
         );
       }
 
@@ -270,6 +288,49 @@ Future<void> main() async {
         ),
       );
     });
+
+    group('forcibly optional', () {
+      Future<void> testForciblyOptional(
+        ParameterElement element,
+        String expected,
+      ) async {
+        final node = await nodeProvider
+            .getElementDeclarationAsync<FormalParameter>(element);
+        final context = TypeInstantiationContext.create(
+          makeProperty(
+            library.typeProvider.boolType,
+            library.typeProvider.boolType,
+          ),
+          holder.thisType,
+          logger,
+        );
+
+        expect(
+          emitParameter(
+            context,
+            (await ParameterInfo.fromNodeAsync(nodeProvider, node))
+                .asForciblyOptional(),
+          ),
+          expected,
+        );
+      }
+
+      test(
+        'non-function',
+        () => testForciblyOptional(
+          constructorParameters['simple']!['nonPrefixed']!,
+          'String? nonPrefixed',
+        ),
+      );
+
+      test(
+        'function',
+        () => testForciblyOptional(
+          methodParameters['simpleFunction']!['namedFunction']!,
+          'int namedFunction(String p)?',
+        ),
+      );
+    });
   });
 
   group('processTypeWithValueType', () {
@@ -283,7 +344,6 @@ Future<void> main() async {
         test(description, () {
           final element = constructorSpec.value;
           final context = TypeInstantiationContext.create(
-            nodeProvider,
             makeProperty(
               library.typeProvider.boolType,
               library.typeProvider.boolType,
@@ -306,7 +366,7 @@ Future<void> main() async {
       }
     }
 
-    for (final nullability in ['simple', 'nullable']) {
+    for (final nullability in ['simple', 'nullable', 'hasDefault', 'complex']) {
       for (final parameterSpec
           in methodParameters['${nullability}Function']!.entries) {
         final description = '$nullability, ${parameterSpec.key}';
@@ -316,7 +376,6 @@ Future<void> main() async {
         test(description, () {
           final element = parameterSpec.value;
           final context = TypeInstantiationContext.create(
-            nodeProvider,
             makeProperty(
               library.typeProvider.boolType,
               library.typeProvider.boolType,
@@ -349,12 +408,11 @@ Future<void> main() async {
       test(description, () {
         final element = listConstructorParameters[typeKind]!;
         final context = TypeInstantiationContext.create(
-          nodeProvider,
           makeProperty(
-            library.typeProvider.boolType,
-            library.typeProvider.boolType,
+            library.typeProvider.listType(library.typeProvider.boolType),
+            library.typeProvider.listType(library.typeProvider.boolType),
           ),
-          holder.thisType,
+          listHolder.thisType,
           logger,
         );
         final sink = StringBuffer();
@@ -383,12 +441,11 @@ Future<void> main() async {
       test(description, () {
         final element = listMethodParameters[typeKind]!;
         final context = TypeInstantiationContext.create(
-          nodeProvider,
           makeProperty(
-            library.typeProvider.boolType,
-            library.typeProvider.boolType,
+            library.typeProvider.listType(library.typeProvider.boolType),
+            library.typeProvider.listType(library.typeProvider.boolType),
           ),
-          holder.thisType,
+          listHolder.thisType,
           logger,
         );
         final sink = StringBuffer();
@@ -404,9 +461,31 @@ Future<void> main() async {
         );
       });
     }
+
+    for (final spec in functionConstructorParameters.entries) {
+      test('function type argument ${spec.key}', () {
+        final element = spec.value;
+        final context = TypeInstantiationContext.create(
+          makeProperty(
+            stringComparisonType,
+            stringComparisonType,
+          ),
+          functionHolder.thisType,
+          logger,
+        );
+        final sink = StringBuffer();
+
+        processTypeWithValueType(
+          context,
+          element.type,
+          sink,
+        );
+        expect(sink.toString(), functionParameterTypeExpected[spec.key]);
+      });
+    }
   });
 
-  group('processTypeAnnotationWithValueType', () {
+  group('processTypeAnnotation', () {
     for (final nullability in ['simple', 'nullable']) {
       for (final constructorSpec
           in constructorParameters[nullability]!.entries) {
@@ -418,7 +497,6 @@ Future<void> main() async {
           final node =
               constructorParameterNodes[nullability]![constructorSpec.key]!;
           final context = TypeInstantiationContext.create(
-            nodeProvider,
             makeProperty(
               library.typeProvider.boolType,
               library.typeProvider.boolType,
@@ -432,8 +510,7 @@ Future<void> main() async {
 
           processTypeAnnotation(
             context,
-            parameterInfo.typeAnnotation,
-            parameterInfo.type,
+            parameterInfo.typeAnnotation!,
             sink,
           );
           expect(
@@ -444,7 +521,7 @@ Future<void> main() async {
       }
     }
 
-    for (final nullability in ['simple', 'nullable']) {
+    for (final nullability in ['simple', 'nullable', 'hasDefault', 'complex']) {
       for (final parameterSpec
           in methodParameters['${nullability}Function']!.entries) {
         final description = '$nullability, ${parameterSpec.key}';
@@ -455,7 +532,6 @@ Future<void> main() async {
           final node = methodParameterNodes['${nullability}Function']![
               parameterSpec.key]!;
           final context = TypeInstantiationContext.create(
-            nodeProvider,
             makeProperty(
               library.typeProvider.boolType,
               library.typeProvider.boolType,
@@ -471,14 +547,13 @@ Future<void> main() async {
             processFunctionTypeFormalParameter(
               context,
               parameterInfo.functionTypedParameter!,
+              EmitParameterContext.functionTypeParameter,
               sink,
-              forParameterSignature: false,
             );
           } else {
             processTypeAnnotation(
               context,
-              parameterInfo.typeAnnotation,
-              parameterInfo.type,
+              parameterInfo.typeAnnotation!,
               sink,
             );
           }
@@ -501,12 +576,11 @@ Future<void> main() async {
       test(description, () async {
         final node = listConstructorParameterNodes[typeKind]!;
         final context = TypeInstantiationContext.create(
-          nodeProvider,
           makeProperty(
-            library.typeProvider.boolType,
-            library.typeProvider.boolType,
+            library.typeProvider.listType(library.typeProvider.boolType),
+            library.typeProvider.listType(library.typeProvider.boolType),
           ),
-          holder.thisType,
+          listHolder.thisType,
           logger,
         );
         final parameterInfo =
@@ -515,8 +589,7 @@ Future<void> main() async {
 
         processTypeAnnotation(
           context,
-          parameterInfo.typeAnnotation,
-          parameterInfo.type,
+          parameterInfo.typeAnnotation!,
           sink,
         );
         expect(
@@ -537,28 +610,70 @@ Future<void> main() async {
       test(description, () async {
         final node = listMethodParameterNodes[typeKind]!;
         final context = TypeInstantiationContext.create(
-          nodeProvider,
           makeProperty(
-            library.typeProvider.boolType,
-            library.typeProvider.boolType,
+            library.typeProvider.listType(library.typeProvider.boolType),
+            library.typeProvider.listType(library.typeProvider.boolType),
           ),
-          holder.thisType,
+          listHolder.thisType,
           logger,
         );
         final parameterInfo =
             await ParameterInfo.fromNodeAsync(nodeProvider, node);
         final sink = StringBuffer();
 
-        processTypeAnnotation(
-          context,
-          parameterInfo.typeAnnotation,
-          parameterInfo.type,
-          sink,
-        );
+        if (parameterInfo.functionTypedParameter != null) {
+          processFunctionTypeFormalParameter(
+            context,
+            parameterInfo.functionTypedParameter!,
+            EmitParameterContext.functionTypeParameter,
+            sink,
+          );
+        } else {
+          processTypeAnnotation(
+            context,
+            parameterInfo.typeAnnotation!,
+            sink,
+          );
+        }
+
         expect(
           sink.toString(),
           equals(expected),
         );
+      });
+    }
+
+    for (final spec in functionConstructorParameterNodes.entries) {
+      test('function type argument ${spec.key}', () async {
+        final node = spec.value;
+        final context = TypeInstantiationContext.create(
+          makeProperty(
+            stringComparisonType,
+            stringComparisonType,
+          ),
+          functionHolder.thisType,
+          logger,
+        );
+        final parameterInfo =
+            await ParameterInfo.fromNodeAsync(nodeProvider, node);
+        final sink = StringBuffer();
+
+        if (parameterInfo.functionTypedParameter != null) {
+          processFunctionTypeFormalParameter(
+            context,
+            parameterInfo.functionTypedParameter!,
+            EmitParameterContext.functionTypeParameter,
+            sink,
+          );
+        } else {
+          processTypeAnnotation(
+            context,
+            parameterInfo.typeAnnotation!,
+            sink,
+          );
+        }
+
+        expect(sink.toString(), functionParameterTypeExpected[spec.key]);
       });
     }
   });
@@ -658,7 +773,17 @@ const functionExpected = {
         'List<int>? instantiatedNamedFunction(Map<String, int>? p)? = null',
     'prefixedNamedFunction':
         'ui.BoxWidthStyle? prefixedNamedFunction(ui.BoxHeightStyle? p)? = null',
-  }
+  },
+  'complexFunction': {
+    'hasNamed':
+        'void Function({required String required, int optional})? hasNamed',
+    'hasDefault': 'void Function([int p])? hasDefault',
+    'nestedFunction':
+        'void Function(String Function(int Function() f1) f2)? nestedFunction',
+    'namedNestedFunction':
+        'void namedNestedFunction(String Function(int Function() f1) f2)?',
+    'withKeyword': 'final void Function()? withKeyword',
+  },
 };
 
 const typeExpected = {
@@ -711,6 +836,30 @@ const typeExpected = {
       'instantiatedNamedFunction': 'List<int>? Function(Map<String, int>?)?',
       'prefixedNamedFunction': 'BoxWidthStyle? Function(BoxHeightStyle?)?',
     },
+    'hasDefault': {
+      'alias': 'NonGenericCallback?',
+      'genericAlias': 'GenericCallback<bool>?',
+      'instantiatedAlias': 'GenericCallback<int>?',
+      'prefixedAlias': 'VoidCallback?',
+      'function': 'int? Function(String?)?',
+      'genericFunction': 'bool? Function(bool?)?',
+      'parameterizedFunction': 'S? Function<S>(S?)?',
+      'instantiatedFunction': 'List<int>? Function(Map<String?, int?>?)?',
+      'prefixedFunction': 'BoxWidthStyle? Function(BoxHeightStyle?)?',
+      'namedFunction': 'int? Function(String?)?',
+      'genericNamedFunction': 'bool? Function(bool?)?',
+      'parameterizedNamedFunction': 'S? Function<S>(S?)?',
+      'instantiatedNamedFunction': 'List<int>? Function(Map<String, int>?)?',
+      'prefixedNamedFunction': 'BoxWidthStyle? Function(BoxHeightStyle?)?',
+    },
+    'complex': {
+      // parameters are lexically ordered in element type.
+      'hasNamed': 'void Function({int optional, required String required})?',
+      'hasDefault': 'void Function([int])?',
+      'nestedFunction': 'void Function(String Function(int Function()))?',
+      'namedNestedFunction': 'void Function(String Function(int Function()))?',
+      'withKeyword': 'void Function()?',
+    },
   }
 };
 
@@ -742,11 +891,11 @@ const typeAnnotationExpected = {
       'parameterizedFunction': 'S Function<S>(S)',
       'instantiatedFunction': 'List<int> Function(Map<String, int>)',
       'prefixedFunction': 'ui.BoxWidthStyle Function(ui.BoxHeightStyle)',
-      'namedFunction': 'int Function(String)',
-      'genericNamedFunction': 'bool Function(bool)',
-      'parameterizedNamedFunction': 'S Function<S>(S)',
-      'instantiatedNamedFunction': 'List<int> Function(Map<String, int>)',
-      'prefixedNamedFunction': 'ui.BoxWidthStyle Function(ui.BoxHeightStyle)',
+      'namedFunction': 'int Function(String p)',
+      'genericNamedFunction': 'bool Function(bool p)',
+      'parameterizedNamedFunction': 'S Function<S>(S p)',
+      'instantiatedNamedFunction': 'List<int> Function(Map<String, int> p)',
+      'prefixedNamedFunction': 'ui.BoxWidthStyle Function(ui.BoxHeightStyle p)',
     },
     'nullable': {
       'alias': 'NonGenericCallback?',
@@ -758,12 +907,37 @@ const typeAnnotationExpected = {
       'parameterizedFunction': 'S? Function<S>(S?)?',
       'instantiatedFunction': 'List<int>? Function(Map<String?, int?>?)?',
       'prefixedFunction': 'ui.BoxWidthStyle? Function(ui.BoxHeightStyle?)?',
-      'namedFunction': 'int? Function(String?)?',
-      'genericNamedFunction': 'bool? Function(bool?)?',
-      'parameterizedNamedFunction': 'S? Function<S>(S?)?',
-      'instantiatedNamedFunction': 'List<int>? Function(Map<String, int>?)?',
+      'namedFunction': 'int? Function(String? p)?',
+      'genericNamedFunction': 'bool? Function(bool? p)?',
+      'parameterizedNamedFunction': 'S? Function<S>(S? p)?',
+      'instantiatedNamedFunction': 'List<int>? Function(Map<String, int>? p)?',
       'prefixedNamedFunction':
-          'ui.BoxWidthStyle? Function(ui.BoxHeightStyle?)?',
+          'ui.BoxWidthStyle? Function(ui.BoxHeightStyle? p)?',
+    },
+    'hasDefault': {
+      'alias': 'NonGenericCallback?',
+      'genericAlias': 'GenericCallback<bool>?',
+      'instantiatedAlias': 'GenericCallback<int>?',
+      'prefixedAlias': 'ui.VoidCallback?',
+      'function': 'int? Function(String?)?',
+      'genericFunction': 'bool? Function(bool?)?',
+      'parameterizedFunction': 'S? Function<S>(S?)?',
+      'instantiatedFunction': 'List<int>? Function(Map<String?, int?>?)?',
+      'prefixedFunction': 'ui.BoxWidthStyle? Function(ui.BoxHeightStyle?)?',
+      'namedFunction': 'int? Function(String? p)?',
+      'genericNamedFunction': 'bool? Function(bool? p)?',
+      'parameterizedNamedFunction': 'S? Function<S>(S? p)?',
+      'instantiatedNamedFunction': 'List<int>? Function(Map<String, int>? p)?',
+      'prefixedNamedFunction':
+          'ui.BoxWidthStyle? Function(ui.BoxHeightStyle? p)?',
+    },
+    'complex': {
+      'hasNamed': 'void Function({required String required, int optional})?',
+      'hasDefault': 'void Function([int p])?',
+      'nestedFunction': 'void Function(String Function(int Function() f1) f2)?',
+      'namedNestedFunction':
+          'void Function(String Function(int Function() f1) f2)?',
+      'withKeyword': 'void Function()?',
     },
   }
 };
@@ -795,6 +969,11 @@ const listTypeForParameterTypeExpected = {
   'alias': 'GenericCallback<List<bool>>',
   'function': 'List<bool> Function(List<bool>)',
   'parameterizedFunction': 'List<S> Function<S>(List<S>)',
-  'namedFunction': 'List<bool> Function(List<bool>)',
-  'parameterizedNamedFunction': 'List<S> Function<S>(List<S>)',
+  'namedFunction': 'List<bool> Function(List<bool> p)',
+  'parameterizedNamedFunction': 'List<S> Function<S>(List<S> p)',
+};
+
+const functionParameterTypeExpected = {
+  'nonAlias': 'int Function(String, String)',
+  'alias': 'ParameterFunction<String>',
 };

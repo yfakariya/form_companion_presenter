@@ -10,7 +10,7 @@ FutureOr<PropertyDescriptorsBuilding> _parseIdentifierAsync(
   Element contextElement,
 ) async {
   assert(
-    _isPropertyDescriptorsBuilder(identifier.staticType),
+    isPropertyDescriptorsBuilder(identifier.staticType),
     "Type of identifier '$identifier' (${identifier.runtimeType}) is ${identifier.staticType}, not $pdbTypeName type.",
   );
 

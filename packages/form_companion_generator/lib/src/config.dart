@@ -4,7 +4,7 @@
 /// A configuration is specified through builder option,
 /// but they can be overriden via annotation.
 class Config {
-  static const _suppressFieldFactoryKey = 'suppress_field_factory';
+  static const _autovalidateByDefaultKey = 'autovalidate_by_default';
   static const _extraLibrariesKey = 'extra_libraries';
 
   /// Key of [asPart] in config.
@@ -12,10 +12,19 @@ class Config {
 
   final Map<String, dynamic> _underlying;
 
-  /// Whether field factories generation should be suppressed or not.
-  /// Default is `false` and configuration key is `suppress_field_factory`.
-  bool get suppressFieldFactory =>
-      _underlying[_suppressFieldFactoryKey] == true;
+  /// Whether autovalidate for each `FormField` should be `true` when each
+  /// applications of `@FormCompanion` annotations do not specify their own
+  /// configuration.
+  /// The default is `true`, so each `FormField` will do auto-validation as
+  /// `AutovalidateMode.onUserInteraction` when form field factory callers
+  /// do not specify `AutovalidateMode`.
+  ///
+  /// Note that this configuration and `@FormCompanion` setting do **NOT**
+  /// affect `autovalidateMode` of `Form` (or `FormBuilder`) itself.
+  /// You must specify it when you want to validate all fields at once rather
+  /// than auto-validating each field individually.
+  bool get autovalidateByDefault =>
+      _underlying[_autovalidateByDefaultKey] != false;
 
   /// Whether the file should be generated as part of target library
   /// rather than individual library file.
@@ -30,9 +39,17 @@ class Config {
 
   /// Ordered list of extra libraries to resolve `preferredFieldType`s.
   /// Each entries must be specified as 'package:` form URI.
+  ///
+  /// Dependencies in generating source is basically resolved from depdency
+  /// resolution for source file, which declares presenter(s) decorated with
+  /// `@formCompanion` annotation. In some situations, this stragety does not
+  /// work, so resolution of `FormField` can be failed. If so, you specify this
+  /// property to help generator.
   List<String> get extraLibraries {
     final dynamic mayBeExtraLibraries = _underlying[_extraLibrariesKey];
-    if (mayBeExtraLibraries is List) {
+    if (mayBeExtraLibraries is String) {
+      return [mayBeExtraLibraries];
+    } else if (mayBeExtraLibraries is List) {
       return mayBeExtraLibraries.whereType<String>().toList();
     } else {
       return [];
@@ -41,18 +58,4 @@ class Config {
 
   /// Initializes a new instance with values from builder options.
   const Config(this._underlying);
-
-  /// Creates new instance from specified [Config] instance
-  /// and overriding values which are specified in the annotation.
-  factory Config.withOverride(
-    Config source, {
-    bool? suppressFieldFactory,
-  }) {
-    final copied = Map<String, dynamic>.from(source._underlying);
-    if (suppressFieldFactory != null) {
-      copied[_suppressFieldFactoryKey] = suppressFieldFactory;
-    }
-
-    return Config(copied);
-  }
 }

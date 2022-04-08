@@ -119,101 +119,103 @@ import 'package:intl/intl.dart' as intl show DateFormat;
 
 import 'the_form_buider_presenter.dart';
 
+/// Defines typed property accessors as extension properties for [TheFormBuilderPresenter].
 extension $TheFormBuilderPresenterPropertyExtension on TheFormBuilderPresenter {
-  /// Gets a [PropertyDescriptor] of propString property.
+  /// Gets a [PropertyDescriptor] of `propString` property.
   PropertyDescriptor<String, String> get propString =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
       properties['propString']! as PropertyDescriptor<String, String>;
 
-  /// Gets a [PropertyDescriptor] of propEnum property.
+  /// Gets a [PropertyDescriptor] of `propEnum` property.
   PropertyDescriptor<MyEnum, MyEnum> get propEnum =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
       properties['propEnum']! as PropertyDescriptor<MyEnum, MyEnum>;
 
-  /// Gets a [PropertyDescriptor] of propBool property.
+  /// Gets a [PropertyDescriptor] of `propBool` property.
   PropertyDescriptor<bool, bool> get propBool =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
       properties['propBool']! as PropertyDescriptor<bool, bool>;
 
-  /// Gets a [PropertyDescriptor] of propDateTime property.
+  /// Gets a [PropertyDescriptor] of `propDateTime` property.
   PropertyDescriptor<DateTime, DateTime> get propDateTime =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
       properties['propDateTime']! as PropertyDescriptor<DateTime, DateTime>;
 
-  /// Gets a [PropertyDescriptor] of propDateTimeRange property.
+  /// Gets a [PropertyDescriptor] of `propDateTimeRange` property.
   PropertyDescriptor<DateTimeRange, DateTimeRange> get propDateTimeRange =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
       properties['propDateTimeRange']!
           as PropertyDescriptor<DateTimeRange, DateTimeRange>;
 
-  /// Gets a [PropertyDescriptor] of propRangeValues property.
+  /// Gets a [PropertyDescriptor] of `propRangeValues` property.
   PropertyDescriptor<RangeValues, RangeValues> get propRangeValues =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
       properties['propRangeValues']!
           as PropertyDescriptor<RangeValues, RangeValues>;
 
-  /// Gets a [PropertyDescriptor] of propEnumList property.
+  /// Gets a [PropertyDescriptor] of `propEnumList` property.
   PropertyDescriptor<List<MyEnum>, List<MyEnum>> get propEnumList =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
       properties['propEnumList']!
           as PropertyDescriptor<List<MyEnum>, List<MyEnum>>;
 
-  /// Gets a [PropertyDescriptor] of propBoolList property.
+  /// Gets a [PropertyDescriptor] of `propBoolList` property.
   PropertyDescriptor<List<bool>, List<bool>> get propBoolList =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
       properties['propBoolList']! as PropertyDescriptor<List<bool>, List<bool>>;
 
-  /// Gets a [PropertyDescriptor] of propBoolCheckBox property.
+  /// Gets a [PropertyDescriptor] of `propBoolCheckBox` property.
   PropertyDescriptor<bool, bool> get propBoolCheckBox =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
       properties['propBoolCheckBox']! as PropertyDescriptor<bool, bool>;
 
-  /// Gets a [PropertyDescriptor] of propEnumListCheckBoxGroup property.
+  /// Gets a [PropertyDescriptor] of `propEnumListCheckBoxGroup` property.
   PropertyDescriptor<List<MyEnum>, List<MyEnum>>
       get propEnumListCheckBoxGroup =>
           // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
           properties['propEnumListCheckBoxGroup']!
               as PropertyDescriptor<List<MyEnum>, List<MyEnum>>;
 
-  /// Gets a [PropertyDescriptor] of propEnumChoiceChip property.
+  /// Gets a [PropertyDescriptor] of `propEnumChoiceChip` property.
   PropertyDescriptor<MyEnum, MyEnum> get propEnumChoiceChip =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
       properties['propEnumChoiceChip']! as PropertyDescriptor<MyEnum, MyEnum>;
 
-  /// Gets a [PropertyDescriptor] of propEnumListFilterChip property.
+  /// Gets a [PropertyDescriptor] of `propEnumListFilterChip` property.
   PropertyDescriptor<List<MyEnum>, List<MyEnum>> get propEnumListFilterChip =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
       properties['propEnumListFilterChip']!
           as PropertyDescriptor<List<MyEnum>, List<MyEnum>>;
 
-  /// Gets a [PropertyDescriptor] of propEnumRadioGroup property.
+  /// Gets a [PropertyDescriptor] of `propEnumRadioGroup` property.
   PropertyDescriptor<MyEnum, MyEnum> get propEnumRadioGroup =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
       properties['propEnumRadioGroup']! as PropertyDescriptor<MyEnum, MyEnum>;
 
-  /// Gets a [PropertyDescriptor] of propEnumSegmentedControl property.
+  /// Gets a [PropertyDescriptor] of `propEnumSegmentedControl` property.
   PropertyDescriptor<MyEnum, MyEnum> get propEnumSegmentedControl =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
       properties['propEnumSegmentedControl']!
           as PropertyDescriptor<MyEnum, MyEnum>;
 
-  /// Gets a [PropertyDescriptor] of propDoubleSlider property.
+  /// Gets a [PropertyDescriptor] of `propDoubleSlider` property.
   PropertyDescriptor<double, double> get propDoubleSlider =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
       properties['propDoubleSlider']! as PropertyDescriptor<double, double>;
 
-  /// Gets a [PropertyDescriptor] of propInt property.
+  /// Gets a [PropertyDescriptor] of `propInt` property.
   PropertyDescriptor<int, String> get propInt =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
       properties['propInt']! as PropertyDescriptor<int, String>;
 }
 
-class $TheFormBuilderPresenterFieldFactories {
+/// Defines [FormField] factory methods for properties of [TheFormBuilderPresenter].
+class $TheFormBuilderPresenterFieldFactory {
   final TheFormBuilderPresenter _presenter;
 
-  $TheFormBuilderPresenterFieldFactories._(this._presenter);
+  $TheFormBuilderPresenterFieldFactory._(this._presenter);
 
-  /// Gets a [FormField] for propString property.
+  /// Gets a [FormField] for `propString` property.
   FormBuilderTextField propString(
     BuildContext context, {
     Key? key,
@@ -275,9 +277,10 @@ class $TheFormBuilderPresenterFieldFactories {
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       readOnly: readOnly,
-      decoration: const InputDecoration().copyWith(
-        labelText: property.name,
-      ),
+      decoration: decoration ??
+          const InputDecoration().copyWith(
+            labelText: property.name,
+          ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
       valueTransformer: valueTransformer,
       enabled: enabled,
@@ -328,7 +331,7 @@ class $TheFormBuilderPresenterFieldFactories {
     );
   }
 
-  /// Gets a [FormField] for propEnum property.
+  /// Gets a [FormField] for `propEnum` property.
   FormBuilderDropdown<MyEnum> propEnum(
     BuildContext context, {
     Key? key,
@@ -368,9 +371,10 @@ class $TheFormBuilderPresenterFieldFactories {
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
-      decoration: const InputDecoration().copyWith(
-        labelText: property.name,
-      ),
+      decoration: decoration ??
+          const InputDecoration().copyWith(
+            labelText: property.name,
+          ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
       valueTransformer: valueTransformer,
       enabled: enabled,
@@ -401,7 +405,7 @@ class $TheFormBuilderPresenterFieldFactories {
     );
   }
 
-  /// Gets a [FormField] for propBool property.
+  /// Gets a [FormField] for `propBool` property.
   FormBuilderSwitch propBool(
     BuildContext context, {
     Key? key,
@@ -434,9 +438,10 @@ class $TheFormBuilderPresenterFieldFactories {
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
-      decoration: const InputDecoration().copyWith(
-        labelText: property.name,
-      ),
+      decoration: decoration ??
+          const InputDecoration().copyWith(
+            labelText: property.name,
+          ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
       valueTransformer: valueTransformer,
       enabled: enabled,
@@ -460,7 +465,7 @@ class $TheFormBuilderPresenterFieldFactories {
     );
   }
 
-  /// Gets a [FormField] for propDateTime property.
+  /// Gets a [FormField] for `propDateTime` property.
   FormBuilderDateTimePicker propDateTime(
     BuildContext context, {
     Key? key,
@@ -530,9 +535,10 @@ class $TheFormBuilderPresenterFieldFactories {
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
-      decoration: const InputDecoration().copyWith(
-        labelText: property.name,
-      ),
+      decoration: decoration ??
+          const InputDecoration().copyWith(
+            labelText: property.name,
+          ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
       valueTransformer: valueTransformer,
       enabled: enabled,
@@ -593,7 +599,7 @@ class $TheFormBuilderPresenterFieldFactories {
     );
   }
 
-  /// Gets a [FormField] for propDateTimeRange property.
+  /// Gets a [FormField] for `propDateTimeRange` property.
   FormBuilderDateRangePicker propDateTimeRange(
     BuildContext context, {
     Key? key,
@@ -659,9 +665,10 @@ class $TheFormBuilderPresenterFieldFactories {
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
-      decoration: const InputDecoration().copyWith(
-        labelText: property.name,
-      ),
+      decoration: decoration ??
+          const InputDecoration().copyWith(
+            labelText: property.name,
+          ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
       valueTransformer: valueTransformer,
       enabled: enabled,
@@ -718,7 +725,7 @@ class $TheFormBuilderPresenterFieldFactories {
     );
   }
 
-  /// Gets a [FormField] for propRangeValues property.
+  /// Gets a [FormField] for `propRangeValues` property.
   FormBuilderRangeSlider propRangeValues(
     BuildContext context, {
     Key? key,
@@ -752,9 +759,10 @@ class $TheFormBuilderPresenterFieldFactories {
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))!,
-      decoration: const InputDecoration().copyWith(
-        labelText: property.name,
-      ),
+      decoration: decoration ??
+          const InputDecoration().copyWith(
+            labelText: property.name,
+          ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
       valueTransformer: valueTransformer,
       enabled: enabled,
@@ -779,7 +787,7 @@ class $TheFormBuilderPresenterFieldFactories {
     );
   }
 
-  /// Gets a [FormField] for propEnumList property.
+  /// Gets a [FormField] for `propEnumList` property.
   FormBuilderFilterChip<MyEnum> propEnumList(
     BuildContext context, {
     AutovalidateMode? autovalidateMode,
@@ -823,9 +831,10 @@ class $TheFormBuilderPresenterFieldFactories {
       enabled: enabled,
       focusNode: focusNode,
       validator: property.getValidator(context),
-      decoration: const InputDecoration().copyWith(
-        labelText: property.name,
-      ),
+      decoration: decoration ??
+          const InputDecoration().copyWith(
+            labelText: property.name,
+          ),
       key: key,
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))!,
@@ -862,7 +871,7 @@ class $TheFormBuilderPresenterFieldFactories {
     );
   }
 
-  /// Gets a [FormField] for propBoolList property.
+  /// Gets a [FormField] for `propBoolList` property.
   FormBuilderFilterChip<bool> propBoolList(
     BuildContext context, {
     AutovalidateMode? autovalidateMode,
@@ -906,9 +915,10 @@ class $TheFormBuilderPresenterFieldFactories {
       enabled: enabled,
       focusNode: focusNode,
       validator: property.getValidator(context),
-      decoration: const InputDecoration().copyWith(
-        labelText: property.name,
-      ),
+      decoration: decoration ??
+          const InputDecoration().copyWith(
+            labelText: property.name,
+          ),
       key: key,
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))!,
@@ -945,7 +955,7 @@ class $TheFormBuilderPresenterFieldFactories {
     );
   }
 
-  /// Gets a [FormField] for propBoolCheckBox property.
+  /// Gets a [FormField] for `propBoolCheckBox` property.
   FormBuilderCheckbox propBoolCheckBox(
     BuildContext context, {
     Key? key,
@@ -975,15 +985,16 @@ class $TheFormBuilderPresenterFieldFactories {
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
-      decoration: const InputDecoration(
-              border: InputBorder.none,
-              focusedBorder: InputBorder.none,
-              enabledBorder: InputBorder.none,
-              errorBorder: InputBorder.none,
-              disabledBorder: InputBorder.none)
-          .copyWith(
-        labelText: property.name,
-      ),
+      decoration: decoration ??
+          const InputDecoration(
+                  border: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  errorBorder: InputBorder.none,
+                  disabledBorder: InputBorder.none)
+              .copyWith(
+            labelText: property.name,
+          ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
       valueTransformer: valueTransformer,
       enabled: enabled,
@@ -1004,7 +1015,7 @@ class $TheFormBuilderPresenterFieldFactories {
     );
   }
 
-  /// Gets a [FormField] for propEnumListCheckBoxGroup property.
+  /// Gets a [FormField] for `propEnumListCheckBoxGroup` property.
   FormBuilderCheckboxGroup<MyEnum> propEnumListCheckBoxGroup(
     BuildContext context, {
     Key? key,
@@ -1043,9 +1054,10 @@ class $TheFormBuilderPresenterFieldFactories {
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
-      decoration: const InputDecoration().copyWith(
-        labelText: property.name,
-      ),
+      decoration: decoration ??
+          const InputDecoration().copyWith(
+            labelText: property.name,
+          ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
       valueTransformer: valueTransformer,
       enabled: enabled,
@@ -1075,7 +1087,7 @@ class $TheFormBuilderPresenterFieldFactories {
     );
   }
 
-  /// Gets a [FormField] for propEnumChoiceChip property.
+  /// Gets a [FormField] for `propEnumChoiceChip` property.
   FormBuilderChoiceChip<MyEnum> propEnumChoiceChip(
     BuildContext context, {
     AutovalidateMode? autovalidateMode,
@@ -1116,9 +1128,10 @@ class $TheFormBuilderPresenterFieldFactories {
       enabled: enabled,
       focusNode: focusNode,
       validator: property.getValidator(context),
-      decoration: const InputDecoration().copyWith(
-        labelText: property.name,
-      ),
+      decoration: decoration ??
+          const InputDecoration().copyWith(
+            labelText: property.name,
+          ),
       key: key,
       name: property.name,
       options: options,
@@ -1152,7 +1165,7 @@ class $TheFormBuilderPresenterFieldFactories {
     );
   }
 
-  /// Gets a [FormField] for propEnumListFilterChip property.
+  /// Gets a [FormField] for `propEnumListFilterChip` property.
   FormBuilderFilterChip<MyEnum> propEnumListFilterChip(
     BuildContext context, {
     AutovalidateMode? autovalidateMode,
@@ -1196,9 +1209,10 @@ class $TheFormBuilderPresenterFieldFactories {
       enabled: enabled,
       focusNode: focusNode,
       validator: property.getValidator(context),
-      decoration: const InputDecoration().copyWith(
-        labelText: property.name,
-      ),
+      decoration: decoration ??
+          const InputDecoration().copyWith(
+            labelText: property.name,
+          ),
       key: key,
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))!,
@@ -1235,7 +1249,7 @@ class $TheFormBuilderPresenterFieldFactories {
     );
   }
 
-  /// Gets a [FormField] for propEnumRadioGroup property.
+  /// Gets a [FormField] for `propEnumRadioGroup` property.
   FormBuilderRadioGroup<MyEnum> propEnumRadioGroup(
     BuildContext context, {
     AutovalidateMode? autovalidateMode,
@@ -1271,9 +1285,10 @@ class $TheFormBuilderPresenterFieldFactories {
       enabled: enabled,
       focusNode: focusNode,
       validator: property.getValidator(context),
-      decoration: const InputDecoration().copyWith(
-        labelText: property.name,
-      ),
+      decoration: decoration ??
+          const InputDecoration().copyWith(
+            labelText: property.name,
+          ),
       key: key,
       name: property.name,
       options: options,
@@ -1302,7 +1317,7 @@ class $TheFormBuilderPresenterFieldFactories {
     );
   }
 
-  /// Gets a [FormField] for propEnumSegmentedControl property.
+  /// Gets a [FormField] for `propEnumSegmentedControl` property.
   FormBuilderSegmentedControl<MyEnum> propEnumSegmentedControl(
     BuildContext context, {
     Key? key,
@@ -1328,9 +1343,10 @@ class $TheFormBuilderPresenterFieldFactories {
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
-      decoration: const InputDecoration().copyWith(
-        labelText: property.name,
-      ),
+      decoration: decoration ??
+          const InputDecoration().copyWith(
+            labelText: property.name,
+          ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
       valueTransformer: valueTransformer,
       enabled: enabled,
@@ -1347,7 +1363,7 @@ class $TheFormBuilderPresenterFieldFactories {
     );
   }
 
-  /// Gets a [FormField] for propDoubleSlider property.
+  /// Gets a [FormField] for `propDoubleSlider` property.
   FormBuilderSlider propDoubleSlider(
     BuildContext context, {
     Key? key,
@@ -1383,9 +1399,10 @@ class $TheFormBuilderPresenterFieldFactories {
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))!,
-      decoration: const InputDecoration().copyWith(
-        labelText: property.name,
-      ),
+      decoration: decoration ??
+          const InputDecoration().copyWith(
+            labelText: property.name,
+          ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
       valueTransformer: valueTransformer,
       enabled: enabled,
@@ -1412,7 +1429,7 @@ class $TheFormBuilderPresenterFieldFactories {
     );
   }
 
-  /// Gets a [FormField] for propInt property.
+  /// Gets a [FormField] for `propInt` property.
   FormBuilderTextField propInt(
     BuildContext context, {
     Key? key,
@@ -1474,9 +1491,10 @@ class $TheFormBuilderPresenterFieldFactories {
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       readOnly: readOnly,
-      decoration: const InputDecoration().copyWith(
-        labelText: property.name,
-      ),
+      decoration: decoration ??
+          const InputDecoration().copyWith(
+            labelText: property.name,
+          ),
       onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
       valueTransformer: valueTransformer,
       enabled: enabled,
@@ -1528,9 +1546,10 @@ class $TheFormBuilderPresenterFieldFactories {
   }
 }
 
+/// Defines an extension property to get [$TheFormBuilderPresenterFieldFactory] from [TheFormBuilderPresenter].
 extension $TheFormBuilderPresenterFieldFactoryExtension
     on TheFormBuilderPresenter {
-  /// Gets a form field factories.
-  $TheFormBuilderPresenterFieldFactories get fields =>
-      $TheFormBuilderPresenterFieldFactories._(this);
+  /// Gets a [FormField] factory.
+  $TheFormBuilderPresenterFieldFactory get fields =>
+      $TheFormBuilderPresenterFieldFactory._(this);
 }

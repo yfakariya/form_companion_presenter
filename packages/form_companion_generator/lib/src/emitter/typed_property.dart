@@ -9,9 +9,12 @@ String emitPropertyAccessor(
   Iterable<PropertyAndFormFieldDefinition> properties,
   Config config,
 ) {
+  assert(properties.isNotEmpty);
+
   return '''
+/// Defines typed property accessors as extension properties for [$baseName].
 extension \$${baseName}PropertyExtension on $baseName {
-${properties.isEmpty ? '  // No properties were found.' : _emitPropertyAccessors(properties).join('\n')}
+${_emitPropertyAccessors(properties).join('\n')}
 }
 ''';
 }
@@ -29,7 +32,7 @@ Iterable<String> _emitPropertyAccessors(
       yield '';
     }
 
-    yield '  /// Gets a [PropertyDescriptor] of ${property.name} property.';
+    yield '  /// Gets a [PropertyDescriptor] of `${property.name}` property.';
     yield '  PropertyDescriptor<${property.propertyValueType}, ${property.fieldValueType}> get ${property.name} =>';
     // properties is marked as @protected and @visibleForTesting
     yield '      // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member';

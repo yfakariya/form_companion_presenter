@@ -19,7 +19,7 @@ FutureOr<PropertyDescriptorsBuilding?> _parseExpressionAsync(
       contextElement,
     );
   } else if (unparenthesized is AssignmentExpression) {
-    if (!_isPropertyDescriptorsBuilder(unparenthesized.staticType)) {
+    if (!isPropertyDescriptorsBuilder(unparenthesized.staticType)) {
       context.logger.fine(
           "Skip assignment expression '$expression' because right hand type is not $pdbTypeName at ${getNodeLocation(expression, contextElement)}.");
       return null;
@@ -97,17 +97,16 @@ FutureOr<PropertyDescriptorsBuilding?> _parseExpressionAsync(
       await unparenthesized.cascadeSections
           .whereType<MethodInvocation>()
           .map(
-            (e) => _getRealMethodAsync(
-              context,
-              contextElement,
-              e,
-              _lookupMethod(contextElement, targetClass, e.methodName.name)!,
-              targetClass,
-              null,
-              e.typeArgumentTypes
-                      ?.map((e) => GenericInterfaceType(e, []))
-                      .toList() ??
-                  [],
+            (e) => resolvePropertyDefinitionAsync(
+              context: context,
+              contextElement: contextElement,
+              methodInvocation: e,
+              targetClass: targetClass,
+              propertyName: null,
+              typeArguments:
+                  e.typeArgumentTypes?.map(GenericType.fromDartType).toList() ??
+                      [],
+              originalMethodInvocation: e,
               isInferred:
                   e.typeArguments?.length != e.typeArgumentTypes?.length,
             ),
@@ -143,26 +142,22 @@ FutureOr<PropertyDescriptorsBuilding?> _parseExpressionAsync(
       }
 
       final target = unparenthesized.target;
-      final targetClass = _getTargetClass(contextElement, unparenthesized);
+      final targetClass = lookupTargetClass(contextElement, unparenthesized);
       if (targetClass?.name == pdbTypeName) {
         if (target is SimpleIdentifier) {
           // Found PDB method call.
           context.buildings[target.name]!.add(
-            await _getRealMethodAsync(
-              context,
-              contextElement,
-              unparenthesized,
-              _lookupMethod(
-                contextElement,
-                targetClass,
-                unparenthesized.methodName.name,
-              )!,
-              targetClass,
-              null,
-              unparenthesized.typeArgumentTypes
-                      ?.map((e) => GenericInterfaceType(e, []))
+            await resolvePropertyDefinitionAsync(
+              context: context,
+              contextElement: contextElement,
+              methodInvocation: unparenthesized,
+              targetClass: targetClass,
+              propertyName: null,
+              typeArguments: unparenthesized.typeArgumentTypes
+                      ?.map(GenericType.fromDartType)
                       .toList() ??
                   [],
+              originalMethodInvocation: unparenthesized,
               isInferred: unparenthesized.typeArguments?.length !=
                   unparenthesized.typeArgumentTypes?.length,
             ),
@@ -187,34 +182,23 @@ FutureOr<PropertyDescriptorsBuilding?> _parseExpressionAsync(
           localFunction.declaredElement!,
         );
       } else {
-        final methodElement = _lookupMethod(
+        final methodElement = lookupMethod(
           contextElement,
           targetClass,
           unparenthesized.methodName.name,
+          unparenthesized,
         );
-        if (methodElement != null) {
-          method = ExecutableNode(
-            context.nodeProvider,
-            await context.nodeProvider
-                .getElementDeclarationAsync(methodElement),
-            methodElement,
-          );
-        } else {
-          method = null;
-        }
-      }
 
-      if (method == null) {
-        throwError(
-          message:
-              "Failed to lookup method or function '$unparenthesized' in context of ${contextElement.library} at ${getNodeLocation(unparenthesized, contextElement)}.",
-          element: contextElement,
+        method = ExecutableNode(
+          context.nodeProvider,
+          await context.nodeProvider.getElementDeclarationAsync(methodElement),
+          methodElement,
         );
       }
 
       final parameters = await method.getParametersAsync();
-      if (!_isPropertyDescriptorsBuilder(method.returnType) &&
-          !parameters.any((p) => _isPropertyDescriptorsBuilder(p.type))) {
+      if (!isPropertyDescriptorsBuilder(method.returnType) &&
+          !parameters.any((p) => isPropertyDescriptorsBuilder(p.type))) {
         context.logger.fine(
           "Skip trivial method or function call '$unparenthesized' at ${getNodeLocation(unparenthesized, contextElement)}.",
         );
@@ -226,7 +210,7 @@ FutureOr<PropertyDescriptorsBuilding?> _parseExpressionAsync(
       if (parameters.isNotEmpty) {
         arguments = {};
         for (var i = 0; i < parameters.length; i++) {
-          if (_isPropertyDescriptorsBuilder(parameters[i].type)) {
+          if (isPropertyDescriptorsBuilder(parameters[i].type)) {
             final argument = await _parseExpressionAsync(
               context,
               contextElement,
@@ -298,18 +282,3 @@ FutureOr<PropertyDescriptorsBuilding> _handleConstructorCall(
   );
   return PropertyDescriptorsBuilding.begin();
 }
-
-ExecutableElement? _lookupMethod(
-  Element contextElement,
-  ClassElement? targetClass,
-  String methodName,
-) =>
-    targetClass?.lookUpMethod(methodName, contextElement.library!) ??
-    contextElement.library!.scope.lookup(methodName).getter
-        as ExecutableElement? ??
-    contextElement.library!.accessibleExtensions
-        .expand<MethodElement?>((x) => x.methods)
-        .firstWhere(
-          (m) => m?.name == methodName,
-          orElse: () => null,
-        );

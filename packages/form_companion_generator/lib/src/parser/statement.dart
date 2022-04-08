@@ -80,7 +80,7 @@ FutureOr<void> _parseBlockAsync(
           statement.expression,
         );
       } else if (statement is VariableDeclarationStatement) {
-        if (_isPropertyDescriptorsBuilder(
+        if (isPropertyDescriptorsBuilder(
           _getVariableType(statement),
         )) {
           final pdbVariableDeclarations = statement.variables.variables;
@@ -109,7 +109,7 @@ FutureOr<void> _parseBlockAsync(
       } else if (statement is ReturnStatement) {
         final expression = statement.expression;
         if (expression != null &&
-            _isPropertyDescriptorsBuilder(expression.staticType)) {
+            isPropertyDescriptorsBuilder(expression.staticType)) {
           context.markAsReturned(
             await _parseExpressionAsync(
               context,
@@ -151,4 +151,18 @@ void _eliminateControlStatement(Statement statement, Element contextElement) {
       element: contextElement,
     );
   }
+}
+
+DartType? _getVariableType(VariableDeclarationStatement statement) {
+  // Use initializer's type instead of variables.type
+  // because variables.type only be set when the variable was
+  // declared explicitly typed like 'int i' instead of 'var i' or 'final i',
+  // and most sources do not use explicitly typed variable declration.
+  for (final variable
+      in statement.variables.variables.where((v) => v.initializer != null)) {
+    return variable.initializer!.staticType;
+  }
+
+  // without any initializers.
+  return null;
 }

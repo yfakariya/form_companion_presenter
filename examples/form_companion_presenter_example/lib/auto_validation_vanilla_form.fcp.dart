@@ -68,35 +68,37 @@ import 'auto_validation_vanilla_form.dart';
 
 import 'models.dart' show Gender;
 
+/// Defines typed property accessors as extension properties for [AutoValidationVanillaFormAccountPresenter].
 extension $AutoValidationVanillaFormAccountPresenterPropertyExtension
     on AutoValidationVanillaFormAccountPresenter {
-  /// Gets a [PropertyDescriptor] of id property.
+  /// Gets a [PropertyDescriptor] of `id` property.
   PropertyDescriptor<String, String> get id =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
       properties['id']! as PropertyDescriptor<String, String>;
 
-  /// Gets a [PropertyDescriptor] of name property.
+  /// Gets a [PropertyDescriptor] of `name` property.
   PropertyDescriptor<String, String> get name =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
       properties['name']! as PropertyDescriptor<String, String>;
 
-  /// Gets a [PropertyDescriptor] of gender property.
+  /// Gets a [PropertyDescriptor] of `gender` property.
   PropertyDescriptor<Gender, Gender> get gender =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
       properties['gender']! as PropertyDescriptor<Gender, Gender>;
 
-  /// Gets a [PropertyDescriptor] of age property.
+  /// Gets a [PropertyDescriptor] of `age` property.
   PropertyDescriptor<int, String> get age =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
       properties['age']! as PropertyDescriptor<int, String>;
 }
 
-class $AutoValidationVanillaFormAccountPresenterFieldFactories {
+/// Defines [FormField] factory methods for properties of [AutoValidationVanillaFormAccountPresenter].
+class $AutoValidationVanillaFormAccountPresenterFieldFactory {
   final AutoValidationVanillaFormAccountPresenter _presenter;
 
-  $AutoValidationVanillaFormAccountPresenterFieldFactories._(this._presenter);
+  $AutoValidationVanillaFormAccountPresenterFieldFactory._(this._presenter);
 
-  /// Gets a [FormField] for id property.
+  /// Gets a [FormField] for `id` property.
   TextFormField id(
     BuildContext context, {
     TextEditingController? controller,
@@ -208,7 +210,7 @@ class $AutoValidationVanillaFormAccountPresenterFieldFactories {
     );
   }
 
-  /// Gets a [FormField] for name property.
+  /// Gets a [FormField] for `name` property.
   TextFormField name(
     BuildContext context, {
     TextEditingController? controller,
@@ -320,7 +322,7 @@ class $AutoValidationVanillaFormAccountPresenterFieldFactories {
     );
   }
 
-  /// Gets a [FormField] for gender property.
+  /// Gets a [FormField] for `gender` property.
   DropdownButtonFormField<Gender> gender(
     BuildContext context, {
     required List<DropdownMenuItem<Gender>>? items,
@@ -386,7 +388,7 @@ class $AutoValidationVanillaFormAccountPresenterFieldFactories {
     );
   }
 
-  /// Gets a [FormField] for age property.
+  /// Gets a [FormField] for `age` property.
   TextFormField age(
     BuildContext context, {
     TextEditingController? controller,
@@ -499,9 +501,10 @@ class $AutoValidationVanillaFormAccountPresenterFieldFactories {
   }
 }
 
+/// Defines an extension property to get [$AutoValidationVanillaFormAccountPresenterFieldFactory] from [AutoValidationVanillaFormAccountPresenter].
 extension $AutoValidationVanillaFormAccountPresenterFieldFactoryExtension
     on AutoValidationVanillaFormAccountPresenter {
-  /// Gets a form field factories.
-  $AutoValidationVanillaFormAccountPresenterFieldFactories get fields =>
-      $AutoValidationVanillaFormAccountPresenterFieldFactories._(this);
+  /// Gets a [FormField] factory.
+  $AutoValidationVanillaFormAccountPresenterFieldFactory get fields =>
+      $AutoValidationVanillaFormAccountPresenterFieldFactory._(this);
 }

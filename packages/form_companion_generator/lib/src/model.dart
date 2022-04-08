@@ -1,5 +1,7 @@
 // See LICENCE file in the root.
 
+import 'dart:async';
+
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
@@ -9,7 +11,185 @@ import 'package:source_gen/source_gen.dart';
 
 import 'arguments_handler.dart';
 import 'dependency.dart';
+import 'node_provider.dart';
 import 'type_instantiation.dart';
+import 'utilities.dart';
+
+/// Represents a parameter.
+@sealed
+class ParameterInfo {
+  /// Gets a name of this parameter.
+  final String name;
+
+  /// Gets a static [DartType] of this parameter.
+  final DartType type;
+
+  /// Gets a [FormalParameter] which holds syntax information of this parameter.
+  final FormalParameter node;
+
+  /// Gets a declared [TypeAnnotation] of this parameter.
+  ///
+  /// `null` if parameter is a function type formal parameter like `int foo(String bar)`.
+  final TypeAnnotation? typeAnnotation;
+
+  /// Gets a declared parameter as [FunctionTypedFormalParameter].
+  ///
+  /// `null` if parameter is not a function type formal parameter like `int foo(String bar)`.
+  final FunctionTypedFormalParameter? functionTypedParameter;
+
+  /// Gets a extra keyword like `final`.
+  final String? keyword;
+
+  /// Gets a requiability of this parameter.
+  final ParameterRequirability requirability;
+
+  /// Gets a default value of this parameter if exists.
+  final String? defaultValue;
+
+  /// Returns `true` if this parameter has default value.
+  bool get hasDefaultValue => defaultValue != null;
+
+  /// Initializes a new [ParameterInfo] instance.
+  ParameterInfo._(
+    this.node,
+    this.name,
+    this.type,
+    this.typeAnnotation,
+    this.functionTypedParameter,
+    this.keyword,
+    this.defaultValue,
+    this.requirability,
+  );
+
+  /// Creates a new [ParameterInfo] isntance from specified [FormalParameter].
+  static FutureOr<ParameterInfo> fromNodeAsync(
+    NodeProvider nodeProvider,
+    FormalParameter node,
+  ) async {
+    if (node is DefaultFormalParameter) {
+      // Parse left side with recursive call.
+      final base =
+          await ParameterInfo.fromNodeAsync(nodeProvider, node.parameter);
+      // But, use original DefaultFormatlParameter for node for DependencyCollector.
+      return ParameterInfo._(
+        node,
+        base.name,
+        base.type,
+        base.typeAnnotation,
+        base.functionTypedParameter,
+        base.keyword,
+        base.defaultValue,
+        base.requirability,
+      );
+    }
+
+    if (node is SimpleFormalParameter) {
+      final element = node.declaredElement!;
+      return ParameterInfo._(
+        node,
+        node.identifier!.name,
+        element.type,
+        node.type,
+        null,
+        node.keyword?.stringValue,
+        element.defaultValueCode,
+        element.isRequiredNamed
+            ? ParameterRequirability.required
+            : ParameterRequirability.optional,
+      );
+    }
+
+    if (node is FieldFormalParameter) {
+      final parameterElement = node.declaredElement!;
+      final fieldType = await _getFieldTypeAnnotationAsync(
+        nodeProvider,
+        node,
+        parameterElement,
+      );
+      return ParameterInfo._(
+        node,
+        node.identifier.name,
+        parameterElement.type,
+        fieldType,
+        null,
+        node.keyword?.stringValue,
+        parameterElement.defaultValueCode,
+        parameterElement.isRequiredNamed
+            ? ParameterRequirability.required
+            : ParameterRequirability.optional,
+      );
+    }
+
+    if (node is FunctionTypedFormalParameter) {
+      final element = node.declaredElement!;
+      return ParameterInfo._(
+        node,
+        node.identifier.name,
+        element.type,
+        null,
+        node,
+        null,
+        element.defaultValueCode,
+        element.isRequiredNamed
+            ? ParameterRequirability.required
+            : ParameterRequirability.optional,
+      );
+    }
+
+    throwError(
+      message:
+          "Failed to parse complex parameter '$node' (${node.runtimeType}) at ${getNodeLocation(node, node.declaredElement!)} ",
+      element: node.declaredElement,
+    );
+  }
+
+  /// Returns a copy of this instance clearing [defaultValue] and setting
+  /// [ParameterRequirability.forciblyOptional].
+  ParameterInfo asForciblyOptional() => ParameterInfo._(
+        node,
+        name,
+        type,
+        typeAnnotation,
+        functionTypedParameter,
+        keyword,
+        null,
+        ParameterRequirability.forciblyOptional,
+      );
+}
+
+FutureOr<TypeAnnotation> _getFieldTypeAnnotationAsync(
+  NodeProvider nodeProvider,
+  FieldFormalParameter node,
+  ParameterElement parameterElement,
+) async {
+  final classElement = parameterElement.thisOrAncestorOfType<ClassElement>()!;
+  final fieldElement = classElement.lookUpGetter(
+    node.identifier.name,
+    parameterElement.library!,
+  )!;
+
+  final fieldNode =
+      await nodeProvider.getElementDeclarationAsync(fieldElement.nonSynthetic);
+  late final TypeAnnotation fieldType;
+  if (fieldNode is VariableDeclaration) {
+    fieldType = (fieldNode.parent! as VariableDeclarationList).type!;
+  } else {
+    fieldType = (fieldNode as FieldDeclaration).fields.type!;
+  }
+  return fieldType;
+}
+
+/// Represents 'requirability' of the parameter.
+enum ParameterRequirability {
+  /// Parameter is required in its declaration.
+  required,
+
+  /// Parameter is optional in its declaration.
+  optional,
+
+  /// Paramter should be treated as nullable and optional regardless its declaration.
+  forciblyOptional,
+}
 
 /// Represents target presenter data.
 class PresenterDefinition {
@@ -83,11 +263,14 @@ class FormCompanionAnnotation {
   final ConstantReader _annotation;
 
   /// Whether the presenter prefers autovalidate or not.
-  bool get autovalidate => _annotation.read('autovalidate').boolValue;
-
-  /// Whether the presenter prefers suppressing field factory generation or not.
-  bool get suppressFieldFactory =>
-      _annotation.read('suppressFieldFactory').boolValue;
+  bool? get autovalidate {
+    final value = _annotation.read('autovalidate');
+    if (value.isNull) {
+      return null;
+    } else {
+      return value.boolValue;
+    }
+  }
 
   /// Initializes a new instance which wraps specified [ConstantReader] for a `FormCompanion` annotation.
   FormCompanionAnnotation(this._annotation);
@@ -102,30 +285,22 @@ enum MixinType {
   formBuilderCompanionMixin,
 }
 
-/// Represents generic interface type as transparent structured object.
-@sealed
-class GenericInterfaceType {
+/// Represents interface type as transparent structured object.
+abstract class GenericType {
   /// Raw type part of generic type.
   ///
   /// This can be instantiated generic type.
-  final DartType rawType;
+  DartType get rawType;
 
   /// Type arguments part of generic type.
   ///
   /// This value will be empty when the type is non-generic types and [rawType]
   /// is instantiated generic type.
-  final List<GenericInterfaceType> typeArguments;
+  List<GenericType> get typeArguments;
 
   /// Gets a [rawType] as [InterfaceType] or `null` when [rawType] is not an
   /// [InterfaceType].
-  InterfaceType? get maybeAsInterfaceType {
-    final type = rawType;
-    if (type is InterfaceType) {
-      return type;
-    } else {
-      return null;
-    }
-  }
+  InterfaceType? get maybeAsInterfaceType;
 
   /// Gets a raw type name without generic type parameters and arguments of
   /// [rawType].
@@ -138,18 +313,71 @@ class GenericInterfaceType {
     }
   }
 
-  /// Initializes a new [GenericInterfaceType] instance.
-  GenericInterfaceType(
-    this.rawType,
-    this.typeArguments,
-  );
+  /// Initializes a new [GenericType] instance.
+  factory GenericType.generic(
+    DartType rawType,
+    List<GenericType> typeArguments,
+  ) {
+    if (rawType is InterfaceType) {
+      return _InstantiatedGenericInterfaceType(
+        _toRawInterfaceType(rawType),
+        typeArguments,
+      );
+    } else if (rawType is FunctionType) {
+      final functionType = _toNonAliasedFunctionType(rawType);
+      return _InstantiatedGenericFunctionType(
+        functionType,
+        typeArguments,
+        _buildFunctionTypeGenericArguments(
+          functionType.typeFormals,
+          typeArguments,
+        ),
+      );
+    } else {
+      return _NonGenericType(rawType);
+    }
+  }
+
+  /// Initializes a new [GenericType] instance from
+  /// [FunctionType] or [InterfaceType].
+  ///
+  /// If [type] is another type, [ArgumentError] will be thrown.
+  factory GenericType.fromDartType(DartType type) {
+    // NOTE: currenty, `type` never be non-instantiated generic type.
+
+    if (type is InterfaceType) {
+      assert(!type.typeArguments.any((t) => t is TypeParameterType));
+    } else if (type is FunctionType) {
+      assert(type.typeFormals.isEmpty);
+      return _InstantiatedGenericFunctionType(type, [], {});
+    }
+
+    return _NonGenericType(type);
+  }
+
+  GenericType._();
+
+  static InterfaceType _toRawInterfaceType(
+          InterfaceType mayBeAliasedOrGenericType) =>
+      ((mayBeAliasedOrGenericType.alias?.element.aliasedType
+                  as InterfaceType?) ??
+              mayBeAliasedOrGenericType)
+          .element
+          .thisType;
+
+  static FunctionType _toNonAliasedFunctionType(
+          FunctionType mayBeAliasedType) =>
+      mayBeAliasedType.alias?.element.aliasedType as FunctionType? ??
+      mayBeAliasedType;
 
   @override
+  @nonVirtual
   String toString() => getDisplayString(withNullability: true);
 
   /// Returns a [String] to display this type.
   ///
   /// This method simulates [DartType.getDisplayString].
+  @nonVirtual
   String getDisplayString({
     required bool withNullability,
   }) {
@@ -162,11 +390,84 @@ class GenericInterfaceType {
   void writeTo(
     StringSink sink, {
     required bool withNullability,
+  });
+}
+
+/// Represents non generic type.
+@sealed
+class _NonGenericType extends GenericType {
+  /// Gets a wrapped [DartType].
+  final DartType type;
+
+  @override
+  DartType get rawType => (type.element as ClassElement?)?.thisType ?? type;
+
+  @override
+  InterfaceType? get maybeAsInterfaceType {
+    final type = this.type;
+    if (type is InterfaceType) {
+      return type;
+    } else {
+      return null;
+    }
+  }
+
+  @override
+  List<GenericType> get typeArguments {
+    final type = this.type;
+    return type is InterfaceType
+        ? type.typeArguments.map(GenericType.fromDartType).toList()
+        : [];
+  }
+
+  _NonGenericType(this.type)
+      : assert(type is! FunctionType),
+        super._();
+
+  @override
+  void writeTo(
+    StringSink sink, {
+    required bool withNullability,
+  }) =>
+      sink.write(type.getDisplayString(withNullability: withNullability));
+}
+
+/// Represents generic interface type with type arguments.
+@sealed
+class _InstantiatedGenericInterfaceType extends GenericType {
+  final InterfaceType _interfaceType;
+
+  @override
+  DartType get rawType => _interfaceType;
+
+  @override
+  final List<GenericType> typeArguments;
+
+  @override
+  InterfaceType? get maybeAsInterfaceType => _interfaceType;
+
+  _InstantiatedGenericInterfaceType(
+    this._interfaceType,
+    this.typeArguments,
+  )   : assert(
+          _interfaceType.typeArguments.whereType<TypeParameterType>().length ==
+              typeArguments.length,
+        ),
+        super._();
+
+  @override
+  void writeTo(
+    StringSink sink, {
+    required bool withNullability,
   }) {
     final type = rawType;
     if (type is InterfaceType) {
       sink.write(type.element.name);
-      _writeTypeArgumentsTo(sink, withNullability: withNullability);
+      _writeTypeArgumentsTo(
+        sink,
+        typeArguments,
+        withNullability: withNullability,
+      );
       if (withNullability && type.nullabilitySuffix != NullabilitySuffix.none) {
         sink.write('?');
       }
@@ -178,7 +479,8 @@ class GenericInterfaceType {
   }
 
   void _writeTypeArgumentsTo(
-    StringSink sink, {
+    StringSink sink,
+    List<GenericType> typeArguments, {
     required bool withNullability,
   }) {
     if (typeArguments.isNotEmpty) {
@@ -225,6 +527,115 @@ class GenericInterfaceType {
   }
 }
 
+/// Represents generic function type.
+abstract class GenericFunctionType extends GenericType {
+  /// Gets an underlying [FunctionType].
+  final FunctionType rawFunctionType;
+
+  @override
+  @nonVirtual
+  DartType get rawType => rawFunctionType;
+
+  @override
+  @nonVirtual
+  InterfaceType? get maybeAsInterfaceType => null;
+
+  /// Gets a return type of the function type.
+  GenericType get returnType;
+
+  /// Gets a list of parameter types of the function type.
+  Iterable<GenericType> get parameterTypes;
+
+  GenericFunctionType._(this.rawFunctionType) : super._();
+
+  @override
+  void writeTo(StringSink sink, {required bool withNullability}) {
+    sink
+      ..write(returnType.getDisplayString(withNullability: withNullability))
+      ..write(' Function(');
+
+    var isFirst = true;
+    var isRequiredPositional = true;
+    var isNamed = false;
+    final parameterTypes = this.parameterTypes.toList();
+    for (var i = 0; i < rawFunctionType.parameters.length; i++) {
+      final parameter = rawFunctionType.parameters[i];
+      if (isFirst) {
+        isFirst = false;
+      } else {
+        sink.write(', ');
+      }
+
+      if (!parameter.isRequiredPositional && isRequiredPositional) {
+        isRequiredPositional = false;
+        if (parameter.isNamed) {
+          isNamed = true;
+        } else {}
+
+        sink.write(isNamed ? '{' : '[');
+      }
+
+      if (parameter.isRequiredNamed) {
+        sink.write('required ');
+      }
+
+      sink.write(
+        parameterTypes[i].getDisplayString(withNullability: withNullability),
+      );
+    }
+
+    if (!isRequiredPositional) {
+      sink.write(isNamed ? '}' : ']');
+    }
+
+    sink.write(')');
+  }
+}
+
+/// Represents generic function type with type arguments.
+@sealed
+class _InstantiatedGenericFunctionType extends GenericFunctionType {
+  final Map<String, GenericType> _genericArguments;
+
+  @override
+  List<GenericType> typeArguments;
+
+  @override
+  GenericType get returnType => _instantiate(rawFunctionType.returnType);
+
+  @override
+  Iterable<GenericType> get parameterTypes =>
+      rawFunctionType.parameters.map((p) => _instantiate(p.type));
+
+  _InstantiatedGenericFunctionType(
+    FunctionType functionType,
+    this.typeArguments,
+    this._genericArguments,
+  )   : assert(functionType.typeFormals.isEmpty),
+        super._(functionType);
+
+  GenericType _instantiate(DartType mayBeTypeParameter) =>
+      ((mayBeTypeParameter is TypeParameterType)
+          ? _genericArguments[
+              mayBeTypeParameter.getDisplayString(withNullability: false)]
+          : null) ??
+      GenericType.fromDartType(mayBeTypeParameter);
+}
+
+Map<String, GenericType> _buildFunctionTypeGenericArguments(
+  List<TypeParameterElement> typeFormals,
+  List<GenericType> typeArguments,
+) {
+  assert(typeArguments.length == typeArguments.length);
+
+  final result = <String, GenericType>{};
+  for (var i = 0; i < typeArguments.length; i++) {
+    result[typeFormals[i].name] = typeArguments[i];
+  }
+
+  return result;
+}
+
 /// Represents definition of a property.
 @sealed
 class PropertyDefinition {
@@ -233,16 +644,15 @@ class PropertyDefinition {
 
   /// A type of the property.
   /// This may not be equal to the type of `FormField`'s value.
-  final GenericInterfaceType propertyType;
+  final GenericType propertyType;
 
   /// A type of the value of the form field.
   /// This may not be equal to the type of property's value.
-  final GenericInterfaceType fieldType;
+  final GenericType fieldType;
 
-  // TODO(yfakariya): can be InterfaceType
   /// Preferred type of `FormField`, which is specified as type arguments
   /// of `addWithField` extension method.
-  final GenericInterfaceType? preferredFormFieldType;
+  final GenericType? preferredFormFieldType;
 
   /// Gets a property specific warnings generated by parser.
   final List<String> warnings;
@@ -259,15 +669,15 @@ class PropertyDefinition {
 
 /// A pair of [PropertyDefinition] and its source [MethodInvocation].
 @sealed
-class PropertyDefinitionAndSource {
+class PropertyDefinitionWithSource {
   /// [PropertyDefinition] created by [source].
   final PropertyDefinition property;
 
   /// Source [MethodInvocation] for reporting.
   final MethodInvocation source;
 
-  /// Initializes a new [PropertyDefinitionAndSource] instance.
-  PropertyDefinitionAndSource(this.property, this.source);
+  /// Initializes a new [PropertyDefinitionWithSource] instance.
+  PropertyDefinitionWithSource(this.property, this.source);
 }
 
 /// A property definition with resolved `FormField` information.
@@ -280,11 +690,11 @@ class PropertyAndFormFieldDefinition {
 
   /// A type of the property.
   /// This may not be equal to the type of `FormField`'s value.
-  GenericInterfaceType get propertyValueType => _property.propertyType;
+  GenericType get propertyValueType => _property.propertyType;
 
   /// A type of the value of the form field.
   /// This may not be equal to the type of property's value.
-  GenericInterfaceType get fieldValueType => _property.fieldType;
+  GenericType get fieldValueType => _property.fieldType;
 
   /// A type name of `FormField`.
   /// Note that this field should not include generic type parameters.
@@ -301,18 +711,10 @@ class PropertyAndFormFieldDefinition {
   /// argument.
   final InterfaceType? formFieldType;
 
-  /// A [ConstructorElement] of [formFieldType] constructor to be called.
+  /// A [List] of [FormFieldConstructorDefinition] of [formFieldType].
   ///
-  /// This property will be `null` when failed to determine target `FormField`
-  /// constructor, or [formFieldType] is `null`.
-  final ConstructorDeclaration? formFieldConstructor;
-
-  /// [ArgumentsHandler] to handle arguments for a [formFieldConstructor]
-  /// and a form field factory which wraps the constructor.
-  ///
-  /// This value is not `null` if and only if
-  /// [formFieldConstructor] is not `null`.
-  final ArgumentsHandler? argumentsHandler;
+  /// This property will be empty when [formFieldType] is `null`.
+  final List<FormFieldConstructorDefinition> formFieldConstructors;
 
   /// Property specific warnings generated by parser.
   List<String> get warnings => _property.warnings;
@@ -323,15 +725,37 @@ class PropertyAndFormFieldDefinition {
   /// constructor, [formFieldType] is `null`, or failed to resolve their dependency.
   final TypeInstantiationContext? instantiationContext;
 
+  /// Wheter [formFieldType] declares only one public anonymous (default)
+  /// constructor.
+  ///
+  /// Note that the constructor can be generative constructor
+  /// or factory constructor, and there are some private constructors.
+  bool get isSimpleFormField =>
+      formFieldConstructors.length == 1 &&
+      formFieldConstructors[0].constructor.name == null;
+
   /// Initializes a new [PropertyAndFormFieldDefinition] instance.
   PropertyAndFormFieldDefinition({
     required PropertyDefinition property,
     required this.formFieldType,
     required this.formFieldTypeName,
-    required this.formFieldConstructor,
-    required this.argumentsHandler,
+    required this.formFieldConstructors,
     required this.instantiationContext,
   }) : _property = property;
+}
+
+/// `FormField` constructor and related objects.
+@sealed
+class FormFieldConstructorDefinition {
+  /// A [ConstructorElement] of this constructor to be called.
+  final ConstructorDeclaration constructor;
+
+  /// [ArgumentsHandler] to handle arguments for this constructor
+  /// and a form field factory which wraps the constructor.
+  final ArgumentsHandler argumentsHandler;
+
+  /// Initializes a new [FormFieldConstructorDefinition] object.
+  FormFieldConstructorDefinition(this.constructor, this.argumentsHandler);
 }
 
 /// Defines eventual methods of `PropertyDescriptorsBuilder` to define a new
@@ -343,6 +767,4 @@ class PropertyDescriptorsBuilderMethods {
 
   /// `addWithField<F, P, TField>(...)`.
   static const addWithField = 'addWithField';
-
-  PropertyDescriptorsBuilderMethods._();
 }

@@ -14,22 +14,33 @@ import '../form_companion_presenter.dart';
 @sealed
 class FormCompanion {
   /// Initializes a new [FormCompanion] instance.
+  ///
+  /// You can specify [autovalidate] if you explicitly control each form fields'
+  /// `autovalidateMode` for this presenter.
   const FormCompanion({
-    this.autovalidate = true,
-    this.suppressFieldFactory = false,
+    this.autovalidate,
   });
 
   /// If `true`, generating code set `AutovalidateMode.onUserInteraction` for
   /// each `FormField`s' `autovalidateMode` named argument.
+  /// If `false`, the set value will be `AutovalidateMode.disabled`.
+  /// If `null` (default), `autovalidate_by_default` configuration option's
+  /// value will be used.
   ///
-  /// Default is `true`.
-  final bool autovalidate;
-
-  /// If `true`, the generator does **not** generate field factories, which
-  /// are factories creating appropriate `FormField` for each properties.
+  /// Default is `null`.
   ///
-  /// Default is `false`.
-  final bool suppressFieldFactory;
+  /// If you want to control per presenter (or `Form`) basis, set this property.
+  /// Else, if you want to control per your team or project basis, set
+  /// `autovalidate_by_default` configuration option and do not specify this
+  /// property.
+  /// When you want to control per field basis, specify `autovalidateMode` named
+  /// argument on form field factories.
+  /// In summary, priority is following:
+  ///
+  /// 1. Form field fatrories' `autovalidateMode` arguments.
+  /// 2. This `autovalidate` property value.
+  /// 3. `autovalidate_by_default` configuration option.
+  final bool? autovalidate;
 }
 
 /// Marks this presenter class as auto-validated and generating field factories.

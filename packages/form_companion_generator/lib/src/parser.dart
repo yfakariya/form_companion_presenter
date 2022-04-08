@@ -16,17 +16,17 @@ import 'dependency.dart';
 import 'form_field_locator.dart';
 import 'model.dart';
 import 'node_provider.dart';
-import 'parser_data.dart';
-import 'parser_node.dart';
+import 'parser/parser_data.dart';
+import 'parser/parser_helpers.dart';
+import 'parser/parser_node.dart';
+import 'parser/resolve_property.dart';
 import 'type_instantiation.dart';
 import 'utilities.dart';
 
 part 'parser/assignment.dart';
 part 'parser/expression.dart';
 part 'parser/form_field.dart';
-part 'parser/helpers.dart';
 part 'parser/identifier.dart';
-part 'parser/invocation_analysis.dart';
 part 'parser/presenter_constructor.dart';
 part 'parser/statement.dart';
 
@@ -63,7 +63,7 @@ FutureOr<PresenterDefinition> parseElementAsync(
   return PresenterDefinition(
     name: element.name,
     isFormBuilder: isFormBuilder,
-    doAutovalidate: annotation.autovalidate,
+    doAutovalidate: annotation.autovalidate ?? config.autovalidateByDefault,
     warnings: warnings,
     imports: config.asPart
         // import directives cannot be appeared in part files.
@@ -231,7 +231,56 @@ FutureOr<List<PropertyAndFormFieldDefinition>> getPropertiesAsync(
       .toListAsync();
 }
 
-// TODO
+Iterable<PropertyDefinition> _toUniquePropertyDefinitions(
+  ParseContext context,
+  Iterable<PropertyDefinitionWithSource> definitions,
+  Element contextElement, {
+  required bool isFormBuilder,
+}) sync* {
+  final names = <String>{};
+  for (final definition in definitions) {
+    final property = definition.property;
+    if (!names.add(property.name)) {
+      final element = _getDeclaringElement(definition.source);
+      throwError(
+        message:
+            "Property '${property.name}' is defined more than once ${getNodeLocation(definition.source, element)}.",
+        todo: 'Fix to define each properties only once for given $pdbTypeName.',
+        element: element,
+      );
+    }
+
+    yield property;
+  }
+}
+
+Element _getDeclaringElement(MethodInvocation expression) {
+  for (AstNode? node = expression; node != null; node = node.parent) {
+    if (node is Declaration && node is! VariableDeclaration) {
+      // Any declaration other than local variable
+      if (node is TopLevelVariableDeclaration) {
+        // Manually look up because declaredElement is always null
+        return (node.root as CompilationUnit)
+            .declaredElement!
+            .library
+            .scope
+            .lookup(node.variables.variables.first.name.name)
+            .getter!;
+      } else {
+        return node.declaredElement!;
+      }
+    }
+
+    if (node is CompilationUnit) {
+      return node.declaredElement!;
+    }
+  }
+
+  throw Exception(
+    "Failed to get declered element of '$expression'.",
+  );
+}
+
 /// Collects dependencies as a list of [LibraryImport] from `FormField`s
 /// constructor parameters in [properties].
 ///
@@ -252,12 +301,11 @@ FutureOr<List<LibraryImport>> collectDependenciesAsync(
   );
 
   for (final property in properties) {
-    final formFieldConstructor = property.formFieldConstructor;
-    if (formFieldConstructor != null) {
-      final argumentsHandler = property.argumentsHandler!;
+    for (final formFieldConstructor in property.formFieldConstructors) {
+      final argumentsHandler = formFieldConstructor.argumentsHandler;
 
       collector.reset(
-        formFieldConstructor.declaredElement!.enclosingElement,
+        formFieldConstructor.constructor.declaredElement!.enclosingElement,
         property.warnings,
       );
       // Visit only parameters instead of constructor to avoid collecting
@@ -268,7 +316,8 @@ FutureOr<List<LibraryImport>> collectDependenciesAsync(
       }
 
       // Add form field itself.
-      final classDeclaration = formFieldConstructor.parent! as ClassDeclaration;
+      final classDeclaration =
+          formFieldConstructor.constructor.parent! as ClassDeclaration;
       collector
         ..recordTypeId(
           classDeclaration.declaredElement!,

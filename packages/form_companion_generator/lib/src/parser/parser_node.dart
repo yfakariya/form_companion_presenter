@@ -6,9 +6,9 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 
-import 'node_provider.dart';
-import 'parameter.dart';
-import 'utilities.dart';
+import '../model.dart';
+import '../node_provider.dart';
+import '../utilities.dart';
 
 /// Represents an any kind variable.
 abstract class VariableNode {
@@ -25,31 +25,11 @@ abstract class VariableNode {
   ///
   /// [Element] is source element which is used to get [node].
   factory VariableNode(AstNode node, Element sourceElement) {
-    if (node is TopLevelVariableDeclaration) {
-      if (node.variables.variables.length != 1) {
-        throwError(
-          message:
-              "Failed to parse top level variable '${sourceElement.name}' which is not a single variable declaration.",
-          todo:
-              "Declare top level variable '${sourceElement.name}' as standalone decleration.",
-          element: sourceElement,
-        );
-      }
-
-      return _TopLevelVariableNode(node);
-    } else if (node is FieldDeclaration) {
-      if (node.fields.variables.length != 1) {
-        throwError(
-          message:
-              "Failed to parse field '${sourceElement.name}' which is not a single field declaration.",
-          todo:
-              "Declare field '${sourceElement.name}' as standalone decleration.",
-          element: sourceElement,
-        );
-      }
-      return _FieldNode(node);
-    } else if (node is VariableDeclaration) {
-      return _VariableNode(node);
+    if (node is VariableDeclaration) {
+      // NOTE: Single field / top-level variable reference should be VariableDeclaration
+      //       rather than TopLevelVariableDeclaration or FieldDeclaration.
+      //       We rely caller that they pass node from getter reference.
+      return _VariableNode(node, sourceElement);
     } else if (node is MethodDeclaration && node.isGetter) {
       return _GetterMethodNode(node);
     } else if (node is FunctionDeclaration && node.isGetter) {
@@ -57,33 +37,22 @@ abstract class VariableNode {
     } else {
       throwError(
         message:
-            "Unexpected node '$node' (${node.runtimeType} from ${sourceElement.runtimeType}), it is not field or property.",
+            "Unexpected node '$node' (${node.runtimeType} from ${sourceElement.runtimeType}), "
+            'it is not a single field or property reference.',
         element: sourceElement,
       );
     }
   }
 
   VariableNode._();
-}
-
-class _TopLevelVariableNode extends VariableNode {
-  final TopLevelVariableDeclaration _declaration;
 
   @override
-  String get name => _declaration.variables.variables.first.name.name;
-
-  @override
-  Expression? get initializer =>
-      _declaration.variables.variables.first.initializer;
-
-  @override
-  Element get element => _declaration.declaredElement!;
-
-  _TopLevelVariableNode(this._declaration) : super._();
+  String toString() => element.toString();
 }
 
 class _VariableNode extends VariableNode {
   final VariableDeclaration _declaration;
+  final Element _element;
 
   @override
   String get name => _declaration.name.name;
@@ -92,25 +61,9 @@ class _VariableNode extends VariableNode {
   Expression? get initializer => _declaration.initializer;
 
   @override
-  Element get element => _declaration.declaredElement!;
+  Element get element => _element;
 
-  _VariableNode(this._declaration) : super._();
-}
-
-class _FieldNode extends VariableNode {
-  final FieldDeclaration _declaration;
-
-  @override
-  String get name => _declaration.fields.variables.first.name.name;
-
-  @override
-  Expression? get initializer =>
-      _declaration.fields.variables.first.initializer;
-
-  @override
-  Element get element => _declaration.declaredElement!;
-
-  _FieldNode(this._declaration) : super._();
+  _VariableNode(this._declaration, this._element) : super._();
 }
 
 class _GetterMethodNode extends VariableNode {
@@ -203,6 +156,9 @@ abstract class ExecutableNode {
 
     return [];
   }
+
+  @override
+  String toString() => element.toString();
 }
 
 class _FunctionNode extends ExecutableNode {

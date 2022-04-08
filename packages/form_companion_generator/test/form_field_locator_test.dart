@@ -7,7 +7,7 @@ import 'package:form_companion_generator/src/form_field_locator.dart';
 import 'package:logging/logging.dart';
 import 'package:test/test.dart';
 
-import 'file_resolver.dart';
+import 'session_resolver.dart';
 import 'test_helpers.dart';
 
 Future<void> main() async {
@@ -16,14 +16,14 @@ Future<void> main() async {
   logger.onRecord.listen(print);
 
   final library = await getParametersLibrary();
-  final resolver = FileResolver(library);
+  final resolver = SessionResolver(library);
 
   group('createAsync', () {
     test('no extra libraries should succeed', () async {
       await FormFieldLocator.createAsync(resolver, [], logger);
     });
 
-    test('package is not in project dependency', () async {
+    test('package is not in presenter dependency', () async {
       await expectLater(
         FormFieldLocator.createAsync(
           resolver,

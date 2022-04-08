@@ -85,41 +85,43 @@ import 'auto_validation_form_builder_account.dart';
 
 import 'models.dart' show Gender, Region;
 
+/// Defines typed property accessors as extension properties for [AutoValidationFormBuilderAccountPresenter].
 extension $AutoValidationFormBuilderAccountPresenterPropertyExtension
     on AutoValidationFormBuilderAccountPresenter {
-  /// Gets a [PropertyDescriptor] of id property.
+  /// Gets a [PropertyDescriptor] of `id` property.
   PropertyDescriptor<String, String> get id =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
       properties['id']! as PropertyDescriptor<String, String>;
 
-  /// Gets a [PropertyDescriptor] of name property.
+  /// Gets a [PropertyDescriptor] of `name` property.
   PropertyDescriptor<String, String> get name =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
       properties['name']! as PropertyDescriptor<String, String>;
 
-  /// Gets a [PropertyDescriptor] of gender property.
+  /// Gets a [PropertyDescriptor] of `gender` property.
   PropertyDescriptor<Gender, Gender> get gender =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
       properties['gender']! as PropertyDescriptor<Gender, Gender>;
 
-  /// Gets a [PropertyDescriptor] of age property.
+  /// Gets a [PropertyDescriptor] of `age` property.
   PropertyDescriptor<int, String> get age =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
       properties['age']! as PropertyDescriptor<int, String>;
 
-  /// Gets a [PropertyDescriptor] of preferredRegions property.
+  /// Gets a [PropertyDescriptor] of `preferredRegions` property.
   PropertyDescriptor<List<Region>, List<Region>> get preferredRegions =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
       properties['preferredRegions']!
           as PropertyDescriptor<List<Region>, List<Region>>;
 }
 
-class $AutoValidationFormBuilderAccountPresenterFieldFactories {
+/// Defines [FormField] factory methods for properties of [AutoValidationFormBuilderAccountPresenter].
+class $AutoValidationFormBuilderAccountPresenterFieldFactory {
   final AutoValidationFormBuilderAccountPresenter _presenter;
 
-  $AutoValidationFormBuilderAccountPresenterFieldFactories._(this._presenter);
+  $AutoValidationFormBuilderAccountPresenterFieldFactory._(this._presenter);
 
-  /// Gets a [FormField] for id property.
+  /// Gets a [FormField] for `id` property.
   FormBuilderTextField id(
     BuildContext context, {
     Key? key,
@@ -235,7 +237,7 @@ class $AutoValidationFormBuilderAccountPresenterFieldFactories {
     );
   }
 
-  /// Gets a [FormField] for name property.
+  /// Gets a [FormField] for `name` property.
   FormBuilderTextField name(
     BuildContext context, {
     Key? key,
@@ -351,7 +353,7 @@ class $AutoValidationFormBuilderAccountPresenterFieldFactories {
     );
   }
 
-  /// Gets a [FormField] for gender property.
+  /// Gets a [FormField] for `gender` property.
   FormBuilderDropdown<Gender> gender(
     BuildContext context, {
     Key? key,
@@ -425,7 +427,7 @@ class $AutoValidationFormBuilderAccountPresenterFieldFactories {
     );
   }
 
-  /// Gets a [FormField] for age property.
+  /// Gets a [FormField] for `age` property.
   FormBuilderTextField age(
     BuildContext context, {
     Key? key,
@@ -541,7 +543,7 @@ class $AutoValidationFormBuilderAccountPresenterFieldFactories {
     );
   }
 
-  /// Gets a [FormField] for preferredRegions property.
+  /// Gets a [FormField] for `preferredRegions` property.
   FormBuilderFilterChip<Region> preferredRegions(
     BuildContext context, {
     AutovalidateMode? autovalidateMode,
@@ -626,9 +628,10 @@ class $AutoValidationFormBuilderAccountPresenterFieldFactories {
   }
 }
 
+/// Defines an extension property to get [$AutoValidationFormBuilderAccountPresenterFieldFactory] from [AutoValidationFormBuilderAccountPresenter].
 extension $AutoValidationFormBuilderAccountPresenterFieldFactoryExtension
     on AutoValidationFormBuilderAccountPresenter {
-  /// Gets a form field factories.
-  $AutoValidationFormBuilderAccountPresenterFieldFactories get fields =>
-      $AutoValidationFormBuilderAccountPresenterFieldFactories._(this);
+  /// Gets a [FormField] factory.
+  $AutoValidationFormBuilderAccountPresenterFieldFactory get fields =>
+      $AutoValidationFormBuilderAccountPresenterFieldFactory._(this);
 }

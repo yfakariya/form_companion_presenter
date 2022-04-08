@@ -11,7 +11,6 @@ import 'dependency.dart';
 import 'emitter/instantiation.dart';
 import 'model.dart';
 import 'node_provider.dart';
-import 'parameter.dart';
 import 'type_instantiation.dart';
 
 part 'emitter/field_factory.dart';
@@ -26,21 +25,27 @@ Stream<Object> emitFromData(
   PresenterDefinition data,
   Config config,
 ) async* {
+  if (data.properties.isEmpty) {
+    for (final warning in data.warnings) {
+      yield '// $_todoHeader WARNING - $warning';
+    }
+
+    yield '// TODO(CompanionGenerator): WARNING - No properties are found in ${data.name} class.\n';
+    return;
+  }
+
   for (final global in emitGlobal(sourceLibrary, data, config)) {
     yield global;
   }
 
   yield emitPropertyAccessor(data.name, data.properties, config);
-  if (!config.suppressFieldFactory) {
-    yield await emitFieldFactoriesAsync(nodeProvider, data, config);
-  }
+
+  yield await emitFieldFactoriesAsync(nodeProvider, data, config);
 }
 
 final _formCompanionPresenterImport = LibraryImport(
   'package:form_companion_presenter/form_companion_presenter.dart',
 );
-
-// TODO(yfakariya): test `asPart`
 
 /// Emits global parts.
 @visibleForTesting
@@ -72,6 +77,7 @@ Iterable<String> emitGlobal(
   if (config.asPart) {
     yield "// This file is part of '${sourceLibrary.source.shortName}' file,";
     yield '// so you have to declare following import directives in it.';
+    yield '';
   }
 
   for (final import in dartImports) {
@@ -112,10 +118,7 @@ Iterable<String> _emitImport(LibraryImport import, bool mustBeComment) sync* {
     ..sort((l, r) => l.key.compareTo(r.key));
   for (final prefixed in sortedPrefixes) {
     final sortedPrefixedTypes = [...prefixed.value]..sort();
-    if (sortedPrefixedTypes.isEmpty) {
-      yield "${prefix}import '${import.library}' as ${prefixed.key};";
-    } else {
-      yield "${prefix}import '${import.library}' as ${prefixed.key} show ${sortedPrefixedTypes.join(', ')};";
-    }
+    assert(sortedPrefixedTypes.isNotEmpty);
+    yield "${prefix}import '${import.library}' as ${prefixed.key} show ${sortedPrefixedTypes.join(', ')};";
   }
 }

@@ -110,63 +110,64 @@ import 'bulk_auto_validation_form_builder_booking.dart';
 
 import 'models.dart' show MealType, RoomType;
 
+/// Defines typed property accessors as extension properties for [BulkAutoValidationFormBuilderBookingPresenter].
 extension $BulkAutoValidationFormBuilderBookingPresenterPropertyExtension
     on BulkAutoValidationFormBuilderBookingPresenter {
-  /// Gets a [PropertyDescriptor] of stay property.
+  /// Gets a [PropertyDescriptor] of `stay` property.
   PropertyDescriptor<DateTimeRange, DateTimeRange> get stay =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
       properties['stay']! as PropertyDescriptor<DateTimeRange, DateTimeRange>;
 
-  /// Gets a [PropertyDescriptor] of specialOfferDate property.
+  /// Gets a [PropertyDescriptor] of `specialOfferDate` property.
   PropertyDescriptor<DateTime, DateTime> get specialOfferDate =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
       properties['specialOfferDate']! as PropertyDescriptor<DateTime, DateTime>;
 
-  /// Gets a [PropertyDescriptor] of roomType property.
+  /// Gets a [PropertyDescriptor] of `roomType` property.
   PropertyDescriptor<RoomType, RoomType> get roomType =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
       properties['roomType']! as PropertyDescriptor<RoomType, RoomType>;
 
-  /// Gets a [PropertyDescriptor] of mealOffers property.
+  /// Gets a [PropertyDescriptor] of `mealOffers` property.
   PropertyDescriptor<List<MealType>, List<MealType>> get mealOffers =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
       properties['mealOffers']!
           as PropertyDescriptor<List<MealType>, List<MealType>>;
 
-  /// Gets a [PropertyDescriptor] of smoking property.
+  /// Gets a [PropertyDescriptor] of `smoking` property.
   PropertyDescriptor<bool, bool> get smoking =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
       properties['smoking']! as PropertyDescriptor<bool, bool>;
 
-  /// Gets a [PropertyDescriptor] of persons property.
+  /// Gets a [PropertyDescriptor] of `persons` property.
   PropertyDescriptor<int, double> get persons =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
       properties['persons']! as PropertyDescriptor<int, double>;
 
-  /// Gets a [PropertyDescriptor] of babyBeds property.
+  /// Gets a [PropertyDescriptor] of `babyBeds` property.
   PropertyDescriptor<int, int> get babyBeds =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
       properties['babyBeds']! as PropertyDescriptor<int, int>;
 
-  /// Gets a [PropertyDescriptor] of preferredPrice property.
+  /// Gets a [PropertyDescriptor] of `preferredPrice` property.
   PropertyDescriptor<RangeValues, RangeValues> get preferredPrice =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
       properties['preferredPrice']!
           as PropertyDescriptor<RangeValues, RangeValues>;
 
-  /// Gets a [PropertyDescriptor] of note property.
+  /// Gets a [PropertyDescriptor] of `note` property.
   PropertyDescriptor<String, String> get note =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
       properties['note']! as PropertyDescriptor<String, String>;
 }
 
-class $BulkAutoValidationFormBuilderBookingPresenterFieldFactories {
+/// Defines [FormField] factory methods for properties of [BulkAutoValidationFormBuilderBookingPresenter].
+class $BulkAutoValidationFormBuilderBookingPresenterFieldFactory {
   final BulkAutoValidationFormBuilderBookingPresenter _presenter;
 
-  $BulkAutoValidationFormBuilderBookingPresenterFieldFactories._(
-      this._presenter);
+  $BulkAutoValidationFormBuilderBookingPresenterFieldFactory._(this._presenter);
 
-  /// Gets a [FormField] for stay property.
+  /// Gets a [FormField] for `stay` property.
   FormBuilderDateRangePicker stay(
     BuildContext context, {
     Key? key,
@@ -292,7 +293,7 @@ class $BulkAutoValidationFormBuilderBookingPresenterFieldFactories {
     );
   }
 
-  /// Gets a [FormField] for specialOfferDate property.
+  /// Gets a [FormField] for `specialOfferDate` property.
   FormBuilderDateTimePicker specialOfferDate(
     BuildContext context, {
     Key? key,
@@ -426,7 +427,7 @@ class $BulkAutoValidationFormBuilderBookingPresenterFieldFactories {
     );
   }
 
-  /// Gets a [FormField] for roomType property.
+  /// Gets a [FormField] for `roomType` property.
   FormBuilderRadioGroup<RoomType> roomType(
     BuildContext context, {
     AutovalidateMode? autovalidateMode,
@@ -494,7 +495,7 @@ class $BulkAutoValidationFormBuilderBookingPresenterFieldFactories {
     );
   }
 
-  /// Gets a [FormField] for mealOffers property.
+  /// Gets a [FormField] for `mealOffers` property.
   FormBuilderFilterChip<MealType> mealOffers(
     BuildContext context, {
     AutovalidateMode? autovalidateMode,
@@ -578,7 +579,7 @@ class $BulkAutoValidationFormBuilderBookingPresenterFieldFactories {
     );
   }
 
-  /// Gets a [FormField] for smoking property.
+  /// Gets a [FormField] for `smoking` property.
   FormBuilderSwitch smoking(
     BuildContext context, {
     Key? key,
@@ -638,7 +639,7 @@ class $BulkAutoValidationFormBuilderBookingPresenterFieldFactories {
     );
   }
 
-  /// Gets a [FormField] for persons property.
+  /// Gets a [FormField] for `persons` property.
   FormBuilderSlider persons(
     BuildContext context, {
     Key? key,
@@ -704,7 +705,7 @@ class $BulkAutoValidationFormBuilderBookingPresenterFieldFactories {
     );
   }
 
-  /// Gets a [FormField] for babyBeds property.
+  /// Gets a [FormField] for `babyBeds` property.
   FormBuilderSegmentedControl<int> babyBeds(
     BuildContext context, {
     Key? key,
@@ -750,7 +751,7 @@ class $BulkAutoValidationFormBuilderBookingPresenterFieldFactories {
     );
   }
 
-  /// Gets a [FormField] for preferredPrice property.
+  /// Gets a [FormField] for `preferredPrice` property.
   FormBuilderRangeSlider preferredPrice(
     BuildContext context, {
     Key? key,
@@ -812,7 +813,7 @@ class $BulkAutoValidationFormBuilderBookingPresenterFieldFactories {
     );
   }
 
-  /// Gets a [FormField] for note property.
+  /// Gets a [FormField] for `note` property.
   FormBuilderTextField note(
     BuildContext context, {
     Key? key,
@@ -929,9 +930,10 @@ class $BulkAutoValidationFormBuilderBookingPresenterFieldFactories {
   }
 }
 
+/// Defines an extension property to get [$BulkAutoValidationFormBuilderBookingPresenterFieldFactory] from [BulkAutoValidationFormBuilderBookingPresenter].
 extension $BulkAutoValidationFormBuilderBookingPresenterFieldFactoryExtension
     on BulkAutoValidationFormBuilderBookingPresenter {
-  /// Gets a form field factories.
-  $BulkAutoValidationFormBuilderBookingPresenterFieldFactories get fields =>
-      $BulkAutoValidationFormBuilderBookingPresenterFieldFactories._(this);
+  /// Gets a [FormField] factory.
+  $BulkAutoValidationFormBuilderBookingPresenterFieldFactory get fields =>
+      $BulkAutoValidationFormBuilderBookingPresenterFieldFactory._(this);
 }

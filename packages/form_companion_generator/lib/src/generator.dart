@@ -70,11 +70,6 @@ class CompanionGenerator extends Generator {
     ClassElement element,
     FormCompanionAnnotation annotation,
   ) async* {
-    final config = Config.withOverride(
-      _config,
-      suppressFieldFactory: annotation.suppressFieldFactory,
-    );
-
     final nodeProvider = NodeProvider(resolver);
     final formFieldLocator = await FormFieldLocator.createAsync(
       resolver,
@@ -86,14 +81,14 @@ class CompanionGenerator extends Generator {
       element.library,
       nodeProvider,
       await parseElementAsync(
-        config,
+        _config,
         nodeProvider,
         formFieldLocator,
         element,
         annotation,
         _logger,
       ),
-      config,
+      _config,
     )) {
       yield value.toString();
     }

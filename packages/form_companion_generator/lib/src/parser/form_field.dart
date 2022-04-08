@@ -31,20 +31,28 @@ FutureOr<PropertyAndFormFieldDefinition> resolveFormFieldAsync(
       context.formFieldLocator.resolveFormFieldType(
         formFieldRawTypeName,
       );
-  ConstructorDeclaration? fieldConstructor;
+  List<FormFieldConstructorDefinition>? fieldConstructors;
   TypeInstantiationContext? instantiationContext;
   if (formFieldType != null) {
-    final constructorElement =
-        _findFormFieldConstructor(formFieldType, property.warnings);
-    if (constructorElement != null) {
-      fieldConstructor = await context.nodeProvider
-          .getElementDeclarationAsync<ConstructorDeclaration>(
-        constructorElement,
-      );
-    }
+    fieldConstructors =
+        await formFieldType.element.constructors.where((c) => c.isPublic).map(
+      (e) async {
+        final declaration = await context.nodeProvider
+            .getElementDeclarationAsync<ConstructorDeclaration>(
+          e,
+        );
+        return FormFieldConstructorDefinition(
+          declaration,
+          await ArgumentsHandler.createAsync(
+            declaration,
+            context.nodeProvider,
+            isFormBuilder: isFormBuilder,
+          ),
+        );
+      },
+    ).toListAsync();
 
     instantiationContext = TypeInstantiationContext.create(
-      context.nodeProvider,
       property,
       formFieldType,
       context.logger,
@@ -55,22 +63,15 @@ FutureOr<PropertyAndFormFieldDefinition> resolveFormFieldAsync(
     property: property,
     formFieldType: formFieldType,
     formFieldTypeName: formFieldRawTypeName,
-    formFieldConstructor: fieldConstructor,
-    argumentsHandler: fieldConstructor == null
-        ? null
-        : await ArgumentsHandler.createAsync(
-            fieldConstructor,
-            context.nodeProvider,
-            isFormBuilder: isFormBuilder,
-          ),
+    formFieldConstructors: fieldConstructors ?? [],
     instantiationContext: instantiationContext,
   );
 }
 
 String _determineFormFieldTypeName(
   ParseContext context,
-  GenericInterfaceType fieldValueType,
-  GenericInterfaceType? preferredFormFieldType, {
+  GenericType fieldValueType,
+  GenericType? preferredFormFieldType, {
   required bool isFormBuilder,
 }) {
   if (preferredFormFieldType != null) {
@@ -95,22 +96,6 @@ String _determineFormFieldTypeName(
           _defaultVanillaFormFieldType;
     }
   }
-}
-
-ConstructorElement? _findFormFieldConstructor(
-  InterfaceType formFieldType,
-  List<String> warnings,
-) {
-  final normalConstructors =
-      formFieldType.element.constructors.where((c) => c.isPublic).toList();
-  if (normalConstructors.length != 1) {
-    warnings.add(
-      "Failed to determine calling constructor because '$formFieldType' has ${normalConstructors.length} non-factory constructors.",
-    );
-    return null;
-  }
-
-  return normalConstructors.single;
 }
 
 final _defaultFormBuilderFieldType = 'FormBuilderField';

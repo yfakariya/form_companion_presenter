@@ -34,16 +34,14 @@ Future<void> main() async {
   }
 
   group('FormCompanionAnnotation', () {
-    test('default -> autovalidate is true, suppressFieldFactory is false', () {
+    test('default -> autovalidate is null', () {
       final target = FormCompanionAnnotation(findAnnotationValue('Default'));
-      expect(target.autovalidate, isTrue);
-      expect(target.suppressFieldFactory, isFalse);
+      expect(target.autovalidate, isNull);
     });
 
-    test('empty -> autovalidate is true, suppressFieldFactory is false', () {
+    test('empty -> autovalidate is null', () {
       final target = FormCompanionAnnotation(findAnnotationValue('Empty'));
-      expect(target.autovalidate, isTrue);
-      expect(target.suppressFieldFactory, isFalse);
+      expect(target.autovalidate, isNull);
     });
 
     test('autovalidate is true', () {
@@ -56,18 +54,6 @@ Future<void> main() async {
       final target =
           FormCompanionAnnotation(findAnnotationValue('AutovalidateIsFalse'));
       expect(target.autovalidate, isFalse);
-    });
-
-    test('suppressFieldFactory is true', () {
-      final target = FormCompanionAnnotation(
-          findAnnotationValue('SuppressFieldFactoryIsTrue'));
-      expect(target.suppressFieldFactory, isTrue);
-    });
-
-    test('suppressFieldFactory is false', () {
-      final target = FormCompanionAnnotation(
-          findAnnotationValue('SuppressFieldFactoryIsFalse'));
-      expect(target.suppressFieldFactory, isFalse);
     });
   });
 

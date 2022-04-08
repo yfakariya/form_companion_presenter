@@ -4,7 +4,6 @@
 
 import 'dart:collection' as col;
 import 'dart:ui' as ui;
-import 'dart:ui' show Color, VoidCallback;
 
 import 'package:flutter/material.dart';
 
@@ -136,6 +135,14 @@ class ParameterHolder<T> extends FormField<T> {
     List<int>? instantiatedNamedFunction(Map<String, int>? p)? = null,
     ui.BoxWidthStyle? prefixedNamedFunction(ui.BoxHeightStyle? p)? = null,
   }) {}
+
+  void complexFunction({
+    void Function({required String required, int optional})? hasNamed,
+    void Function([int p])? hasDefault,
+    void Function(String Function(int Function() f1) f2)? nestedFunction,
+    void namedNestedFunction(String Function(int Function() f1) f2)?,
+    final void Function()? withKeyword,
+  }) {}
 }
 
 class ParameterListHolder<T> extends FormBuilderField<List<T>> {
@@ -155,6 +162,20 @@ class ParameterListHolder<T> extends FormBuilderField<List<T>> {
     List<T> namedFunction(List<T> p),
     List<S> parameterizedNamedFunction<S>(List<S> p),
   ) {}
+}
+
+typedef ParameterFunction<T> = int Function(T, T);
+
+class ParameterFunctionHolder<T>
+    extends FormBuilderField<int Function<T>(T, T)> {
+  final int Function<T>(T, T)? nonAlias;
+  final ParameterFunction<T> alias;
+
+  ParameterFunctionHolder.simple(
+    int Function<T>(T, T) nonAlias,
+    ParameterFunction<T> alias,
+  )   : this.nonAlias = nonAlias,
+        this.alias = alias;
 }
 
 class DependencyHolder<T> extends FormField<T> {
@@ -187,4 +208,101 @@ class DependencyHolder<T> extends FormField<T> {
     this.functionDartCore,
     this.functionHasSelf,
   });
+}
+
+class OnlyAnonymousFactory extends FormField<String> {
+  OnlyAnonymousFactory._();
+
+  factory OnlyAnonymousFactory({
+    InputDecoration? inputDecoration,
+    String? factoryParameter,
+  }) =>
+      OnlyAnonymousFactory._();
+}
+
+class OnlyNamedConstructor extends FormField<String> {
+  OnlyNamedConstructor._();
+
+  OnlyNamedConstructor.generative({
+    InputDecoration? inputDecoration,
+    String? namedConstructorParameter,
+  }) {}
+}
+
+class OnlyNamedFactory extends FormField<String> {
+  OnlyNamedFactory._();
+
+  factory OnlyNamedFactory.factory({
+    InputDecoration? inputDecoration,
+    String? namedFactoryParameter,
+  }) =>
+      OnlyNamedFactory._();
+}
+
+class ConstructorWithNamedConstructors extends FormField<String> {
+  ConstructorWithNamedConstructors({
+    InputDecoration? inputDecoration,
+    String? constructorParameter,
+  });
+
+  ConstructorWithNamedConstructors.generative({
+    InputDecoration? inputDecoration,
+    String? namedConstructorParameter,
+  }) {}
+
+  factory ConstructorWithNamedConstructors.factory({
+    InputDecoration? inputDecoration,
+    String? namedFactoryParameter,
+  }) =>
+      ConstructorWithNamedConstructors();
+}
+
+class FactoryWithNamedConstructors extends FormField<String> {
+  FactoryWithNamedConstructors._();
+
+  factory FactoryWithNamedConstructors({
+    InputDecoration? inputDecoration,
+    String? factoryParameter,
+  }) =>
+      FactoryWithNamedConstructors._();
+
+  FactoryWithNamedConstructors.generative({
+    InputDecoration? inputDecoration,
+    String? namedConstructorParameter,
+  }) {}
+
+  factory FactoryWithNamedConstructors.factory({
+    InputDecoration? inputDecoration,
+    String? namedFactoryParameter,
+  }) =>
+      FactoryWithNamedConstructors._();
+}
+
+class ConstructorWithMultipleNamedConstructors extends FormField<String> {
+  ConstructorWithMultipleNamedConstructors({
+    InputDecoration? inputDecoration,
+    String? constructorParameter,
+  });
+
+  ConstructorWithMultipleNamedConstructors.generative1({
+    InputDecoration? inputDecoration,
+    String? namedConstructorParameter1,
+  }) {}
+
+  ConstructorWithMultipleNamedConstructors.generative2({
+    InputDecoration? inputDecoration,
+    String? namedConstructorParameter2,
+  }) {}
+
+  factory ConstructorWithMultipleNamedConstructors.factory1({
+    InputDecoration? inputDecoration,
+    String? namedFactoryParameter1,
+  }) =>
+      ConstructorWithMultipleNamedConstructors();
+
+  factory ConstructorWithMultipleNamedConstructors.factory2({
+    InputDecoration? inputDecoration,
+    String? namedFactoryParameter2,
+  }) =>
+      ConstructorWithMultipleNamedConstructors();
 }
