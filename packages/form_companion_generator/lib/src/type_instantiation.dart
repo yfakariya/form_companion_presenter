@@ -116,47 +116,23 @@ class TypeInstantiationContext {
       assert(parameterType.parameters.length ==
           (argument as GenericFunctionType).rawFunctionType.parameters.length);
 
-      if (parameterType.typeFormals.isNotEmpty &&
-          parameterType.typeFormals.length ==
-              (argument as GenericFunctionType)
-                  .rawFunctionType
-                  .typeFormals
-                  .length) {
-        late final List<String> argumentTypeArgumentNames;
-        if (argument.typeArguments.isNotEmpty) {
-          argumentTypeArgumentNames = argument.typeArguments
-              .map((e) => e.getDisplayString(withNullability: false))
-              .toList();
-        } else {
-          argumentTypeArgumentNames = argument.rawFunctionType.typeFormals
-              .map((e) => e.getDisplayString(withNullability: false))
-              .toList();
-        }
+      _buildTypeArgumentMappings(
+        parameterType.returnType,
+        (argument as GenericFunctionType).returnType,
+        mapping,
+        propertyName,
+        formFieldType,
+      );
 
-        for (var i = 0; i < parameterType.typeFormals.length; i++) {
-          // Map `Foo` to `T` here.
-          mapping[parameterType.typeFormals[i].getDisplayString(
-              withNullability: false)] = argumentTypeArgumentNames[i];
-        }
-      } else {
+      final argumentParameterTypes = argument.parameterTypes.toList();
+      for (var i = 0; i < parameterType.parameters.length; i++) {
         _buildTypeArgumentMappings(
-          parameterType.returnType,
-          (argument as GenericFunctionType).returnType,
+          parameterType.parameters[i].type,
+          argumentParameterTypes[i],
           mapping,
           propertyName,
           formFieldType,
         );
-
-        final argumentParameterTypes = argument.parameterTypes.toList();
-        for (var i = 0; i < parameterType.parameters.length; i++) {
-          _buildTypeArgumentMappings(
-            parameterType.parameters[i].type,
-            argumentParameterTypes[i],
-            mapping,
-            propertyName,
-            formFieldType,
-          );
-        }
       }
     }
 
