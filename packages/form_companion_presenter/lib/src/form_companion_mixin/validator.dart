@@ -202,7 +202,7 @@ class _AsyncValidatorChain<T extends Object> {
     // error such as temporary bad network condition.
     final message =
         _presenterValidationContextProvider() != _ValidationContext.unspecified
-            ? _asyncValidationFailureMessageProvider(context.error)
+            ? _asyncValidationFailureMessageProvider(context.error, _locale)
             : null;
     context.overrideError(message);
   }
