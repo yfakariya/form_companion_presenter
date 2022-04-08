@@ -767,6 +767,4 @@ class PropertyDescriptorsBuilderMethods {
 
   /// `addWithField<F, P, TField>(...)`.
   static const addWithField = 'addWithField';
-
-  PropertyDescriptorsBuilderMethods._();
 }
