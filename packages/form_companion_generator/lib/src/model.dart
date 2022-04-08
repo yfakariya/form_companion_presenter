@@ -343,22 +343,16 @@ abstract class GenericType {
   ///
   /// If [type] is another type, [ArgumentError] will be thrown.
   factory GenericType.fromDartType(DartType type) {
-    if (type is InterfaceType &&
-        type.typeArguments.any((t) => t is TypeParameterType)) {
-      return _GenericInterfaceTypeDefinition(
-        _toRawInterfaceType(type),
-      );
+    // NOTE: currenty, `type` never be non-instantiated generic type.
+
+    if (type is InterfaceType) {
+      assert(!type.typeArguments.any((t) => t is TypeParameterType));
     } else if (type is FunctionType) {
-      if (type.typeFormals.isNotEmpty) {
-        return _GenericFunctionTypeDefinition(
-          _toNonAliasedFunctionType(type),
-        );
-      } else {
-        return _InstantiatedGenericFunctionType(type, [], {});
-      }
-    } else {
-      return _NonGenericType(type);
+      assert(type.typeFormals.isEmpty);
+      return _InstantiatedGenericFunctionType(type, [], {});
     }
+
+    return _NonGenericType(type);
   }
 
   GenericType._();
@@ -436,29 +430,6 @@ class _NonGenericType extends GenericType {
     required bool withNullability,
   }) =>
       sink.write(type.getDisplayString(withNullability: withNullability));
-}
-
-/// Represents generic interface type without type arguments.
-@sealed
-class _GenericInterfaceTypeDefinition extends GenericType {
-  final InterfaceType _interfaceType;
-  @override
-  DartType get rawType => _interfaceType;
-
-  @override
-  List<GenericType> get typeArguments =>
-      throw UnsupportedError('Cannot call this property in $runtimeType.');
-
-  @override
-  InterfaceType? get maybeAsInterfaceType => _interfaceType;
-
-  _GenericInterfaceTypeDefinition(this._interfaceType)
-      : assert(_interfaceType.typeArguments.any((t) => t is TypeParameterType)),
-        super._();
-
-  @override
-  void writeTo(StringSink sink, {required bool withNullability}) => sink
-      .write(_interfaceType.getDisplayString(withNullability: withNullability));
 }
 
 /// Represents generic interface type with type arguments.
@@ -619,26 +590,6 @@ abstract class GenericFunctionType extends GenericType {
 
     sink.write(')');
   }
-}
-
-/// Represents generic function type without type arguments.
-@sealed
-class _GenericFunctionTypeDefinition extends GenericFunctionType {
-  @override
-  List<GenericType> get typeArguments =>
-      throw UnsupportedError('Cannot call this property in $runtimeType.');
-
-  @override
-  GenericType get returnType =>
-      GenericType.fromDartType(rawFunctionType.returnType);
-
-  @override
-  Iterable<GenericType> get parameterTypes =>
-      rawFunctionType.parameters.map((p) => GenericType.fromDartType(p.type));
-
-  _GenericFunctionTypeDefinition(FunctionType functionType)
-      : assert(functionType.typeFormals.isNotEmpty),
-        super._(functionType);
 }
 
 /// Represents generic function type with type arguments.
