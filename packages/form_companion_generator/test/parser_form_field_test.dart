@@ -11,7 +11,7 @@ import 'package:logging/logging.dart';
 import 'package:test/test.dart';
 import 'package:tuple/tuple.dart';
 
-import 'file_resolver.dart';
+import 'session_resolver.dart';
 import 'test_helpers.dart';
 
 class FailureFormFieldLocator implements FormFieldLocator {
@@ -27,8 +27,8 @@ Future<void> main() async {
   logger.onRecord.listen(print);
 
   final library = await getFormFieldsLibrary();
-  final resolver = FileResolver(library);
-  final nodeProvider = NodeProvider(FileResolver(library));
+  final resolver = SessionResolver(library);
+  final nodeProvider = NodeProvider(SessionResolver(library));
   final typeProvider = library.typeProvider;
   final formFieldLocator =
       await FormFieldLocator.createAsync(resolver, [], logger);

@@ -8,8 +8,7 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:build/build.dart';
 
-// TODO(yfakariya): Rename to SessionResolver
-class FileResolver implements Resolver {
+class SessionResolver implements Resolver {
   // This resolver based on AnalyzerResolver of build_resolvers source (3-Clause BSD License)
   // https://github.com/dart-lang/build/blob/a387d70094c464901d0d29e9ae90293f50dcf90b/build_resolvers/lib/src/resolver.dart#L146
 
@@ -18,7 +17,7 @@ class FileResolver implements Resolver {
   final List<AssetId> _entryPoints = [];
   final Map<AssetId, String> _assetPathes = {};
 
-  FileResolver(LibraryElement input)
+  SessionResolver(LibraryElement input)
       : _session = input.session,
         _inputId = _assetIdForElement(input) {
     _assetPathes[_inputId] = input.source.fullName;

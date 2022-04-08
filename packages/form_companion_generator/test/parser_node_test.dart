@@ -16,7 +16,7 @@ import 'package:test/expect.dart';
 import 'package:test/scaffolding.dart';
 import 'package:tuple/tuple.dart';
 
-import 'file_resolver.dart';
+import 'session_resolver.dart';
 
 class _MethodInvocationFinder extends RecursiveAstVisitor<void> {
   final List<MethodInvocation> founds = [];
@@ -195,7 +195,7 @@ $code
         errorAssertion: errorAssertion,
         factory: (n, e) => ExecutableNode(
           NodeProvider(
-            FileResolver(e.library!),
+            SessionResolver(e.library!),
           ),
           n,
           e,
@@ -593,7 +593,7 @@ void foo() => f(a: '2', c: 3 );
           return Tuple2(contextNode!, contextElement);
         },
         factory: (n, e) => ExecutableNode(
-          NodeProvider(FileResolver(e.library!)),
+          NodeProvider(SessionResolver(e.library!)),
           n,
           e,
         ),

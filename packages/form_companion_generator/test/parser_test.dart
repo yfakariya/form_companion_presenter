@@ -16,7 +16,7 @@ import 'package:source_gen/source_gen.dart';
 import 'package:test/test.dart';
 import 'package:tuple/tuple.dart';
 
-import 'file_resolver.dart';
+import 'session_resolver.dart';
 import 'test_helpers.dart';
 
 typedef FieldNameAndValueType = Tuple2<String, InterfaceType>;
@@ -41,8 +41,8 @@ Future<void> main() async {
   final presenterLibrary = LibraryReader(
     (await getResolvedLibraryResult('presenter.dart')).element,
   );
-  final resolver = FileResolver(presenterLibrary.element);
-  final nodeProvider = NodeProvider(FileResolver(presenterLibrary.element));
+  final resolver = SessionResolver(presenterLibrary.element);
+  final nodeProvider = NodeProvider(SessionResolver(presenterLibrary.element));
   final typeProvider = presenterLibrary.element.typeProvider;
   final formFieldLocator =
       await FormFieldLocator.createAsync(resolver, [], logger);

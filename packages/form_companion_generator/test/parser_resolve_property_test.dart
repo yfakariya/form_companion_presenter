@@ -16,7 +16,7 @@ import 'package:test/expect.dart';
 import 'package:test/scaffolding.dart';
 import 'package:tuple/tuple.dart';
 
-import 'file_resolver.dart';
+import 'session_resolver.dart';
 import 'test_helpers.dart';
 
 /// 1. Test case
@@ -61,8 +61,8 @@ Future<void> main() async {
   final libraryResult =
       await getResolvedLibraryResult('resolve_method_targets.dart');
   final library = libraryResult.element;
-  final resolver = FileResolver(library);
-  final nodeProvider = NodeProvider(FileResolver(library));
+  final resolver = SessionResolver(library);
+  final nodeProvider = NodeProvider(SessionResolver(library));
   final typeProvider = library.typeProvider;
   final typeSystem = library.typeSystem;
   final formFieldLocator =

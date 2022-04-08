@@ -12,7 +12,7 @@ import 'package:logging/logging.dart';
 import 'package:test/expect.dart';
 import 'package:test/scaffolding.dart';
 
-import 'file_resolver.dart';
+import 'session_resolver.dart';
 import 'test_helpers.dart';
 
 Future<void> main() async {
@@ -21,7 +21,7 @@ Future<void> main() async {
   logger.onRecord.listen(print);
 
   final library = await getParametersLibrary();
-  final nodeProvider = NodeProvider(FileResolver(library));
+  final nodeProvider = NodeProvider(SessionResolver(library));
   final holder = library.getType('ParameterHolder')!;
   final holderNode =
       await nodeProvider.getElementDeclarationAsync<ClassDeclaration>(holder);

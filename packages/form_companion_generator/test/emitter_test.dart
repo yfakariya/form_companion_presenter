@@ -18,7 +18,7 @@ import 'package:logging/logging.dart';
 import 'package:test/test.dart';
 import 'package:tuple/tuple.dart';
 
-import 'file_resolver.dart';
+import 'session_resolver.dart';
 import 'test_helpers.dart';
 
 /// 1. Name of property.
@@ -46,7 +46,7 @@ Future<void> main() async {
   logger.onRecord.listen(print);
 
   final library = await getFormFieldsLibrary();
-  final nodeProvider = NodeProvider(FileResolver(library.library));
+  final nodeProvider = NodeProvider(SessionResolver(library.library));
   final myEnumType = await getMyEnumType();
   final dateTimeType = await getDateTimeType();
   final dateTimeRangeType = await getDateTimeRangeType();
