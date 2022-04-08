@@ -19,7 +19,9 @@ typedef _ChainedAsyncValidation<T extends Object> = String? Function(
 
 /// A function which returns appropriate error message from [AsyncError].
 typedef _AsyncValidationFailureMessageProvider = String Function(
-    AsyncError error);
+  AsyncError error,
+  Locale locale,
+);
 
 /// A function which returns current [_ValidationContext] from appropriate storage.
 typedef _ValidationContextProvider = _ValidationContext Function();

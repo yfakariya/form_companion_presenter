@@ -258,8 +258,7 @@ abstract class CompanionPresenterFeatures {
   /// user friendly, localized message with [error] parameter which is actual
   /// [AsyncError].
   @visibleForOverriding
-  String getAsyncValidationFailureMessage(AsyncError error) =>
-      // TODO(yfakariya): L10N
+  String getAsyncValidationFailureMessage(AsyncError error, Locale locale) =>
       'Failed to check value. Try input again later.';
 }
 
@@ -421,8 +420,8 @@ extension CompanionPresenterMixinInternalExtension on CompanionPresenterMixin {
   /// You can override this method and provide your preferred message such as
   /// user friendly, localized message with [error] parameter which is actual
   /// [AsyncError].
-  String getAsyncValidationFailureMessage(AsyncError error) =>
-      presenterFeatures.getAsyncValidationFailureMessage(error);
+  String getAsyncValidationFailureMessage(AsyncError error, Locale locale) =>
+      presenterFeatures.getAsyncValidationFailureMessage(error, locale);
 
   /// Gets a [ValueListenable] which indicates there are any pending async
   /// validations in a property specified by [name].

@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:form_companion_presenter/src/form_companion_mixin.dart';
+import 'package:form_companion_presenter/src/internal_utils.dart';
 import 'package:form_companion_presenter/src/presenter_extension.dart';
 
 Widget _buildChilren(
@@ -898,6 +899,7 @@ void main() {
         equals(
           presenter.getAsyncValidationFailureMessage(
             AsyncError(Object(), null),
+            defaultLocale,
           ),
         ),
       );
@@ -984,6 +986,7 @@ void main() {
         equals(
           presenter.getAsyncValidationFailureMessage(
             AsyncError(Object(), null),
+            defaultLocale,
           ),
         ),
       );
