@@ -155,28 +155,24 @@ class ParameterInfo {
         null,
         ParameterRequirability.forciblyOptional,
       );
-}
 
-FutureOr<TypeAnnotation> _getFieldTypeAnnotationAsync(
-  NodeProvider nodeProvider,
-  FieldFormalParameter node,
-  ParameterElement parameterElement,
-) async {
-  final classElement = parameterElement.thisOrAncestorOfType<ClassElement>()!;
-  final fieldElement = classElement.lookUpGetter(
-    node.identifier.name,
-    parameterElement.library!,
-  )!;
+  static FutureOr<TypeAnnotation?> _getFieldTypeAnnotationAsync(
+    NodeProvider nodeProvider,
+    FieldFormalParameter node,
+    ParameterElement parameterElement,
+  ) async {
+    final classElement = parameterElement.thisOrAncestorOfType<ClassElement>()!;
+    final fieldElement = classElement.lookUpGetter(
+      node.identifier.name,
+      parameterElement.library!,
+    )!;
 
-  final fieldNode =
-      await nodeProvider.getElementDeclarationAsync(fieldElement.nonSynthetic);
-  late final TypeAnnotation fieldType;
-  if (fieldNode is VariableDeclaration) {
-    fieldType = (fieldNode.parent! as VariableDeclarationList).type!;
-  } else {
-    fieldType = (fieldNode as FieldDeclaration).fields.type!;
+    final fieldNode = await nodeProvider
+        .getElementDeclarationAsync(fieldElement.nonSynthetic);
+    // Always become VariableDeclaration which is retrieved from FieldFormalParameter.
+    assert(fieldNode is VariableDeclaration);
+    return (fieldNode.parent! as VariableDeclarationList).type;
   }
-  return fieldType;
 }
 
 /// Represents 'requirability' of the parameter.
