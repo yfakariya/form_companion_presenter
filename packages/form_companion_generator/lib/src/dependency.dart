@@ -408,22 +408,15 @@ class DependentLibraryCollector extends RecursiveAstVisitor<void> {
 
   /// Process specified [DartType] and records its and its type arguments imports.
   void processType(DartType type) {
-    final element = type.element ?? type.alias?.element;
-    if (type is NeverType ||
-        type is VoidType ||
-        type is DynamicType ||
-        type is TypeParameterType ||
-        element!.isPrivate) {
-      // Above dart:core types, type parameter, private types never to be imported
-      return;
-    }
-
-    _recordTypeName(
-      element,
-      type.getDisplayString(withNullability: false),
-    );
-
     if (type is InterfaceType) {
+      if (type.element.isPrivate) {
+        return;
+      }
+
+      _recordTypeName(
+        type.element,
+        type.getDisplayString(withNullability: false),
+      );
       type.typeArguments.forEach(processType);
     } else if (type is FunctionType) {
       processType(type.returnType);
