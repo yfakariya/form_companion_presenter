@@ -50,8 +50,9 @@ Future<void> main() async {
   final dateTimeType = await getDateTimeType();
   final dateTimeRangeType = await getDateTimeRangeType();
   final rangeValuesType = await getRangeValuesType();
-  final dependencyHolder =
-      (await getParametersLibrary()).lookupClass('DependencyHolder');
+
+  final parametersLibrary = await getParametersLibrary();
+  final dependencyHolder = parametersLibrary.lookupClass('DependencyHolder');
 
   ClassElement findType(String name) {
     final type = presenterLibrary.findType(name);
@@ -1286,7 +1287,7 @@ Future<void> main() async {
   group('collectDependencies', () {
     FutureOr<PropertyAndFormFieldDefinition> makeProperty(
       String formFieldTypeName,
-      InterfaceType valueType, {
+      DartType valueType, {
       required bool isFormBuilder,
     }) async {
       final formFieldType = formFieldLocator.resolveFormFieldType(
@@ -1380,7 +1381,7 @@ Future<void> main() async {
           'dart:ui',
           shows: ['Locale'],
           prefixes: [
-            MapEntry('ui', ['VoidCallback']),
+            MapEntry('ui', ['Clip', 'VoidCallback']),
           ],
         ),
       ),
@@ -1394,11 +1395,15 @@ Future<void> main() async {
           ],
         ),
       ),
+      Tuple2(
+        'untyped',
+        ExpectedImport('dart:ui', shows: ['Clip', 'Locale']),
+      ),
     ]) {
       final kind = spec.item1;
       final expected = spec.item2;
 
-      test('unit test: $kind', () async {
+      test('parameter kind: $kind', () async {
         final property = PropertyDefinition(
           name: 'prop',
           fieldType: GenericType.fromDartType(typeProvider.stringType),
@@ -1473,6 +1478,7 @@ Future<void> main() async {
           (valueType.isDartCoreList &&
               valueType.typeArguments.length == 1 &&
               valueType.typeArguments.first == myEnumType)) {
+        // This also tests that relative imports are written after package imports.
         expected.add(
           ExpectedImport(
             'enum.dart',
@@ -1533,7 +1539,33 @@ Future<void> main() async {
       });
     }
 
-    test('relative imports should be after packages', () async {});
+    test(
+      'function value type',
+      () async {
+        final result = await collectDependenciesAsync(
+          presenterLibrary.element,
+          [
+            await makeProperty(
+              'DropdownButtonFormField',
+              parametersLibrary.topLevelElements
+                  .whereType<TypeAliasElement>()
+                  .where((t) => t.name == 'NonGenericCallback')
+                  .single
+                  .aliasedType,
+              isFormBuilder: false,
+            ),
+          ],
+          nodeProvider,
+          logger,
+          isFormBuilder: false,
+        );
+
+        assertImports(result, [
+          ..._expectedImports['DropdownButtonFormField']!,
+          ExpectedImport('presenter.dart'),
+        ]);
+      },
+    );
   });
 
   // TODO(yfakariya): field related tests.

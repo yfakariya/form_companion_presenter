@@ -185,15 +185,19 @@ class DependencyHolder<T> extends FormField<T> {
   VoidCallback? aliasImported;
   GenericCallback<String>? aliasSelf;
   ui.VoidCallback? prefixedImported;
+  ui.Clip? prefixedImportedEnum;
   ui.VoidCallback Function(Color)? functionHasImported;
   String Function(int)? functionDartCore;
   SimpleClass Function(SimpleClass)? functionHasSelf;
+  var untypedDartCore = 0;
+  var untypedImported = Clip.antiAlias;
 
   DependencyHolder.normal({
     this.normalImported,
     this.normalDartCore,
     this.normalSelf,
   });
+
   DependencyHolder.alias({
     this.aliasImported,
     this.aliasSelf,
@@ -201,12 +205,18 @@ class DependencyHolder<T> extends FormField<T> {
 
   DependencyHolder.prefixed({
     this.prefixedImported,
+    this.prefixedImportedEnum = ui.Clip.antiAlias,
   });
 
   DependencyHolder.function({
     this.functionHasImported,
     this.functionDartCore,
     this.functionHasSelf,
+  });
+
+  DependencyHolder.untyped({
+    required this.untypedDartCore,
+    required this.untypedImported,
   });
 }
 
