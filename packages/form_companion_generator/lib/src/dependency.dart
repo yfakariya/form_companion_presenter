@@ -407,7 +407,7 @@ class DependentLibraryCollector extends RecursiveAstVisitor<void> {
   }
 
   /// Process specified [DartType] and records its and its type arguments imports.
-  void processType(DartType type) {
+  void _processType(DartType type) {
     if (type is InterfaceType) {
       if (type.element.isPrivate) {
         return;
@@ -417,17 +417,17 @@ class DependentLibraryCollector extends RecursiveAstVisitor<void> {
         type.element,
         type.getDisplayString(withNullability: false),
       );
-      type.typeArguments.forEach(processType);
+      type.typeArguments.forEach(_processType);
     } else if (type is FunctionType) {
-      processType(type.returnType);
-      type.parameters.map((e) => e.type).forEach(processType);
+      _processType(type.returnType);
+      type.parameters.map((e) => e.type).forEach(_processType);
     }
   }
 
   /// Process specified [GenericType]
   /// and records its and its type arguments imports.
   void processGenericType(GenericType type) {
-    processType(type.rawType);
+    _processType(type.rawType);
     type.typeArguments.forEach(processGenericType);
   }
 }
