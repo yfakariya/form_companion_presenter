@@ -292,13 +292,14 @@ class DependentLibraryCollector extends RecursiveAstVisitor<void> {
           // so the node should be VariableDeclaration
           // rather than FieldDeclaration which may contain multiple declarations.
           assert(field is VariableDeclaration);
-          final fieldType = (field.parent! as VariableDeclarationList).type;
-          assert(
-            fieldType != null,
-            "Failed to fetch type of '${node.identifier.name}' field of '$_contextClass'.",
-          );
-
-          _processTypeAnnotation(fieldType!);
+          final declaration = field.parent! as VariableDeclarationList;
+          final fieldType = declaration.type;
+          if (fieldType != null) {
+            _processTypeAnnotation(fieldType);
+          } else {
+            // Like `var i = 0;` case, we use element here.
+            _processType(element!.type);
+          }
         }
         // ignore: avoid_catches_without_on_clauses
         catch (e, s) {
