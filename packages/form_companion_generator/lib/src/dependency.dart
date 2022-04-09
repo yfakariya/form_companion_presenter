@@ -341,32 +341,32 @@ class DependentLibraryCollector extends RecursiveAstVisitor<void> {
 
   @override
   void visitPrefixedIdentifier(PrefixedIdentifier node) {
-    final type = node.staticType;
-    if (type != null) {
-      if (node.identifier.name ==
-          type.getDisplayString(withNullability: false)) {
+    if (node.staticType != null) {
+      _logger.finer(
+        'Identifier $node should be static or enum member reference. '
+        'Element is ${node.staticElement}.',
+      );
+      // Prefix is type name of static const member reference
+      // or enum member reference.
+      // So type ID is just prefix.
+      // Note that prefix.name does not match to static type name
+      // for static constants like 'Foos.bar' like following:
+      // class Foos { const static final Foo bar = const Foo(...); }
+      // So, this should be in 'else' clause rather than 'if' clause.
+      recordTypeId(node.staticElement!, node.prefix);
+    } else if (node.staticElement != null) {
+      final element = node.staticElement!;
+      if (node.identifier.name == element.name) {
         _logger.finer(
           'Identifier $node should be prefixed library and the type. '
-          'Element is ${type.element}.',
+          'Element is $element.',
         );
         // Prefix is library prefix,
         // because lib.Type.member is interpreted as
         // PropertyAcess(target: PrefixedIdentifier, propertyName: SimpleIdentifier)
         // so identifier is type name.
-        recordTypeId(type.element!, node);
-      } else {
-        _logger.finer(
-          'Identifier $node should be static or enum member reference. '
-          'Element is ${node.staticElement}.',
-        );
-        // Prefix is type name of static const member reference
-        // or enum member reference.
-        // So type ID is just prefix.
-        // Note that prefix.name does not match to static type name
-        // for static constants like 'Foos.bar' like following:
-        // class Foos { const static final Foo bar = const Foo(...); }
-        // So, this should be in 'else' clause rather than 'if' clause.
-        recordTypeId(node.staticElement!, node.prefix);
+        // In addition, lib.FunctionAlias should be here.
+        recordTypeId(element, node);
       }
     }
   }
