@@ -250,6 +250,14 @@ FutureOr<PropertyDescriptorsBuilding?> _parseExpressionAsync(
     );
   }
 
+  if (unparenthesized is PostfixExpression) {
+    return await _parseExpressionAsync(
+      context,
+      contextElement,
+      unparenthesized.operand,
+    );
+  }
+
   context.logger.fine(
       "Skip trivial expression '$expression'(${unparenthesized.runtimeType}) at ${getNodeLocation(expression, contextElement)}.");
   return null;
