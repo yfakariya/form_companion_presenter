@@ -80,9 +80,8 @@ FutureOr<void> _parseBlockAsync(
           statement.expression,
         );
       } else if (statement is VariableDeclarationStatement) {
-        if (isPropertyDescriptorsBuilder(
-          _getVariableType(statement),
-        )) {
+        final variableType = _getVariableType(statement);
+        if (isPropertyDescriptorsBuilder(variableType)) {
           final pdbVariableDeclarations = statement.variables.variables;
           for (final pdbVariableDeclaration in pdbVariableDeclarations) {
             final variableName = pdbVariableDeclaration.name.name;
@@ -103,7 +102,7 @@ FutureOr<void> _parseBlockAsync(
           }
         } else {
           context.logger.fine(
-            'Skip ${statement.variables.type} variable declaration(s) at ${getNodeLocation(statement, contextElement)}.',
+            'Skip $variableType variable declaration(s) at ${getNodeLocation(statement, contextElement)}.',
           );
         }
       } else if (statement is ReturnStatement) {
