@@ -836,8 +836,31 @@ Future<void> main() async {
       );
 
       test(
-        'found prefixed identifier for PropertyDescriptorsBuilder method target',
-        () => testGetPropertiesSuccess('WithPrefixedReferenceExpression'),
+        'found prefixed top level variable',
+        () => testGetPropertiesSuccess(
+          'WithPrefixedTopLevelVariableReferenceExpression',
+        ),
+      );
+
+      test(
+        'found prefixed top level function',
+        () => testGetPropertiesSuccess(
+          'WithPrefixedTopLevelFunctionReferenceExpression',
+        ),
+      );
+
+      test(
+        'found prefixed class field',
+        () => testGetPropertiesSuccess(
+          'WithPrefixedClassFieldReferenceExpression',
+        ),
+      );
+
+      test(
+        'found prefixed method',
+        () => testGetPropertiesSuccess(
+          'WithPrefixedMethodReferenceExpression',
+        ),
       );
     });
 
@@ -956,11 +979,22 @@ Future<void> main() async {
       );
 
       test(
-        'found function invocation expression - error',
-        () => testGetPropertiesError<FunctionElement>(
+        'found function invocation expression which returns PropertyDescriptorsBuilder - error',
+        () => testGetPropertiesError<ConstructorElement>(
           'WithFunctionInvocationExpression',
           message:
               "Failed to parse complex source code '(cascadingFactory)()' (FunctionExpressionInvocationImpl) at ",
+          todo: 'Avoid using this expression or statement here, or file '
+              'the issue for this message if you truly want to use this code.',
+        ),
+      );
+
+      test(
+        'found function invocation expression which takes PropertyDescriptorsBuilder - error',
+        () => testGetPropertiesError<ConstructorElement>(
+          'WithHelperFunctionInvocationExpression',
+          message:
+              "Failed to parse complex source code '(helper)(builder)' (FunctionExpressionInvocationImpl) at ",
           todo: 'Avoid using this expression or statement here, or file '
               'the issue for this message if you truly want to use this code.',
         ),
@@ -973,6 +1007,30 @@ Future<void> main() async {
           message: 'Failed to analyze complex construction logics at ',
           todo: 'Do not use conditional or throw like expression in methods or '
               'functions for PropertyDescriptorsBuilder construction.',
+        ),
+      );
+
+      test(
+        'found field set - error',
+        () => testGetPropertiesError<PropertyAccessorElement>(
+          'WithDirectFieldRewrite',
+          message: 'Failed to parse complex setup logic. '
+              "'_field = PropertyDescriptorsBuilder()' changes field or "
+              'top level variable which is PropertyDescriptorsBuilder type at ',
+          todo: 'Do not re-assign field or top level variable which is '
+              'PropertyDescriptorsBuilder type.',
+        ),
+      );
+
+      test(
+        'found field set via setter - error',
+        () => testGetPropertiesError<PropertyAccessorElement>(
+          'WithIndirectFieldRewrite',
+          message: 'Failed to parse complex setup logic. '
+              "'_setter = PropertyDescriptorsBuilder()' changes field or "
+              'top level variable which is PropertyDescriptorsBuilder type at ',
+          todo: 'Do not re-assign field or top level variable which is '
+              'PropertyDescriptorsBuilder type.',
         ),
       );
     });

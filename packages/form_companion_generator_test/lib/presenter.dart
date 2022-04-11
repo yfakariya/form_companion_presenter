@@ -6,7 +6,6 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_companion_presenter/form_builder_companion_annotation.dart';
 import 'package:form_builder_companion_presenter/form_builder_companion_presenter.dart';
@@ -739,11 +738,24 @@ class WithExtraConstructs with CompanionPresenterMixin, FormCompanionMixin {
         ..add<bool, bool>(name: 'propBool')
         ..add<MyEnum, MyEnum>(name: 'propEnum')
         ..add<List<MyEnum>, List<MyEnum>>(name: 'propEnumList');
-      final extraVariable = DateTime.now();
+      final extraVariable1 = DateTime.now();
+      final extraVariable2 = extraVariable1;
       // extra invocation
-      print(extraVariable);
+      print(extraVariable1);
+      print(extraVariable2);
       // extra property access
       print(Colors.amber);
+      // extra function expression invocation
+      (doSubmit)();
+      // ignore: unused_local_variable
+      final list = [
+        ...[1, 2, 3]
+      ]
+        ..add(4)
+        ..add(5);
+      StringBuffer()
+        ..write('A')
+        ..write('B');
       return pdb;
     }
 
@@ -804,14 +816,43 @@ class WithEarlyReturnHelper with CompanionPresenterMixin, FormCompanionMixin {
 }
 
 @formCompanion
-class WithPrefixedReferenceExpression
+class WithPrefixedTopLevelVariableReferenceExpression
     with CompanionPresenterMixin, FormCompanionMixin {
-  WithPrefixedReferenceExpression() {
-    PropertyDescriptorsBuilder setup() {
-      return pr.PropertyDescriptors.inlineInitialized;
-    }
+  WithPrefixedTopLevelVariableReferenceExpression() {
+    initializeCompanionMixin(pr.inlineInitialized);
+  }
 
-    initializeCompanionMixin(setup());
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+@formCompanion
+class WithPrefixedTopLevelFunctionReferenceExpression
+    with CompanionPresenterMixin, FormCompanionMixin {
+  WithPrefixedTopLevelFunctionReferenceExpression() {
+    initializeCompanionMixin(pr.cascadingFactory());
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+@formCompanion
+class WithPrefixedClassFieldReferenceExpression
+    with CompanionPresenterMixin, FormCompanionMixin {
+  WithPrefixedClassFieldReferenceExpression() {
+    initializeCompanionMixin(pr.PropertyDescriptors.inlineInitialized);
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+@formCompanion
+class WithPrefixedMethodReferenceExpression
+    with CompanionPresenterMixin, FormCompanionMixin {
+  WithPrefixedMethodReferenceExpression() {
+    initializeCompanionMixin(pr.PropertyDescriptors.cascadingFactory());
   }
 
   @override
@@ -1317,7 +1358,6 @@ class FieldWithoutInitialization
     with CompanionPresenterMixin, FormCompanionMixin {
   PropertyDescriptorsBuilder? builder;
   FieldWithoutInitialization() {
-    builder = PropertyDescriptorsBuilder()..add<int, int>(name: 'propInt');
     initializeCompanionMixin(builder!);
   }
 
@@ -1345,11 +1385,20 @@ class WithFunctionExpression with CompanionPresenterMixin, FormCompanionMixin {
 class WithFunctionInvocationExpression
     with CompanionPresenterMixin, FormCompanionMixin {
   WithFunctionInvocationExpression() {
-    PropertyDescriptorsBuilder setup() {
-      return (cascadingFactory)();
-    }
+    initializeCompanionMixin((cascadingFactory)());
+  }
 
-    initializeCompanionMixin(setup());
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+@formCompanion
+class WithHelperFunctionInvocationExpression
+    with CompanionPresenterMixin, FormCompanionMixin {
+  WithHelperFunctionInvocationExpression() {
+    final builder = PropertyDescriptorsBuilder();
+    (helper)(builder);
+    initializeCompanionMixin(builder);
   }
 
   @override
@@ -1361,6 +1410,43 @@ class WithControlExpression with CompanionPresenterMixin, FormCompanionMixin {
   WithControlExpression() {
     PropertyDescriptorsBuilder setup() {
       throw UnimplementedError();
+    }
+
+    initializeCompanionMixin(setup());
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+@formCompanion
+class WithDirectFieldRewrite with CompanionPresenterMixin, FormCompanionMixin {
+  PropertyDescriptorsBuilder _field = PropertyDescriptorsBuilder();
+
+  WithDirectFieldRewrite() {
+    PropertyDescriptorsBuilder setup() {
+      _field = PropertyDescriptorsBuilder();
+      return _field;
+    }
+
+    initializeCompanionMixin(setup());
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+@formCompanion
+class WithIndirectFieldRewrite
+    with CompanionPresenterMixin, FormCompanionMixin {
+  PropertyDescriptorsBuilder _field = PropertyDescriptorsBuilder();
+  PropertyDescriptorsBuilder get _getter => _field;
+  void set _setter(PropertyDescriptorsBuilder value) => _field = value;
+
+  WithIndirectFieldRewrite() {
+    PropertyDescriptorsBuilder setup() {
+      _setter = PropertyDescriptorsBuilder();
+      return _getter;
     }
 
     initializeCompanionMixin(setup());
