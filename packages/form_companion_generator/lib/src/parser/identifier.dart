@@ -35,15 +35,16 @@ FutureOr<PropertyDescriptorsBuilding> _parseIdentifierAsync(
       getter is FieldElement ||
       getter is PropertyAccessorElement) {
     // return fieldOrTopLevelVariable
-    final property = VariableNode(
-      await context.nodeProvider.getElementDeclarationAsync(getter!),
-      getter,
-    );
+
+    final getterNode =
+        await context.nodeProvider.getElementDeclarationAsync(getter!);
+    final property = VariableNode(getterNode, getter);
     final initializer = property.initializer;
     if (initializer == null) {
       throwError(
-        message:
-            "Failed to parse field, property, or top level variable '${property.name}' which does not have inline initialization.",
+        message: 'Failed to parse field, property, or top level variable '
+            "'${property.name}' which does not have inline initialization "
+            'at ${getNodeLocation(getterNode, getter)}.',
         todo:
             "Initialize field, property, or top level variable '${property.name}' inline.",
         element: property.element,
