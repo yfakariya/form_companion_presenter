@@ -62,60 +62,56 @@ FutureOr<PropertyDescriptorsBuilding?> _parseExpressionAsync(
   } else if (unparenthesized is CascadeExpression) {
     final target = unparenthesized.target;
     final targetClass = target.staticType?.element as ClassElement?;
-    if (targetClass?.name != pdbTypeName) {
-      throwNotSupportedYet(
-        node: unparenthesized,
-        contextElement: contextElement,
-      );
-    }
+    if (targetClass?.name == pdbTypeName) {
+      late final PropertyDescriptorsBuilding building;
+      if (target is Identifier && target.staticElement is PromotableElement) {
+        context.logger.fine(
+          "Found cascading method invocation for $pdbTypeName '$target' at ${getNodeLocation(expression, contextElement)}.",
+        );
 
-    late final PropertyDescriptorsBuilding building;
-    if (target is Identifier && target.staticElement is PromotableElement) {
-      context.logger.fine(
-        "Found cascading method invocation for $pdbTypeName '$target' at ${getNodeLocation(expression, contextElement)}.",
-      );
+        building = context.buildings[target.name]!;
+      } else if (target is InstanceCreationExpression ||
+          target is InvocationExpression) {
+        context.logger.fine(
+          "Found cascading method invocation for $pdbTypeName '$target' at ${getNodeLocation(expression, contextElement)}.",
+        );
+        // constructor or factory method
+        building = (await _parseExpressionAsync(
+          context,
+          contextElement,
+          target,
+        ))!;
+      } else {
+        // x[n] or x.n, so just skip
+        context.logger.fine(
+            "Skip cascade expression for '$target' (${target.runtimeType}) because it is not a $pdbTypeName variable at ${getNodeLocation(expression, contextElement)}.");
+        return null;
+      }
 
-      building = context.buildings[target.name]!;
-    } else if (target is InstanceCreationExpression ||
-        target is InvocationExpression) {
-      context.logger.fine(
-        "Found cascading method invocation for $pdbTypeName '$target' at ${getNodeLocation(expression, contextElement)}.",
-      );
-      // constructor or factory method
-      building = (await _parseExpressionAsync(
-        context,
+      building.addAll(
+        await unparenthesized.cascadeSections
+            .whereType<MethodInvocation>()
+            .map(
+              (e) => resolvePropertyDefinitionAsync(
+                context: context,
+                contextElement: contextElement,
+                methodInvocation: e,
+                targetClass: targetClass,
+                propertyName: null,
+                typeArguments: e.typeArgumentTypes
+                        ?.map(GenericType.fromDartType)
+                        .toList() ??
+                    [],
+                originalMethodInvocation: e,
+                isInferred:
+                    e.typeArguments?.length != e.typeArgumentTypes?.length,
+              ),
+            )
+            .toListAsync(),
         contextElement,
-        target,
-      ))!;
-    } else {
-      // x[n] or x.n, so just skip
-      context.logger.fine(
-          "Skip cascade expression for '$target' (${target.runtimeType}) because it is not a $pdbTypeName variable at ${getNodeLocation(expression, contextElement)}.");
-      return null;
+      );
+      return building;
     }
-
-    building.addAll(
-      await unparenthesized.cascadeSections
-          .whereType<MethodInvocation>()
-          .map(
-            (e) => resolvePropertyDefinitionAsync(
-              context: context,
-              contextElement: contextElement,
-              methodInvocation: e,
-              targetClass: targetClass,
-              propertyName: null,
-              typeArguments:
-                  e.typeArgumentTypes?.map(GenericType.fromDartType).toList() ??
-                      [],
-              originalMethodInvocation: e,
-              isInferred:
-                  e.typeArguments?.length != e.typeArgumentTypes?.length,
-            ),
-          )
-          .toListAsync(),
-      contextElement,
-    );
-    return building;
   }
 
   if (unparenthesized is InstanceCreationExpression &&
