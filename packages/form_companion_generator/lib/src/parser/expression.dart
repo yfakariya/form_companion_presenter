@@ -236,6 +236,15 @@ FutureOr<PropertyDescriptorsBuilding?> _parseExpressionAsync(
     } // method or function
   } // is MethodInvocation
 
+  if (unparenthesized is PropertyAccess &&
+      isPropertyDescriptorsBuilder(unparenthesized.staticType)) {
+    return await _parsePropertyAccessAsync(
+      context,
+      unparenthesized,
+      contextElement,
+    );
+  }
+
   if (unparenthesized is FunctionExpressionInvocation ||
       unparenthesized is FunctionExpression) {
     // (a.getter)(x) or () => x;

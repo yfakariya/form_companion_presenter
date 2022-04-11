@@ -28,6 +28,43 @@ FutureOr<PropertyDescriptorsBuilding> _parseIdentifierAsync(
           ?.lookUpGetter(lookupId, contextElement.library!) ??
       contextElement.library!.scope.lookup(lookupId).getter;
 
+  return await _parseGetterAsync(context, getter, identifier, contextElement);
+}
+
+FutureOr<PropertyDescriptorsBuilding> _parsePropertyAccessAsync(
+  ParseContext context,
+  PropertyAccess access,
+  Element contextElement,
+) async {
+  assert(isPropertyDescriptorsBuilder(access.staticType));
+  assert(access.staticParameterElement == null);
+
+  final target = access.target;
+  final lookupContextElement = target is PrefixedIdentifier
+      ? target.identifier.staticElement!
+      : target is SimpleIdentifier
+          ? target.staticElement!
+          : contextElement;
+
+  final getter = lookupContextElement
+          .thisOrAncestorOfType<ClassElement>()
+          ?.lookUpGetter(access.propertyName.name, contextElement.library!) ??
+      contextElement.library!.scope.lookup(access.propertyName.name).getter;
+
+  return await _parseGetterAsync(
+    context,
+    getter,
+    access,
+    contextElement,
+  );
+}
+
+FutureOr<PropertyDescriptorsBuilding> _parseGetterAsync(
+  ParseContext context,
+  Element? getter,
+  AstNode node,
+  Element contextElement,
+) async {
   if (getter is TopLevelVariableElement ||
       getter is FieldElement ||
       getter is PropertyAccessorElement) {
@@ -62,7 +99,7 @@ FutureOr<PropertyDescriptorsBuilding> _parseIdentifierAsync(
     return building;
   } else {
     throwNotSupportedYet(
-      node: identifier,
+      node: node,
       element: getter,
       contextElement: contextElement,
     );
