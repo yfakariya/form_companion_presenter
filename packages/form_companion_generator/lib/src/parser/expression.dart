@@ -25,6 +25,17 @@ FutureOr<PropertyDescriptorsBuilding?> _parseExpressionAsync(
       return null;
     }
 
+    if (unparenthesized.writeElement is! LocalVariableElement) {
+      throwError(
+        message: 'Failed to parse complex setup logic. '
+            "'$unparenthesized' changes field or top level variable which is "
+            '$pdbTypeName type at ${getNodeLocation(expression, contextElement)}.',
+        todo:
+            'Do not re-assign field or top level variable which is $pdbTypeName type.',
+        element: unparenthesized.writeElement,
+      );
+    }
+
     final leftHand = unparenthesized.leftHandSide;
     if (leftHand is Identifier) {
       if (leftHand.staticElement is! PromotableElement) {
@@ -47,16 +58,6 @@ FutureOr<PropertyDescriptorsBuilding?> _parseExpressionAsync(
           unparenthesized.rightHandSide,
         );
       }
-    } else {
-      // It is extremely hard to analyze and determine PropertyDescritporsBuilder
-      // state statically when it is setup via field and/or top level variable.
-      throwError(
-        message:
-            "Failed to parse complex $pdbTypeName setup via '$leftHand' at ${getNodeLocation(leftHand, contextElement)}.",
-        todo:
-            'Do not assign $pdbTypeName to fields or top level variables, use local variables instead.',
-        element: contextElement,
-      );
     }
   } else if (unparenthesized is CascadeExpression) {
     final target = unparenthesized.target;
