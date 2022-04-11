@@ -20,19 +20,12 @@ FutureOr<PropertyDescriptorsBuilding?> _parseFunctionBodyAsync(
       );
 
       return context.returnValue;
-    } else if (body is ExpressionFunctionBody) {
+    } else {
+      assert(body is ExpressionFunctionBody);
       return await _parseExpressionAsync(
         context,
         contextElement,
-        body.expression,
-      );
-    } else {
-      throwError(
-        message:
-            "$pdbTypeName setup functions '$contextElement' cannot be empty or native.",
-        todo:
-            'Use only expression bodied and block bodied for methods and functions to setup $pdbTypeName.',
-        element: contextElement,
+        (body as ExpressionFunctionBody).expression,
       );
     }
   } finally {
