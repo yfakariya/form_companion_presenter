@@ -1147,3 +1147,16 @@ class InvalidInitializationWithDuplication
   @override
   FutureOr<void> doSubmit() {}
 }
+
+@formCompanion
+class FieldWithoutInitialization
+    with CompanionPresenterMixin, FormCompanionMixin {
+  PropertyDescriptorsBuilder? builder;
+  FieldWithoutInitialization() {
+    builder = PropertyDescriptorsBuilder()..add<int, int>(name: 'propInt');
+    initializeCompanionMixin(builder!);
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}

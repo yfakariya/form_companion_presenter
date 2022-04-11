@@ -901,6 +901,17 @@ Future<void> main() async {
               'Fix to define each properties only once for given PropertyDescriptorsBuilder.',
         ),
       );
+
+      test(
+        'field without initialization - error',
+        () => testGetPropertiesError<PropertyAccessorElement>(
+          'FieldWithoutInitialization',
+          message:
+              "Failed to parse field, property, or top level variable 'builder' which does not have inline initialization at ",
+          todo:
+              "Initialize field, property, or top level variable 'builder' inline.",
+        ),
+      );
     });
 
     group('inferrance error -- default FormField is used and warnings', () {
