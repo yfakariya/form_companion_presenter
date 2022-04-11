@@ -245,14 +245,19 @@ FutureOr<PropertyDescriptorsBuilding?> _parseExpressionAsync(
     );
   }
 
-  if (unparenthesized is FunctionExpressionInvocation ||
-      unparenthesized is FunctionExpression) {
-    // (a.getter)(x) or () => x;
-    // Too complex and it should not be used for builder construction.
-    throwNotSupportedYet(
-      node: expression,
-      contextElement: contextElement,
-    );
+  if (unparenthesized is FunctionExpressionInvocation) {
+    final functionType = unparenthesized.staticInvokeType;
+    if (isPropertyDescriptorsBuilder(unparenthesized.staticType) ||
+        (functionType is FunctionType &&
+            functionType.parameters
+                .any((e) => isPropertyDescriptorsBuilder(e.type)))) {
+      // (a.getter)(x) or () => x;
+      // Too complex and it should not be used for builder construction.
+      throwNotSupportedYet(
+        node: expression,
+        contextElement: contextElement,
+      );
+    }
   }
 
   if (unparenthesized is PostfixExpression) {
