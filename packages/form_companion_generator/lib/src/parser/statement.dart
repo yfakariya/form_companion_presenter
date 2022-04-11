@@ -163,6 +163,6 @@ DartType? _getVariableType(VariableDeclarationStatement statement) {
     return variable.initializer!.staticType;
   }
 
-  // without any initializers.
-  return null;
+  // without any initializers, so we can use type here.
+  return statement.variables.type?.type;
 }
