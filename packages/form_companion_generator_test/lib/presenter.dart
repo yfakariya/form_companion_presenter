@@ -548,7 +548,7 @@ class CallsWithHelperFactory with CompanionPresenterMixin, FormCompanionMixin {
 class RefersStaticFieldInlineInitialized
     with CompanionPresenterMixin, FormCompanionMixin {
   RefersStaticFieldInlineInitialized() {
-    initializeCompanionMixin(PropertyDescritptors.inlineInitialized);
+    initializeCompanionMixin(PropertyDescriptors.inlineInitialized);
   }
 
   @override
@@ -559,7 +559,7 @@ class RefersStaticFieldInlineInitialized
 class RefersStaticFieldWithNoAddition
     with CompanionPresenterMixin, FormCompanionMixin {
   RefersStaticFieldWithNoAddition() {
-    initializeCompanionMixin(PropertyDescritptors.noAddition);
+    initializeCompanionMixin(PropertyDescriptors.noAddition);
   }
 
   @override
@@ -570,7 +570,7 @@ class RefersStaticFieldWithNoAddition
 class RefersStaticFieldGetterForInlineInitialized
     with CompanionPresenterMixin, FormCompanionMixin {
   RefersStaticFieldGetterForInlineInitialized() {
-    initializeCompanionMixin(PropertyDescritptors.refersInlineInitialized);
+    initializeCompanionMixin(PropertyDescriptors.refersInlineInitialized);
   }
 
   @override
@@ -581,7 +581,7 @@ class RefersStaticFieldGetterForInlineInitialized
 class RefersStaticFieldGetterForFactoryInitialized
     with CompanionPresenterMixin, FormCompanionMixin {
   RefersStaticFieldGetterForFactoryInitialized() {
-    initializeCompanionMixin(PropertyDescritptors.refersFactoryInitialized);
+    initializeCompanionMixin(PropertyDescriptors.refersFactoryInitialized);
   }
 
   @override
@@ -592,7 +592,7 @@ class RefersStaticFieldGetterForFactoryInitialized
 class RefersStaticFieldGetterForFactoryMethod
     with CompanionPresenterMixin, FormCompanionMixin {
   RefersStaticFieldGetterForFactoryMethod() {
-    initializeCompanionMixin(PropertyDescritptors.refersFactory);
+    initializeCompanionMixin(PropertyDescriptors.refersFactory);
   }
 
   @override
@@ -603,7 +603,7 @@ class RefersStaticFieldGetterForFactoryMethod
 class RefersStaticFieldCascadingFactoryMethod
     with CompanionPresenterMixin, FormCompanionMixin {
   RefersStaticFieldCascadingFactoryMethod() {
-    initializeCompanionMixin(PropertyDescritptors.withCascadingFactory);
+    initializeCompanionMixin(PropertyDescriptors.withCascadingFactory);
   }
 
   @override
@@ -614,7 +614,7 @@ class RefersStaticFieldCascadingFactoryMethod
 class RefersStaticFieldClassicFactoryMethod
     with CompanionPresenterMixin, FormCompanionMixin {
   RefersStaticFieldClassicFactoryMethod() {
-    initializeCompanionMixin(PropertyDescritptors.withClassicFactory);
+    initializeCompanionMixin(PropertyDescriptors.withClassicFactory);
   }
 
   @override
@@ -625,7 +625,7 @@ class RefersStaticFieldClassicFactoryMethod
 class RefersStaticFieldWithHelpersFactoryMethod
     with CompanionPresenterMixin, FormCompanionMixin {
   RefersStaticFieldWithHelpersFactoryMethod() {
-    initializeCompanionMixin(PropertyDescritptors.withWithHelpersFactory);
+    initializeCompanionMixin(PropertyDescriptors.withWithHelpersFactory);
   }
 
   @override
@@ -636,7 +636,7 @@ class RefersStaticFieldWithHelpersFactoryMethod
 class CallsStaticMethodCascadingFactory
     with CompanionPresenterMixin, FormCompanionMixin {
   CallsStaticMethodCascadingFactory() {
-    initializeCompanionMixin(PropertyDescritptors.cascadingFactory());
+    initializeCompanionMixin(PropertyDescriptors.cascadingFactory());
   }
 
   @override
@@ -647,7 +647,7 @@ class CallsStaticMethodCascadingFactory
 class CallsStaticMethodClassicFactory
     with CompanionPresenterMixin, FormCompanionMixin {
   CallsStaticMethodClassicFactory() {
-    initializeCompanionMixin(PropertyDescritptors.classicFactory());
+    initializeCompanionMixin(PropertyDescriptors.classicFactory());
   }
 
   @override
@@ -658,7 +658,7 @@ class CallsStaticMethodClassicFactory
 class CallsStaticMethodWithHelperFactory
     with CompanionPresenterMixin, FormCompanionMixin {
   CallsStaticMethodWithHelperFactory() {
-    initializeCompanionMixin(PropertyDescritptors.withHelpersFactory());
+    initializeCompanionMixin(PropertyDescriptors.withHelpersFactory());
   }
 
   @override

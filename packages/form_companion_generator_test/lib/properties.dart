@@ -9,7 +9,7 @@ import 'package:form_companion_presenter/form_companion_presenter.dart';
 import 'enum.dart';
 
 // Statics
-class PropertyDescritptors {
+class PropertyDescriptors {
   static final inlineInitialized = PropertyDescriptorsBuilder()
     ..add<int, String>(name: 'propInt')
     ..add<String, String>(name: 'propString')
