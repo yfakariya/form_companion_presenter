@@ -82,6 +82,14 @@ PropertyDescriptorsBuilder cascadingFactory() => PropertyDescriptorsBuilder()
   ..add<MyEnum, MyEnum>(name: 'propEnum')
   ..add<List<MyEnum>, List<MyEnum>>(name: 'propEnumList');
 
+PropertyDescriptorsBuilder get cascadingFactoryGetter =>
+    PropertyDescriptorsBuilder()
+      ..add<int, String>(name: 'propInt')
+      ..add<String, String>(name: 'propString')
+      ..add<bool, bool>(name: 'propBool')
+      ..add<MyEnum, MyEnum>(name: 'propEnum')
+      ..add<List<MyEnum>, List<MyEnum>>(name: 'propEnumList');
+
 final withClassicFactory = classicFactory();
 
 PropertyDescriptorsBuilder classicFactory() {

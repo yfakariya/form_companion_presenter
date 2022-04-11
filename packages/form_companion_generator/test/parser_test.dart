@@ -595,6 +595,11 @@ Future<void> main() async {
       );
 
       test(
+        'cascading factory top level getter calls - detected',
+        () => testGetPropertiesSuccess('CallsCascadingFactoryGetter'),
+      );
+
+      test(
         'classic factory calls - detected',
         () => testGetPropertiesSuccess('CallsClassicFactory'),
       );

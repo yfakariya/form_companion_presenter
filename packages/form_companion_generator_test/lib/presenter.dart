@@ -512,6 +512,17 @@ class CallsCascadingFactory with CompanionPresenterMixin, FormCompanionMixin {
 }
 
 @formCompanion
+class CallsCascadingFactoryGetter
+    with CompanionPresenterMixin, FormCompanionMixin {
+  CallsCascadingFactoryGetter() {
+    initializeCompanionMixin(cascadingFactoryGetter);
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+@formCompanion
 class CallsClassicFactory with CompanionPresenterMixin, FormCompanionMixin {
   CallsClassicFactory() {
     initializeCompanionMixin(classicFactory());
