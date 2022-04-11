@@ -85,7 +85,9 @@ String? getNodeLocation(AstNode node, Element contextElement) {
     return '(unknown):(unknown)';
   }
 
-  final unit = libraryResult.getElementDeclaration(contextElement)?.parsedUnit;
+  final unit = libraryResult
+      .getElementDeclaration(contextElement.nonSynthetic)
+      ?.parsedUnit;
 
   return '${unit?.path ?? '(unknown)'}:${unit?.lineInfo.getLocation(node.offset) ?? '(unknown)'}';
 }
