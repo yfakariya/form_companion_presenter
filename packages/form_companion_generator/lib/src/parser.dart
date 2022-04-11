@@ -244,7 +244,7 @@ Iterable<PropertyDefinition> _toUniquePropertyDefinitions(
       final element = _getDeclaringElement(definition.source);
       throwError(
         message:
-            "Property '${property.name}' is defined more than once ${getNodeLocation(definition.source, element)}.",
+            "Property '${property.name}' is defined more than once at ${getNodeLocation(definition.source, element)}.",
         todo: 'Fix to define each properties only once for given $pdbTypeName.',
         element: element,
       );
