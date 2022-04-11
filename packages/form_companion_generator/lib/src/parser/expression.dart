@@ -216,11 +216,7 @@ FutureOr<PropertyDescriptorsBuilding?> _parseExpressionAsync(
               contextElement,
               unparenthesized.argumentList.arguments[i],
             );
-            assert(
-              argument != null,
-              "$pdbTypeName typed expression '${unparenthesized.argumentList.arguments[i]}'"
-              ' (${unparenthesized.argumentList.arguments[i].runtimeType}) does not return building.',
-            );
+            assert(argument != null);
             // bind argument to parameter
             arguments[parameters[i].name] = argument!;
           }
