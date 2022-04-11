@@ -15,6 +15,7 @@ import 'package:form_companion_presenter/form_companion_presenter.dart';
 
 import 'enum.dart';
 import 'properties.dart';
+import 'properties.dart' as pr;
 
 // for detectMixinType() / getProperties() testing
 
@@ -741,6 +742,8 @@ class WithExtraConstructs with CompanionPresenterMixin, FormCompanionMixin {
       final extraVariable = DateTime.now();
       // extra invocation
       print(extraVariable);
+      // extra property access
+      print(Colors.amber);
       return pdb;
     }
 
@@ -794,6 +797,21 @@ class WithEarlyReturnHelper with CompanionPresenterMixin, FormCompanionMixin {
     final builder = PropertyDescriptorsBuilder();
     setup(builder);
     initializeCompanionMixin(builder);
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+@formCompanion
+class WithPrefixedReferenceExpression
+    with CompanionPresenterMixin, FormCompanionMixin {
+  WithPrefixedReferenceExpression() {
+    PropertyDescriptorsBuilder setup() {
+      return pr.PropertyDescriptors.inlineInitialized;
+    }
+
+    initializeCompanionMixin(setup());
   }
 
   @override
@@ -1301,6 +1319,51 @@ class FieldWithoutInitialization
   FieldWithoutInitialization() {
     builder = PropertyDescriptorsBuilder()..add<int, int>(name: 'propInt');
     initializeCompanionMixin(builder!);
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+@formCompanion
+class WithFunctionExpression with CompanionPresenterMixin, FormCompanionMixin {
+  WithFunctionExpression() {
+    PropertyDescriptorsBuilder Function() setup() {
+      return () => cascadingFactory();
+    }
+
+    final factory = setup();
+
+    initializeCompanionMixin(factory());
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+@formCompanion
+class WithFunctionInvocationExpression
+    with CompanionPresenterMixin, FormCompanionMixin {
+  WithFunctionInvocationExpression() {
+    PropertyDescriptorsBuilder setup() {
+      return (cascadingFactory)();
+    }
+
+    initializeCompanionMixin(setup());
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+@formCompanion
+class WithControlExpression with CompanionPresenterMixin, FormCompanionMixin {
+  WithControlExpression() {
+    PropertyDescriptorsBuilder setup() {
+      throw UnimplementedError();
+    }
+
+    initializeCompanionMixin(setup());
   }
 
   @override

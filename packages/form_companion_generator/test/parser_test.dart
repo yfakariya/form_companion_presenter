@@ -834,6 +834,11 @@ Future<void> main() async {
         'early return helper support',
         () => testGetPropertiesSuccess('WithEarlyReturnHelper'),
       );
+
+      test(
+        'found prefixed identifier for PropertyDescriptorsBuilder method target',
+        () => testGetPropertiesSuccess('WithPrefixedReferenceExpression'),
+      );
     });
 
     group('error cases', () {
@@ -947,6 +952,27 @@ Future<void> main() async {
               "Failed to parse field, property, or top level variable 'builder' which does not have inline initialization at ",
           todo:
               "Initialize field, property, or top level variable 'builder' inline.",
+        ),
+      );
+
+      test(
+        'found function invocation expression - error',
+        () => testGetPropertiesError<FunctionElement>(
+          'WithFunctionInvocationExpression',
+          message:
+              "Failed to parse complex source code '(cascadingFactory)()' (FunctionExpressionInvocationImpl) at ",
+          todo: 'Avoid using this expression or statement here, or file '
+              'the issue for this message if you truly want to use this code.',
+        ),
+      );
+
+      test(
+        'found control expression - error',
+        () => testGetPropertiesError<FunctionElement>(
+          'WithControlExpression',
+          message: 'Failed to analyze complex construction logics at ',
+          todo: 'Do not use conditional or throw like expression in methods or '
+              'functions for PropertyDescriptorsBuilder construction.',
         ),
       );
     });
