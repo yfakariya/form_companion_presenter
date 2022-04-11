@@ -9,10 +9,7 @@ FutureOr<PropertyDescriptorsBuilding> _parseIdentifierAsync(
   Identifier identifier,
   Element contextElement,
 ) async {
-  assert(
-    isPropertyDescriptorsBuilder(identifier.staticType),
-    "Type of identifier '$identifier' (${identifier.runtimeType}) is ${identifier.staticType}, not $pdbTypeName type.",
-  );
+  assert(isPropertyDescriptorsBuilder(identifier.staticType));
 
   if (identifier.staticElement is PromotableElement) {
     // localOrParameter
