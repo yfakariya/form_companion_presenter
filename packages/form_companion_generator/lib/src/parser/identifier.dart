@@ -37,7 +37,6 @@ FutureOr<PropertyDescriptorsBuilding> _parsePropertyAccessAsync(
   Element contextElement,
 ) async {
   assert(isPropertyDescriptorsBuilder(access.staticType));
-  assert(access.staticParameterElement == null);
 
   final target = access.target;
   final lookupContextElement = target is PrefixedIdentifier
