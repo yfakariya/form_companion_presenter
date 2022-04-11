@@ -665,6 +665,141 @@ class CallsStaticMethodWithHelperFactory
   FutureOr<void> doSubmit() {}
 }
 
+@formCompanion
+class WithLocalFunction with CompanionPresenterMixin, FormCompanionMixin {
+  WithLocalFunction() {
+    PropertyDescriptorsBuilder setup() => PropertyDescriptorsBuilder()
+      ..add<int, String>(name: 'propInt', valueConverter: intStringConverter)
+      ..add<String, String>(name: 'propString')
+      ..add<bool, bool>(name: 'propBool')
+      ..add<MyEnum, MyEnum>(name: 'propEnum')
+      ..add<List<MyEnum>, List<MyEnum>>(name: 'propEnumList');
+    initializeCompanionMixin(setup());
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+@formCompanion
+class WithExtraBlock with CompanionPresenterMixin, FormCompanionMixin {
+  WithExtraBlock() {
+    PropertyDescriptorsBuilder setup() {
+      final pdb = PropertyDescriptorsBuilder()
+        ..add<int, String>(name: 'propInt', valueConverter: intStringConverter)
+        ..add<String, String>(name: 'propString');
+      {
+        pdb
+          ..add<bool, bool>(name: 'propBool')
+          ..add<MyEnum, MyEnum>(name: 'propEnum')
+          ..add<List<MyEnum>, List<MyEnum>>(name: 'propEnumList');
+      }
+
+      return pdb;
+    }
+
+    initializeCompanionMixin(setup());
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+@formCompanion
+class WithLateFinalVariable with CompanionPresenterMixin, FormCompanionMixin {
+  WithLateFinalVariable() {
+    PropertyDescriptorsBuilder setup() {
+      late final PropertyDescriptorsBuilder pdb;
+
+      pdb = PropertyDescriptorsBuilder()
+        ..add<int, String>(name: 'propInt', valueConverter: intStringConverter)
+        ..add<String, String>(name: 'propString')
+        ..add<bool, bool>(name: 'propBool')
+        ..add<MyEnum, MyEnum>(name: 'propEnum')
+        ..add<List<MyEnum>, List<MyEnum>>(name: 'propEnumList');
+
+      return pdb;
+    }
+
+    initializeCompanionMixin(setup());
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+@formCompanion
+class WithExtraConstructs with CompanionPresenterMixin, FormCompanionMixin {
+  WithExtraConstructs() {
+    PropertyDescriptorsBuilder setup() {
+      final pdb = PropertyDescriptorsBuilder()
+        ..add<int, String>(name: 'propInt', valueConverter: intStringConverter)
+        ..add<String, String>(name: 'propString')
+        ..add<bool, bool>(name: 'propBool')
+        ..add<MyEnum, MyEnum>(name: 'propEnum')
+        ..add<List<MyEnum>, List<MyEnum>>(name: 'propEnumList');
+      final extraVariable = DateTime.now();
+      // extra invocation
+      print(extraVariable);
+      return pdb;
+    }
+
+    initializeCompanionMixin(setup());
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+@formCompanion
+class WithEarlyReturn with CompanionPresenterMixin, FormCompanionMixin {
+  WithEarlyReturn() {
+    PropertyDescriptorsBuilder setup() {
+      final pdb = PropertyDescriptorsBuilder()
+        ..add<int, String>(name: 'propInt', valueConverter: intStringConverter)
+        ..add<String, String>(name: 'propString')
+        ..add<bool, bool>(name: 'propBool')
+        ..add<MyEnum, MyEnum>(name: 'propEnum')
+        ..add<List<MyEnum>, List<MyEnum>>(name: 'propEnumList');
+      return pdb;
+
+      // ignore: dead_code
+      pdb..add<String, String>(name: 'extra');
+      return pdb;
+    }
+
+    initializeCompanionMixin(setup());
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+@formCompanion
+class WithEarlyReturnHelper with CompanionPresenterMixin, FormCompanionMixin {
+  WithEarlyReturnHelper() {
+    void setup(PropertyDescriptorsBuilder pdb) {
+      pdb
+        ..add<int, String>(name: 'propInt', valueConverter: intStringConverter)
+        ..add<String, String>(name: 'propString')
+        ..add<bool, bool>(name: 'propBool')
+        ..add<MyEnum, MyEnum>(name: 'propEnum')
+        ..add<List<MyEnum>, List<MyEnum>>(name: 'propEnumList');
+      return;
+
+      // ignore: dead_code
+      pdb..add<String, String>(name: 'extra');
+    }
+
+    final builder = PropertyDescriptorsBuilder();
+    setup(builder);
+    initializeCompanionMixin(builder);
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
 // -- refers global variable
 
 @formCompanion

@@ -804,6 +804,38 @@ Future<void> main() async {
       );
     });
 
+    group('special cases', () {
+      test(
+        'local function support',
+        () => testGetPropertiesSuccess('WithLocalFunction'),
+      );
+
+      test(
+        'extra block support',
+        () => testGetPropertiesSuccess('WithExtraBlock'),
+      );
+
+      test(
+        'uninitialized variable support',
+        () => testGetPropertiesSuccess('WithLateFinalVariable'),
+      );
+
+      test(
+        'extra constructs support',
+        () => testGetPropertiesSuccess('WithExtraConstructs'),
+      );
+
+      test(
+        'early return support',
+        () => testGetPropertiesSuccess('WithEarlyReturn'),
+      );
+
+      test(
+        'early return helper support',
+        () => testGetPropertiesSuccess('WithEarlyReturnHelper'),
+      );
+    });
+
     group('error cases', () {
       test(
         'no initializeCompanionMixin invocation - error',
