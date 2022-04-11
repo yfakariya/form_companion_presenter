@@ -187,26 +187,10 @@ Future<void> main() async {
       propertiesAssertion(result);
     }
 
-    // FutureOr<void> testGetPropertiesError<TElement>(
-    //   String name, {
-    //   required String message,
-    //   required String todo,
-    // }) =>
-    //     _testGetPropertiesErrorCore<TElement>(name,
-    //         message: message, todo: todo, withElement: true);
-    // FutureOr<void> testGetPropertiesErrorWithoutElement(
-    //   String name, {
-    //   required String message,
-    //   required String todo,
-    // }) =>
-    //     _testGetPropertiesErrorCore<Null>(name,
-    //         message: message, todo: todo, withElement: false);
-
     FutureOr<void> testGetPropertiesError<TElement>(
       String name, {
       required String message,
       required String todo,
-      // required bool withElement,
     }) async {
       final targetClass = findType(name);
       final warnings = <String>[];
@@ -788,7 +772,7 @@ Future<void> main() async {
         'calls factory with duplicated property definition - error',
         () => testGetPropertiesError<FunctionElement>(
           'InvalidLocalVariableWithDuplication',
-          message: "Property 'propInt' is defined more than once",
+          message: "Property 'propInt' is defined more than once at ",
           todo:
               'Fix to define each properties only once for given PropertyDescriptorsBuilder.',
         ),
@@ -798,7 +782,7 @@ Future<void> main() async {
         'calls factory with helper which does duplicated property definition - error',
         () => testGetPropertiesError<FunctionElement>(
           'InvalidLocalVariableWithDuplicationHelper',
-          message: "Property 'propInt' is defined more than once",
+          message: "Property 'propInt' is defined more than once at ",
           todo:
               'Fix to define each properties only once for given PropertyDescriptorsBuilder.',
         ),
@@ -808,7 +792,7 @@ Future<void> main() async {
         'initialized with duplicated property definition - error',
         () => testGetPropertiesError<ConstructorElement>(
           'InvalidLocalVariableInitializationWithDuplication',
-          message: "Property 'propInt' is defined more than once",
+          message: "Property 'propInt' is defined more than once at ",
           todo:
               'Fix to define each properties only once for given PropertyDescriptorsBuilder.',
         ),
@@ -892,7 +876,7 @@ Future<void> main() async {
         'calls factory with duplicated property definition - error',
         () => testGetPropertiesError<FunctionElement>(
           'InvalidFactoryWithDuplication',
-          message: "Property 'propInt' is defined more than once",
+          message: "Property 'propInt' is defined more than once at ",
           todo:
               'Fix to define each properties only once for given PropertyDescriptorsBuilder.',
         ),
@@ -902,7 +886,7 @@ Future<void> main() async {
         'calls factory with helper which does duplicated property definition - error',
         () => testGetPropertiesError<FunctionElement>(
           'InvalidFactoryWithDuplicationHelper',
-          message: "Property 'propInt' is defined more than once",
+          message: "Property 'propInt' is defined more than once at ",
           todo:
               'Fix to define each properties only once for given PropertyDescriptorsBuilder.',
         ),
@@ -912,7 +896,7 @@ Future<void> main() async {
         'initialized with duplicated property definition - error',
         () => testGetPropertiesError<ConstructorElement>(
           'InvalidInitializationWithDuplication',
-          message: "Property 'propInt' is defined more than once",
+          message: "Property 'propInt' is defined more than once at ",
           todo:
               'Fix to define each properties only once for given PropertyDescriptorsBuilder.',
         ),
