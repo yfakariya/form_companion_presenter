@@ -206,6 +206,8 @@ FutureOr<List<PropertyAndFormFieldDefinition>> getPropertiesAsync(
     // then assuming that it is direct reference to top level variable or field.
     building = context.buildings[pdbArgument.name] ??
         context.initializeCompanionMixinArgument!;
+  } else if (context.initializeCompanionMixinArgument == null) {
+    throwNotSupportedYet(node: ast, contextElement: constructor);
   } else {
     building = context.initializeCompanionMixinArgument!;
   }
