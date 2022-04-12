@@ -52,12 +52,12 @@ FutureOr<PropertyDescriptorsBuilding?> _parseExpressionAsync(
     final targetClass = target.staticType?.element as ClassElement?;
     if (targetClass?.name == pdbTypeName) {
       late final PropertyDescriptorsBuilding building;
-      if (target is Identifier && target.staticElement is PromotableElement) {
+      if (target is Identifier) {
         context.logger.fine(
           "Found cascading method invocation for $pdbTypeName '$target' at ${getNodeLocation(expression, contextElement)}.",
         );
 
-        building = context.buildings[target.name]!;
+        building = await _parseIdentifierAsync(context, target, contextElement);
       } else if (target is InstanceCreationExpression ||
           target is InvocationExpression) {
         context.logger.fine(
