@@ -862,6 +862,21 @@ Future<void> main() async {
           'WithPrefixedMethodReferenceExpression',
         ),
       );
+
+      test(
+        'prefixed constructor',
+        () => testGetPropertiesSuccess('WithPrefixedConstructor'),
+      );
+
+      test(
+        'cascading to return value from factory method',
+        () => testGetPropertiesSuccess('CascadingToFactoryMethodReturnValue'),
+      );
+
+      test(
+        'cascading to return value from factory getter',
+        () => testGetPropertiesSuccess('CascadingToTopLevelGetterReturnValue'),
+      );
     });
 
     group('error cases', () {
@@ -995,6 +1010,61 @@ Future<void> main() async {
           'WithHelperFunctionInvocationExpression',
           message:
               "Failed to parse complex source code '(helper)(builder)' (FunctionExpressionInvocationImpl) at ",
+          todo: 'Avoid using this expression or statement here, or file '
+              'the issue for this message if you truly want to use this code.',
+        ),
+      );
+
+      test(
+        'found cascading for list - error',
+        () => testGetPropertiesError<ConstructorElement>(
+          'WithListCascading',
+          message: 'Failed to parse complex source code '
+              "'builders[0]..add<int, int>(name: 'propInt')' (CascadeExpressionImpl) at ",
+          todo: 'Avoid using this expression or statement here, or file '
+              'the issue for this message if you truly want to use this code.',
+        ),
+      );
+
+      test(
+        'found method call for factory return value - error',
+        () => testGetPropertiesError<ConstructorElement>(
+          'CallToFactoryMethodReturnValue',
+          message: 'Failed to parse complex source code '
+              "'emptyFactory().add<int, int>(name: 'propInt')' (MethodInvocationImpl) at ",
+          todo: 'Avoid using this expression or statement here, or file '
+              'the issue for this message if you truly want to use this code.',
+        ),
+      );
+
+      test(
+        'found method call for top level getter return value - error',
+        () => testGetPropertiesError<ConstructorElement>(
+          'CallToTopLevelGetterReturnValue',
+          message: 'Failed to parse complex source code '
+              "'emptyFactoryGetter.add<int, int>(name: 'propInt')' (MethodInvocationImpl) at ",
+          todo: 'Avoid using this expression or statement here, or file '
+              'the issue for this message if you truly want to use this code.',
+        ),
+      );
+
+      test(
+        'found method call for prefixed factory return value - error',
+        () => testGetPropertiesError<ConstructorElement>(
+          'CallToPrefixedFactoryMethodReturnValue',
+          message: 'Failed to parse complex source code '
+              "'pr.emptyFactory().add<int, int>(name: 'propInt')' (MethodInvocationImpl) at ",
+          todo: 'Avoid using this expression or statement here, or file '
+              'the issue for this message if you truly want to use this code.',
+        ),
+      );
+
+      test(
+        'found method call for prefixed top level getter return value - error',
+        () => testGetPropertiesError<ConstructorElement>(
+          'CallToPrefixedTopLevelGetterReturnValue',
+          message: 'Failed to parse complex source code '
+              "'pr.emptyFactoryGetter.add<int, int>(name: 'propInt')' (MethodInvocationImpl) at ",
           todo: 'Avoid using this expression or statement here, or file '
               'the issue for this message if you truly want to use this code.',
         ),

@@ -11,6 +11,7 @@ import 'package:form_builder_companion_presenter/form_builder_companion_annotati
 import 'package:form_builder_companion_presenter/form_builder_companion_presenter.dart';
 import 'package:form_companion_presenter/form_companion_annotation.dart';
 import 'package:form_companion_presenter/form_companion_presenter.dart';
+import 'package:form_companion_presenter/form_companion_presenter.dart' as fcp;
 
 import 'enum.dart';
 import 'properties.dart';
@@ -738,14 +739,17 @@ class WithExtraConstructs with CompanionPresenterMixin, FormCompanionMixin {
         ..add<bool, bool>(name: 'propBool')
         ..add<MyEnum, MyEnum>(name: 'propEnum')
         ..add<List<MyEnum>, List<MyEnum>>(name: 'propEnumList');
-      var extraVariable = DateTime.now();
-      extraVariable = DateTime.now();
+      var extraVariable1 = DateTime.now();
+      extraVariable1 = DateTime.now();
       // extra invocation
-      print(extraVariable);
+      print(extraVariable1);
       // extra property access
       print(Colors.amber);
       // extra function expression invocation
       (doSubmit)();
+      // extra construction
+      final extraVariable2 = StringBuffer();
+      print(extraVariable2);
       // ignore: unused_local_variable
       final list = [
         ...[1, 2, 3]
@@ -852,6 +856,59 @@ class WithPrefixedMethodReferenceExpression
     with CompanionPresenterMixin, FormCompanionMixin {
   WithPrefixedMethodReferenceExpression() {
     initializeCompanionMixin(pr.PropertyDescriptors.cascadingFactory());
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+@formCompanion
+class WithPrefixedConstructor with CompanionPresenterMixin, FormCompanionMixin {
+  WithPrefixedConstructor() {
+    initializeCompanionMixin(
+      fcp.PropertyDescriptorsBuilder()
+        ..add<int, String>(name: 'propInt', valueConverter: intStringConverter)
+        ..add<String, String>(name: 'propString')
+        ..add<bool, bool>(name: 'propBool')
+        ..add<MyEnum, MyEnum>(name: 'propEnum')
+        ..add<List<MyEnum>, List<MyEnum>>(name: 'propEnumList'),
+    );
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+@formCompanion
+class CascadingToFactoryMethodReturnValue
+    with CompanionPresenterMixin, FormCompanionMixin {
+  CascadingToFactoryMethodReturnValue() {
+    initializeCompanionMixin(
+      emptyFactory()
+        ..add<int, String>(name: 'propInt', valueConverter: intStringConverter)
+        ..add<String, String>(name: 'propString')
+        ..add<bool, bool>(name: 'propBool')
+        ..add<MyEnum, MyEnum>(name: 'propEnum')
+        ..add<List<MyEnum>, List<MyEnum>>(name: 'propEnumList'),
+    );
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+@formCompanion
+class CascadingToTopLevelGetterReturnValue
+    with CompanionPresenterMixin, FormCompanionMixin {
+  CascadingToTopLevelGetterReturnValue() {
+    initializeCompanionMixin(
+      emptyFactoryGetter
+        ..add<int, String>(name: 'propInt', valueConverter: intStringConverter)
+        ..add<String, String>(name: 'propString')
+        ..add<bool, bool>(name: 'propBool')
+        ..add<MyEnum, MyEnum>(name: 'propEnum')
+        ..add<List<MyEnum>, List<MyEnum>>(name: 'propEnumList'),
+    );
   }
 
   @override
@@ -1398,6 +1455,65 @@ class WithHelperFunctionInvocationExpression
     final builder = PropertyDescriptorsBuilder();
     (helper)(builder);
     initializeCompanionMixin(builder);
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+@formCompanion
+class WithListCascading with CompanionPresenterMixin, FormCompanionMixin {
+  WithListCascading() {
+    final builders = [PropertyDescriptorsBuilder()];
+    initializeCompanionMixin(builders[0]..add<int, int>(name: 'propInt'));
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+@formCompanion
+class CallToFactoryMethodReturnValue
+    with CompanionPresenterMixin, FormCompanionMixin {
+  CallToFactoryMethodReturnValue() {
+    emptyFactory().add<int, int>(name: 'propInt');
+    initializeCompanionMixin(PropertyDescriptorsBuilder());
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+@formCompanion
+class CallToTopLevelGetterReturnValue
+    with CompanionPresenterMixin, FormCompanionMixin {
+  CallToTopLevelGetterReturnValue() {
+    emptyFactoryGetter.add<int, int>(name: 'propInt');
+    initializeCompanionMixin(PropertyDescriptorsBuilder());
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+@formCompanion
+class CallToPrefixedFactoryMethodReturnValue
+    with CompanionPresenterMixin, FormCompanionMixin {
+  CallToPrefixedFactoryMethodReturnValue() {
+    pr.emptyFactory().add<int, int>(name: 'propInt');
+    initializeCompanionMixin(PropertyDescriptorsBuilder());
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+@formCompanion
+class CallToPrefixedTopLevelGetterReturnValue
+    with CompanionPresenterMixin, FormCompanionMixin {
+  CallToPrefixedTopLevelGetterReturnValue() {
+    pr.emptyFactoryGetter.add<int, int>(name: 'propInt');
+    initializeCompanionMixin(PropertyDescriptorsBuilder());
   }
 
   @override
