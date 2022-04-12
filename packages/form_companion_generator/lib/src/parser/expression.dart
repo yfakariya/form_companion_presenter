@@ -70,10 +70,10 @@ FutureOr<PropertyDescriptorsBuilding?> _parseExpressionAsync(
           target,
         ))!;
       } else {
-        // x[n] or x.n, so just skip
-        context.logger.fine(
-            "Skip cascade expression for '$target' (${target.runtimeType}) because it is not a $pdbTypeName variable at ${getNodeLocation(expression, contextElement)}.");
-        return null;
+        throwNotSupportedYet(
+          node: unparenthesized,
+          contextElement: contextElement,
+        );
       }
 
       building.addAll(
