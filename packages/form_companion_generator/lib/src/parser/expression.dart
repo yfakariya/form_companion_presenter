@@ -38,26 +38,14 @@ FutureOr<PropertyDescriptorsBuilding?> _parseExpressionAsync(
 
     final leftHand = unparenthesized.leftHandSide;
     if (leftHand is Identifier) {
-      if (leftHand.staticElement is! PromotableElement) {
-        // x[n] or x.n, so just skip
-        context.logger.fine(
-            "Skip left hand part '$leftHand' of assignment expression '$expression' because it is not a variable at ${getNodeLocation(expression, contextElement)}.");
-        // fall through
-        return await _parseExpressionAsync(
-          context,
-          contextElement,
-          unparenthesized.rightHandSide,
-        );
-      } else {
-        // x = y
-        return await _processAssignmentAsync(
-          context,
-          expression,
-          contextElement,
-          leftHand.name,
-          unparenthesized.rightHandSide,
-        );
-      }
+      // x = y
+      return await _processAssignmentAsync(
+        context,
+        expression,
+        contextElement,
+        leftHand.name,
+        unparenthesized.rightHandSide,
+      );
     }
   } else if (unparenthesized is CascadeExpression) {
     final target = unparenthesized.target;
