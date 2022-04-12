@@ -25,7 +25,7 @@ FutureOr<PropertyDescriptorsBuilding?> _parseExpressionAsync(
       return null;
     }
 
-    if (unparenthesized.writeElement is! LocalVariableElement) {
+    if (unparenthesized.writeElement is! PromotableElement) {
       throwError(
         message: 'Failed to parse complex setup logic. '
             "'$unparenthesized' changes field or top level variable which is "
