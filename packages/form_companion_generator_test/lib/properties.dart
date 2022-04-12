@@ -19,6 +19,9 @@ class PropertyDescriptors {
 
   static final noAddition = PropertyDescriptorsBuilder();
 
+  static PropertyDescriptorsBuilder get emptyFactoryGetter =>
+      PropertyDescriptorsBuilder();
+
   static PropertyDescriptorsBuilder get refersInlineInitialized =>
       inlineInitialized;
   static PropertyDescriptorsBuilder get refersFactoryInitialized =>

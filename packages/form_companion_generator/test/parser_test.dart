@@ -874,8 +874,32 @@ Future<void> main() async {
       );
 
       test(
-        'cascading to return value from factory getter',
+        'cascading to return value from top level factory getter',
         () => testGetPropertiesSuccess('CascadingToTopLevelGetterReturnValue'),
+      );
+
+      test(
+        'cascading to return value from factory getter',
+        () => testGetPropertiesSuccess('CascadingToGetterReturnValue'),
+      );
+
+      test(
+        'cascading to return value from prefixed factory method',
+        () => testGetPropertiesSuccess(
+          'CascadingToPrefixedFactoryMethodReturnValue',
+        ),
+      );
+
+      test(
+        'cascading to return value from prefixed top level factory getter',
+        () => testGetPropertiesSuccess(
+          'CascadingToPrefixedTopLevelGetterReturnValue',
+        ),
+      );
+
+      test(
+        'cascading to return value from prefixed factory getter',
+        () => testGetPropertiesSuccess('CascadingToPrefixedGetterReturnValue'),
       );
     });
 
@@ -1049,6 +1073,17 @@ Future<void> main() async {
       );
 
       test(
+        'found method call for getter return value - error',
+        () => testGetPropertiesError<ConstructorElement>(
+          'CallToGetterReturnValue',
+          message: 'Failed to parse complex source code '
+              "'PropertyDescriptors.emptyFactoryGetter.add<int, int>(name: 'propInt')' (MethodInvocationImpl) at ",
+          todo: 'Avoid using this expression or statement here, or file '
+              'the issue for this message if you truly want to use this code.',
+        ),
+      );
+
+      test(
         'found method call for prefixed factory return value - error',
         () => testGetPropertiesError<ConstructorElement>(
           'CallToPrefixedFactoryMethodReturnValue',
@@ -1065,6 +1100,17 @@ Future<void> main() async {
           'CallToPrefixedTopLevelGetterReturnValue',
           message: 'Failed to parse complex source code '
               "'pr.emptyFactoryGetter.add<int, int>(name: 'propInt')' (MethodInvocationImpl) at ",
+          todo: 'Avoid using this expression or statement here, or file '
+              'the issue for this message if you truly want to use this code.',
+        ),
+      );
+
+      test(
+        'found method call for prefixed getter return value - error',
+        () => testGetPropertiesError<ConstructorElement>(
+          'CallToPrefixedGetterReturnValue',
+          message: 'Failed to parse complex source code '
+              "'pr.PropertyDescriptors.emptyFactoryGetter.add<int, int>(name: 'propInt')' (MethodInvocationImpl) at ",
           todo: 'Avoid using this expression or statement here, or file '
               'the issue for this message if you truly want to use this code.',
         ),

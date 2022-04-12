@@ -915,6 +915,78 @@ class CascadingToTopLevelGetterReturnValue
   FutureOr<void> doSubmit() {}
 }
 
+@formCompanion
+class CascadingToGetterReturnValue
+    with CompanionPresenterMixin, FormCompanionMixin {
+  CascadingToGetterReturnValue() {
+    initializeCompanionMixin(
+      PropertyDescriptors.emptyFactoryGetter
+        ..add<int, String>(name: 'propInt', valueConverter: intStringConverter)
+        ..add<String, String>(name: 'propString')
+        ..add<bool, bool>(name: 'propBool')
+        ..add<MyEnum, MyEnum>(name: 'propEnum')
+        ..add<List<MyEnum>, List<MyEnum>>(name: 'propEnumList'),
+    );
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+@formCompanion
+class CascadingToPrefixedFactoryMethodReturnValue
+    with CompanionPresenterMixin, FormCompanionMixin {
+  CascadingToPrefixedFactoryMethodReturnValue() {
+    initializeCompanionMixin(
+      pr.emptyFactory()
+        ..add<int, String>(name: 'propInt', valueConverter: intStringConverter)
+        ..add<String, String>(name: 'propString')
+        ..add<bool, bool>(name: 'propBool')
+        ..add<MyEnum, MyEnum>(name: 'propEnum')
+        ..add<List<MyEnum>, List<MyEnum>>(name: 'propEnumList'),
+    );
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+@formCompanion
+class CascadingToPrefixedTopLevelGetterReturnValue
+    with CompanionPresenterMixin, FormCompanionMixin {
+  CascadingToPrefixedTopLevelGetterReturnValue() {
+    initializeCompanionMixin(
+      pr.emptyFactoryGetter
+        ..add<int, String>(name: 'propInt', valueConverter: intStringConverter)
+        ..add<String, String>(name: 'propString')
+        ..add<bool, bool>(name: 'propBool')
+        ..add<MyEnum, MyEnum>(name: 'propEnum')
+        ..add<List<MyEnum>, List<MyEnum>>(name: 'propEnumList'),
+    );
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+@formCompanion
+class CascadingToPrefixedGetterReturnValue
+    with CompanionPresenterMixin, FormCompanionMixin {
+  CascadingToPrefixedGetterReturnValue() {
+    initializeCompanionMixin(
+      pr.PropertyDescriptors.emptyFactoryGetter
+        ..add<int, String>(name: 'propInt', valueConverter: intStringConverter)
+        ..add<String, String>(name: 'propString')
+        ..add<bool, bool>(name: 'propBool')
+        ..add<MyEnum, MyEnum>(name: 'propEnum')
+        ..add<List<MyEnum>, List<MyEnum>>(name: 'propEnumList'),
+    );
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
 // -- refers global variable
 
 @formCompanion
@@ -1497,6 +1569,17 @@ class CallToTopLevelGetterReturnValue
 }
 
 @formCompanion
+class CallToGetterReturnValue with CompanionPresenterMixin, FormCompanionMixin {
+  CallToGetterReturnValue() {
+    PropertyDescriptors.emptyFactoryGetter.add<int, int>(name: 'propInt');
+    initializeCompanionMixin(PropertyDescriptorsBuilder());
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+@formCompanion
 class CallToPrefixedFactoryMethodReturnValue
     with CompanionPresenterMixin, FormCompanionMixin {
   CallToPrefixedFactoryMethodReturnValue() {
@@ -1513,6 +1596,18 @@ class CallToPrefixedTopLevelGetterReturnValue
     with CompanionPresenterMixin, FormCompanionMixin {
   CallToPrefixedTopLevelGetterReturnValue() {
     pr.emptyFactoryGetter.add<int, int>(name: 'propInt');
+    initializeCompanionMixin(PropertyDescriptorsBuilder());
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+@formCompanion
+class CallToPrefixedGetterReturnValue
+    with CompanionPresenterMixin, FormCompanionMixin {
+  CallToPrefixedGetterReturnValue() {
+    pr.PropertyDescriptors.emptyFactoryGetter.add<int, int>(name: 'propInt');
     initializeCompanionMixin(PropertyDescriptorsBuilder());
   }
 
