@@ -100,8 +100,7 @@ FutureOr<PropertyDescriptorsBuilding?> _parseExpressionAsync(
     }
   }
 
-  if (unparenthesized is InstanceCreationExpression &&
-      unparenthesized.argumentList.arguments.isEmpty) {
+  if (unparenthesized is InstanceCreationExpression) {
     return _handleConstructorCall(context, unparenthesized, contextElement);
   }
 
