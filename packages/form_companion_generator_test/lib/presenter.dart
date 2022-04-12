@@ -738,11 +738,10 @@ class WithExtraConstructs with CompanionPresenterMixin, FormCompanionMixin {
         ..add<bool, bool>(name: 'propBool')
         ..add<MyEnum, MyEnum>(name: 'propEnum')
         ..add<List<MyEnum>, List<MyEnum>>(name: 'propEnumList');
-      final extraVariable1 = DateTime.now();
-      final extraVariable2 = extraVariable1;
+      var extraVariable = DateTime.now();
+      extraVariable = DateTime.now();
       // extra invocation
-      print(extraVariable1);
-      print(extraVariable2);
+      print(extraVariable);
       // extra property access
       print(Colors.amber);
       // extra function expression invocation
