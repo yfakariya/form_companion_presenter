@@ -105,116 +105,116 @@ FutureOr<PropertyDescriptorsBuilding?> _parseExpressionAsync(
   }
 
   if (unparenthesized is MethodInvocation) {
-    if (unparenthesized.methodName.name == pdbTypeName &&
-        unparenthesized.argumentList.arguments.isEmpty) {
-      // constructor
-      return _handleConstructorCall(context, unparenthesized, contextElement);
-    } else {
-      // method call
+    if (unparenthesized.methodName.name == initializeCompanionMixinMethodName) {
+      assert(unparenthesized.argumentList.arguments.length == 1);
+      context.initializeCompanionMixinArgument = await _parseExpressionAsync(
+        context,
+        contextElement,
+        unparenthesized.argumentList.arguments[0],
+      );
+      return null;
+    }
 
-      if (unparenthesized.methodName.name ==
-          initializeCompanionMixinMethodName) {
-        assert(unparenthesized.argumentList.arguments.length == 1);
-        context.initializeCompanionMixinArgument = await _parseExpressionAsync(
-          context,
-          contextElement,
-          unparenthesized.argumentList.arguments[0],
-        );
-        return null;
-      }
-
-      final target = unparenthesized.target;
-      final targetClass = lookupTargetClass(contextElement, unparenthesized);
-      if (targetClass?.name == pdbTypeName) {
-        if (target is SimpleIdentifier) {
-          // Found PDB method call.
-          context.buildings[target.name]!.add(
-            await resolvePropertyDefinitionAsync(
-              context: context,
-              contextElement: contextElement,
-              methodInvocation: unparenthesized,
-              targetClass: targetClass,
-              propertyName: null,
-              typeArguments: unparenthesized.typeArgumentTypes!
-                  .map(GenericType.fromDartType)
-                  .toList(),
-              originalMethodInvocation: unparenthesized,
-              isInferred: unparenthesized.typeArguments?.length !=
-                  unparenthesized.typeArgumentTypes?.length,
-            ),
-            contextElement,
-          );
-          return null;
-        } else {
+    final target = unparenthesized.target;
+    final targetClass = lookupTargetClass(contextElement, unparenthesized);
+    if (targetClass?.name == pdbTypeName) {
+      if (target is SimpleIdentifier) {
+        final building = context.buildings[target.name];
+        if (building == null) {
+          // We think invoking method to field or getter results is useless.
           throwNotSupportedYet(
             node: unparenthesized,
             contextElement: contextElement,
           );
         }
-      }
 
-      late final ExecutableNode? method;
-      final localFunction =
-          context.localFunctions[unparenthesized.methodName.name];
-      if (localFunction != null) {
-        method = ExecutableNode(
-          context.nodeProvider,
-          localFunction,
-          localFunction.declaredElement!,
-        );
-      } else {
-        final methodElement = lookupMethod(
+        // Found PDB method call.
+        building.add(
+          await resolvePropertyDefinitionAsync(
+            context: context,
+            contextElement: contextElement,
+            methodInvocation: unparenthesized,
+            targetClass: targetClass,
+            propertyName: null,
+            typeArguments: unparenthesized.typeArgumentTypes!
+                .map(GenericType.fromDartType)
+                .toList(),
+            originalMethodInvocation: unparenthesized,
+            isInferred: unparenthesized.typeArguments?.length !=
+                unparenthesized.typeArgumentTypes?.length,
+          ),
           contextElement,
-          targetClass,
-          unparenthesized.methodName.name,
-          unparenthesized,
-        );
-
-        method = ExecutableNode(
-          context.nodeProvider,
-          await context.nodeProvider.getElementDeclarationAsync(methodElement),
-          methodElement,
-        );
-      }
-
-      final parameters = await method.getParametersAsync();
-      if (!isPropertyDescriptorsBuilder(method.returnType) &&
-          !parameters.any((p) => isPropertyDescriptorsBuilder(p.type))) {
-        context.logger.fine(
-          "Skip trivial method or function call '$unparenthesized' at ${getNodeLocation(unparenthesized, contextElement)}.",
         );
         return null;
+      } else {
+        throwNotSupportedYet(
+          node: unparenthesized,
+          contextElement: contextElement,
+        );
       }
+    }
 
-      // initialize arguments
-      Map<String, PropertyDescriptorsBuilding>? arguments;
-      if (parameters.isNotEmpty) {
-        arguments = {};
-        for (var i = 0; i < parameters.length; i++) {
-          if (isPropertyDescriptorsBuilder(parameters[i].type)) {
-            final argument = await _parseExpressionAsync(
-              context,
-              contextElement,
-              unparenthesized.argumentList.arguments[i],
-            );
-            assert(argument != null);
-            // bind argument to parameter
-            arguments[parameters[i].name] = argument!;
-          }
+    late final ExecutableNode? method;
+    final localFunction =
+        context.localFunctions[unparenthesized.methodName.name];
+    if (localFunction != null) {
+      method = ExecutableNode(
+        context.nodeProvider,
+        localFunction,
+        localFunction.declaredElement!,
+      );
+    } else {
+      final methodElement = lookupMethod(
+        contextElement,
+        targetClass,
+        unparenthesized.methodName.name,
+        unparenthesized,
+      );
+
+      method = ExecutableNode(
+        context.nodeProvider,
+        await context.nodeProvider.getElementDeclarationAsync(methodElement),
+        methodElement,
+      );
+    }
+
+    final parameters = await method.getParametersAsync();
+    if (!isPropertyDescriptorsBuilder(method.returnType) &&
+        !parameters.any((p) => isPropertyDescriptorsBuilder(p.type))) {
+      context.logger.fine(
+        "Skip trivial method or function call '$unparenthesized' at ${getNodeLocation(unparenthesized, contextElement)}.",
+      );
+      return null;
+    }
+
+    // initialize arguments
+    Map<String, PropertyDescriptorsBuilding>? arguments;
+    if (parameters.isNotEmpty) {
+      arguments = {};
+      for (var i = 0; i < parameters.length; i++) {
+        if (isPropertyDescriptorsBuilder(parameters[i].type)) {
+          final argument = await _parseExpressionAsync(
+            context,
+            contextElement,
+            unparenthesized.argumentList.arguments[i],
+          );
+          assert(argument != null);
+          // bind argument to parameter
+          arguments[parameters[i].name] = argument!;
         }
       }
+    }
 
-      context.logger.fine(
-        "Parse method or function '${method.name}' at ${getNodeLocation(unparenthesized, contextElement)}",
-      );
+    context.logger.fine(
+      "Parse method or function '${method.name}' at ${getNodeLocation(unparenthesized, contextElement)}",
+    );
 
-      return await _parseFunctionBodyAsync(
-        context,
-        method.element,
-        arguments,
-        method.body,
-      );
-    } // method or function
+    return await _parseFunctionBodyAsync(
+      context,
+      method.element,
+      arguments,
+      method.body,
+    );
   } // is MethodInvocation
 
   if (unparenthesized is PropertyAccess &&
