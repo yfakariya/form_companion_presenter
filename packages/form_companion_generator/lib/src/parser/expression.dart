@@ -277,6 +277,7 @@ FutureOr<PropertyDescriptorsBuilding> _handleConstructorCall(
   Expression expression,
   Element contextElement,
 ) {
+  assert(isPropertyDescriptorsBuilder(expression.staticType));
   context.logger.fine(
     'Found constructor initialization of $pdbTypeName at ${getNodeLocation(expression, contextElement)}.',
   );
