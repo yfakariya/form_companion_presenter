@@ -69,6 +69,13 @@ FutureOr<PropertyDescriptorsBuilding?> _parseExpressionAsync(
           contextElement,
           target,
         ))!;
+      } else if (target is PropertyAccess) {
+        context.logger.fine(
+          "Found cascading method invocation for $pdbTypeName '$target' at ${getNodeLocation(expression, contextElement)}.",
+        );
+
+        building =
+            await _parsePropertyAccessAsync(context, target, contextElement);
       } else {
         throwNotSupportedYet(
           node: unparenthesized,
