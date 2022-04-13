@@ -22,7 +22,9 @@ import 'properties.dart' as pr;
 @formCompanion
 class FormPresenter with CompanionPresenterMixin, FormCompanionMixin {
   FormPresenter() {
-    initializeCompanionMixin(PropertyDescriptorsBuilder());
+    initializeCompanionMixin(
+      PropertyDescriptorsBuilder()..string(name: 'propString'),
+    );
   }
 
   @override
@@ -33,11 +35,28 @@ class FormPresenter with CompanionPresenterMixin, FormCompanionMixin {
 class FormBuilderPresenter
     with CompanionPresenterMixin, FormBuilderCompanionMixin {
   FormBuilderPresenter() {
-    initializeCompanionMixin(PropertyDescriptorsBuilder());
+    initializeCompanionMixin(
+      PropertyDescriptorsBuilder()..string(name: 'propString'),
+    );
   }
 
   @override
   FutureOr<void> doSubmit() {}
+}
+
+@formCompanion
+class BaseCompanion with CompanionPresenterMixin {
+  BaseCompanion() {
+    initializeCompanionMixin(
+      PropertyDescriptorsBuilder()..string(name: 'propString'),
+    );
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+
+  @override
+  bool canSubmit(BuildContext context) => true;
 }
 
 @formCompanion

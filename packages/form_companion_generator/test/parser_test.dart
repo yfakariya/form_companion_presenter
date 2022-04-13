@@ -6,6 +6,7 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:form_companion_generator/src/arguments_handler.dart';
+import 'package:form_companion_generator/src/config.dart';
 import 'package:form_companion_generator/src/dependency.dart';
 import 'package:form_companion_generator/src/form_field_locator.dart';
 import 'package:form_companion_generator/src/model.dart';
@@ -16,6 +17,7 @@ import 'package:source_gen/source_gen.dart';
 import 'package:test/test.dart';
 import 'package:tuple/tuple.dart';
 
+import 'emitter_test.dart';
 import 'session_resolver.dart';
 import 'test_helpers.dart';
 
@@ -61,6 +63,42 @@ Future<void> main() async {
     }
 
     return type;
+  }
+
+  void assertImports(
+    List<LibraryImport> result,
+    List<ExpectedImport> expected,
+  ) {
+    result.sort((l, r) => l.library.compareTo(r.library));
+    expected.sort((l, r) => l.identifier.compareTo(r.identifier));
+    expect(
+      result.map((e) => e.library).toList(),
+      expected.map((e) => e.identifier).toList(),
+    );
+    for (var i = 0; i < expected.length; i++) {
+      expect(result[i].library, expected[i].identifier);
+      expect(
+        result[i].showingTypes.toList()..sort(),
+        expected[i].shows,
+        reason: result[i].library,
+      );
+      expect(
+        result[i].prefixes.length,
+        expected[i].prefixes.length,
+        reason:
+            '${result[i].library}: ${result[i].prefixes.toList()} != ${expected[i].prefixes.toList()}',
+      );
+      final prefixes = result[i].prefixes.toList()
+        ..sort((l, r) => l.key.compareTo(r.key));
+      for (var j = 0; j < expected[i].prefixes.length; j++) {
+        expect(prefixes[j].key, expected[i].prefixes[j].key);
+        expect(
+          prefixes[j].value.toList()..sort(),
+          expected[i].prefixes[j].value,
+          reason: prefixes[j].key,
+        );
+      }
+    }
   }
 
   group('detectMixinType', () {
@@ -1582,42 +1620,6 @@ Future<void> main() async {
       );
     }
 
-    void assertImports(
-      List<LibraryImport> result,
-      List<ExpectedImport> expected,
-    ) {
-      result.sort((l, r) => l.library.compareTo(r.library));
-      expected.sort((l, r) => l.identifier.compareTo(r.identifier));
-      expect(
-        result.map((e) => e.library).toList(),
-        expected.map((e) => e.identifier).toList(),
-      );
-      for (var i = 0; i < expected.length; i++) {
-        expect(result[i].library, expected[i].identifier);
-        expect(
-          result[i].showingTypes.toList()..sort(),
-          expected[i].shows,
-          reason: result[i].library,
-        );
-        expect(
-          result[i].prefixes.length,
-          expected[i].prefixes.length,
-          reason:
-              '${result[i].library}: ${result[i].prefixes.toList()} != ${expected[i].prefixes.toList()}',
-        );
-        final prefixes = result[i].prefixes.toList()
-          ..sort((l, r) => l.key.compareTo(r.key));
-        for (var j = 0; j < expected[i].prefixes.length; j++) {
-          expect(prefixes[j].key, expected[i].prefixes[j].key);
-          expect(
-            prefixes[j].value.toList()..sort(),
-            expected[i].prefixes[j].value,
-            reason: prefixes[j].key,
-          );
-        }
-      }
-    }
-
     for (final spec in [
       Tuple2(
         'normal',
@@ -1820,9 +1822,136 @@ Future<void> main() async {
     );
   });
 
-  // TODO(yfakariya): field related tests.
+  group('parseElementAsync (integration tests)', () {
+    Future<void> testParseElementAsync({
+      bool? autovalidate,
+      bool asPart = false,
+      required bool isFormBuilder,
+    }) async {
+      final config = Config(<String, dynamic>{
+        'as_part': asPart,
+        'autovalidate_by_default': autovalidate
+      });
+      final type =
+          findType(isFormBuilder ? 'FormBuilderPresenter' : 'FormPresenter');
+      final result = await parseElementAsync(
+        config,
+        nodeProvider,
+        formFieldLocator,
+        type,
+        FormCompanionAnnotation.forClass(type)!,
+        logger,
+      );
 
-  // TODO(yfakariya): parseElementAsync : isFormBuilder x warnings
+      expect(result.isFormBuilder, isFormBuilder);
+      expect(result.name, type.name);
+      expect(result.warnings, isEmpty);
+
+      // do only minimum check here
+      expect(result.properties.length, 1);
+      expect(result.properties[0].name, 'propString');
+      expect(
+        result.properties[0].propertyValueType.maybeAsInterfaceType,
+        typeProvider.stringType,
+      );
+      expect(
+        result.properties[0].fieldValueType.maybeAsInterfaceType,
+        typeProvider.stringType,
+      );
+      expect(
+        result.properties[0].formFieldType
+            ?.getDisplayString(withNullability: true),
+        isFormBuilder ? 'FormBuilderTextField' : 'TextFormField',
+      );
+      expect(
+        result.properties[0].formFieldTypeName,
+        isFormBuilder ? 'FormBuilderTextField' : 'TextFormField',
+      );
+      expect(result.properties[0].instantiationContext, isNotNull);
+      expect(result.properties[0].isSimpleFormField, isTrue);
+      expect(result.properties[0].warnings, isEmpty);
+
+      if (autovalidate ?? true) {
+        expect(
+          result.fieldAutovalidateMode,
+          'AutovalidateMode.onUserInteraction',
+        );
+      } else {
+        expect(result.fieldAutovalidateMode, isNull);
+      }
+
+      if (asPart) {
+        expect(result.imports, isEmpty);
+      } else {
+        assertImports(
+          result.imports,
+          _merge([
+            ...isFormBuilder
+                ? _expectedImports['FormBuilderTextField']!
+                : _expectedImports['TextFormField']!,
+            ExpectedImport('presenter.dart'),
+          ]),
+        );
+      }
+    }
+
+    test(
+      'vanilla form',
+      () => testParseElementAsync(
+        isFormBuilder: false,
+      ),
+    );
+
+    test(
+      'form builder',
+      () => testParseElementAsync(
+        isFormBuilder: true,
+      ),
+    );
+
+    test(
+      'autovalidate_by_default',
+      () => testParseElementAsync(
+        autovalidate: true,
+        isFormBuilder: false,
+      ),
+    );
+
+    test(
+      'as_part',
+      () => testParseElementAsync(
+        asPart: true,
+        isFormBuilder: false,
+      ),
+    );
+
+    test('without annotation - error', () async {
+      final baseCompanion = findType('BaseCompanion');
+      try {
+        await parseElementAsync(
+          emptyConfig,
+          nodeProvider,
+          formFieldLocator,
+          baseCompanion,
+          FormCompanionAnnotation.forClass(baseCompanion)!,
+          logger,
+        );
+        fail('success');
+      }
+      // ignore: avoid_catching_errors
+      on InvalidGenerationSourceError catch (e) {
+        expect(
+          e.message,
+          'A target of @formCompanion must be mix-ined with the either of '
+          'FormCompanionPresenterMixin or FormBuilderPresenterMixin. '
+          'Class name: BaseCompanion',
+        );
+        expect(e.element, isA<ClassElement>());
+        expect(e.element?.name, 'BaseCompanion');
+      }
+    });
+  });
+
   // TODO(yfakariya): generator integration test.
 }
 
