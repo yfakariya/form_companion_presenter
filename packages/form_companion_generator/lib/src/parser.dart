@@ -272,10 +272,6 @@ Element _getDeclaringElement(MethodInvocation expression) {
         return node.declaredElement!;
       }
     }
-
-    if (node is CompilationUnit) {
-      return node.declaredElement!;
-    }
   }
 
   throw Exception(
