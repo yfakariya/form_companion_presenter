@@ -270,6 +270,24 @@ class FormCompanionAnnotation {
 
   /// Initializes a new instance which wraps specified [ConstantReader] for a `FormCompanion` annotation.
   FormCompanionAnnotation(this._annotation);
+
+  /// Returns [FormCompanionAnnotation] for given class.
+  ///
+  /// If [ClassElement] is not quailified with `FormCompanion` annotation,
+  /// this method returns `null`.
+  static FormCompanionAnnotation? forClass(ClassElement classElement) {
+    final annotationReader = classElement.metadata
+        .where(isFormCompanionAnnotation)
+        .whereType<ElementAnnotation?>()
+        .firstWhere((_) => true, orElse: () => null)
+        ?.computeConstantValue();
+
+    if (annotationReader == null) {
+      return null;
+    }
+
+    return FormCompanionAnnotation(ConstantReader(annotationReader));
+  }
 }
 
 /// Represents mix-in type of presenter.
