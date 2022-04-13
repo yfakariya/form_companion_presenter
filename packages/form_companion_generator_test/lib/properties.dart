@@ -70,6 +70,14 @@ final inlineInitialized = PropertyDescriptorsBuilder()
   ..add<MyEnum, MyEnum>(name: 'propEnum')
   ..add<List<MyEnum>, List<MyEnum>>(name: 'propEnumList');
 
+final inlineWithDuplication = PropertyDescriptorsBuilder()
+  ..add<int, String>(name: 'propInt')
+  ..add<String, String>(name: 'propString')
+  ..add<bool, bool>(name: 'propBool')
+  ..add<MyEnum, MyEnum>(name: 'propEnum')
+  ..add<List<MyEnum>, List<MyEnum>>(name: 'propEnumList')
+  ..add<int, String>(name: 'propInt');
+
 final noAddition = PropertyDescriptorsBuilder();
 
 PropertyDescriptorsBuilder get refersInlineInitialized => inlineInitialized;
@@ -97,6 +105,15 @@ PropertyDescriptorsBuilder get cascadingFactoryGetter =>
 
 PropertyDescriptorsBuilder get emptyFactoryGetter =>
     PropertyDescriptorsBuilder();
+
+PropertyDescriptorsBuilder get getterWithDuplication =>
+    PropertyDescriptorsBuilder()
+      ..add<int, String>(name: 'propInt')
+      ..add<String, String>(name: 'propString')
+      ..add<bool, bool>(name: 'propBool')
+      ..add<MyEnum, MyEnum>(name: 'propEnum')
+      ..add<List<MyEnum>, List<MyEnum>>(name: 'propEnumList')
+      ..add<int, String>(name: 'propInt');
 
 final withClassicFactory = classicFactory();
 

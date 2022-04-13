@@ -1149,6 +1149,26 @@ Future<void> main() async {
               'PropertyDescriptorsBuilder type.',
         ),
       );
+
+      test(
+        'refers top level variable with duplicated property definition - error',
+        () => testGetPropertiesError<PropertyAccessorElement>(
+          'InvalidTopLevelVariableWithDuplication',
+          message: "Property 'propInt' is defined more than once at ",
+          todo:
+              'Fix to define each properties only once for given PropertyDescriptorsBuilder.',
+        ),
+      );
+
+      test(
+        'refers top level getter with duplicated property definition - error',
+        () => testGetPropertiesError<PropertyAccessorElement>(
+          'InvalidTopLevelGetterWithDuplication',
+          message: "Property 'propInt' is defined more than once at ",
+          todo:
+              'Fix to define each properties only once for given PropertyDescriptorsBuilder.',
+        ),
+      );
     });
 
     group('inferrance error -- default FormField is used and warnings', () {

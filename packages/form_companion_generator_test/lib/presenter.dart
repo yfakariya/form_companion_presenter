@@ -1282,6 +1282,28 @@ class InvalidLocalVariableWithDuplicationHelper
 }
 
 @formCompanion
+class InvalidTopLevelVariableWithDuplication
+    with CompanionPresenterMixin, FormCompanionMixin {
+  InvalidTopLevelVariableWithDuplication() {
+    initializeCompanionMixin(inlineWithDuplication);
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+@formCompanion
+class InvalidTopLevelGetterWithDuplication
+    with CompanionPresenterMixin, FormCompanionMixin {
+  InvalidTopLevelGetterWithDuplication() {
+    initializeCompanionMixin(getterWithDuplication);
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+@formCompanion
 class InvalidLocalVariableInitializationWithDuplication
     with CompanionPresenterMixin, FormCompanionMixin {
   InvalidLocalVariableInitializationWithDuplication() {
