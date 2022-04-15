@@ -47,7 +47,9 @@ class TypeInstantiationContext {
     if (formFieldType.element.typeParameters.isEmpty) {
       assert(
         formFieldTypeArgument.getDisplayString(withNullability: true) ==
-            property.fieldType.getDisplayString(withNullability: true),
+            (property.fieldType.maybeAsInterfaceType ??
+                    (property.fieldType as GenericFunctionType).functionType)
+                .getDisplayString(withNullability: true),
       );
 
       logger.finer("Form field type '$formFieldType' is not generic.");
@@ -90,7 +92,7 @@ class TypeInstantiationContext {
 
     if (parameterType is ParameterizedType) {
       assert(argument.maybeAsInterfaceType != null);
-      assert(parameterType.element!.name == argument.rawTypeName);
+      assert(parameterType.element!.name == argument.rawType.element!.name);
       assert(
         parameterType.typeArguments.length == argument.typeArguments.length,
       );

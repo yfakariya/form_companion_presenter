@@ -316,17 +316,6 @@ abstract class GenericType {
   /// [InterfaceType].
   InterfaceType? get maybeAsInterfaceType;
 
-  /// Gets a raw type name without generic type parameters and arguments of
-  /// [rawType].
-  String get rawTypeName {
-    final type = rawType;
-    if (type is InterfaceType) {
-      return type.element.name;
-    } else {
-      return type.getDisplayString(withNullability: false);
-    }
-  }
-
   /// Initializes a new [GenericType] instance.
   factory GenericType.generic(
     DartType rawType,

@@ -75,7 +75,7 @@ String _determineFormFieldTypeName(
   required bool isFormBuilder,
 }) {
   if (preferredFormFieldType != null) {
-    return preferredFormFieldType.rawTypeName;
+    return preferredFormFieldType.rawType.element!.name!;
   } else {
     if (context.typeSystem.isAssignableTo(
       fieldValueType.rawType,
@@ -87,7 +87,7 @@ String _determineFormFieldTypeName(
     }
 
     // Use element name to ignore type arguments here.
-    final fieldValueTypeName = fieldValueType.rawTypeName;
+    final fieldValueTypeName = fieldValueType.rawType.element?.name;
     if (isFormBuilder) {
       return _predefinedFormBuilderFieldTypes[fieldValueTypeName] ??
           _defaultFormBuilderFieldType;
