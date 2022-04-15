@@ -53,8 +53,11 @@ Never throwError({
 }) =>
     todo == null
         ? throw InvalidGenerationSourceError(message, element: element)
-        : throw InvalidGenerationSourceError(message,
-            element: element, todo: todo);
+        : throw InvalidGenerationSourceError(
+            message,
+            element: element,
+            todo: todo,
+          );
 
 /// Throws [InvalidGenerationSourceError] which says like "this syntax is not supported yet.".
 Never throwNotSupportedYet({
