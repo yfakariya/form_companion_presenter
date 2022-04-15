@@ -323,16 +323,17 @@ abstract class GenericType {
   ) {
     if (rawType is InterfaceType) {
       return _InstantiatedGenericInterfaceType(
+        rawType,
         _toRawInterfaceType(rawType),
         typeArguments,
       );
     } else if (rawType is FunctionType) {
-      final functionType = _toNonAliasedFunctionType(rawType);
       return _InstantiatedGenericFunctionType(
-        functionType,
+        rawType,
+        _toRawFunctionType(rawType),
         typeArguments,
         _buildFunctionTypeGenericArguments(
-          functionType.typeFormals,
+          rawType,
           typeArguments,
         ),
       );
@@ -351,8 +352,25 @@ abstract class GenericType {
     if (type is InterfaceType) {
       assert(!type.typeArguments.any((t) => t is TypeParameterType));
     } else if (type is FunctionType) {
-      assert(type.typeFormals.isEmpty);
-      return _InstantiatedGenericFunctionType(type, [], {});
+      final alias = type.alias;
+      if (alias == null) {
+        assert(type.typeFormals.isEmpty);
+        return _InstantiatedGenericFunctionType(
+          type,
+          _toRawFunctionType(type),
+          [],
+          {},
+        );
+      } else {
+        final typeArguments =
+            alias.typeArguments.map(GenericType.fromDartType).toList();
+        return _InstantiatedGenericFunctionType(
+          type,
+          _toRawFunctionType(type),
+          typeArguments,
+          _buildFunctionTypeGenericArguments(type, typeArguments),
+        );
+      }
     }
 
     return _NonGenericType(type);
@@ -360,18 +378,11 @@ abstract class GenericType {
 
   GenericType._();
 
-  static InterfaceType _toRawInterfaceType(
-          InterfaceType mayBeAliasedOrGenericType) =>
-      ((mayBeAliasedOrGenericType.alias?.element.aliasedType
-                  as InterfaceType?) ??
-              mayBeAliasedOrGenericType)
-          .element
-          .thisType;
+  static InterfaceType _toRawInterfaceType(InterfaceType type) =>
+      type.element.thisType;
 
-  static FunctionType _toNonAliasedFunctionType(
-          FunctionType mayBeAliasedType) =>
-      mayBeAliasedType.alias?.element.aliasedType as FunctionType? ??
-      mayBeAliasedType;
+  static FunctionType _toRawFunctionType(FunctionType type) =>
+      (type.element?.nonSynthetic as FunctionTypedElement?)?.type ?? type;
 
   @override
   @nonVirtual
@@ -432,16 +443,73 @@ class _NonGenericType extends GenericType {
     StringSink sink, {
     required bool withNullability,
   }) =>
-      sink.write(type.getDisplayString(withNullability: withNullability));
+      _writeTypeTo(type, sink, withNullability: withNullability);
+}
+
+void _writeTypeTo(
+  DartType type,
+  StringSink sink, {
+  required bool withNullability,
+}) {
+  final alias = type.alias;
+  if (alias == null) {
+    sink.write(type.getDisplayString(withNullability: withNullability));
+  } else {
+    _writeAliasTo(
+      alias,
+      {},
+      type.nullabilitySuffix,
+      sink,
+      withNullability: withNullability,
+    );
+  }
+}
+
+void _writeAliasTo(
+  InstantiatedTypeAliasElement alias,
+  Map<String, GenericType> typeParameterMap,
+  NullabilitySuffix nullabilitySuffix,
+  StringSink sink, {
+  required bool withNullability,
+}) {
+  sink.write(alias.element.name);
+
+  if (alias.typeArguments.isNotEmpty) {
+    sink.write('<');
+    var isFirst = true;
+    for (final t in alias.typeArguments) {
+      if (isFirst) {
+        isFirst = false;
+      } else {
+        sink.write(', ');
+      }
+
+      if (t is TypeParameterType) {
+        final actual = typeParameterMap[t.element.name];
+        if (actual != null) {
+          actual.writeTo(sink, withNullability: withNullability);
+          continue;
+        }
+      }
+
+      _writeTypeTo(t, sink, withNullability: withNullability);
+    }
+    sink.write('>');
+  }
+
+  if (withNullability && nullabilitySuffix != NullabilitySuffix.none) {
+    sink.write('?');
+  }
 }
 
 /// Represents generic interface type with type arguments.
 @sealed
 class _InstantiatedGenericInterfaceType extends GenericType {
   final InterfaceType _interfaceType;
+  final InterfaceType _rawType;
 
   @override
-  DartType get rawType => _interfaceType;
+  DartType get rawType => _rawType;
 
   @override
   final List<GenericType> typeArguments;
@@ -451,9 +519,10 @@ class _InstantiatedGenericInterfaceType extends GenericType {
 
   _InstantiatedGenericInterfaceType(
     this._interfaceType,
+    this._rawType,
     this.typeArguments,
   )   : assert(
-          _interfaceType.typeArguments.whereType<TypeParameterType>().length ==
+          _rawType.typeArguments.whereType<TypeParameterType>().length ==
               typeArguments.length,
         ),
         super._();
@@ -463,21 +532,21 @@ class _InstantiatedGenericInterfaceType extends GenericType {
     StringSink sink, {
     required bool withNullability,
   }) {
-    final type = rawType;
-    if (type is InterfaceType) {
-      sink.write(type.element.name);
-      _writeTypeArgumentsTo(
-        sink,
-        typeArguments,
-        withNullability: withNullability,
-      );
-      if (withNullability && type.nullabilitySuffix != NullabilitySuffix.none) {
-        sink.write('?');
-      }
-
-      return;
+    final alias = _interfaceType.alias;
+    if (alias == null) {
+      sink.write(_interfaceType.element.name);
     } else {
-      sink.write(type.getDisplayString(withNullability: withNullability));
+      sink.write(alias.element.name);
+    }
+
+    _writeTypeArgumentsTo(
+      sink,
+      typeArguments,
+      withNullability: withNullability,
+    );
+    if (withNullability &&
+        _interfaceType.nullabilitySuffix != NullabilitySuffix.none) {
+      sink.write('?');
     }
   }
 
@@ -505,25 +574,21 @@ class _InstantiatedGenericInterfaceType extends GenericType {
       return;
     }
 
-    final type = rawType;
-    if (type is! InterfaceType) {
-      return;
-    }
+    final intrinsicTypeArguments = _interfaceType.alias == null
+        ? _interfaceType.typeArguments
+        : _interfaceType.alias!.typeArguments;
 
-    if (type.typeArguments.isNotEmpty &&
-        !type.typeArguments.any((e) => e is TypeParameterType)) {
+    if (intrinsicTypeArguments.isNotEmpty) {
       sink.write('<');
       var isFirst = true;
-      for (final typeArgument in type.typeArguments) {
+      for (final typeArgument in intrinsicTypeArguments) {
         if (isFirst) {
           isFirst = false;
         } else {
           sink.write(', ');
         }
 
-        sink.write(
-          typeArgument.getDisplayString(withNullability: withNullability),
-        );
+        _writeTypeTo(typeArgument, sink, withNullability: withNullability);
       }
       sink.write('>');
     }
@@ -533,11 +598,12 @@ class _InstantiatedGenericInterfaceType extends GenericType {
 /// Represents generic function type.
 abstract class GenericFunctionType extends GenericType {
   /// Gets an underlying [FunctionType].
-  final FunctionType rawFunctionType;
+  final FunctionType functionType;
+  final FunctionType _rawType;
 
   @override
   @nonVirtual
-  DartType get rawType => rawFunctionType;
+  DartType get rawType => _rawType;
 
   @override
   @nonVirtual
@@ -549,10 +615,52 @@ abstract class GenericFunctionType extends GenericType {
   /// Gets a list of parameter types of the function type.
   Iterable<GenericType> get parameterTypes;
 
-  GenericFunctionType._(this.rawFunctionType) : super._();
+  GenericFunctionType._(this.functionType, this._rawType) : super._();
+}
+
+/// Represents generic function type with type arguments.
+@sealed
+class _InstantiatedGenericFunctionType extends GenericFunctionType {
+  final Map<String, GenericType> _genericArguments;
+
+  @override
+  List<GenericType> typeArguments;
+
+  @override
+  GenericType get returnType => _instantiate(functionType.returnType);
+
+  @override
+  Iterable<GenericType> get parameterTypes =>
+      functionType.parameters.map((p) => _instantiate(p.type));
+
+  _InstantiatedGenericFunctionType(
+    FunctionType functionType,
+    FunctionType rawFunctionType,
+    this.typeArguments,
+    this._genericArguments,
+  ) : super._(functionType, rawFunctionType);
+
+  GenericType _instantiate(DartType mayBeTypeParameter) =>
+      ((mayBeTypeParameter is TypeParameterType)
+          ? _genericArguments[
+              mayBeTypeParameter.getDisplayString(withNullability: false)]
+          : null) ??
+      GenericType.fromDartType(mayBeTypeParameter);
 
   @override
   void writeTo(StringSink sink, {required bool withNullability}) {
+    final alias = functionType.alias;
+    if (alias != null) {
+      _writeAliasTo(
+        alias,
+        _genericArguments,
+        functionType.nullabilitySuffix,
+        sink,
+        withNullability: withNullability,
+      );
+      return;
+    }
+
     sink
       ..write(returnType.getDisplayString(withNullability: withNullability))
       ..write(' Function(');
@@ -561,8 +669,8 @@ abstract class GenericFunctionType extends GenericType {
     var isRequiredPositional = true;
     var isNamed = false;
     final parameterTypes = this.parameterTypes.toList();
-    for (var i = 0; i < rawFunctionType.parameters.length; i++) {
-      final parameter = rawFunctionType.parameters[i];
+    for (var i = 0; i < functionType.parameters.length; i++) {
+      final parameter = functionType.parameters[i];
       if (isFirst) {
         isFirst = false;
       } else {
@@ -592,51 +700,76 @@ abstract class GenericFunctionType extends GenericType {
     }
 
     sink.write(')');
+
+    if (withNullability &&
+        functionType.nullabilitySuffix != NullabilitySuffix.none) {
+      sink.write('?');
+    }
   }
-}
-
-/// Represents generic function type with type arguments.
-@sealed
-class _InstantiatedGenericFunctionType extends GenericFunctionType {
-  final Map<String, GenericType> _genericArguments;
-
-  @override
-  List<GenericType> typeArguments;
-
-  @override
-  GenericType get returnType => _instantiate(rawFunctionType.returnType);
-
-  @override
-  Iterable<GenericType> get parameterTypes =>
-      rawFunctionType.parameters.map((p) => _instantiate(p.type));
-
-  _InstantiatedGenericFunctionType(
-    FunctionType functionType,
-    this.typeArguments,
-    this._genericArguments,
-  )   : assert(functionType.typeFormals.isEmpty),
-        super._(functionType);
-
-  GenericType _instantiate(DartType mayBeTypeParameter) =>
-      ((mayBeTypeParameter is TypeParameterType)
-          ? _genericArguments[
-              mayBeTypeParameter.getDisplayString(withNullability: false)]
-          : null) ??
-      GenericType.fromDartType(mayBeTypeParameter);
 }
 
 Map<String, GenericType> _buildFunctionTypeGenericArguments(
-  List<TypeParameterElement> typeFormals,
+  FunctionType type,
   List<GenericType> typeArguments,
 ) {
-  assert(typeArguments.length == typeArguments.length);
-
-  final result = <String, GenericType>{};
-  for (var i = 0; i < typeArguments.length; i++) {
-    result[typeFormals[i].name] = typeArguments[i];
+  if (typeArguments.isEmpty) {
+    return {};
   }
 
-  return result;
+  if (type.typeFormals.isNotEmpty) {
+    if (type.typeFormals.length != typeArguments.length) {
+      throwError(
+        message: "Complex function type '$type' is not supported.",
+        todo: 'Do not use complex function type which has type formals and '
+            'uses any type parameters other than type formals. '
+            'For example, `S Function<T>(T)` is not allowed, '
+            'but `T Function<T>(T)` is allowed.',
+      );
+    }
+
+    final result = <String, GenericType>{};
+    for (var i = 0; i < typeArguments.length; i++) {
+      result[type.typeFormals[i].name] = typeArguments[i];
+    }
+
+    return result;
+  } else {
+    if (typeArguments.length == 1) {
+      late final FunctionType actualType;
+      final alias = type.alias;
+      if (alias != null) {
+        actualType = alias.element.aliasedType as FunctionType;
+      } else {
+        actualType = type;
+      }
+
+      final typeParameters = <String>{};
+      if (actualType.returnType is TypeParameterType) {
+        typeParameters.add(
+          actualType.returnType.getDisplayString(withNullability: false),
+        );
+      }
+
+      typeParameters.addAll(
+        actualType.parameters
+            .map((e) => e.type)
+            .whereType<TypeParameterType>()
+            .map((t) => t.getDisplayString(withNullability: false)),
+      );
+
+      if (typeParameters.length == 1) {
+        return {typeParameters.first: typeArguments.first};
+      }
+    }
+
+    throwError(
+      message: "Complex function type '$type' is not supported.",
+      todo: 'Do not use complex function type which has more than one type '
+          'parameters. '
+          'For example, `S Function(T)` is not allowed, '
+          'but `T Function(T)` is allowed.',
+    );
+  }
 }
 
 /// Represents definition of a property.

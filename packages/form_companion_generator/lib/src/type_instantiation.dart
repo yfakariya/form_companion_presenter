@@ -116,7 +116,7 @@ class TypeInstantiationContext {
     if (parameterType is FunctionType) {
       assert(argument is GenericFunctionType);
       assert(parameterType.parameters.length ==
-          (argument as GenericFunctionType).rawFunctionType.parameters.length);
+          (argument as GenericFunctionType).functionType.parameters.length);
 
       _buildTypeArgumentMappings(
         parameterType.returnType,
