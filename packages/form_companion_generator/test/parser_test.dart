@@ -1383,7 +1383,7 @@ Future<void> main() async {
       group('FormBuilder', () {
         for (final testCase in [
           Tuple5(
-            '',
+            '', // intentionally empty
             'Object',
             'Object',
             'FormBuilderField<T>',
@@ -1392,7 +1392,9 @@ Future<void> main() async {
               fieldValueWarning,
               defaultFormFieldWarningBuilder
             ],
-          ), // item1 is intentionally empty
+          ),
+          // NOTE: if `WithField` is used, `TField` should be inferred as
+          //       `FormField<T>` even when `isFormBuilder` is `true`.
           Tuple5(
             'WithField',
             'Object',
