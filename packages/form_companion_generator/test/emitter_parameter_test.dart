@@ -736,7 +736,7 @@ const functionExpected = {
   'nullableFunction': {
     'alias': 'NonGenericCallback? alias',
     'genericAlias': 'GenericCallback<bool>? genericAlias',
-    'instantiatedAlias': 'GenericCallback<int>? instantiatedAlias',
+    'instantiatedAlias': 'GenericCallback<int?>? instantiatedAlias',
     'prefixedAlias': 'ui.VoidCallback? prefixedAlias',
     'function': 'int? Function(String?)? function',
     'genericFunction': 'bool? Function(bool?)? genericFunction',
@@ -823,7 +823,7 @@ const typeExpected = {
     'nullable': {
       'alias': 'NonGenericCallback?',
       'genericAlias': 'GenericCallback<bool>?',
-      'instantiatedAlias': 'GenericCallback<int>?',
+      'instantiatedAlias': 'GenericCallback<int?>?',
       'prefixedAlias': 'VoidCallback?',
       'function': 'int? Function(String?)?',
       'genericFunction': 'bool? Function(bool?)?',
@@ -900,7 +900,7 @@ const typeAnnotationExpected = {
     'nullable': {
       'alias': 'NonGenericCallback?',
       'genericAlias': 'GenericCallback<bool>?',
-      'instantiatedAlias': 'GenericCallback<int>?',
+      'instantiatedAlias': 'GenericCallback<int?>?',
       'prefixedAlias': 'ui.VoidCallback?',
       'function': 'int? Function(String?)?',
       'genericFunction': 'bool? Function(bool?)?',

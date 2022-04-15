@@ -105,7 +105,7 @@ class ParameterHolder<T> extends FormField<T> {
   void nullableFunction(
     NonGenericCallback? alias,
     GenericCallback<T>? genericAlias,
-    GenericCallback<int>? instantiatedAlias,
+    GenericCallback<int?>? instantiatedAlias,
     ui.VoidCallback? prefixedAlias,
     int? Function(String?)? function,
     T? Function(T?)? genericFunction,
