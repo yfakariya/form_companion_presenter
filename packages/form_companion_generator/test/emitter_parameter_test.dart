@@ -30,7 +30,8 @@ Future<void> main() async {
       c.name: {for (final p in c.parameters) p.name: p}
   };
   final methodParameters = {
-    for (final m in holder.methods)
+    // xxxInterface methods are not for this test library.
+    for (final m in holder.methods.where((m) => !m.name.endsWith('Interface')))
       m.name: {for (final p in m.parameters) p.name: p}
   };
   final constructorParameterNodes = {

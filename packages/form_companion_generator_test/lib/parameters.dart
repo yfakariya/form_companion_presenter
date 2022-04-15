@@ -10,6 +10,9 @@ import 'package:flutter/material.dart';
 typedef NonGenericCallback = int Function(String);
 typedef GenericCallback<T> = void Function<T>(T);
 
+typedef AString = String;
+typedef AList<E> = List<E>;
+
 class SimpleClass {}
 
 // dummy 'FormField'
@@ -143,6 +146,24 @@ class ParameterHolder<T> extends FormField<T> {
     void namedNestedFunction(String Function(int Function() f1) f2)?,
     final void Function()? withKeyword,
   }) {}
+
+  void simpleInterface(
+    AString alias,
+    AList<T> genericAlias,
+    AList<int> instantiatedAlias,
+    String interface,
+    List<T> genericInterface,
+    List<int> instantiatedInterface,
+  ) {}
+
+  void nullableInterface(
+    AString? alias,
+    AList<T>? genericAlias,
+    AList<int?>? instantiatedAlias,
+    String? interface,
+    List<T?>? genericInterface,
+    List<int?>? instantiatedInterface,
+  ) {}
 }
 
 class ParameterListHolder<T> extends FormBuilderField<List<T>> {
