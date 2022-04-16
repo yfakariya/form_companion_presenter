@@ -1958,8 +1958,6 @@ Future<void> main() async {
       }
     });
   });
-
-  // TODO(yfakariya): generator integration test.
 }
 
 List<ExpectedImport> _merge(List<ExpectedImport> lists) {
