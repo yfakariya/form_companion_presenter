@@ -53,8 +53,11 @@ Never throwError({
 }) =>
     todo == null
         ? throw InvalidGenerationSourceError(message, element: element)
-        : throw InvalidGenerationSourceError(message,
-            element: element, todo: todo);
+        : throw InvalidGenerationSourceError(
+            message,
+            element: element,
+            todo: todo,
+          );
 
 /// Throws [InvalidGenerationSourceError] which says like "this syntax is not supported yet.".
 Never throwNotSupportedYet({
@@ -85,7 +88,9 @@ String? getNodeLocation(AstNode node, Element contextElement) {
     return '(unknown):(unknown)';
   }
 
-  final unit = libraryResult.getElementDeclaration(contextElement)?.parsedUnit;
+  final unit = libraryResult
+      .getElementDeclaration(contextElement.nonSynthetic)
+      ?.parsedUnit;
 
   return '${unit?.path ?? '(unknown)'}:${unit?.lineInfo.getLocation(node.offset) ?? '(unknown)'}';
 }

@@ -20,19 +20,12 @@ FutureOr<PropertyDescriptorsBuilding?> _parseFunctionBodyAsync(
       );
 
       return context.returnValue;
-    } else if (body is ExpressionFunctionBody) {
+    } else {
+      assert(body is ExpressionFunctionBody);
       return await _parseExpressionAsync(
         context,
         contextElement,
-        body.expression,
-      );
-    } else {
-      throwError(
-        message:
-            "$pdbTypeName setup functions '$contextElement' cannot be empty or native.",
-        todo:
-            'Use only expression bodied and block bodied for methods and functions to setup $pdbTypeName.',
-        element: contextElement,
+        (body as ExpressionFunctionBody).expression,
       );
     }
   } finally {
@@ -80,9 +73,8 @@ FutureOr<void> _parseBlockAsync(
           statement.expression,
         );
       } else if (statement is VariableDeclarationStatement) {
-        if (isPropertyDescriptorsBuilder(
-          _getVariableType(statement),
-        )) {
+        final variableType = _getVariableType(statement);
+        if (isPropertyDescriptorsBuilder(variableType)) {
           final pdbVariableDeclarations = statement.variables.variables;
           for (final pdbVariableDeclaration in pdbVariableDeclarations) {
             final variableName = pdbVariableDeclaration.name.name;
@@ -103,7 +95,7 @@ FutureOr<void> _parseBlockAsync(
           }
         } else {
           context.logger.fine(
-            'Skip ${statement.variables.type} variable declaration(s) at ${getNodeLocation(statement, contextElement)}.',
+            'Skip $variableType variable declaration(s) at ${getNodeLocation(statement, contextElement)}.',
           );
         }
       } else if (statement is ReturnStatement) {
@@ -163,6 +155,6 @@ DartType? _getVariableType(VariableDeclarationStatement statement) {
     return variable.initializer!.staticType;
   }
 
-  // without any initializers.
-  return null;
+  // without any initializers, so we can use type here.
+  return statement.variables.type?.type;
 }

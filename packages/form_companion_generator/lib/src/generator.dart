@@ -48,13 +48,10 @@ class CompanionGenerator extends Generator {
     for (final classElement in library.classes
         .where((c) => c.metadata.any(isFormCompanionAnnotation))) {
       _logger.fine('Processing ${classElement.name} class');
-      final annotation = ConstantReader(classElement.metadata
-          .firstWhere(isFormCompanionAnnotation)
-          .computeConstantValue());
       await generateForAnnotatedElement(
         resolver,
         classElement,
-        FormCompanionAnnotation(annotation),
+        FormCompanionAnnotation.forClass(classElement)!,
       ).forEach(values.add);
     }
 

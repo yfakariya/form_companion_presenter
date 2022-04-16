@@ -9,7 +9,7 @@ import 'package:form_companion_presenter/form_companion_presenter.dart';
 import 'enum.dart';
 
 // Statics
-class PropertyDescritptors {
+class PropertyDescriptors {
   static final inlineInitialized = PropertyDescriptorsBuilder()
     ..add<int, String>(name: 'propInt')
     ..add<String, String>(name: 'propString')
@@ -18,6 +18,9 @@ class PropertyDescritptors {
     ..add<List<MyEnum>, List<MyEnum>>(name: 'propEnumList');
 
   static final noAddition = PropertyDescriptorsBuilder();
+
+  static PropertyDescriptorsBuilder get emptyFactoryGetter =>
+      PropertyDescriptorsBuilder();
 
   static PropertyDescriptorsBuilder get refersInlineInitialized =>
       inlineInitialized;
@@ -67,6 +70,14 @@ final inlineInitialized = PropertyDescriptorsBuilder()
   ..add<MyEnum, MyEnum>(name: 'propEnum')
   ..add<List<MyEnum>, List<MyEnum>>(name: 'propEnumList');
 
+final inlineWithDuplication = PropertyDescriptorsBuilder()
+  ..add<int, String>(name: 'propInt')
+  ..add<String, String>(name: 'propString')
+  ..add<bool, bool>(name: 'propBool')
+  ..add<MyEnum, MyEnum>(name: 'propEnum')
+  ..add<List<MyEnum>, List<MyEnum>>(name: 'propEnumList')
+  ..add<int, String>(name: 'propInt');
+
 final noAddition = PropertyDescriptorsBuilder();
 
 PropertyDescriptorsBuilder get refersInlineInitialized => inlineInitialized;
@@ -81,6 +92,28 @@ PropertyDescriptorsBuilder cascadingFactory() => PropertyDescriptorsBuilder()
   ..add<bool, bool>(name: 'propBool')
   ..add<MyEnum, MyEnum>(name: 'propEnum')
   ..add<List<MyEnum>, List<MyEnum>>(name: 'propEnumList');
+
+PropertyDescriptorsBuilder emptyFactory() => PropertyDescriptorsBuilder();
+
+PropertyDescriptorsBuilder get cascadingFactoryGetter =>
+    PropertyDescriptorsBuilder()
+      ..add<int, String>(name: 'propInt')
+      ..add<String, String>(name: 'propString')
+      ..add<bool, bool>(name: 'propBool')
+      ..add<MyEnum, MyEnum>(name: 'propEnum')
+      ..add<List<MyEnum>, List<MyEnum>>(name: 'propEnumList');
+
+PropertyDescriptorsBuilder get emptyFactoryGetter =>
+    PropertyDescriptorsBuilder();
+
+PropertyDescriptorsBuilder get getterWithDuplication =>
+    PropertyDescriptorsBuilder()
+      ..add<int, String>(name: 'propInt')
+      ..add<String, String>(name: 'propString')
+      ..add<bool, bool>(name: 'propBool')
+      ..add<MyEnum, MyEnum>(name: 'propEnum')
+      ..add<List<MyEnum>, List<MyEnum>>(name: 'propEnumList')
+      ..add<int, String>(name: 'propInt');
 
 final withClassicFactory = classicFactory();
 

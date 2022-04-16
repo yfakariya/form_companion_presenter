@@ -10,6 +10,9 @@ import 'package:flutter/material.dart';
 typedef NonGenericCallback = int Function(String);
 typedef GenericCallback<T> = void Function<T>(T);
 
+typedef AString = String;
+typedef AList<E> = List<E>;
+
 class SimpleClass {}
 
 // dummy 'FormField'
@@ -105,7 +108,7 @@ class ParameterHolder<T> extends FormField<T> {
   void nullableFunction(
     NonGenericCallback? alias,
     GenericCallback<T>? genericAlias,
-    GenericCallback<int>? instantiatedAlias,
+    GenericCallback<int?>? instantiatedAlias,
     ui.VoidCallback? prefixedAlias,
     int? Function(String?)? function,
     T? Function(T?)? genericFunction,
@@ -143,6 +146,24 @@ class ParameterHolder<T> extends FormField<T> {
     void namedNestedFunction(String Function(int Function() f1) f2)?,
     final void Function()? withKeyword,
   }) {}
+
+  void simpleInterface(
+    AString alias,
+    AList<T> genericAlias,
+    AList<int> instantiatedAlias,
+    String interface,
+    List<T> genericInterface,
+    List<int> instantiatedInterface,
+  ) {}
+
+  void nullableInterface(
+    AString? alias,
+    AList<T>? genericAlias,
+    AList<int?>? instantiatedAlias,
+    String? interface,
+    List<T?>? genericInterface,
+    List<int?>? instantiatedInterface,
+  ) {}
 }
 
 class ParameterListHolder<T> extends FormBuilderField<List<T>> {
@@ -178,6 +199,23 @@ class ParameterFunctionHolder<T>
         this.alias = alias;
 }
 
+typedef MultiGenericFunction<T, R> = R Function<T, R>(T);
+typedef InstantiatedMultiGenericFunction = MultiGenericFunction<int, String>;
+typedef StringIntMap = Map<String, int>;
+typedef AMap<K, V> = Map<K, V>;
+
+class ComplexGenericTypeHolder<T1, T2> {
+  void function(
+    MultiGenericFunction<int, String> multiParameterAliasFunction,
+    StringIntMap instantiatedMultiGenericType,
+    AMap<String, int> multiParameterGenericType,
+    InstantiatedMultiGenericFunction instantiatedMultiGenericFunction,
+    T1 Function<S>(S) mixedParameterGenericFunction,
+    R Function<S, R>(S) multiParameterGenericFunction,
+    T2 Function(T1) multiContextParameterGenericFunction,
+  ) {}
+}
+
 class DependencyHolder<T> extends FormField<T> {
   Color? normalImported;
   String? normalDartCore;
@@ -185,15 +223,19 @@ class DependencyHolder<T> extends FormField<T> {
   VoidCallback? aliasImported;
   GenericCallback<String>? aliasSelf;
   ui.VoidCallback? prefixedImported;
+  ui.Clip? prefixedImportedEnum;
   ui.VoidCallback Function(Color)? functionHasImported;
   String Function(int)? functionDartCore;
   SimpleClass Function(SimpleClass)? functionHasSelf;
+  var untypedDartCore = 0;
+  var untypedImported = Clip.antiAlias;
 
   DependencyHolder.normal({
     this.normalImported,
     this.normalDartCore,
     this.normalSelf,
   });
+
   DependencyHolder.alias({
     this.aliasImported,
     this.aliasSelf,
@@ -201,12 +243,18 @@ class DependencyHolder<T> extends FormField<T> {
 
   DependencyHolder.prefixed({
     this.prefixedImported,
+    this.prefixedImportedEnum = ui.Clip.antiAlias,
   });
 
   DependencyHolder.function({
     this.functionHasImported,
     this.functionDartCore,
     this.functionHasSelf,
+  });
+
+  DependencyHolder.untyped({
+    required this.untypedDartCore,
+    required this.untypedImported,
   });
 }
 

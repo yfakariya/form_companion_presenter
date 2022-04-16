@@ -6,6 +6,7 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:form_companion_generator/src/arguments_handler.dart';
+import 'package:form_companion_generator/src/config.dart';
 import 'package:form_companion_generator/src/dependency.dart';
 import 'package:form_companion_generator/src/form_field_locator.dart';
 import 'package:form_companion_generator/src/model.dart';
@@ -16,6 +17,7 @@ import 'package:source_gen/source_gen.dart';
 import 'package:test/test.dart';
 import 'package:tuple/tuple.dart';
 
+import 'emitter_test.dart';
 import 'session_resolver.dart';
 import 'test_helpers.dart';
 
@@ -50,8 +52,9 @@ Future<void> main() async {
   final dateTimeType = await getDateTimeType();
   final dateTimeRangeType = await getDateTimeRangeType();
   final rangeValuesType = await getRangeValuesType();
-  final dependencyHolder =
-      (await getParametersLibrary()).lookupClass('DependencyHolder');
+
+  final parametersLibrary = await getParametersLibrary();
+  final dependencyHolder = parametersLibrary.lookupClass('DependencyHolder');
 
   ClassElement findType(String name) {
     final type = presenterLibrary.findType(name);
@@ -60,6 +63,42 @@ Future<void> main() async {
     }
 
     return type;
+  }
+
+  void assertImports(
+    List<LibraryImport> result,
+    List<ExpectedImport> expected,
+  ) {
+    result.sort((l, r) => l.library.compareTo(r.library));
+    expected.sort((l, r) => l.identifier.compareTo(r.identifier));
+    expect(
+      result.map((e) => e.library).toList(),
+      expected.map((e) => e.identifier).toList(),
+    );
+    for (var i = 0; i < expected.length; i++) {
+      expect(result[i].library, expected[i].identifier);
+      expect(
+        result[i].showingTypes.toList()..sort(),
+        expected[i].shows,
+        reason: result[i].library,
+      );
+      expect(
+        result[i].prefixes.length,
+        expected[i].prefixes.length,
+        reason:
+            '${result[i].library}: ${result[i].prefixes.toList()} != ${expected[i].prefixes.toList()}',
+      );
+      final prefixes = result[i].prefixes.toList()
+        ..sort((l, r) => l.key.compareTo(r.key));
+      for (var j = 0; j < expected[i].prefixes.length; j++) {
+        expect(prefixes[j].key, expected[i].prefixes[j].key);
+        expect(
+          prefixes[j].value.toList()..sort(),
+          expected[i].prefixes[j].value,
+          reason: prefixes[j].key,
+        );
+      }
+    }
   }
 
   group('detectMixinType', () {
@@ -186,26 +225,10 @@ Future<void> main() async {
       propertiesAssertion(result);
     }
 
-    // FutureOr<void> testGetPropertiesError<TElement>(
-    //   String name, {
-    //   required String message,
-    //   required String todo,
-    // }) =>
-    //     _testGetPropertiesErrorCore<TElement>(name,
-    //         message: message, todo: todo, withElement: true);
-    // FutureOr<void> testGetPropertiesErrorWithoutElement(
-    //   String name, {
-    //   required String message,
-    //   required String todo,
-    // }) =>
-    //     _testGetPropertiesErrorCore<Null>(name,
-    //         message: message, todo: todo, withElement: false);
-
     FutureOr<void> testGetPropertiesError<TElement>(
       String name, {
       required String message,
       required String todo,
-      // required bool withElement,
     }) async {
       final targetClass = findType(name);
       final warnings = <String>[];
@@ -610,6 +633,11 @@ Future<void> main() async {
       );
 
       test(
+        'cascading factory top level getter calls - detected',
+        () => testGetPropertiesSuccess('CallsCascadingFactoryGetter'),
+      );
+
+      test(
         'classic factory calls - detected',
         () => testGetPropertiesSuccess('CallsClassicFactory'),
       );
@@ -787,7 +815,7 @@ Future<void> main() async {
         'calls factory with duplicated property definition - error',
         () => testGetPropertiesError<FunctionElement>(
           'InvalidLocalVariableWithDuplication',
-          message: "Property 'propInt' is defined more than once",
+          message: "Property 'propInt' is defined more than once at ",
           todo:
               'Fix to define each properties only once for given PropertyDescriptorsBuilder.',
         ),
@@ -797,7 +825,7 @@ Future<void> main() async {
         'calls factory with helper which does duplicated property definition - error',
         () => testGetPropertiesError<FunctionElement>(
           'InvalidLocalVariableWithDuplicationHelper',
-          message: "Property 'propInt' is defined more than once",
+          message: "Property 'propInt' is defined more than once at ",
           todo:
               'Fix to define each properties only once for given PropertyDescriptorsBuilder.',
         ),
@@ -807,10 +835,109 @@ Future<void> main() async {
         'initialized with duplicated property definition - error',
         () => testGetPropertiesError<ConstructorElement>(
           'InvalidLocalVariableInitializationWithDuplication',
-          message: "Property 'propInt' is defined more than once",
+          message: "Property 'propInt' is defined more than once at ",
           todo:
               'Fix to define each properties only once for given PropertyDescriptorsBuilder.',
         ),
+      );
+    });
+
+    group('special cases', () {
+      test(
+        'local function support',
+        () => testGetPropertiesSuccess('WithLocalFunction'),
+      );
+
+      test(
+        'extra block support',
+        () => testGetPropertiesSuccess('WithExtraBlock'),
+      );
+
+      test(
+        'uninitialized variable support',
+        () => testGetPropertiesSuccess('WithLateFinalVariable'),
+      );
+
+      test(
+        'extra constructs support',
+        () => testGetPropertiesSuccess('WithExtraConstructs'),
+      );
+
+      test(
+        'early return support',
+        () => testGetPropertiesSuccess('WithEarlyReturn'),
+      );
+
+      test(
+        'early return helper support',
+        () => testGetPropertiesSuccess('WithEarlyReturnHelper'),
+      );
+
+      test(
+        'found prefixed top level variable',
+        () => testGetPropertiesSuccess(
+          'WithPrefixedTopLevelVariableReferenceExpression',
+        ),
+      );
+
+      test(
+        'found prefixed top level function',
+        () => testGetPropertiesSuccess(
+          'WithPrefixedTopLevelFunctionReferenceExpression',
+        ),
+      );
+
+      test(
+        'found prefixed class field',
+        () => testGetPropertiesSuccess(
+          'WithPrefixedClassFieldReferenceExpression',
+        ),
+      );
+
+      test(
+        'found prefixed method',
+        () => testGetPropertiesSuccess(
+          'WithPrefixedMethodReferenceExpression',
+        ),
+      );
+
+      test(
+        'prefixed constructor',
+        () => testGetPropertiesSuccess('WithPrefixedConstructor'),
+      );
+
+      test(
+        'cascading to return value from factory method',
+        () => testGetPropertiesSuccess('CascadingToFactoryMethodReturnValue'),
+      );
+
+      test(
+        'cascading to return value from top level factory getter',
+        () => testGetPropertiesSuccess('CascadingToTopLevelGetterReturnValue'),
+      );
+
+      test(
+        'cascading to return value from factory getter',
+        () => testGetPropertiesSuccess('CascadingToGetterReturnValue'),
+      );
+
+      test(
+        'cascading to return value from prefixed factory method',
+        () => testGetPropertiesSuccess(
+          'CascadingToPrefixedFactoryMethodReturnValue',
+        ),
+      );
+
+      test(
+        'cascading to return value from prefixed top level factory getter',
+        () => testGetPropertiesSuccess(
+          'CascadingToPrefixedTopLevelGetterReturnValue',
+        ),
+      );
+
+      test(
+        'cascading to return value from prefixed factory getter',
+        () => testGetPropertiesSuccess('CascadingToPrefixedGetterReturnValue'),
       );
     });
 
@@ -891,7 +1018,7 @@ Future<void> main() async {
         'calls factory with duplicated property definition - error',
         () => testGetPropertiesError<FunctionElement>(
           'InvalidFactoryWithDuplication',
-          message: "Property 'propInt' is defined more than once",
+          message: "Property 'propInt' is defined more than once at ",
           todo:
               'Fix to define each properties only once for given PropertyDescriptorsBuilder.',
         ),
@@ -901,7 +1028,7 @@ Future<void> main() async {
         'calls factory with helper which does duplicated property definition - error',
         () => testGetPropertiesError<FunctionElement>(
           'InvalidFactoryWithDuplicationHelper',
-          message: "Property 'propInt' is defined more than once",
+          message: "Property 'propInt' is defined more than once at ",
           todo:
               'Fix to define each properties only once for given PropertyDescriptorsBuilder.',
         ),
@@ -911,7 +1038,171 @@ Future<void> main() async {
         'initialized with duplicated property definition - error',
         () => testGetPropertiesError<ConstructorElement>(
           'InvalidInitializationWithDuplication',
-          message: "Property 'propInt' is defined more than once",
+          message: "Property 'propInt' is defined more than once at ",
+          todo:
+              'Fix to define each properties only once for given PropertyDescriptorsBuilder.',
+        ),
+      );
+
+      test(
+        'field without initialization - error',
+        () => testGetPropertiesError<PropertyAccessorElement>(
+          'FieldWithoutInitialization',
+          message:
+              "Failed to parse field, property, or top level variable 'builder' which does not have inline initialization at ",
+          todo:
+              "Initialize field, property, or top level variable 'builder' inline.",
+        ),
+      );
+
+      test(
+        'found function invocation expression which returns PropertyDescriptorsBuilder - error',
+        () => testGetPropertiesError<ConstructorElement>(
+          'WithFunctionInvocationExpression',
+          message:
+              "Failed to parse complex source code '(cascadingFactory)()' (FunctionExpressionInvocationImpl) at ",
+          todo: 'Avoid using this expression or statement here, or file '
+              'the issue for this message if you truly want to use this code.',
+        ),
+      );
+
+      test(
+        'found function invocation expression which takes PropertyDescriptorsBuilder - error',
+        () => testGetPropertiesError<ConstructorElement>(
+          'WithHelperFunctionInvocationExpression',
+          message:
+              "Failed to parse complex source code '(helper)(builder)' (FunctionExpressionInvocationImpl) at ",
+          todo: 'Avoid using this expression or statement here, or file '
+              'the issue for this message if you truly want to use this code.',
+        ),
+      );
+
+      test(
+        'found cascading for list - error',
+        () => testGetPropertiesError<ConstructorElement>(
+          'WithListCascading',
+          message: 'Failed to parse complex source code '
+              "'builders[0]..add<int, int>(name: 'propInt')' (CascadeExpressionImpl) at ",
+          todo: 'Avoid using this expression or statement here, or file '
+              'the issue for this message if you truly want to use this code.',
+        ),
+      );
+
+      test(
+        'found method call for factory return value - error',
+        () => testGetPropertiesError<ConstructorElement>(
+          'CallToFactoryMethodReturnValue',
+          message: 'Failed to parse complex source code '
+              "'emptyFactory().add<int, int>(name: 'propInt')' (MethodInvocationImpl) at ",
+          todo: 'Avoid using this expression or statement here, or file '
+              'the issue for this message if you truly want to use this code.',
+        ),
+      );
+
+      test(
+        'found method call for top level getter return value - error',
+        () => testGetPropertiesError<ConstructorElement>(
+          'CallToTopLevelGetterReturnValue',
+          message: 'Failed to parse complex source code '
+              "'emptyFactoryGetter.add<int, int>(name: 'propInt')' (MethodInvocationImpl) at ",
+          todo: 'Avoid using this expression or statement here, or file '
+              'the issue for this message if you truly want to use this code.',
+        ),
+      );
+
+      test(
+        'found method call for getter return value - error',
+        () => testGetPropertiesError<ConstructorElement>(
+          'CallToGetterReturnValue',
+          message: 'Failed to parse complex source code '
+              "'PropertyDescriptors.emptyFactoryGetter.add<int, int>(name: 'propInt')' (MethodInvocationImpl) at ",
+          todo: 'Avoid using this expression or statement here, or file '
+              'the issue for this message if you truly want to use this code.',
+        ),
+      );
+
+      test(
+        'found method call for prefixed factory return value - error',
+        () => testGetPropertiesError<ConstructorElement>(
+          'CallToPrefixedFactoryMethodReturnValue',
+          message: 'Failed to parse complex source code '
+              "'pr.emptyFactory().add<int, int>(name: 'propInt')' (MethodInvocationImpl) at ",
+          todo: 'Avoid using this expression or statement here, or file '
+              'the issue for this message if you truly want to use this code.',
+        ),
+      );
+
+      test(
+        'found method call for prefixed top level getter return value - error',
+        () => testGetPropertiesError<ConstructorElement>(
+          'CallToPrefixedTopLevelGetterReturnValue',
+          message: 'Failed to parse complex source code '
+              "'pr.emptyFactoryGetter.add<int, int>(name: 'propInt')' (MethodInvocationImpl) at ",
+          todo: 'Avoid using this expression or statement here, or file '
+              'the issue for this message if you truly want to use this code.',
+        ),
+      );
+
+      test(
+        'found method call for prefixed getter return value - error',
+        () => testGetPropertiesError<ConstructorElement>(
+          'CallToPrefixedGetterReturnValue',
+          message: 'Failed to parse complex source code '
+              "'pr.PropertyDescriptors.emptyFactoryGetter.add<int, int>(name: 'propInt')' (MethodInvocationImpl) at ",
+          todo: 'Avoid using this expression or statement here, or file '
+              'the issue for this message if you truly want to use this code.',
+        ),
+      );
+
+      test(
+        'found control expression - error',
+        () => testGetPropertiesError<FunctionElement>(
+          'WithControlExpression',
+          message: 'Failed to analyze complex construction logics at ',
+          todo: 'Do not use conditional or throw like expression in methods or '
+              'functions for PropertyDescriptorsBuilder construction.',
+        ),
+      );
+
+      test(
+        'found field set - error',
+        () => testGetPropertiesError<PropertyAccessorElement>(
+          'WithDirectFieldRewrite',
+          message: 'Failed to parse complex setup logic. '
+              "'_field = PropertyDescriptorsBuilder()' changes field or "
+              'top level variable which is PropertyDescriptorsBuilder type at ',
+          todo: 'Do not re-assign field or top level variable which is '
+              'PropertyDescriptorsBuilder type.',
+        ),
+      );
+
+      test(
+        'found field set via setter - error',
+        () => testGetPropertiesError<PropertyAccessorElement>(
+          'WithIndirectFieldRewrite',
+          message: 'Failed to parse complex setup logic. '
+              "'_setter = PropertyDescriptorsBuilder()' changes field or "
+              'top level variable which is PropertyDescriptorsBuilder type at ',
+          todo: 'Do not re-assign field or top level variable which is '
+              'PropertyDescriptorsBuilder type.',
+        ),
+      );
+
+      test(
+        'refers top level variable with duplicated property definition - error',
+        () => testGetPropertiesError<PropertyAccessorElement>(
+          'InvalidTopLevelVariableWithDuplication',
+          message: "Property 'propInt' is defined more than once at ",
+          todo:
+              'Fix to define each properties only once for given PropertyDescriptorsBuilder.',
+        ),
+      );
+
+      test(
+        'refers top level getter with duplicated property definition - error',
+        () => testGetPropertiesError<PropertyAccessorElement>(
+          'InvalidTopLevelGetterWithDuplication',
+          message: "Property 'propInt' is defined more than once at ",
           todo:
               'Fix to define each properties only once for given PropertyDescriptorsBuilder.',
         ),
@@ -1092,7 +1383,7 @@ Future<void> main() async {
       group('FormBuilder', () {
         for (final testCase in [
           Tuple5(
-            '',
+            '', // intentionally empty
             'Object',
             'Object',
             'FormBuilderField<T>',
@@ -1101,7 +1392,9 @@ Future<void> main() async {
               fieldValueWarning,
               defaultFormFieldWarningBuilder
             ],
-          ), // item1 is intentionally empty
+          ),
+          // NOTE: if `WithField` is used, `TField` should be inferred as
+          //       `FormField<T>` even when `isFormBuilder` is `true`.
           Tuple5(
             'WithField',
             'Object',
@@ -1286,7 +1579,8 @@ Future<void> main() async {
   group('collectDependencies', () {
     FutureOr<PropertyAndFormFieldDefinition> makeProperty(
       String formFieldTypeName,
-      InterfaceType valueType, {
+      DartType valueType,
+      Element valueTypeContextElement, {
       required bool isFormBuilder,
     }) async {
       final formFieldType = formFieldLocator.resolveFormFieldType(
@@ -1295,13 +1589,15 @@ Future<void> main() async {
 
       final property = PropertyDefinition(
         name: 'prop',
-        fieldType: GenericType.fromDartType(valueType),
-        propertyType: GenericType.fromDartType(valueType),
+        fieldType: GenericType.fromDartType(valueType, valueTypeContextElement),
+        propertyType:
+            GenericType.fromDartType(valueType, valueTypeContextElement),
         preferredFormFieldType: GenericType.generic(
           formFieldType,
           formFieldType.typeArguments.any((t) => t is TypeParameterType)
-              ? [GenericType.fromDartType(valueType)]
+              ? [GenericType.fromDartType(valueType, valueTypeContextElement)]
               : [],
+          formFieldType.element,
         ),
         warnings: [],
       );
@@ -1329,42 +1625,6 @@ Future<void> main() async {
       );
     }
 
-    void assertImports(
-      List<LibraryImport> result,
-      List<ExpectedImport> expected,
-    ) {
-      result.sort((l, r) => l.library.compareTo(r.library));
-      expected.sort((l, r) => l.identifier.compareTo(r.identifier));
-      expect(
-        result.map((e) => e.library).toList(),
-        expected.map((e) => e.identifier).toList(),
-      );
-      for (var i = 0; i < expected.length; i++) {
-        expect(result[i].library, expected[i].identifier);
-        expect(
-          result[i].showingTypes.toList()..sort(),
-          expected[i].shows,
-          reason: result[i].library,
-        );
-        expect(
-          result[i].prefixes.length,
-          expected[i].prefixes.length,
-          reason:
-              '${result[i].library}: ${result[i].prefixes.toList()} != ${expected[i].prefixes.toList()}',
-        );
-        final prefixes = result[i].prefixes.toList()
-          ..sort((l, r) => l.key.compareTo(r.key));
-        for (var j = 0; j < expected[i].prefixes.length; j++) {
-          expect(prefixes[j].key, expected[i].prefixes[j].key);
-          expect(
-            prefixes[j].value.toList()..sort(),
-            expected[i].prefixes[j].value,
-            reason: prefixes[j].key,
-          );
-        }
-      }
-    }
-
     for (final spec in [
       Tuple2(
         'normal',
@@ -1380,7 +1640,7 @@ Future<void> main() async {
           'dart:ui',
           shows: ['Locale'],
           prefixes: [
-            MapEntry('ui', ['VoidCallback']),
+            MapEntry('ui', ['Clip', 'VoidCallback']),
           ],
         ),
       ),
@@ -1394,15 +1654,19 @@ Future<void> main() async {
           ],
         ),
       ),
+      Tuple2(
+        'untyped',
+        ExpectedImport('dart:ui', shows: ['Clip', 'Locale']),
+      ),
     ]) {
       final kind = spec.item1;
       final expected = spec.item2;
 
-      test('unit test: $kind', () async {
+      test('parameter kind: $kind', () async {
         final property = PropertyDefinition(
           name: 'prop',
-          fieldType: GenericType.fromDartType(typeProvider.stringType),
-          propertyType: GenericType.fromDartType(typeProvider.stringType),
+          fieldType: toGenericType(typeProvider.stringType),
+          propertyType: toGenericType(typeProvider.stringType),
           preferredFormFieldType: null,
           warnings: [],
         );
@@ -1460,6 +1724,7 @@ Future<void> main() async {
           await makeProperty(
             fieldName,
             valueType,
+            valueType.element,
             isFormBuilder: isFormBuilder,
           ),
         ],
@@ -1473,6 +1738,7 @@ Future<void> main() async {
           (valueType.isDartCoreList &&
               valueType.typeArguments.length == 1 &&
               valueType.typeArguments.first == myEnumType)) {
+        // This also tests that relative imports are written after package imports.
         expected.add(
           ExpectedImport(
             'enum.dart',
@@ -1533,13 +1799,165 @@ Future<void> main() async {
       });
     }
 
-    test('relative imports should be after packages', () async {});
+    test(
+      'function value type',
+      () async {
+        final alias = parametersLibrary.topLevelElements
+            .whereType<TypeAliasElement>()
+            .where((t) => t.name == 'NonGenericCallback')
+            .single;
+        final result = await collectDependenciesAsync(
+          presenterLibrary.element,
+          [
+            await makeProperty(
+              'DropdownButtonFormField',
+              alias.aliasedType,
+              alias,
+              isFormBuilder: false,
+            ),
+          ],
+          nodeProvider,
+          logger,
+          isFormBuilder: false,
+        );
+
+        assertImports(result, [
+          ..._expectedImports['DropdownButtonFormField']!,
+          ExpectedImport('presenter.dart'),
+        ]);
+      },
+    );
   });
 
-  // TODO(yfakariya): field related tests.
+  group('parseElementAsync (integration tests)', () {
+    Future<void> testParseElementAsync({
+      bool? autovalidate,
+      bool asPart = false,
+      required bool isFormBuilder,
+    }) async {
+      final config = Config(<String, dynamic>{
+        'as_part': asPart,
+        'autovalidate_by_default': autovalidate
+      });
+      final type =
+          findType(isFormBuilder ? 'FormBuilderPresenter' : 'FormPresenter');
+      final result = await parseElementAsync(
+        config,
+        nodeProvider,
+        formFieldLocator,
+        type,
+        FormCompanionAnnotation.forClass(type)!,
+        logger,
+      );
 
-  // TODO(yfakariya): parseElementAsync : isFormBuilder x warnings
-  // TODO(yfakariya): generator integration test.
+      expect(result.isFormBuilder, isFormBuilder);
+      expect(result.name, type.name);
+      expect(result.warnings, isEmpty);
+
+      // do only minimum check here
+      expect(result.properties.length, 1);
+      expect(result.properties[0].name, 'propString');
+      expect(
+        result.properties[0].propertyValueType.maybeAsInterfaceType,
+        typeProvider.stringType,
+      );
+      expect(
+        result.properties[0].fieldValueType.maybeAsInterfaceType,
+        typeProvider.stringType,
+      );
+      expect(
+        result.properties[0].formFieldType
+            ?.getDisplayString(withNullability: true),
+        isFormBuilder ? 'FormBuilderTextField' : 'TextFormField',
+      );
+      expect(
+        result.properties[0].formFieldTypeName,
+        isFormBuilder ? 'FormBuilderTextField' : 'TextFormField',
+      );
+      expect(result.properties[0].instantiationContext, isNotNull);
+      expect(result.properties[0].isSimpleFormField, isTrue);
+      expect(result.properties[0].warnings, isEmpty);
+
+      if (autovalidate ?? true) {
+        expect(
+          result.fieldAutovalidateMode,
+          'AutovalidateMode.onUserInteraction',
+        );
+      } else {
+        expect(result.fieldAutovalidateMode, isNull);
+      }
+
+      if (asPart) {
+        expect(result.imports, isEmpty);
+      } else {
+        assertImports(
+          result.imports,
+          _merge([
+            ...isFormBuilder
+                ? _expectedImports['FormBuilderTextField']!
+                : _expectedImports['TextFormField']!,
+            ExpectedImport('presenter.dart'),
+          ]),
+        );
+      }
+    }
+
+    test(
+      'vanilla form',
+      () => testParseElementAsync(
+        isFormBuilder: false,
+      ),
+    );
+
+    test(
+      'form builder',
+      () => testParseElementAsync(
+        isFormBuilder: true,
+      ),
+    );
+
+    test(
+      'autovalidate_by_default',
+      () => testParseElementAsync(
+        autovalidate: true,
+        isFormBuilder: false,
+      ),
+    );
+
+    test(
+      'as_part',
+      () => testParseElementAsync(
+        asPart: true,
+        isFormBuilder: false,
+      ),
+    );
+
+    test('without annotation - error', () async {
+      final baseCompanion = findType('BaseCompanion');
+      try {
+        await parseElementAsync(
+          emptyConfig,
+          nodeProvider,
+          formFieldLocator,
+          baseCompanion,
+          FormCompanionAnnotation.forClass(baseCompanion)!,
+          logger,
+        );
+        fail('success');
+      }
+      // ignore: avoid_catching_errors
+      on InvalidGenerationSourceError catch (e) {
+        expect(
+          e.message,
+          'A target of @formCompanion must be mix-ined with the either of '
+          'FormCompanionPresenterMixin or FormBuilderPresenterMixin. '
+          'Class name: BaseCompanion',
+        );
+        expect(e.element, isA<ClassElement>());
+        expect(e.element?.name, 'BaseCompanion');
+      }
+    });
+  });
 }
 
 List<ExpectedImport> _merge(List<ExpectedImport> lists) {

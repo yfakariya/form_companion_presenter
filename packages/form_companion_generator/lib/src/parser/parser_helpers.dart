@@ -9,7 +9,7 @@ import '../utilities.dart';
 /// Determines that whether a specified [DartType] represents
 /// `PropertyDescriptorsBuilder` class.
 bool isPropertyDescriptorsBuilder(DartType? type) =>
-    type!.getDisplayString(withNullability: false) == pdbTypeName;
+    type?.getDisplayString(withNullability: false) == pdbTypeName;
 
 /// Look-ups method invocation target class including extension method.
 ///

@@ -57,31 +57,6 @@ class LibraryImport {
 
   /// Adds a specified named type as imported from this [library].
   void addTypeName(String typeName) => _types.add(typeName);
-
-  @override
-  String toString() {
-    final buffer = StringBuffer();
-    final base = "import '$library'";
-    buffer.write(base);
-
-    if (_types.isNotEmpty) {
-      buffer
-        ..write(' show ')
-        ..write(_types.join(', '));
-    }
-
-    for (final prefix in _prefixes.entries) {
-      buffer
-        ..write(';')
-        ..write(base)
-        ..write(' as ')
-        ..write(prefix.key)
-        ..write(' show ')
-        ..write(prefix.value.join(', '));
-    }
-
-    return buffer.toString();
-  }
 }
 
 /// A visitor for [AstNode] tree to collect dependent libraries.
@@ -143,10 +118,8 @@ class DependentLibraryCollector extends RecursiveAstVisitor<void> {
   /// which will be traversed by this visitor.
   /// [warnings] are list to record warnings found in new session.
   void reset(ClassElement contextClass, List<String> warnings) {
-    assert(
-      _pendingAsyncOperations.isEmpty,
-      'endAsync() has not been called.',
-    );
+    // check endAsync() has been called.
+    assert(_pendingAsyncOperations.isEmpty);
     _contextClass = contextClass;
     _warnings = warnings;
   }
@@ -166,10 +139,7 @@ class DependentLibraryCollector extends RecursiveAstVisitor<void> {
   }
 
   LibraryImport? _getLibraryImportEntry(Element element) {
-    assert(
-      element.library != null,
-      "element '$element' (${element.runtimeType}) may not be resolved.",
-    );
+    assert(element.library != null);
 
     final library = element.library!;
     return _getLibraryImportEntryDirect(
@@ -310,34 +280,25 @@ class DependentLibraryCollector extends RecursiveAstVisitor<void> {
     if (node.type == null) {
       // Process field here.
       final element = node.declaredElement;
-      assert(
-        element is FieldFormalParameterElement,
-        "node.declaraedElement of '$node' is not 'FieldFormalParameterElement' but '${element.runtimeType}'.",
-      );
+      assert(element is FieldFormalParameterElement);
 
+      // We must get field declaration to get declared type
+      // instead of resolved type here.
+      // For example, we want to get alias of function type.
       final completer = _beginAsync();
       _beginGetElementDeclaration(node.identifier.name).then((field) {
         try {
-          if (field is FieldDeclaration) {
-            final fieldType = field.fields.type;
-            assert(
-              fieldType != null,
-              "Failed to fetch type of '${node.identifier.name}' field of '$_contextClass'.",
-            );
-
-            _processTypeAnnotation(fieldType!);
-          } else if (field is VariableDeclaration) {
-            final fieldType = (field.parent! as VariableDeclarationList).type;
-            assert(
-              fieldType != null,
-              "Failed to fetch type of '${node.identifier.name}' field of '$_contextClass'.",
-            );
-
-            _processTypeAnnotation(fieldType!);
+          // Because we get node from FieldFormalParameterElement,
+          // so the node should be VariableDeclaration
+          // rather than FieldDeclaration which may contain multiple declarations.
+          assert(field is VariableDeclaration);
+          final declaration = field.parent! as VariableDeclarationList;
+          final fieldType = declaration.type;
+          if (fieldType != null) {
+            _processTypeAnnotation(fieldType);
           } else {
-            throw Exception(
-              "Type of '$field' (${field.runtimeType}) is unexpected.",
-            );
+            // Like `var i = 0;` case, we use element here.
+            _processType(element!.type);
           }
         }
         // ignore: avoid_catches_without_on_clauses
@@ -381,32 +342,32 @@ class DependentLibraryCollector extends RecursiveAstVisitor<void> {
 
   @override
   void visitPrefixedIdentifier(PrefixedIdentifier node) {
-    final type = node.staticType;
-    if (type != null) {
-      if (node.identifier.name ==
-          type.getDisplayString(withNullability: false)) {
+    if (node.staticType != null) {
+      _logger.finer(
+        'Identifier $node should be static or enum member reference. '
+        'Element is ${node.staticElement}.',
+      );
+      // Prefix is type name of static const member reference
+      // or enum member reference.
+      // So type ID is just prefix.
+      // Note that prefix.name does not match to static type name
+      // for static constants like 'Foos.bar' like following:
+      // class Foos { const static final Foo bar = const Foo(...); }
+      // So, this should be in 'else' clause rather than 'if' clause.
+      recordTypeId(node.staticElement!, node.prefix);
+    } else if (node.staticElement != null) {
+      final element = node.staticElement!;
+      if (node.identifier.name == element.name) {
         _logger.finer(
           'Identifier $node should be prefixed library and the type. '
-          'Element is ${type.element}.',
+          'Element is $element.',
         );
         // Prefix is library prefix,
         // because lib.Type.member is interpreted as
         // PropertyAcess(target: PrefixedIdentifier, propertyName: SimpleIdentifier)
         // so identifier is type name.
-        recordTypeId(type.element!, node);
-      } else {
-        _logger.finer(
-          'Identifier $node should be static or enum member reference. '
-          'Element is ${node.staticElement}.',
-        );
-        // Prefix is type name of static const member reference
-        // or enum member reference.
-        // So type ID is just prefix.
-        // Note that prefix.name does not match to static type name
-        // for static constants like 'Foos.bar' like following:
-        // class Foos { const static final Foo bar = const Foo(...); }
-        // So, this should be in 'else' clause rather than 'if' clause.
-        recordTypeId(node.staticElement!, node.prefix);
+        // In addition, lib.FunctionAlias should be here.
+        recordTypeId(element, node);
       }
     }
   }
@@ -426,64 +387,48 @@ class DependentLibraryCollector extends RecursiveAstVisitor<void> {
 
   @override
   void visitNamedType(NamedType node) {
-    assert(
-      node.type != null,
-      "NamedType.type of '$node'(${node.runtimeType}) is null.",
-    );
+    assert(node.type != null);
 
     final type = node.type!;
 
+    final element = type.element ?? type.alias?.element;
     if (type is NeverType ||
         type is VoidType ||
         type is DynamicType ||
         type is TypeParameterType ||
-        type.getDisplayString(withNullability: false).startsWith('_')) {
+        element!.isPrivate) {
       // Above dart:core types, type parameter, private types never to be imported
       return;
     }
 
-    assert(
-      type.element != null || type.alias?.element != null,
-      "DartType.element of '$node'(${node.runtimeType}) ->"
-      "'$type'(${type.runtimeType}), "
-      "alias:'${type.alias}' is null.",
-    );
-
-    recordTypeId(type.element ?? type.alias!.element, node.name);
+    recordTypeId(element, node.name);
 
     // Process type arguments
     super.visitNamedType(node);
   }
 
   /// Process specified [DartType] and records its and its type arguments imports.
-  void processType(DartType type) {
-    if (type is NeverType ||
-        type is VoidType ||
-        type is DynamicType ||
-        type is TypeParameterType ||
-        type.getDisplayString(withNullability: false).startsWith('_')) {
-      // Above dart:core types, type parameter, private types never to be imported
-      return;
-    }
-
-    final element = type.element ?? type.alias!.element;
-    _recordTypeName(
-      element,
-      type.getDisplayString(withNullability: false),
-    );
-
+  void _processType(DartType type) {
     if (type is InterfaceType) {
-      type.typeArguments.forEach(processType);
+      if (type.element.isPrivate) {
+        return;
+      }
+
+      _recordTypeName(
+        type.element,
+        type.getDisplayString(withNullability: false),
+      );
+      type.typeArguments.forEach(_processType);
     } else if (type is FunctionType) {
-      processType(type.returnType);
-      type.parameters.map((e) => e.type).forEach(processType);
+      _processType(type.returnType);
+      type.parameters.map((e) => e.type).forEach(_processType);
     }
   }
 
   /// Process specified [GenericType]
   /// and records its and its type arguments imports.
   void processGenericType(GenericType type) {
-    processType(type.rawType);
+    _processType(type.rawType);
     type.typeArguments.forEach(processGenericType);
   }
 }

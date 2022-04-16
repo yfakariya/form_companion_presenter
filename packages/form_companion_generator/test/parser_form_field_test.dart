@@ -59,8 +59,8 @@ Future<void> main() async {
   }) async {
     final input = PropertyDefinition(
       name: 'prop',
-      propertyType: GenericType.fromDartType(propertyType),
-      fieldType: GenericType.fromDartType(fieldType),
+      propertyType: toGenericType(propertyType),
+      fieldType: toGenericType(fieldType),
       preferredFormFieldType: preferredFormFieldType,
       warnings: [],
     );
@@ -176,7 +176,7 @@ Future<void> main() async {
       () => testResolveFormFieldAsync(
         typeProvider.boolType,
         typeProvider.boolType,
-        GenericType.fromDartType(formBuilderCheckbox.thisType),
+        toGenericType(formBuilderCheckbox.thisType),
         'FormBuilderCheckbox',
         isFormBuilder: true,
         shouldBeContructorFound: true,
@@ -190,7 +190,8 @@ Future<void> main() async {
         typeProvider.stringType,
         GenericType.generic(
           dropdownButtonFormField.thisType,
-          [GenericType.fromDartType(typeProvider.stringType)],
+          [toGenericType(typeProvider.stringType)],
+          dropdownButtonFormField,
         ),
         'DropdownButtonFormField',
         isFormBuilder: false,
@@ -227,8 +228,8 @@ Future<void> main() async {
 
         final property = PropertyDefinition(
           name: 'prop',
-          propertyType: GenericType.fromDartType(typeProvider.stringType),
-          fieldType: GenericType.fromDartType(typeProvider.stringType),
+          propertyType: toGenericType(typeProvider.stringType),
+          fieldType: toGenericType(typeProvider.stringType),
           preferredFormFieldType: null,
           warnings: [],
         );
@@ -258,7 +259,7 @@ Future<void> main() async {
       return testResolveMultiConstructorsFormFieldAsync(
         typeProvider.stringType,
         typeProvider.stringType,
-        GenericType.fromDartType(formFieldClass.thisType),
+        toGenericType(formFieldClass.thisType),
         formFieldClass.thisType.getDisplayString(withNullability: false),
         isFormBuilder: false,
         shouldBeContructorFound: true,

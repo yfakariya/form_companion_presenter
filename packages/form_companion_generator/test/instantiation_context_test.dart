@@ -12,6 +12,8 @@ import 'package:logging/logging.dart';
 import 'package:test/test.dart';
 import 'package:tuple/tuple.dart';
 
+import 'test_helpers.dart';
+
 Future<void> main() async {
   final logger = Logger('instantiation_context_test');
   Logger.root.level = Level.INFO;
@@ -55,6 +57,7 @@ $code
           preferredFormFieldType: GenericType.generic(
             formFieldType.thisType,
             formFieldGenericArgumentsProvider?.call(library.typeProvider) ?? [],
+            formFieldType,
           ),
           warnings: [],
         ),
@@ -76,8 +79,7 @@ class FormField<T> {}
 class TextFormField extends FormField<String> {}
 ''',
       classFinder: (l) => l.getType('TextFormField')!,
-      valueTypeProvider: (l) =>
-          GenericType.fromDartType(l.typeProvider.stringType),
+      valueTypeProvider: (l) => toGenericType(l.typeProvider.stringType),
       assertion: (x) {
         expect(x.getMappedType('T'), 'T');
       },
@@ -92,10 +94,8 @@ class FormField<T> {}
 class DropdownButtonFormField<T> extends FormField<T> {}
 ''',
       classFinder: (l) => l.getType('DropdownButtonFormField')!,
-      valueTypeProvider: (l) =>
-          GenericType.fromDartType(l.typeProvider.stringType),
-      formFieldGenericArgumentsProvider: (t) =>
-          [GenericType.fromDartType(t.stringType)],
+      valueTypeProvider: (l) => toGenericType(l.typeProvider.stringType),
+      formFieldGenericArgumentsProvider: (t) => [toGenericType(t.stringType)],
       assertion: (x) {
         expect(x.getMappedType('T'), 'String');
       },
@@ -110,10 +110,9 @@ class FormField<T> {}
 class FormBuilderCheckBoxGroup<T> extends FormField<List<T>> {}
 ''',
       classFinder: (l) => l.getType('FormBuilderCheckBoxGroup')!,
-      valueTypeProvider: (l) => GenericType.fromDartType(
-          l.typeProvider.listType(l.typeProvider.stringType)),
-      formFieldGenericArgumentsProvider: (t) =>
-          [GenericType.fromDartType(t.stringType)],
+      valueTypeProvider: (l) =>
+          toGenericType(l.typeProvider.listType(l.typeProvider.stringType)),
+      formFieldGenericArgumentsProvider: (t) => [toGenericType(t.stringType)],
       assertion: (x) {
         expect(x.getMappedType('T'), 'String');
       },
@@ -138,9 +137,11 @@ class FunctionFormField extends FormField<${spec.item3}> {}
 final ${spec.item2} callback = () {};
 ''',
           classFinder: (l) => l.getType('FunctionFormField')!,
-          valueTypeProvider: (l) => GenericType.fromDartType(
-            l.topLevelElements.whereType<TopLevelVariableElement>().single.type,
-          ),
+          valueTypeProvider: (l) {
+            final variable =
+                l.topLevelElements.whereType<TopLevelVariableElement>().single;
+            return GenericType.fromDartType(variable.type, variable);
+          },
           assertion: (x) {
             expect(x.getMappedType('T'), 'T');
           },
@@ -182,11 +183,13 @@ class FunctionFormField<T> extends FormField<${spec.item3}> {}
 final ${spec.item2} callback = (_) => '';
 ''',
           classFinder: (l) => l.getType('FunctionFormField')!,
-          valueTypeProvider: (l) => GenericType.fromDartType(
-            l.topLevelElements.whereType<TopLevelVariableElement>().single.type,
-          ),
+          valueTypeProvider: (l) {
+            final variable =
+                l.topLevelElements.whereType<TopLevelVariableElement>().single;
+            return GenericType.fromDartType(variable.type, variable);
+          },
           formFieldGenericArgumentsProvider: (t) =>
-              [GenericType.fromDartType(t.stringType)],
+              [toGenericType(t.stringType)],
           assertion: (x) {
             expect(x.getMappedType('T'), 'String');
           },
@@ -228,11 +231,11 @@ class FunctionFormField<T> extends FormField<List<${spec.item3}>> {}
 final List<${spec.item2}> callback = [];
 ''',
           classFinder: (l) => l.getType('FunctionFormField')!,
-          valueTypeProvider: (l) => GenericType.fromDartType(
+          valueTypeProvider: (l) => toGenericType(
             l.topLevelElements.whereType<TopLevelVariableElement>().single.type,
           ),
           formFieldGenericArgumentsProvider: (t) =>
-              [GenericType.fromDartType(t.stringType)],
+              [toGenericType(t.stringType)],
           assertion: (x) {
             expect(x.getMappedType('T'), 'String');
           },
@@ -274,11 +277,13 @@ class FunctionFormField<T> extends FormField<${spec.item3}> {}
 final ${spec.item2} callback = () => '';
 ''',
           classFinder: (l) => l.getType('FunctionFormField')!,
-          valueTypeProvider: (l) => GenericType.fromDartType(
-            l.topLevelElements.whereType<TopLevelVariableElement>().single.type,
-          ),
+          valueTypeProvider: (l) {
+            final variable =
+                l.topLevelElements.whereType<TopLevelVariableElement>().single;
+            return GenericType.fromDartType(variable.type, variable);
+          },
           formFieldGenericArgumentsProvider: (t) =>
-              [GenericType.fromDartType(t.stringType)],
+              [toGenericType(t.stringType)],
           assertion: (x) {
             expect(x.getMappedType('T'), 'String');
           },
@@ -320,11 +325,13 @@ class FunctionFormField<T> extends FormField<${spec.item3}> {}
 final ${spec.item2} callback = (_) {};
 ''',
           classFinder: (l) => l.getType('FunctionFormField')!,
-          valueTypeProvider: (l) => GenericType.fromDartType(
-            l.topLevelElements.whereType<TopLevelVariableElement>().single.type,
-          ),
+          valueTypeProvider: (l) {
+            final variable =
+                l.topLevelElements.whereType<TopLevelVariableElement>().single;
+            return GenericType.fromDartType(variable.type, variable);
+          },
           formFieldGenericArgumentsProvider: (t) =>
-              [GenericType.fromDartType(t.stringType)],
+              [toGenericType(t.stringType)],
           assertion: (x) {
             expect(x.getMappedType('T'), 'String');
           },

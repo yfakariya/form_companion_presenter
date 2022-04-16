@@ -130,7 +130,7 @@ Future<void> main() async {
         targetClass: targetClass,
         propertyName: null,
         typeArguments: invocation.typeArgumentTypes
-                ?.map(GenericType.fromDartType)
+                ?.map((t) => GenericType.fromDartType(t, contextElement))
                 .toList() ??
             [],
         originalMethodInvocation: invocation,

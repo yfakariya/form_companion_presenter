@@ -95,8 +95,8 @@ Future<void> main() async {
 
         final property = PropertyDefinition(
           name: name,
-          propertyType: GenericType.fromDartType(propertyValueType),
-          fieldType: GenericType.fromDartType(fieldValueType),
+          propertyType: toGenericType(propertyValueType),
+          fieldType: toGenericType(fieldValueType),
           preferredFormFieldType: preferredFormFieldType,
           warnings: warnings,
         );
@@ -653,15 +653,10 @@ Future<void> main() async {
 
         final property = PropertyDefinition(
           name: propertyName,
-          propertyType: GenericType.fromDartType(
-            parametersLibrary.typeProvider.stringType,
-          ),
-          fieldType: GenericType.fromDartType(
-            parametersLibrary.typeProvider.stringType,
-          ),
-          preferredFormFieldType: GenericType.fromDartType(
-            formFieldClass.thisType,
-          ),
+          propertyType:
+              toGenericType(parametersLibrary.typeProvider.stringType),
+          fieldType: toGenericType(parametersLibrary.typeProvider.stringType),
+          preferredFormFieldType: toGenericType(formFieldClass.thisType),
           warnings: [],
         );
         final data = PresenterDefinition(
@@ -896,9 +891,7 @@ ${spec.item3.map((p) => '      ${p.item2}: ${p.item2}').join(',\n')},
                 library.typeProvider.stringType,
                 library.typeProvider.stringType,
                 constructorWithNamedConstructorsClass,
-                GenericType.fromDartType(
-                  constructorWithNamedConstructorsClass.thisType,
-                ),
+                toGenericType(constructorWithNamedConstructorsClass.thisType),
                 [],
               ),
               PropertyDefinitionSpec(
@@ -914,9 +907,7 @@ ${spec.item3.map((p) => '      ${p.item2}: ${p.item2}').join(',\n')},
                 library.typeProvider.stringType,
                 library.typeProvider.stringType,
                 factoryWithNamedConstructorsClass,
-                GenericType.fromDartType(
-                  factoryWithNamedConstructorsClass.thisType,
-                ),
+                toGenericType(factoryWithNamedConstructorsClass.thisType),
                 [],
               ),
             ],
@@ -1158,7 +1149,8 @@ extension \$TestFieldFactoryExtension on Test {
           formFieldClass: dropdownButtonFormField,
           preferredFieldType: GenericType.generic(
             dropdownButtonFormField.thisType,
-            [GenericType.fromDartType(library.typeProvider.stringType)],
+            [toGenericType(library.typeProvider.stringType)],
+            dropdownButtonFormField,
           ),
           expectedBody: dropdownButtonFieldFactory('prop', 'String'),
         ),
@@ -1173,7 +1165,8 @@ extension \$TestFieldFactoryExtension on Test {
           formFieldClass: dropdownButtonFormField,
           preferredFieldType: GenericType.generic(
             dropdownButtonFormField.thisType,
-            [GenericType.fromDartType(library.typeProvider.intType)],
+            [toGenericType(library.typeProvider.intType)],
+            dropdownButtonFormField,
           ),
           expectedBody: dropdownButtonFieldFactory('prop', 'int'),
         ),
@@ -1186,9 +1179,7 @@ extension \$TestFieldFactoryExtension on Test {
           propertyValueType: library.typeProvider.stringType,
           fieldValueType: library.typeProvider.stringType,
           formFieldClass: null,
-          preferredFieldType: GenericType.fromDartType(
-            library.typeProvider.objectType,
-          ),
+          preferredFieldType: toGenericType(library.typeProvider.objectType),
           expectedBody:
               "  // TODO(CompanionGenerator): ERROR - Cannot generate field factory for 'prop' property, because FormField type 'Object' is unknown.",
         ),
@@ -1292,7 +1283,8 @@ extension \$TestFieldFactoryExtension on Test {
           formFieldClass: formBuilderDropdown,
           preferredFieldType: GenericType.generic(
             formBuilderDropdown.thisType,
-            [GenericType.fromDartType(library.typeProvider.stringType)],
+            [toGenericType(library.typeProvider.stringType)],
+            formBuilderDropdown,
           ),
           expectedBody: formBuilderDropdownFactory('prop', 'String'),
         ),
@@ -1305,9 +1297,7 @@ extension \$TestFieldFactoryExtension on Test {
           propertyValueType: library.typeProvider.boolType,
           fieldValueType: library.typeProvider.stringType,
           formFieldClass: formBuilderTextField,
-          preferredFieldType: GenericType.fromDartType(
-            formBuilderTextField.thisType,
-          ),
+          preferredFieldType: toGenericType(formBuilderTextField.thisType),
           expectedBody: formBuilderTextFieldFactory('prop'),
         ),
       );
@@ -1334,9 +1324,7 @@ extension \$TestFieldFactoryExtension on Test {
             propertyValueType: spec.type,
             fieldValueType: spec.type,
             formFieldClass: spec.formFieldClass,
-            preferredFieldType: GenericType.fromDartType(
-              spec.formFieldClass.thisType,
-            ),
+            preferredFieldType: toGenericType(spec.formFieldClass.thisType),
             expectedBody: spec.expectedBody,
           ),
         );
@@ -1365,9 +1353,7 @@ extension \$TestFieldFactoryExtension on Test {
             propertyValueType: spec.type,
             fieldValueType: spec.type,
             formFieldClass: spec.formFieldClass,
-            preferredFieldType: GenericType.fromDartType(
-              spec.formFieldClass.thisType,
-            ),
+            preferredFieldType: toGenericType(spec.formFieldClass.thisType),
             expectedBody: spec.expectedBody,
           ),
         );
@@ -1414,7 +1400,8 @@ extension \$TestFieldFactoryExtension on Test {
             formFieldClass: spec.formFieldClass,
             preferredFieldType: GenericType.generic(
               spec.formFieldClass.thisType,
-              [GenericType.fromDartType(spec.type)],
+              [toGenericType(spec.type)],
+              spec.formFieldClass,
             ),
             expectedBody: spec.expectedBody,
           ),
@@ -1428,7 +1415,7 @@ extension \$TestFieldFactoryExtension on Test {
           propertyValueType: library.typeProvider.stringType,
           fieldValueType: library.typeProvider.stringType,
           formFieldClass: null,
-          preferredFieldType: GenericType.fromDartType(
+          preferredFieldType: toGenericType(
             library.typeProvider.objectType,
           ),
           expectedBody:

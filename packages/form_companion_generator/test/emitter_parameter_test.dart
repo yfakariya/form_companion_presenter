@@ -30,7 +30,8 @@ Future<void> main() async {
       c.name: {for (final p in c.parameters) p.name: p}
   };
   final methodParameters = {
-    for (final m in holder.methods)
+    // xxxInterface methods are not for this test library.
+    for (final m in holder.methods.where((m) => !m.name.endsWith('Interface')))
       m.name: {for (final p in m.parameters) p.name: p}
   };
   final constructorParameterNodes = {
@@ -108,8 +109,8 @@ Future<void> main() async {
   ) =>
       PropertyDefinition(
         name: 'prop',
-        propertyType: GenericType.fromDartType(propertyValueType),
-        fieldType: GenericType.fromDartType(fieldValueType),
+        propertyType: toGenericType(propertyValueType),
+        fieldType: toGenericType(fieldValueType),
         preferredFormFieldType: null,
         warnings: [],
       );
@@ -248,14 +249,20 @@ Future<void> main() async {
         final context = TypeInstantiationContext.create(
           PropertyDefinition(
             name: 'prop',
-            propertyType: GenericType.fromDartType(propertyAndFieldValueType),
-            fieldType: GenericType.fromDartType(propertyAndFieldValueType),
+            propertyType: GenericType.fromDartType(
+              propertyAndFieldValueType,
+              parameterElement,
+            ),
+            fieldType: GenericType.fromDartType(
+              propertyAndFieldValueType,
+              parameterElement,
+            ),
             preferredFormFieldType:
                 // POINT: With instantiated InterfaceType without type arguments
                 //        rather than generic type definition and type arguments.
                 //        That is, specify DropdownButtonFormField<bool>
                 //        instead of DropdownButtonFormField<T>, for example.
-                GenericType.fromDartType(preferredFieldType),
+                GenericType.fromDartType(preferredFieldType, parameterElement),
             warnings: [],
           ),
           preferredFieldType,
@@ -736,7 +743,7 @@ const functionExpected = {
   'nullableFunction': {
     'alias': 'NonGenericCallback? alias',
     'genericAlias': 'GenericCallback<bool>? genericAlias',
-    'instantiatedAlias': 'GenericCallback<int>? instantiatedAlias',
+    'instantiatedAlias': 'GenericCallback<int?>? instantiatedAlias',
     'prefixedAlias': 'ui.VoidCallback? prefixedAlias',
     'function': 'int? Function(String?)? function',
     'genericFunction': 'bool? Function(bool?)? genericFunction',
@@ -823,7 +830,7 @@ const typeExpected = {
     'nullable': {
       'alias': 'NonGenericCallback?',
       'genericAlias': 'GenericCallback<bool>?',
-      'instantiatedAlias': 'GenericCallback<int>?',
+      'instantiatedAlias': 'GenericCallback<int?>?',
       'prefixedAlias': 'VoidCallback?',
       'function': 'int? Function(String?)?',
       'genericFunction': 'bool? Function(bool?)?',
@@ -900,7 +907,7 @@ const typeAnnotationExpected = {
     'nullable': {
       'alias': 'NonGenericCallback?',
       'genericAlias': 'GenericCallback<bool>?',
-      'instantiatedAlias': 'GenericCallback<int>?',
+      'instantiatedAlias': 'GenericCallback<int?>?',
       'prefixedAlias': 'ui.VoidCallback?',
       'function': 'int? Function(String?)?',
       'genericFunction': 'bool? Function(bool?)?',

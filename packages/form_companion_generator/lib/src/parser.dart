@@ -206,6 +206,8 @@ FutureOr<List<PropertyAndFormFieldDefinition>> getPropertiesAsync(
     // then assuming that it is direct reference to top level variable or field.
     building = context.buildings[pdbArgument.name] ??
         context.initializeCompanionMixinArgument!;
+  } else if (context.initializeCompanionMixinArgument == null) {
+    throwNotSupportedYet(node: ast, contextElement: constructor);
   } else {
     building = context.initializeCompanionMixinArgument!;
   }
@@ -244,7 +246,7 @@ Iterable<PropertyDefinition> _toUniquePropertyDefinitions(
       final element = _getDeclaringElement(definition.source);
       throwError(
         message:
-            "Property '${property.name}' is defined more than once ${getNodeLocation(definition.source, element)}.",
+            "Property '${property.name}' is defined more than once at ${getNodeLocation(definition.source, element)}.",
         todo: 'Fix to define each properties only once for given $pdbTypeName.',
         element: element,
       );
@@ -269,10 +271,6 @@ Element _getDeclaringElement(MethodInvocation expression) {
       } else {
         return node.declaredElement!;
       }
-    }
-
-    if (node is CompilationUnit) {
-      return node.declaredElement!;
     }
   }
 
