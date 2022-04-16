@@ -55,9 +55,28 @@ Future<void> main() async {
           .parameters)
         p.name: p
     },
+    'complex': {
+      for (final p in parameterHolder.methods
+          .singleWhere((c) => c.displayName == 'complexFunction')
+          .parameters)
+        p.name: p
+    },
   };
   final nullableStringType =
       interfaceTypeParameters['nullable']!['interface']!.type;
+
+  final multiGenericFunctionAlias = parametersLibrary.topLevelElements
+      .whereType<TypeAliasElement>()
+      .singleWhere((a) => a.name.startsWith('MultiGenericFunction'));
+
+  final complexGenericTypeParameters = {
+    for (final m in parametersLibrary
+        .getType('ComplexGenericTypeHolder')!
+        .methods
+        .single
+        .parameters)
+      m.name: m
+  };
 
   ElementAnnotation findAnnotation(String className) {
     final type = libraryReader.findType(className);
@@ -185,9 +204,55 @@ class C {
   });
 
   group('GenericType', () {
+    final typeProvider = libraryReader.element.typeProvider;
     final typeSystem = libraryReader.element.typeSystem;
 
-    Future<void> testCore({
+    Future<void> assertGenericType({
+      required DartType sourceType,
+      required GenericType target,
+      required List<String> expectedTypeArguments,
+      required String rawTypeName,
+      required String displayStringWithNullability,
+      required String displayStringWithoutNullability,
+    }) async {
+      if (sourceType is InterfaceType) {
+        expect(
+          target.maybeAsInterfaceType?.getDisplayString(withNullability: true),
+          sourceType.getDisplayString(withNullability: true),
+          reason: 'maybeAsInterfaceType',
+        );
+      } else {
+        expect(
+          target.maybeAsInterfaceType,
+          isNull,
+          reason: 'maybeAsInterfaceType',
+        );
+      }
+
+      expect(
+        target.rawType.getDisplayString(withNullability: false),
+        rawTypeName,
+        reason: 'rawType',
+      );
+
+      expect(
+        target.toString(),
+        displayStringWithNullability,
+        reason: 'toString()',
+      );
+      expect(
+        target.getDisplayString(withNullability: false),
+        displayStringWithoutNullability,
+        reason: 'getDisplayString(withNullability: false)',
+      );
+      expect(
+        target.typeArguments.map((e) => e.toString()).toList().toString(),
+        expectedTypeArguments.toString(),
+        reason: 'typeArguments',
+      );
+    }
+
+    Future<void> testGenericType({
       required ParameterElement source,
       required List<GenericType> typeArguments,
       required List<String> expectedTypeArguments,
@@ -197,214 +262,519 @@ class C {
     }) async {
       final type = source.type;
       final target = typeArguments.isEmpty
-          ? GenericType.fromDartType(type)
-          : GenericType.generic(type, typeArguments);
-      if (type is InterfaceType) {
-        expect(
-          target.maybeAsInterfaceType?.getDisplayString(withNullability: true),
-          type.getDisplayString(withNullability: true),
-        );
-      } else {
-        expect(target.maybeAsInterfaceType, isNull);
-      }
-
-      expect(
-        target.rawType.getDisplayString(withNullability: false),
-        rawTypeName,
-      );
-
-      expect(
-        target.toString(),
-        displayStringWithNullability,
-      );
-      expect(
-        target.getDisplayString(withNullability: false),
-        displayStringWithoutNullability,
-      );
-      expect(
-        target.typeArguments.map((e) => e.toString()).toList().toString(),
-        expectedTypeArguments.toString(),
+          ? GenericType.fromDartType(type, source)
+          : GenericType.generic(type, typeArguments, source);
+      await assertGenericType(
+        sourceType: type,
+        target: target,
+        expectedTypeArguments: expectedTypeArguments,
+        rawTypeName: rawTypeName,
+        displayStringWithNullability: displayStringWithNullability,
+        displayStringWithoutNullability: displayStringWithoutNullability,
       );
     }
 
-    for (final nullable in [false, true]) {
-      for (final spec in [
-        TypeSpec(
-          'non-generic, non-alias',
-          'interface',
-          [],
-          [],
-          'String?',
-          'String',
-          'String',
-        ),
-        TypeSpec(
-          'generic, non-alias',
-          'genericInterface',
-          [nullableStringType],
-          ['String'],
-          'List<String?>?',
-          'List<String>',
-          'List<E>',
-        ),
-        TypeSpec(
-          'instantiated-generic, non-alias',
-          'instantiatedInterface',
-          [],
-          ['int'],
-          'List<int?>?',
-          'List<int>',
-          'List<E>',
-        ),
-        TypeSpec(
-          'non-generic, alias',
-          'alias',
-          [],
-          [],
-          'AString?',
-          'AString',
-          'String',
-        ),
-        TypeSpec(
-          'generic, alias',
-          'genericAlias',
-          [nullableStringType],
-          ['String'],
-          'AList<String?>?',
-          'AList<String>',
-          'List<E>',
-        ),
-        TypeSpec(
-          'instantiated-generic, alias',
-          'instantiatedAlias',
-          [],
-          ['int'],
-          'AList<int?>?',
-          'AList<int>',
-          'List<E>',
-        ),
-      ]) {
-        final nullability = nullable ? 'nullable' : 'non-nullable';
-        final caseName = 'interface type, ${spec.item1}, $nullability';
-        final parameter = interfaceTypeParameters[nullability]![spec.item2]!;
-        final typeArguments = (nullable
-                ? spec.item3
-                : spec.item3.map(typeSystem.promoteToNonNull))
-            .map(GenericType.fromDartType)
-            .toList();
-        final expectedTypeArguments =
-            nullable ? spec.item4.map((t) => '$t?').toList() : spec.item4;
-        final displayStringWithoutNullability = spec.item6;
-        final displayStringWithNullability =
-            nullable ? spec.item5 : displayStringWithoutNullability;
-        final rawTypeName = spec.item7;
-        test(
-          caseName,
-          () => testCore(
-            source: parameter,
-            rawTypeName: rawTypeName,
-            typeArguments: typeArguments,
-            expectedTypeArguments: expectedTypeArguments,
-            displayStringWithNullability: displayStringWithNullability,
-            displayStringWithoutNullability: displayStringWithoutNullability,
+    group('interface types', () {
+      for (final nullable in [false, true]) {
+        for (final spec in [
+          TypeSpec(
+            'non-generic, non-alias',
+            'interface',
+            [],
+            [],
+            'String?',
+            'String',
+            'String',
           ),
-        );
+          TypeSpec(
+            'generic, non-alias',
+            'genericInterface',
+            [nullableStringType],
+            ['String'],
+            'List<String?>?',
+            'List<String>',
+            'List<E>',
+          ),
+          TypeSpec(
+            'instantiated-generic, non-alias',
+            'instantiatedInterface',
+            [],
+            ['int'],
+            'List<int?>?',
+            'List<int>',
+            'List<E>',
+          ),
+          TypeSpec(
+            'non-generic, alias',
+            'alias',
+            [],
+            [],
+            'AString?',
+            'AString',
+            'String',
+          ),
+          TypeSpec(
+            'generic, alias',
+            'genericAlias',
+            [nullableStringType],
+            ['String'],
+            'AList<String?>?',
+            'AList<String>',
+            'List<E>',
+          ),
+          TypeSpec(
+            'instantiated-generic, alias',
+            'instantiatedAlias',
+            [],
+            ['int'],
+            'AList<int?>?',
+            'AList<int>',
+            'List<E>',
+          ),
+        ]) {
+          final nullability = nullable ? 'nullable' : 'non-nullable';
+          final caseName = 'interface type, ${spec.item1}, $nullability';
+          final parameter = interfaceTypeParameters[nullability]![spec.item2]!;
+          final typeArguments = (nullable
+                  ? spec.item3
+                  : spec.item3.map(typeSystem.promoteToNonNull))
+              .map((t) => GenericType.fromDartType(t, parameter))
+              .toList();
+          final expectedTypeArguments =
+              nullable ? spec.item4.map((t) => '$t?').toList() : spec.item4;
+          final displayStringWithoutNullability = spec.item6;
+          final displayStringWithNullability =
+              nullable ? spec.item5 : displayStringWithoutNullability;
+          final rawTypeName = spec.item7;
+          test(
+            caseName,
+            () => testGenericType(
+              source: parameter,
+              rawTypeName: rawTypeName,
+              typeArguments: typeArguments,
+              expectedTypeArguments: expectedTypeArguments,
+              displayStringWithNullability: displayStringWithNullability,
+              displayStringWithoutNullability: displayStringWithoutNullability,
+            ),
+          );
+        }
       }
-    } // interface types
+    }); // interface types
 
-    for (final nullable in [false, true]) {
+    group('function types', () {
+      for (final nullable in [false, true]) {
+        for (final spec in [
+          TypeSpec(
+            'non-generic, non-alias',
+            'function',
+            [],
+            [],
+            'int? Function(String?)?',
+            'int Function(String)',
+            'int Function(String)',
+          ),
+          TypeSpec(
+            'generic, non-alias',
+            'genericFunction',
+            [nullableStringType],
+            ['String'],
+            'String? Function(String?)?',
+            'String Function(String)',
+            'T Function(T)',
+          ),
+          TypeSpec(
+            'parameterized, non-alias',
+            'parameterizedFunction',
+            [nullableStringType],
+            ['String'],
+            'String? Function(String?)?',
+            'String Function(String)',
+            'S Function<S>(S)',
+          ),
+          TypeSpec(
+            'instantiated-generic, non-alias',
+            'instantiatedFunction',
+            [],
+            [],
+            'List<int>? Function(Map<String?, int?>?)?',
+            'List<int> Function(Map<String, int>)',
+            'List<int> Function(Map<String, int>)',
+          ),
+          TypeSpec(
+            'non-generic, alias',
+            'alias',
+            [],
+            [],
+            'NonGenericCallback?',
+            'NonGenericCallback',
+            'int Function(String)',
+          ),
+          TypeSpec(
+            'generic, alias',
+            'genericAlias',
+            [nullableStringType],
+            ['String'],
+            'GenericCallback<String?>?',
+            'GenericCallback<String>',
+            'void Function<T>(T)',
+          ),
+          TypeSpec(
+            'instantiated-generic, alias',
+            'instantiatedAlias',
+            [],
+            ['int'],
+            'GenericCallback<int?>?',
+            'GenericCallback<int>',
+            'void Function<T>(T)',
+          ),
+        ]) {
+          final nullability = nullable ? 'nullable' : 'non-nullable';
+          final caseName = 'function type, ${spec.item1}, $nullability';
+          final parameter = functionTypeParameters[nullability]![spec.item2]!;
+          final typeArguments = (nullable
+                  ? spec.item3
+                  : spec.item3.map(typeSystem.promoteToNonNull))
+              .map((t) => GenericType.fromDartType(t, parameter))
+              .toList();
+          final expectedTypeArguments =
+              nullable ? spec.item4.map((t) => '$t?').toList() : spec.item4;
+          final displayStringWithoutNullability = spec.item6;
+          final displayStringWithNullability =
+              nullable ? spec.item5 : displayStringWithoutNullability;
+          final rawTypeName = spec.item7;
+          test(
+            caseName,
+            () => testGenericType(
+              source: parameter,
+              rawTypeName: rawTypeName,
+              typeArguments: typeArguments,
+              expectedTypeArguments: expectedTypeArguments,
+              displayStringWithNullability: displayStringWithNullability,
+              displayStringWithoutNullability: displayStringWithoutNullability,
+            ),
+          );
+        }
+      } // function types
+
       for (final spec in [
         TypeSpec(
-          'non-generic, non-alias',
-          'function',
+          'with optional parameters',
+          'hasDefault',
           [],
           [],
-          'int? Function(String?)?',
-          'int Function(String)',
-          'int Function(String)',
+          'void Function([int])?',
+          'void Function([int])',
+          'void Function([int])',
         ),
         TypeSpec(
-          'generic, non-alias',
-          'genericFunction',
-          [nullableStringType],
-          ['String'],
-          'String? Function(String?)?',
-          'String Function(String)',
-          'T Function(T)',
-        ),
-        TypeSpec(
-          'parameterized, non-alias',
-          'parameterizedFunction',
-          [nullableStringType],
-          ['String'],
-          'String? Function(String?)?',
-          'String Function(String)',
-          'S Function<S>(S)',
-        ),
-        TypeSpec(
-          'instantiated-generic, non-alias',
-          'instantiatedFunction',
+          'with named parameters',
+          'hasNamed',
           [],
           [],
-          'List<int>? Function(Map<String?, int?>?)?',
-          'List<int> Function(Map<String, int>)',
-          'List<int> Function(Map<String, int>)',
-        ),
-        TypeSpec(
-          'non-generic, alias',
-          'alias',
-          [],
-          [],
-          'NonGenericCallback?',
-          'NonGenericCallback',
-          'int Function(String)',
-        ),
-        TypeSpec(
-          'generic, alias',
-          'genericAlias',
-          [nullableStringType],
-          ['String'],
-          'GenericCallback<String?>?',
-          'GenericCallback<String>',
-          'void Function<T>(T)',
-        ),
-        TypeSpec(
-          'instantiated-generic, alias',
-          'instantiatedAlias',
-          [],
-          ['int'],
-          'GenericCallback<int?>?',
-          'GenericCallback<int>',
-          'void Function<T>(T)',
+          // NOTE: sorted lexically with their name
+          'void Function({int optional, required String required})?',
+          'void Function({int optional, required String required})',
+          'void Function({int optional, required String required})',
         ),
       ]) {
-        final nullability = nullable ? 'nullable' : 'non-nullable';
-        final caseName = 'function type, ${spec.item1}, $nullability';
-        final parameter = functionTypeParameters[nullability]![spec.item2]!;
-        final typeArguments = (nullable
-                ? spec.item3
-                : spec.item3.map(typeSystem.promoteToNonNull))
-            .map(GenericType.fromDartType)
-            .toList();
-        final expectedTypeArguments =
-            nullable ? spec.item4.map((t) => '$t?').toList() : spec.item4;
+        final caseName = 'function type, ${spec.item1}';
+        final parameter = functionTypeParameters['complex']![spec.item2]!;
+        final displayStringWithNullability = spec.item5;
         final displayStringWithoutNullability = spec.item6;
-        final displayStringWithNullability =
-            nullable ? spec.item5 : displayStringWithoutNullability;
         final rawTypeName = spec.item7;
         test(
           caseName,
-          () => testCore(
+          () => testGenericType(
             source: parameter,
             rawTypeName: rawTypeName,
-            typeArguments: typeArguments,
-            expectedTypeArguments: expectedTypeArguments,
+            typeArguments: [],
+            expectedTypeArguments: [],
             displayStringWithNullability: displayStringWithNullability,
             displayStringWithoutNullability: displayStringWithoutNullability,
           ),
         );
-      }
-    } // function types
+      } // complex function types
+    });
+
+    group('Special cases', () {
+      test(
+        '.generic with no type arguments for interface type',
+        () async {
+          final type = typeProvider.stringType;
+          await assertGenericType(
+            sourceType: type,
+            target: GenericType.generic(type, [], type.element),
+            expectedTypeArguments: [],
+            rawTypeName: 'String',
+            displayStringWithNullability: 'String',
+            displayStringWithoutNullability: 'String',
+          );
+        },
+      );
+
+      test(
+        '.generic with no type arguments for function type',
+        () async {
+          final parameter =
+              functionTypeParameters['non-nullable']!['function']!;
+          final type = parameter.type;
+          await assertGenericType(
+            sourceType: type,
+            target: GenericType.generic(type, [], parameter),
+            expectedTypeArguments: [],
+            rawTypeName: 'int Function(String)',
+            displayStringWithNullability: 'int Function(String)',
+            displayStringWithoutNullability: 'int Function(String)',
+          );
+        },
+      );
+
+      test(
+        '.generic with multiple type arguments for interface type',
+        () async {
+          final type = typeProvider
+              .mapType(typeProvider.stringType, typeProvider.intType)
+              .element
+              .thisType;
+          final typeArguments = [
+            toGenericType(typeProvider.stringType),
+            toGenericType(typeProvider.intType)
+          ];
+          await assertGenericType(
+            sourceType: type,
+            target: GenericType.generic(
+              type.element.thisType,
+              typeArguments,
+              type.element,
+            ),
+            expectedTypeArguments: ['String', 'int'],
+            rawTypeName: 'Map<K, V>',
+            displayStringWithNullability: 'Map<String, int>',
+            displayStringWithoutNullability: 'Map<String, int>',
+          );
+        },
+      );
+
+      test(
+        '.generic with multiple type arguments for function type',
+        () async {
+          final typeArguments = [
+            toGenericType(typeProvider.stringType),
+            toGenericType(typeProvider.intType),
+          ];
+          await assertGenericType(
+            sourceType: multiGenericFunctionAlias.aliasedType,
+            target: GenericType.generic(
+              multiGenericFunctionAlias.aliasedType,
+              typeArguments,
+              multiGenericFunctionAlias,
+            ),
+            expectedTypeArguments: ['String', 'int'],
+            rawTypeName: 'R Function<T, R>(T)',
+            displayStringWithNullability: 'int Function(String)',
+            displayStringWithoutNullability: 'int Function(String)',
+          );
+        },
+      );
+
+      test(
+        '.generic for special type',
+        () async {
+          await assertGenericType(
+            sourceType: typeProvider.neverType,
+            target: GenericType.generic(
+              typeProvider.neverType,
+              [],
+              typeProvider.neverType.element!,
+            ),
+            expectedTypeArguments: [],
+            rawTypeName: 'Never',
+            displayStringWithNullability: 'Never',
+            displayStringWithoutNullability: 'Never',
+          );
+        },
+      );
+
+      test(
+        'alias function with multiple type params',
+        () async {
+          final parameter =
+              complexGenericTypeParameters['multiParameterAliasFunction']!;
+          final type = parameter.type;
+          await assertGenericType(
+            sourceType: type,
+            target: GenericType.generic(type, [], parameter),
+            expectedTypeArguments: [],
+            rawTypeName: 'R Function<T, R>(T)',
+            displayStringWithNullability: 'MultiGenericFunction<int, String>',
+            displayStringWithoutNullability:
+                'MultiGenericFunction<int, String>',
+          );
+        },
+      );
+
+      test(
+        'non-alias interface with multiple type params',
+        () async {
+          final parameter =
+              complexGenericTypeParameters['multiParameterGenericType']!;
+          final type = parameter.type;
+          await assertGenericType(
+            sourceType: type,
+            target: GenericType.generic(
+              type,
+              [
+                toGenericType(typeProvider.stringType),
+                toGenericType(typeProvider.intType),
+              ],
+              parameter,
+            ),
+            expectedTypeArguments: ['String', 'int'],
+            rawTypeName: 'Map<K, V>',
+            displayStringWithNullability: 'AMap<String, int>',
+            displayStringWithoutNullability: 'AMap<String, int>',
+          );
+        },
+      );
+
+      test(
+        'non-alias function with multiple type params',
+        () async {
+          final parameter =
+              complexGenericTypeParameters['multiParameterGenericFunction']!;
+          final type = parameter.type;
+          await assertGenericType(
+            sourceType: type,
+            target: GenericType.generic(
+              type,
+              [
+                toGenericType(typeProvider.intType),
+                toGenericType(typeProvider.stringType),
+              ],
+              parameter,
+            ),
+            expectedTypeArguments: ['int', 'String'],
+            rawTypeName: 'R Function<S, R>(S)',
+            displayStringWithNullability: 'String Function(int)',
+            displayStringWithoutNullability: 'String Function(int)',
+          );
+        },
+      );
+
+      test(
+        '.generic for interface without type arguments for alias with multiple type arguments',
+        () async {
+          final parameter =
+              complexGenericTypeParameters['instantiatedMultiGenericType']!;
+          final type = parameter.type;
+          await assertGenericType(
+            sourceType: type,
+            target: GenericType.generic(type, [], parameter),
+            expectedTypeArguments: ['String', 'int'],
+            rawTypeName: 'Map<K, V>',
+            displayStringWithNullability: 'StringIntMap',
+            displayStringWithoutNullability: 'StringIntMap',
+          );
+        },
+      );
+
+      test(
+        '.generic for function without type arguments for alias with multiple type arguments',
+        () async {
+          final parameter =
+              complexGenericTypeParameters['instantiatedMultiGenericFunction']!;
+          final type = parameter.type;
+          await assertGenericType(
+            sourceType: type,
+            target: GenericType.generic(type, [], parameter),
+            expectedTypeArguments: [],
+            rawTypeName: 'R Function<T, R>(T)',
+            displayStringWithNullability: 'InstantiatedMultiGenericFunction',
+            displayStringWithoutNullability: 'InstantiatedMultiGenericFunction',
+          );
+        },
+      );
+
+      test(
+        'function type with type formals and context supplied type arguments are not allowed',
+        () async {
+          final parameter =
+              complexGenericTypeParameters['mixedParameterGenericFunction']!;
+          final type = parameter.type;
+          expect(
+            () => GenericType.generic(
+              type,
+              [
+                toGenericType(typeProvider.intType),
+                toGenericType(typeProvider.stringType),
+              ],
+              parameter,
+            ),
+            throwsA(
+              isA<InvalidGenerationSourceError>()
+                  .having(
+                    (e) => e.message,
+                    'message',
+                    "Complex function type 'T1 Function<S>(S)' is not supported.",
+                  )
+                  .having(
+                    (e) => e.todo,
+                    'todo',
+                    'Do not use complex function type which has type formals and '
+                        'uses any type parameters other than type formals. '
+                        'For example, `S Function<T>(T)` is not allowed, '
+                        'but `T Function<T>(T)` is allowed.',
+                  )
+                  .having(
+                    (e) => e.element,
+                    'element',
+                    same(parameter),
+                  ),
+            ),
+          );
+        },
+      );
+
+      test(
+        'function type with multiple context supplied type arguments are not allowed',
+        () async {
+          final parameter = complexGenericTypeParameters[
+              'multiContextParameterGenericFunction']!;
+          final type = parameter.type;
+          expect(
+            () => GenericType.generic(
+              type,
+              [
+                toGenericType(typeProvider.intType),
+                toGenericType(typeProvider.stringType),
+              ],
+              parameter,
+            ),
+            throwsA(
+              isA<InvalidGenerationSourceError>()
+                  .having(
+                    (e) => e.message,
+                    'message',
+                    "Complex function type 'T2 Function(T1)' is not supported.",
+                  )
+                  .having(
+                    (e) => e.todo,
+                    'todo',
+                    'Do not use complex function type which has more than one type '
+                        'parameters. '
+                        'For example, `S Function(T)` is not allowed, '
+                        'but `T Function(T)` is allowed.',
+                  )
+                  .having(
+                    (e) => e.element,
+                    'element',
+                    same(parameter),
+                  ),
+            ),
+          );
+        },
+      );
+    });
   });
 
   // Other classes can be tested well via emitter_test.

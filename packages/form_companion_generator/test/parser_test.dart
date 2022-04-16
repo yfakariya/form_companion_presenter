@@ -1579,7 +1579,8 @@ Future<void> main() async {
   group('collectDependencies', () {
     FutureOr<PropertyAndFormFieldDefinition> makeProperty(
       String formFieldTypeName,
-      DartType valueType, {
+      DartType valueType,
+      Element valueTypeContextElement, {
       required bool isFormBuilder,
     }) async {
       final formFieldType = formFieldLocator.resolveFormFieldType(
@@ -1588,13 +1589,15 @@ Future<void> main() async {
 
       final property = PropertyDefinition(
         name: 'prop',
-        fieldType: GenericType.fromDartType(valueType),
-        propertyType: GenericType.fromDartType(valueType),
+        fieldType: GenericType.fromDartType(valueType, valueTypeContextElement),
+        propertyType:
+            GenericType.fromDartType(valueType, valueTypeContextElement),
         preferredFormFieldType: GenericType.generic(
           formFieldType,
           formFieldType.typeArguments.any((t) => t is TypeParameterType)
-              ? [GenericType.fromDartType(valueType)]
+              ? [GenericType.fromDartType(valueType, valueTypeContextElement)]
               : [],
+          formFieldType.element,
         ),
         warnings: [],
       );
@@ -1662,8 +1665,8 @@ Future<void> main() async {
       test('parameter kind: $kind', () async {
         final property = PropertyDefinition(
           name: 'prop',
-          fieldType: GenericType.fromDartType(typeProvider.stringType),
-          propertyType: GenericType.fromDartType(typeProvider.stringType),
+          fieldType: toGenericType(typeProvider.stringType),
+          propertyType: toGenericType(typeProvider.stringType),
           preferredFormFieldType: null,
           warnings: [],
         );
@@ -1721,6 +1724,7 @@ Future<void> main() async {
           await makeProperty(
             fieldName,
             valueType,
+            valueType.element,
             isFormBuilder: isFormBuilder,
           ),
         ],
@@ -1798,16 +1802,17 @@ Future<void> main() async {
     test(
       'function value type',
       () async {
+        final alias = parametersLibrary.topLevelElements
+            .whereType<TypeAliasElement>()
+            .where((t) => t.name == 'NonGenericCallback')
+            .single;
         final result = await collectDependenciesAsync(
           presenterLibrary.element,
           [
             await makeProperty(
               'DropdownButtonFormField',
-              parametersLibrary.topLevelElements
-                  .whereType<TypeAliasElement>()
-                  .where((t) => t.name == 'NonGenericCallback')
-                  .single
-                  .aliasedType,
+              alias.aliasedType,
+              alias,
               isFormBuilder: false,
             ),
           ],

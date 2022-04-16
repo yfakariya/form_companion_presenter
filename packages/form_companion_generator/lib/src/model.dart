@@ -316,12 +316,13 @@ abstract class GenericType {
   /// [InterfaceType].
   InterfaceType? get maybeAsInterfaceType;
 
-  /// Initializes a new [GenericType] instance.
+  /// Returns a new [GenericType] instance.
   factory GenericType.generic(
     DartType rawType,
     List<GenericType> typeArguments,
+    Element contextElement,
   ) {
-    if (rawType is InterfaceType) {
+    if (rawType is InterfaceType && typeArguments.isNotEmpty) {
       return _InstantiatedGenericInterfaceType(
         rawType,
         _toRawInterfaceType(rawType),
@@ -335,18 +336,17 @@ abstract class GenericType {
         _buildFunctionTypeGenericArguments(
           rawType,
           typeArguments,
+          contextElement,
         ),
+        contextElement,
       );
     } else {
-      return _NonGenericType(rawType);
+      return _NonGenericType(rawType, contextElement);
     }
   }
 
-  /// Initializes a new [GenericType] instance from
-  /// [FunctionType] or [InterfaceType].
-  ///
-  /// If [type] is another type, [ArgumentError] will be thrown.
-  factory GenericType.fromDartType(DartType type) {
+  /// Initializes a new [GenericType] instance from [DartType].
+  factory GenericType.fromDartType(DartType type, Element contextElement) {
     // NOTE: currenty, `type` never be non-instantiated generic type.
 
     if (type is InterfaceType) {
@@ -360,20 +360,27 @@ abstract class GenericType {
           _toRawFunctionType(type),
           [],
           {},
+          contextElement,
         );
       } else {
-        final typeArguments =
-            alias.typeArguments.map(GenericType.fromDartType).toList();
+        final typeArguments = alias.typeArguments
+            .map((t) => GenericType.fromDartType(t, contextElement))
+            .toList();
         return _InstantiatedGenericFunctionType(
           type,
           _toRawFunctionType(type),
           typeArguments,
-          _buildFunctionTypeGenericArguments(type, typeArguments),
+          _buildFunctionTypeGenericArguments(
+            type,
+            typeArguments,
+            contextElement,
+          ),
+          contextElement,
         );
       }
     }
 
-    return _NonGenericType(type);
+    return _NonGenericType(type, contextElement);
   }
 
   GenericType._();
@@ -410,11 +417,20 @@ abstract class GenericType {
 /// Represents non generic type.
 @sealed
 class _NonGenericType extends GenericType {
+  final Element _contextElement;
+
   /// Gets a wrapped [DartType].
   final DartType type;
 
   @override
-  DartType get rawType => (type.element as ClassElement?)?.thisType ?? type;
+  DartType get rawType {
+    final element = type.element;
+    if (element is ClassElement) {
+      return element.thisType;
+    }
+
+    return type;
+  }
 
   @override
   InterfaceType? get maybeAsInterfaceType {
@@ -430,11 +446,13 @@ class _NonGenericType extends GenericType {
   List<GenericType> get typeArguments {
     final type = this.type;
     return type is InterfaceType
-        ? type.typeArguments.map(GenericType.fromDartType).toList()
+        ? type.typeArguments
+            .map((t) => GenericType.fromDartType(t, _contextElement))
+            .toList()
         : [];
   }
 
-  _NonGenericType(this.type)
+  _NonGenericType(this.type, this._contextElement)
       : assert(type is! FunctionType),
         super._();
 
@@ -555,43 +573,21 @@ class _InstantiatedGenericInterfaceType extends GenericType {
     List<GenericType> typeArguments, {
     required bool withNullability,
   }) {
-    if (typeArguments.isNotEmpty) {
-      sink.write('<');
-      var isFirst = true;
-      for (final typeArgument in typeArguments) {
-        if (isFirst) {
-          isFirst = false;
-        } else {
-          sink.write(', ');
-        }
-
-        typeArgument.writeTo(
-          sink,
-          withNullability: withNullability,
-        );
+    sink.write('<');
+    var isFirst = true;
+    for (final typeArgument in typeArguments) {
+      if (isFirst) {
+        isFirst = false;
+      } else {
+        sink.write(', ');
       }
-      sink.write('>');
-      return;
+
+      typeArgument.writeTo(
+        sink,
+        withNullability: withNullability,
+      );
     }
-
-    final intrinsicTypeArguments = _interfaceType.alias == null
-        ? _interfaceType.typeArguments
-        : _interfaceType.alias!.typeArguments;
-
-    if (intrinsicTypeArguments.isNotEmpty) {
-      sink.write('<');
-      var isFirst = true;
-      for (final typeArgument in intrinsicTypeArguments) {
-        if (isFirst) {
-          isFirst = false;
-        } else {
-          sink.write(', ');
-        }
-
-        _writeTypeTo(typeArgument, sink, withNullability: withNullability);
-      }
-      sink.write('>');
-    }
+    sink.write('>');
   }
 }
 
@@ -621,6 +617,7 @@ abstract class GenericFunctionType extends GenericType {
 /// Represents generic function type with type arguments.
 @sealed
 class _InstantiatedGenericFunctionType extends GenericFunctionType {
+  final Element _contextElement;
   final Map<String, GenericType> _genericArguments;
 
   @override
@@ -638,6 +635,7 @@ class _InstantiatedGenericFunctionType extends GenericFunctionType {
     FunctionType rawFunctionType,
     this.typeArguments,
     this._genericArguments,
+    this._contextElement,
   ) : super._(functionType, rawFunctionType);
 
   GenericType _instantiate(DartType mayBeTypeParameter) =>
@@ -645,7 +643,10 @@ class _InstantiatedGenericFunctionType extends GenericFunctionType {
           ? _genericArguments[
               mayBeTypeParameter.getDisplayString(withNullability: false)]
           : null) ??
-      GenericType.fromDartType(mayBeTypeParameter);
+      GenericType.fromDartType(
+        mayBeTypeParameter,
+        _contextElement,
+      );
 
   @override
   void writeTo(StringSink sink, {required bool withNullability}) {
@@ -693,6 +694,12 @@ class _InstantiatedGenericFunctionType extends GenericFunctionType {
       sink.write(
         parameterTypes[i].getDisplayString(withNullability: withNullability),
       );
+
+      if (parameter.isNamed) {
+        sink
+          ..write(' ')
+          ..write(parameter.name);
+      }
     }
 
     if (!isRequiredPositional) {
@@ -711,6 +718,7 @@ class _InstantiatedGenericFunctionType extends GenericFunctionType {
 Map<String, GenericType> _buildFunctionTypeGenericArguments(
   FunctionType type,
   List<GenericType> typeArguments,
+  Element contextElement,
 ) {
   if (typeArguments.isEmpty) {
     return {};
@@ -724,6 +732,7 @@ Map<String, GenericType> _buildFunctionTypeGenericArguments(
             'uses any type parameters other than type formals. '
             'For example, `S Function<T>(T)` is not allowed, '
             'but `T Function<T>(T)` is allowed.',
+        element: contextElement,
       );
     }
 
@@ -768,6 +777,7 @@ Map<String, GenericType> _buildFunctionTypeGenericArguments(
           'parameters. '
           'For example, `S Function(T)` is not allowed, '
           'but `T Function(T)` is allowed.',
+      element: contextElement,
     );
   }
 }

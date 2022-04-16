@@ -7,7 +7,9 @@ import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
 import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
+import 'package:form_companion_generator/src/model.dart';
 import 'package:path/path.dart' as path;
+import 'package:test/expect.dart';
 
 const _sourceDirectory = '../form_companion_generator_test/lib';
 
@@ -148,4 +150,20 @@ String pascalize(String value) {
   } else {
     return value.substring(0, 1).toUpperCase() + value.substring(1);
   }
+}
+
+GenericType toGenericType(DartType type) {
+  final element = type.element;
+  if (element == null) {
+    if (type.alias != null) {
+      return GenericType.fromDartType(
+        type,
+        type.alias?.element.aliasedElement ?? type.alias!.element,
+      );
+    }
+
+    fail('$type is not completed.');
+  }
+
+  return GenericType.fromDartType(type, element);
 }

@@ -263,6 +263,7 @@ List<GenericType> _mapTypeArguments(
             invocation,
             current,
           ).toList(),
+          current,
         ),
       );
     } else if (invocationTypeArgument is TypeParameterType) {
@@ -307,6 +308,7 @@ Iterable<GenericType> _resolveTypeArguments(
           node,
           contextElement,
         ).toList(),
+        contextElement,
       );
     } else {
       throwNotSupportedYet(node: node, contextElement: contextElement);

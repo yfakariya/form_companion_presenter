@@ -199,6 +199,23 @@ class ParameterFunctionHolder<T>
         this.alias = alias;
 }
 
+typedef MultiGenericFunction<T, R> = R Function<T, R>(T);
+typedef InstantiatedMultiGenericFunction = MultiGenericFunction<int, String>;
+typedef StringIntMap = Map<String, int>;
+typedef AMap<K, V> = Map<K, V>;
+
+class ComplexGenericTypeHolder<T1, T2> {
+  void function(
+    MultiGenericFunction<int, String> multiParameterAliasFunction,
+    StringIntMap instantiatedMultiGenericType,
+    AMap<String, int> multiParameterGenericType,
+    InstantiatedMultiGenericFunction instantiatedMultiGenericFunction,
+    T1 Function<S>(S) mixedParameterGenericFunction,
+    R Function<S, R>(S) multiParameterGenericFunction,
+    T2 Function(T1) multiContextParameterGenericFunction,
+  ) {}
+}
+
 class DependencyHolder<T> extends FormField<T> {
   Color? normalImported;
   String? normalDartCore;
