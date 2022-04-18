@@ -35,10 +35,7 @@ typedef NamedFactorySpec = Tuple3<String?, String, List<FactoryParameterSpec>>;
 
 const emptyConfig = Config(<String, dynamic>{});
 
-// TODO(yfakariya): DropdownItems support w/ label template
-// labelTemplate:
-//    @FormCompanion(labelTemplate: 'L.\${property}_label.tr()', hintTemplate: 'L.\${property}_hint.tr()')
-// \$(\{(<ID>?[_A-Za-z$][_A-Za-z0-9$]*)\}|(<ID>?[_A-Za-z][_A-Za-z0-9]*))
+// TODO(yfakariya): DropdownItems support w/ label template: see /doc/ideas.md
 
 Future<void> main() async {
   final logger = Logger('emitter_test');
