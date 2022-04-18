@@ -75,6 +75,8 @@ Future<void> main() async {
   final formBuilderSwitch = await lookupFormBuilderClass('FormBuilderSwitch');
   final formBuilderTextField =
       await lookupFormBuilderClass('FormBuilderTextField');
+  final formFieldWithPropertyParameter =
+      library.getType('FormFieldWithPropertyParameter')!;
 
   final parametersLibrary = await getParametersLibrary();
 
@@ -1434,6 +1436,38 @@ extension \$TestFieldFactoryExtension on Test {
           ),
         );
       }
+    });
+
+    group('special cases', () {
+      test(
+        'parameter has property -- local variable changed to property_',
+        () => testEmitFieldFactory(
+          isFormBuilder: false,
+          propertyValueType: library.typeProvider.stringType,
+          fieldValueType: library.typeProvider.stringType,
+          formFieldClass: formFieldWithPropertyParameter,
+          warnings: [],
+          expectedBody: '''
+  /// Gets a [FormField] for `prop` property.
+  FormFieldWithPropertyParameter prop(
+    BuildContext context, {
+    InputDecoration? decoration,
+    String? property,
+  }) {
+    final property_ = _presenter.prop;
+    return FormFieldWithPropertyParameter(
+      key: _presenter.getKey(property_.name, context),
+      initialValue: property_.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
+      decoration: decoration ?? const InputDecoration().copyWith(
+        labelText: property_.name,
+      ),
+      onSaved: (v) => property_.setFieldValue(v, Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
+      validator: property_.getValidator(context),
+      property: property,
+    );
+  }''',
+        ),
+      );
     });
   });
 

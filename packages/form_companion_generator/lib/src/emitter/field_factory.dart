@@ -3,6 +3,8 @@
 part of '../emitter.dart';
 
 const _presenterField = '_presenter';
+const _defaultPropertyDescriptorVariable = 'property';
+const _alternativePropertyDescriptorVariable = 'property_';
 
 /// Emits field factories and their holders.
 @visibleForTesting
@@ -197,14 +199,18 @@ Iterable<String> _emitFieldFactoryCore(
   for (final parameter in argumentHandler.callerSuppliableParameters) {
     yield '    ${emitParameter(instantiationContext, parameter)},';
   }
+  final propertyDescriptorVariable = argumentHandler.callerSuppliableParameters
+          .any((p) => p.name == _defaultPropertyDescriptorVariable)
+      ? _alternativePropertyDescriptorVariable
+      : _defaultPropertyDescriptorVariable;
   yield '  }) {';
-  yield '    final property = $_presenterField.${property.name};';
+  yield '    final $propertyDescriptorVariable = $_presenterField.${property.name};';
   yield '    return $constructorName(';
   yield* argumentHandler.emitAssignments(
     data: data,
     buildContext: 'context',
     presenter: _presenterField,
-    propertyDescriptor: 'property',
+    propertyDescriptor: propertyDescriptorVariable,
     indent: '      ',
   );
   yield '    );';
