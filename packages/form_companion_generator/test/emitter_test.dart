@@ -1042,7 +1042,7 @@ extension \$TestFieldFactoryExtension on Test {
   });
 
   group('emitFieldFactory', () {
-    FutureOr<void> _testEmitFieldFactory({
+    FutureOr<void> testEmitFieldFactory({
       required bool isFormBuilder,
       required InterfaceType propertyValueType,
       required InterfaceType fieldValueType,
@@ -1114,7 +1114,7 @@ extension \$TestFieldFactoryExtension on Test {
       ]) {
         test(
           'String with ${warnings.length} warnings',
-          () => _testEmitFieldFactory(
+          () => testEmitFieldFactory(
             isFormBuilder: false,
             propertyValueType: library.typeProvider.stringType,
             fieldValueType: library.typeProvider.stringType,
@@ -1130,7 +1130,7 @@ extension \$TestFieldFactoryExtension on Test {
         final type = isEnum ? myEnumType : library.typeProvider.boolType;
         test(
           isEnum ? 'enum' : 'bool',
-          () => _testEmitFieldFactory(
+          () => testEmitFieldFactory(
             isFormBuilder: false,
             propertyValueType: type,
             fieldValueType: type,
@@ -1142,7 +1142,7 @@ extension \$TestFieldFactoryExtension on Test {
 
       test(
         'String with known preferredFieldType -- preferredFieldType is used',
-        () => _testEmitFieldFactory(
+        () => testEmitFieldFactory(
           isFormBuilder: false,
           propertyValueType: library.typeProvider.stringType,
           fieldValueType: library.typeProvider.stringType,
@@ -1158,7 +1158,7 @@ extension \$TestFieldFactoryExtension on Test {
 
       test(
         'bool with known preferredFieldType -- preferredFieldType is used',
-        () => _testEmitFieldFactory(
+        () => testEmitFieldFactory(
           isFormBuilder: false,
           propertyValueType: library.typeProvider.intType,
           fieldValueType: library.typeProvider.intType,
@@ -1174,7 +1174,7 @@ extension \$TestFieldFactoryExtension on Test {
 
       test(
         'Unknown preferredFieldType -- error',
-        () => _testEmitFieldFactory(
+        () => testEmitFieldFactory(
           isFormBuilder: false,
           propertyValueType: library.typeProvider.stringType,
           fieldValueType: library.typeProvider.stringType,
@@ -1188,7 +1188,7 @@ extension \$TestFieldFactoryExtension on Test {
       for (final value in [true, false]) {
         test(
           'doAutovalidate ($value) is respected',
-          () => _testEmitFieldFactory(
+          () => testEmitFieldFactory(
             isFormBuilder: false,
             propertyValueType: library.typeProvider.stringType,
             fieldValueType: library.typeProvider.stringType,
@@ -1208,7 +1208,7 @@ extension \$TestFieldFactoryExtension on Test {
       ]) {
         test(
           'String with ${warnings.length} warnings',
-          () => _testEmitFieldFactory(
+          () => testEmitFieldFactory(
             isFormBuilder: true,
             propertyValueType: library.typeProvider.stringType,
             fieldValueType: library.typeProvider.stringType,
@@ -1221,7 +1221,7 @@ extension \$TestFieldFactoryExtension on Test {
 
       test(
         'enum',
-        () => _testEmitFieldFactory(
+        () => testEmitFieldFactory(
           isFormBuilder: true,
           propertyValueType: myEnumType,
           fieldValueType: myEnumType,
@@ -1232,7 +1232,7 @@ extension \$TestFieldFactoryExtension on Test {
 
       test(
         'bool',
-        () => _testEmitFieldFactory(
+        () => testEmitFieldFactory(
           isFormBuilder: true,
           propertyValueType: library.typeProvider.boolType,
           fieldValueType: library.typeProvider.boolType,
@@ -1243,7 +1243,7 @@ extension \$TestFieldFactoryExtension on Test {
 
       test(
         'DateTime',
-        () => _testEmitFieldFactory(
+        () => testEmitFieldFactory(
           isFormBuilder: true,
           propertyValueType: dateTimeType,
           fieldValueType: dateTimeType,
@@ -1254,7 +1254,7 @@ extension \$TestFieldFactoryExtension on Test {
 
       test(
         'DateTimeRange',
-        () => _testEmitFieldFactory(
+        () => testEmitFieldFactory(
           isFormBuilder: true,
           propertyValueType: dateTimeRangeType,
           fieldValueType: dateTimeRangeType,
@@ -1265,7 +1265,7 @@ extension \$TestFieldFactoryExtension on Test {
 
       test(
         'RangeValue',
-        () => _testEmitFieldFactory(
+        () => testEmitFieldFactory(
           isFormBuilder: true,
           propertyValueType: rangeValuesType,
           fieldValueType: rangeValuesType,
@@ -1276,7 +1276,7 @@ extension \$TestFieldFactoryExtension on Test {
 
       test(
         'String with known preferredFieldType -- preferredFieldType is used',
-        () => _testEmitFieldFactory(
+        () => testEmitFieldFactory(
           isFormBuilder: true,
           propertyValueType: library.typeProvider.stringType,
           fieldValueType: library.typeProvider.stringType,
@@ -1292,7 +1292,7 @@ extension \$TestFieldFactoryExtension on Test {
 
       test(
         'bool with known preferredFieldType -- preferredFieldType is used',
-        () => _testEmitFieldFactory(
+        () => testEmitFieldFactory(
           isFormBuilder: true,
           propertyValueType: library.typeProvider.boolType,
           fieldValueType: library.typeProvider.stringType,
@@ -1319,7 +1319,7 @@ extension \$TestFieldFactoryExtension on Test {
       ]) {
         test(
           'preferredFieldType of ${spec.name} for bool',
-          () => _testEmitFieldFactory(
+          () => testEmitFieldFactory(
             isFormBuilder: true,
             propertyValueType: spec.type,
             fieldValueType: spec.type,
@@ -1348,7 +1348,7 @@ extension \$TestFieldFactoryExtension on Test {
       ]) {
         test(
           'preferredFieldType of ${spec.name} for numeric',
-          () => _testEmitFieldFactory(
+          () => testEmitFieldFactory(
             isFormBuilder: true,
             propertyValueType: spec.type,
             fieldValueType: spec.type,
@@ -1393,7 +1393,7 @@ extension \$TestFieldFactoryExtension on Test {
       ]) {
         test(
           'preferredFieldType of ${spec.name} for enum',
-          () => _testEmitFieldFactory(
+          () => testEmitFieldFactory(
             isFormBuilder: true,
             propertyValueType: spec.type,
             fieldValueType: spec.type,
@@ -1410,7 +1410,7 @@ extension \$TestFieldFactoryExtension on Test {
 
       test(
         'String with unknown preferredFieldType -- error',
-        () => _testEmitFieldFactory(
+        () => testEmitFieldFactory(
           isFormBuilder: true,
           propertyValueType: library.typeProvider.stringType,
           fieldValueType: library.typeProvider.stringType,
@@ -1426,7 +1426,7 @@ extension \$TestFieldFactoryExtension on Test {
       for (final value in [true, false]) {
         test(
           'doAutovalidate ($value) is respected',
-          () => _testEmitFieldFactory(
+          () => testEmitFieldFactory(
             isFormBuilder: true,
             propertyValueType: library.typeProvider.stringType,
             fieldValueType: library.typeProvider.stringType,
