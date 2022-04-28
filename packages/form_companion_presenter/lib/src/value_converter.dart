@@ -78,18 +78,22 @@ class DefaultValueConverter<P extends Object, F extends Object>
   DefaultValueConverter._();
 
   @override
-  F toFieldValue(P? value, Locale locale) {
-    if (value == null) {
-      throw StateError('Initial value is not supplied.');
+  F? toFieldValue(P? value, Locale locale) {
+    if (value is! F?) {
+      throw StateError(
+        '${value.runtimeType} is not compatible with $F.',
+      );
     }
 
-    return value as F;
+    return value as F?;
   }
 
   @override
   SomeConversionResult<P> toPropertyValue(F? value, Locale locale) {
     if (value is P) {
       return ConversionResult(value);
+    } else if (value == null) {
+      return ConversionResult(null);
     } else {
       return FailureResult(
         '${value.runtimeType} is not compatible with $P.',
