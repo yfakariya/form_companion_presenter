@@ -150,6 +150,11 @@ class PropertyDescriptor<P extends Object, F extends Object> {
       ).asValidtor();
 }
 
+/// **For testing.** Returns value converter of the [PropertyDescriptor].
+@visibleForTesting
+ValueConverter<Object, Object> getValueConverter(PropertyDescriptor property) =>
+    property._valueConverter;
+
 /// Represents state of pending async validations.
 ///
 /// [value] indicates whether any async operations are in progress or not.
