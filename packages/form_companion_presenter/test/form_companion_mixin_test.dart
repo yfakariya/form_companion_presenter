@@ -5,8 +5,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
-
 import 'package:form_companion_presenter/src/form_companion_mixin.dart';
 import 'package:form_companion_presenter/src/internal_utils.dart';
 import 'package:form_companion_presenter/src/presenter_extension.dart';
@@ -149,7 +149,23 @@ class HierarchicalForm extends StatelessWidget {
       );
 }
 
-Widget _app(Widget child) => MaterialApp(home: Scaffold(body: child));
+Widget _app(
+  Widget child, {
+  Locale? locale,
+}) =>
+    MaterialApp(
+      home: Scaffold(body: child),
+      locale: locale,
+      localizationsDelegates: const [
+        GlobalCupertinoLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en', 'US'),
+        Locale('ja', 'JP'),
+      ],
+    );
 
 class Presenter with CompanionPresenterMixin, FormCompanionMixin {
   final FutureOr<void> Function() _doSubmitCalled;
@@ -557,6 +573,29 @@ void main() {
       await testAutoValidateMode(tester, AutovalidateMode.always);
       await testAutoValidateMode(tester, AutovalidateMode.disabled);
       await testAutoValidateMode(tester, AutovalidateMode.onUserInteraction);
+    });
+
+    FutureOr<void> testLocale(WidgetTester tester, Locale locale) async {
+      final presenter = Presenter(properties: PropertyDescriptorsBuilder());
+      FormStateAdapter? adapter;
+      await tester.pumpWidget(
+        _app(
+          HierarchicalForm(
+            onBuilding: (context) {
+              adapter = presenter.maybeFormStateOf(context);
+            },
+            autovalidateMode: AutovalidateMode.disabled,
+          ),
+          locale: locale,
+        ),
+      );
+
+      expect(adapter!.locale, locale);
+    }
+
+    testWidgets('adapter.locale reflects ancesstor Locale.', (tester) async {
+      await testLocale(tester, const Locale('en', 'US'));
+      await testLocale(tester, const Locale('ja', 'JP'));
     });
   });
 
