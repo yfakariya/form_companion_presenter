@@ -24,8 +24,8 @@ typedef ParseFailureMessageProvider = String Function(String?, Locale);
 /// [Locale] can be used to localize value for form field.
 typedef Stringifier<P extends Object> = PropertyToFieldConverter<P, String>;
 
-typedef _CustomizbleParser<P extends Object> = SomeConversionResult<P> Function(
-    String, Locale, ParseFailureMessageProvider);
+typedef _CustomizableParser<P extends Object> = SomeConversionResult<P>
+    Function(String, Locale, ParseFailureMessageProvider);
 
 /// Basic implementation of [ValueConverter] for string typed `FormField`
 /// such as text field based form field.
@@ -124,11 +124,11 @@ class _CallbackStringConverter<P extends Object>
 @sealed
 class ParseStringConverter<P extends Object>
     extends _CallbackStringConverterBase<P> implements StringConverter<P> {
-  final _CustomizbleParser<P> _parse;
+  final _CustomizableParser<P> _parse;
   final ParseFailureMessageProvider _parseFailureMessageProvider;
 
   ParseStringConverter._({
-    required _CustomizbleParser<P> parse,
+    required _CustomizableParser<P> parse,
     SomeConversionResult<P>? defaultValue,
     ParseFailureMessageProvider? parseFailureMessageProvider,
     Stringifier<P>? stringify,
