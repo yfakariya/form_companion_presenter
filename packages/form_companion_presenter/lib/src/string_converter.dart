@@ -14,10 +14,14 @@ import 'value_converter.dart';
 typedef Parser<P extends Object> = FieldToPropertyConverter<P, String>;
 
 /// A function which returns localized, user friendly message for
-/// `tryParse` failure from specified input [String] and [Locale].
+/// `parse` or `tryParse` failure from specified input [String] and [Locale].
 ///
 /// [Locale] can be used to parse value from form field which might be localized.
-typedef ParseFailureMessageProvider = String Function(String?, Locale);
+typedef ParseFailureMessageProvider = String Function(
+  String?,
+  FormatException?,
+  Locale,
+);
 
 /// A function which converts property value [P] to [String].
 ///
@@ -168,9 +172,14 @@ class ParseStringConverter<P extends Object>
       );
 }
 
-String _provideDefaultFailureMessage<P>(String? value, Locale locale) =>
-    // TODO(yfakariya): L10N
-    'Value is not a valid $P.';
+String _provideDefaultFailureMessage<P>(
+  String? value,
+  FormatException? exception,
+  Locale locale,
+) =>
+    (exception == null || exception.message.isEmpty)
+        ? 'Value is not a valid $P.'
+        : 'Value is not a valid $P. ${exception.message}';
 
 SomeConversionResult<P> _fromTryParseResult<P extends Object>(
   P? value,
@@ -180,9 +189,8 @@ SomeConversionResult<P> _fromTryParseResult<P extends Object>(
 ) =>
     value == null
         ? FailureResult<P>(
-            failureMessageProvider(originalValue, locale),
-            // TODO(yfakariya): L10N
-            'Value ($originalValue) is not a valid $P.',
+            failureMessageProvider(originalValue, null, locale),
+            "Value '$originalValue' is not a valid $P.",
           )
         : ConversionResult<P>(value);
 

@@ -342,7 +342,7 @@ class RawAddStringWithFieldVanilla
           name: 'propRaw',
           stringConverter: StringConverter.fromCallbacks(
             stringify: (v, l) => v.toString(),
-            parse: (v, l) => ConversionResult<Object>(null),
+            parse: (v, l, p) => ConversionResult<Object>(null),
           ),
         ),
     );
@@ -479,7 +479,7 @@ class RawAddStringWithFieldFormBuilder
           name: 'propRaw',
           stringConverter: StringConverter.fromCallbacks(
             stringify: (v, l) => v.toString(),
-            parse: (v, l) => ConversionResult<Object>(null),
+            parse: (v, l, p) => ConversionResult<Object>(null),
           ),
         ),
     );
