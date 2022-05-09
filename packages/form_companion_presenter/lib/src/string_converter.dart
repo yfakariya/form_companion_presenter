@@ -8,11 +8,6 @@ import 'value_converter.dart';
 
 // TODO(yfakariya): test, clean-up, push
 
-/// A function which converts [String] to property value [P].
-///
-/// [Locale] can be used to localize for form field.
-typedef Parser<P extends Object> = FieldToPropertyConverter<P, String>;
-
 /// A function which returns localized, user friendly message for
 /// `parse` or `tryParse` failure from specified input [String] and [Locale].
 ///
@@ -23,13 +18,19 @@ typedef ParseFailureMessageProvider = String Function(
   Locale,
 );
 
+/// A function which converts [String] to property value [P].
+///
+/// [Locale] can be used to localize for form field.
+typedef Parser<P extends Object> = SomeConversionResult<P> Function(
+  String?,
+  Locale,
+  ParseFailureMessageProvider,
+);
+
 /// A function which converts property value [P] to [String].
 ///
 /// [Locale] can be used to localize value for form field.
 typedef Stringifier<P extends Object> = PropertyToFieldConverter<P, String>;
-
-typedef _CustomizableParser<P extends Object> = SomeConversionResult<P>
-    Function(String, Locale, ParseFailureMessageProvider);
 
 /// Basic implementation of [ValueConverter] for string typed `FormField`
 /// such as text field based form field.
@@ -44,131 +45,89 @@ abstract class StringConverter<P extends Object>
   ///
   /// 1. If the value is `null`, then [defaultString] is used.
   /// 2. Otherwise, calls [stringify] to convert the [P] value to [String] value.
+  ///   * Note that default implementation which calls [toString] of [P], will
+  ///     be used when [stringify] is `null`.
   ///
   /// And it convert a saved form field value as follows:
   ///
   /// 1. If the value is empty, then [defaultValue] is used.
   /// 2. Otherwise, calls [parse] to convert the [String] value to [P] value.
   factory StringConverter.fromCallbacks({
-    required Stringifier<P> stringify,
-    String? defaultString,
     required Parser<P> parse,
-    SomeConversionResult<P>? defaultValue,
-  }) =>
-      _CallbackStringConverter<P>(
-        stringify: stringify,
-        defaultString: defaultString,
-        parse: parse,
-        defaultValue: defaultValue,
-      );
-
-  @override
-  String? toFieldValue(P? value, Locale locale) => value?.toString();
-}
-
-/// Provides common implementation between [_CallbackStringConverter] and
-/// [ParseStringConverter].
-abstract class _CallbackStringConverterBase<P extends Object>
-    extends StringConverter<P> {
-  final String defaultString;
-  final SomeConversionResult<P> defaultValue;
-  final Stringifier<P> stringify;
-
-  _CallbackStringConverterBase._({
-    required Stringifier<P>? stringify,
-    String? defaultString,
-    SomeConversionResult<P>? defaultValue,
-  })  : stringify = (stringify ?? (v, _) => v.toString()),
-        defaultString = defaultString ?? '',
-        defaultValue = defaultValue ?? ConversionResult(null);
-
-  @override
-  SomeConversionResult<P> toPropertyValue(String? value, Locale locale) =>
-      value == null
-          ? defaultValue
-          : value.isEmpty
-              ? defaultValue
-              : parseNonEmptyValue(value, locale);
-
-  SomeConversionResult<P> parseNonEmptyValue(String value, Locale locale);
-
-  @override
-  String? toFieldValue(P? value, Locale locale) =>
-      value == null ? defaultString : stringify(value, locale);
-}
-
-/// Non public callbacked based converter.
-@sealed
-class _CallbackStringConverter<P extends Object>
-    extends _CallbackStringConverterBase<P> implements StringConverter<P> {
-  final Parser<P> _parse;
-
-  _CallbackStringConverter({
-    required Stringifier<P>? stringify,
-    required String? defaultString,
-    required Parser<P> parse,
-    required SomeConversionResult<P>? defaultValue,
-  })  : _parse = parse,
-        super._(
-          defaultValue: defaultValue,
-          stringify: stringify,
-          defaultString: defaultString,
-        );
-
-  @override
-  SomeConversionResult<P> parseNonEmptyValue(String value, Locale locale) =>
-      _parse(value, locale);
-}
-
-/// [StringConverter] which delegates convertion to `tryParse` and [toString].
-///
-/// This class cannot be instantiated.
-/// To implement own [ParseStringConverter],
-/// uses [StringConverter.fromCallbacks] instead.
-@sealed
-class ParseStringConverter<P extends Object>
-    extends _CallbackStringConverterBase<P> implements StringConverter<P> {
-  final _CustomizableParser<P> _parse;
-  final ParseFailureMessageProvider _parseFailureMessageProvider;
-
-  ParseStringConverter._({
-    required _CustomizableParser<P> parse,
     SomeConversionResult<P>? defaultValue,
     ParseFailureMessageProvider? parseFailureMessageProvider,
     Stringifier<P>? stringify,
-    String defaultString = '',
-  })  : _parse = parse,
-        _parseFailureMessageProvider =
-            parseFailureMessageProvider ?? _provideDefaultFailureMessage<P>,
-        super._(
-          defaultValue: defaultValue,
-          stringify: stringify,
-          defaultString: defaultString,
-        );
+    String? defaultString,
+  }) =>
+      _CallbackStringConverter<P>(
+        parse: parse,
+        defaultValue: defaultValue,
+        parseFailureMessageProvider: parseFailureMessageProvider,
+        stringify: stringify,
+        defaultString: defaultString,
+      );
 
-  @override
-  SomeConversionResult<P> parseNonEmptyValue(String value, Locale locale) =>
-      _parse(value, locale, _parseFailureMessageProvider);
-
-  /// Creates a new [ParseStringConverter] with specified properties.
+  /// Creates a new [StringConverter] with specified properties.
   ///
   /// Primarily, this method will be used to customize parse error message
   /// via [parseFailureMessageProvider]. This callback takes input [String] and
   /// returns user friendly and secure message.
   ///
   /// See [StringConverter.fromCallbacks] for [defaultValue] and [defaultString].
-  ParseStringConverter<P> copyWith({
+  StringConverter<P> copyWith({
+    ParseFailureMessageProvider? parseFailureMessageProvider,
+    SomeConversionResult<P>? defaultValue,
+    String? defaultString,
+  });
+}
+
+/// Non public callbacked based converter.
+@sealed
+class _CallbackStringConverter<P extends Object> extends StringConverter<P> {
+  final Parser<P> _parse;
+  final ParseFailureMessageProvider _parseFailureMessageProvider;
+  final String _defaultString;
+  final SomeConversionResult<P> _defaultValue;
+  final Stringifier<P> _stringify;
+
+  _CallbackStringConverter({
+    required Parser<P> parse,
+    ParseFailureMessageProvider? parseFailureMessageProvider,
+    SomeConversionResult<P>? defaultValue,
+    Stringifier<P>? stringify,
+    String? defaultString,
+  })  : _stringify = (stringify ?? (v, _) => v.toString()),
+        _defaultString = defaultString ?? '',
+        _parse = parse,
+        _parseFailureMessageProvider =
+            parseFailureMessageProvider ?? _provideDefaultFailureMessage<P>,
+        _defaultValue = defaultValue ?? const ConversionResult(null);
+
+  @override
+  SomeConversionResult<P> toPropertyValue(String? value, Locale locale) =>
+      value == null
+          ? _defaultValue
+          : value.isEmpty
+              ? _defaultValue
+              : _parse(value, locale, _parseFailureMessageProvider);
+
+  @override
+  String? toFieldValue(P? value, Locale locale) =>
+      value == null ? _defaultString : _stringify(value, locale);
+
+  @override
+  StringConverter<P> copyWith({
     ParseFailureMessageProvider? parseFailureMessageProvider,
     SomeConversionResult<P>? defaultValue,
     String? defaultString,
   }) =>
-      ParseStringConverter._(
+      _CallbackStringConverter<P>(
         parse: _parse,
         parseFailureMessageProvider:
             parseFailureMessageProvider ?? _parseFailureMessageProvider,
-        stringify: stringify,
-        defaultValue: defaultValue ?? this.defaultValue,
-        defaultString: defaultString ?? this.defaultString,
+        stringify: _stringify,
+        defaultValue: defaultValue ?? _defaultValue,
+        defaultString: defaultString ?? _defaultString,
       );
 }
 
@@ -183,43 +142,50 @@ String _provideDefaultFailureMessage<P>(
 
 SomeConversionResult<P> _fromTryParseResult<P extends Object>(
   P? value,
-  String originalValue,
+  String? originalValue,
   Locale locale,
   ParseFailureMessageProvider failureMessageProvider,
 ) =>
-    value == null
-        ? FailureResult<P>(
+    value != null
+        ? ConversionResult<P>(value)
+        : FailureResult<P>(
             failureMessageProvider(originalValue, null, locale),
-            "Value '$originalValue' is not a valid $P.",
-          )
-        : ConversionResult<P>(value);
+            originalValue != null
+                ? "Value '$originalValue' cannot be parsed to $P."
+                : 'Null value cannot be parsed to $P.',
+          );
 
-/// [ParseStringConverter] which uses [int.tryParse].
-final ParseStringConverter<int> intStringConverter =
-    ParseStringConverter<int>._(
-  parse: (v, x, f) => _fromTryParseResult(int.tryParse(v), v, x, f),
+// TODO(yfakariya): L10N & digit-grouping example
+
+/// [StringConverter] which uses [int.tryParse].
+final StringConverter<int> intStringConverter = _CallbackStringConverter<int>(
+  parse: (v, x, f) =>
+      _fromTryParseResult(v == null ? null : int.tryParse(v), v, x, f),
 );
 
-/// [ParseStringConverter] which uses [double.tryParse].
-final ParseStringConverter<double> doubleStringConverter =
-    ParseStringConverter<double>._(
-  parse: (v, x, f) => _fromTryParseResult(double.tryParse(v), v, x, f),
+/// [StringConverter] which uses [double.tryParse].
+final StringConverter<double> doubleStringConverter =
+    _CallbackStringConverter<double>(
+  parse: (v, x, f) =>
+      _fromTryParseResult(v == null ? null : double.tryParse(v), v, x, f),
 );
 
-/// [ParseStringConverter] which uses [BigInt.tryParse].
-final ParseStringConverter<BigInt> bigIntStringConverter =
-    ParseStringConverter<BigInt>._(
-  parse: (v, x, f) => _fromTryParseResult(BigInt.tryParse(v), v, x, f),
+/// [StringConverter] which uses [BigInt.tryParse].
+final StringConverter<BigInt> bigIntStringConverter =
+    _CallbackStringConverter<BigInt>(
+  parse: (v, x, f) =>
+      _fromTryParseResult(v == null ? null : BigInt.tryParse(v), v, x, f),
 );
 
-/// [ParseStringConverter] which uses [Uri.tryParse].
-final ParseStringConverter<Uri> uriStringConverter =
-    ParseStringConverter<Uri>._(
-  parse: (v, x, f) => _fromTryParseResult(Uri.tryParse(v), v, x, f),
+/// [StringConverter] which uses [Uri.tryParse].
+final StringConverter<Uri> uriStringConverter = _CallbackStringConverter<Uri>(
+  parse: (v, x, f) =>
+      _fromTryParseResult(v == null ? null : Uri.tryParse(v), v, x, f),
 );
 
-/// [ParseStringConverter] which uses [DateTime.tryParse].
-final ParseStringConverter<DateTime> dateTimeStringConverter =
-    ParseStringConverter<DateTime>._(
-  parse: (v, x, f) => _fromTryParseResult(DateTime.tryParse(v), v, x, f),
+/// [StringConverter] which uses [DateTime.tryParse].
+final StringConverter<DateTime> dateTimeStringConverter =
+    _CallbackStringConverter<DateTime>(
+  parse: (v, x, f) =>
+      _fromTryParseResult(v == null ? null : DateTime.tryParse(v), v, x, f),
 );

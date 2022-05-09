@@ -85,7 +85,7 @@ void main() {
     required P? initialPropertyValue,
     required F? initialFieldValue,
     ValueConverter? converter,
-    Type? converterType,
+    String? converterType,
     required F value,
   }) {
     final presenter = Presenter(target);
@@ -106,7 +106,7 @@ void main() {
     if (converter != null) {
       expect(getValueConverter(result), same(converter));
     } else if (converterType != null) {
-      expect(getValueConverter(result).runtimeType, converterType);
+      expect(getValueConverter(result).runtimeType.toString(), converterType);
     } else {
       expect(getValueConverter(result), isA<DefaultValueConverter<P, F>>());
     }
@@ -276,7 +276,7 @@ void main() {
         name: 'prop',
         initialPropertyValue: null,
         initialFieldValue: '',
-        converterType: ParseStringConverter<int>,
+        converterType: '_CallbackStringConverter<int>',
         value: '',
       );
     });
@@ -298,7 +298,7 @@ void main() {
         name: 'prop',
         initialPropertyValue: 123,
         initialFieldValue: '123',
-        converterType: ParseStringConverter<int>,
+        converterType: '_CallbackStringConverter<int>',
         value: value,
       );
 
@@ -319,7 +319,7 @@ void main() {
         name: 'prop',
         initialPropertyValue: null,
         initialFieldValue: '',
-        converterType: ParseStringConverter<double>,
+        converterType: '_CallbackStringConverter<double>',
         value: '',
       );
     });
@@ -341,7 +341,7 @@ void main() {
         name: 'prop',
         initialPropertyValue: 123.45,
         initialFieldValue: '123.45',
-        converterType: ParseStringConverter<double>,
+        converterType: '_CallbackStringConverter<double>',
         value: value,
       );
 
@@ -362,7 +362,7 @@ void main() {
         name: 'prop',
         initialPropertyValue: null,
         initialFieldValue: '',
-        converterType: ParseStringConverter<BigInt>,
+        converterType: '_CallbackStringConverter<BigInt>',
         value: '',
       );
     });
@@ -384,7 +384,7 @@ void main() {
         name: 'prop',
         initialPropertyValue: BigInt.from(123),
         initialFieldValue: '123',
-        converterType: ParseStringConverter<BigInt>,
+        converterType: '_CallbackStringConverter<BigInt>',
         value: value,
       );
 
