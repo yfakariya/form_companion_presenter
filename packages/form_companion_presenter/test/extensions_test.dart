@@ -6,9 +6,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:form_companion_presenter/form_companion_presenter.dart';
+import 'package:form_companion_presenter/src/async_validator_executor.dart';
+import 'package:form_companion_presenter/src/form_companion_annotation.dart';
+
 import 'package:form_companion_presenter/src/form_companion_mixin.dart';
 import 'package:form_companion_presenter/src/internal_utils.dart';
+import 'package:form_companion_presenter/src/string_converter.dart';
 import 'package:form_companion_presenter/src/value_converter.dart';
 
 import 'companion_presenter_mixin_test.dart';

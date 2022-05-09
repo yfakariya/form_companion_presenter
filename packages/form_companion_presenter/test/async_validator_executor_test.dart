@@ -7,7 +7,6 @@ import 'dart:ui';
 
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:form_companion_presenter/form_companion_presenter.dart';
 import 'package:form_companion_presenter/src/async_validator_executor.dart';
 import 'package:form_companion_presenter/src/internal_utils.dart';
 

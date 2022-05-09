@@ -8,9 +8,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:form_companion_presenter/form_companion_presenter.dart';
+import 'package:form_companion_presenter/src/form_companion_mixin.dart';
 import 'package:form_companion_presenter/src/internal_utils.dart';
 import 'package:form_companion_presenter/src/presenter_extension.dart';
+import 'package:form_companion_presenter/src/string_converter.dart';
 
 class TestPresenterFeatures extends CompanionPresenterFeatures {
   final TestPresenter _presenter;
