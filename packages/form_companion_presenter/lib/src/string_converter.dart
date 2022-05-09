@@ -6,8 +6,6 @@ import 'package:meta/meta.dart';
 
 import 'value_converter.dart';
 
-// TODO(yfakariya): test, clean-up, push
-
 /// A function which returns localized, user friendly message for
 /// `parse` or `tryParse` failure from specified input [String] and [Locale].
 ///

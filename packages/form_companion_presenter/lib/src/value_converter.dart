@@ -4,8 +4,6 @@ import 'dart:ui';
 
 import 'package:meta/meta.dart';
 
-// TODO(yfakariya): test, clean-up, push
-
 /// A function which converts form field input value [F] to property value [P].
 ///
 /// [Locale] can be used to localize value for form field.
@@ -71,7 +69,7 @@ class DefaultValueConverter<P extends Object, F extends Object>
       ? const _DefaultStringConverter._() as DefaultValueConverter<P, F>
       : DefaultValueConverter<P, F>._();
 
-  DefaultValueConverter._();
+  const DefaultValueConverter._();
 
   @override
   F? toFieldValue(P? value, Locale locale) {
@@ -89,7 +87,7 @@ class DefaultValueConverter<P extends Object, F extends Object>
     if (value is P) {
       return ConversionResult(value);
     } else if (value == null) {
-      return ConversionResult(null);
+      return const ConversionResult(null);
     } else {
       return FailureResult(
         '${value.runtimeType} is not compatible with $P.',
@@ -156,7 +154,7 @@ class ConversionResult<T extends Object> implements SomeConversionResult<T> {
   final T? value;
 
   /// Initializes a new [ConversionResult] instance.
-  ConversionResult(this.value);
+  const ConversionResult(this.value);
 }
 
 /// Represents any conversion failure.
