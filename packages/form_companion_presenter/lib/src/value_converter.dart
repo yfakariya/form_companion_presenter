@@ -67,13 +67,9 @@ abstract class ValueConverter<P extends Object, F extends Object> {
 class DefaultValueConverter<P extends Object, F extends Object>
     implements ValueConverter<P, F> {
   /// Returns a [DefaultValueConverter].
-  factory DefaultValueConverter() {
-    if (F != String) {
-      return DefaultValueConverter<P, F>._();
-    } else {
-      return DefaultStringConverter<P>._() as DefaultValueConverter<P, F>;
-    }
-  }
+  factory DefaultValueConverter() => (P == String && F == String)
+      ? const _DefaultStringConverter._() as DefaultValueConverter<P, F>
+      : DefaultValueConverter<P, F>._();
 
   DefaultValueConverter._();
 
@@ -102,15 +98,12 @@ class DefaultValueConverter<P extends Object, F extends Object>
   }
 }
 
-/// Specialized [DefaultValueConverter] which handles null to empty [String]
-/// conversion.
-@internal
-class DefaultStringConverter<P extends Object>
-    extends DefaultValueConverter<P, String> {
-  DefaultStringConverter._() : super._();
+@sealed
+class _DefaultStringConverter extends DefaultValueConverter<String, String> {
+  const _DefaultStringConverter._() : super._();
 
   @override
-  String toFieldValue(P? value, Locale locale) {
+  String? toFieldValue(String? value, Locale locale) {
     if (value == null) {
       // Many forms have empty string as initial value,
       // and many models have null for them.
