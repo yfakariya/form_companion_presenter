@@ -438,6 +438,23 @@ void main() {
         property.setFieldValue('123', defaultLocale);
         expect(property.value, equals(123));
       });
+
+      test('conversion failure.', () {
+        final target = TestPresenter(
+          properties: PropertyDescriptorsBuilder()
+            ..add<int, String>(
+              name: 'int',
+              valueConverter: intStringConverter,
+            ),
+        );
+
+        final property = target.getProperty<int, String>('int');
+        // ignore: cascade_invocations
+        expect(
+          () => property.setFieldValue('A', defaultLocale),
+          throwsArgumentError,
+        );
+      });
     });
   });
 
@@ -814,6 +831,62 @@ void main() {
         expect(result, isFalse);
         expect(isSaveCalled, isFalse);
       });
+    });
+
+    group('default validator with converter', () {
+      test(
+        'successful case -- no effect',
+        () {
+          final target = TestPresenter(
+            properties: PropertyDescriptorsBuilder()
+              ..stringConvertible(
+                name: 'prop',
+                stringConverter: intStringConverter,
+              ),
+          );
+          expect(
+            target.getPropertyValidator<String>(
+                'prop', DummyBuildContext())('123'),
+            isNull,
+          );
+        },
+      );
+
+      test(
+        'failure case -- FailureResult.message is returned',
+        () {
+          final target = TestPresenter(
+            properties: PropertyDescriptorsBuilder()
+              ..stringConvertible(
+                name: 'prop',
+                stringConverter: intStringConverter,
+              ),
+          );
+          expect(
+            target.getPropertyValidator<String>(
+                'prop', DummyBuildContext())('ABC'),
+            'Value is not a valid int.',
+          );
+        },
+      );
+
+      test(
+        'null case -- no effect',
+        () {
+          final target = TestPresenter(
+            properties: PropertyDescriptorsBuilder()
+              ..stringConvertible(
+                name: 'prop',
+                stringConverter: intStringConverter,
+              ),
+          );
+          expect(
+            target.getPropertyValidator<String>(
+                'prop', DummyBuildContext())(null),
+            isNull,
+          );
+        },
+      );
     });
   });
 
