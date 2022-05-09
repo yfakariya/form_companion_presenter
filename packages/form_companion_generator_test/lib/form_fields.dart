@@ -36,3 +36,21 @@ const Type myEnum = MyEnum;
 typedef _StringComparison = int Function(String, String);
 
 const Type stringComparison = _StringComparison;
+
+class FormFieldWithPropertyParameter extends TextFormField {
+  FormFieldWithPropertyParameter({
+    Key? key,
+    String? initialValue,
+    InputDecoration? decoration = const InputDecoration(),
+    FormFieldSetter<String>? onSaved,
+    FormFieldValidator<String>? validator,
+    // ignore: avoid_unused_constructor_parameters
+    String? property,
+  }) : super(
+          key: key,
+          initialValue: initialValue,
+          decoration: decoration,
+          onSaved: onSaved,
+          validator: validator,
+        );
+}
