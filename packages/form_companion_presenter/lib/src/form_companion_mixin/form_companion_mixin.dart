@@ -23,7 +23,8 @@ class _FormStateAdapter implements FormStateAdapter {
 }
 
 /// Extended mixin of [CompanionPresenterFeatures] for vanilla [Form].
-class FormCompanionFeatures extends CompanionPresenterFeatures {
+class FormCompanionFeatures
+    extends CompanionPresenterFeatures<_FormStateAdapter> {
   final FormCompanionMixin _presenter;
 
   FormCompanionFeatures._(this._presenter);

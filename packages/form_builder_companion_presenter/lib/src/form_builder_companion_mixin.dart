@@ -27,7 +27,8 @@ class _FormBuilderStateAdapter implements FormStateAdapter {
 }
 
 /// Extends [CompanionPresenterFeatures] for [FormBuilder] instead of [Form].
-class FormBuilderCompanionFeatures extends CompanionPresenterFeatures {
+class FormBuilderCompanionFeatures
+    extends CompanionPresenterFeatures<_FormBuilderStateAdapter> {
   final FormBuilderCompanionMixin _presenter;
 
   FormBuilderCompanionFeatures._(this._presenter);
@@ -58,18 +59,11 @@ class FormBuilderCompanionFeatures extends CompanionPresenterFeatures {
   @nonVirtual
   @protected
   @visibleForTesting
-  void saveFields(FormStateAdapter formState) {
-    assert(
-      formState is _FormBuilderStateAdapter,
-      'formState should be _FormBuilderStateAdapter but ${formState.runtimeType}',
-    );
-
-    if (formState is _FormBuilderStateAdapter) {
-      formState.save();
-      for (final field in formState._state.value.entries) {
-        _presenter.properties[field.key]
-            ?.setFieldValue(field.value, formState.locale);
-      }
+  void saveFields(_FormBuilderStateAdapter formState) {
+    formState.save();
+    for (final field in formState._state.value.entries) {
+      _presenter.properties[field.key]
+          ?.setFieldValue(field.value, formState.locale);
     }
   }
 }

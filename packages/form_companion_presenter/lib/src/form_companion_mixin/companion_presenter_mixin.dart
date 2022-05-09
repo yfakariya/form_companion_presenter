@@ -190,7 +190,7 @@ mixin CompanionPresenterMixin {
 /// So, `form_companion_presenter` separates template methods for sub-mixin-type
 /// developers to allow override the methods to change default behavior and
 /// providing implementation of abstract methods like [maybeFormStateOf].
-abstract class CompanionPresenterFeatures {
+abstract class CompanionPresenterFeatures<A extends FormStateAdapter> {
   /// Initializes a new [CompanionPresenterFeatures] instance.
   @protected
   const CompanionPresenterFeatures();
@@ -245,7 +245,7 @@ abstract class CompanionPresenterFeatures {
   /// Performs saving of form fields.
   @protected
   @visibleForOverriding
-  void saveFields(FormStateAdapter formState) {
+  void saveFields(A formState) {
     formState.save();
   }
 
