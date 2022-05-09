@@ -4,8 +4,6 @@ import 'dart:ui';
 
 import 'package:meta/meta.dart';
 
-// TODO(yfakariya): test, clean-up, push
-
 /// A function which converts form field input value [F] to property value [P].
 ///
 /// [Locale] can be used to localize value for form field.
@@ -67,29 +65,29 @@ abstract class ValueConverter<P extends Object, F extends Object> {
 class DefaultValueConverter<P extends Object, F extends Object>
     implements ValueConverter<P, F> {
   /// Returns a [DefaultValueConverter].
-  factory DefaultValueConverter() {
-    if (F != String) {
-      return DefaultValueConverter<P, F>._();
-    } else {
-      return DefaultStringConverter<P>._() as DefaultValueConverter<P, F>;
-    }
-  }
+  factory DefaultValueConverter() => (P == String && F == String)
+      ? const _DefaultStringConverter._() as DefaultValueConverter<P, F>
+      : DefaultValueConverter<P, F>._();
 
-  DefaultValueConverter._();
+  const DefaultValueConverter._();
 
   @override
-  F toFieldValue(P? value, Locale locale) {
-    if (value == null) {
-      throw StateError('Initial value is not supplied.');
+  F? toFieldValue(P? value, Locale locale) {
+    if (value is! F?) {
+      throw StateError(
+        '${value.runtimeType} is not compatible with $F.',
+      );
     }
 
-    return value as F;
+    return value as F?;
   }
 
   @override
   SomeConversionResult<P> toPropertyValue(F? value, Locale locale) {
     if (value is P) {
       return ConversionResult(value);
+    } else if (value == null) {
+      return const ConversionResult(null);
     } else {
       return FailureResult(
         '${value.runtimeType} is not compatible with $P.',
@@ -98,15 +96,12 @@ class DefaultValueConverter<P extends Object, F extends Object>
   }
 }
 
-/// Specialized [DefaultValueConverter] which handles null to empty [String]
-/// conversion.
-@internal
-class DefaultStringConverter<P extends Object>
-    extends DefaultValueConverter<P, String> {
-  DefaultStringConverter._() : super._();
+@sealed
+class _DefaultStringConverter extends DefaultValueConverter<String, String> {
+  const _DefaultStringConverter._() : super._();
 
   @override
-  String toFieldValue(P? value, Locale locale) {
+  String? toFieldValue(String? value, Locale locale) {
     if (value == null) {
       // Many forms have empty string as initial value,
       // and many models have null for them.
@@ -114,7 +109,7 @@ class DefaultStringConverter<P extends Object>
       return '';
     }
 
-    return value as String;
+    return super.toFieldValue(value, locale);
   }
 }
 
@@ -159,7 +154,7 @@ class ConversionResult<T extends Object> implements SomeConversionResult<T> {
   final T? value;
 
   /// Initializes a new [ConversionResult] instance.
-  ConversionResult(this.value);
+  const ConversionResult(this.value);
 }
 
 /// Represents any conversion failure.

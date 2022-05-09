@@ -282,11 +282,6 @@ FormFieldValidatorFactory<F>
                 return result.message;
               }
 
-              if (result is ConversionResult<P>) {
-                return null;
-              }
-
-              throw UnsupportedError(
-                'Unsupported result type ${result.runtimeType}.',
-              );
+              assert(result is ConversionResult<P>);
+              return null;
             };
