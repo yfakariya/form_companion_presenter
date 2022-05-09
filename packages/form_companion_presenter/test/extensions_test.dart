@@ -398,4 +398,237 @@ void main() {
       expect(validator.passedToAsyncValidator, value);
     });
   });
+
+  group('FormCompanionPropertyDescriptorBuilderExtensions', () {
+    test('stringConvertibleWithField default', () {
+      final target = PropertyDescriptorsBuilder();
+      final converter = intStringConverter;
+      target.stringConvertibleWithField(
+        name: 'prop',
+        stringConverter: intStringConverter,
+      );
+      verifyPropertyDescriptor<int, String>(
+        target,
+        name: 'prop',
+        initialPropertyValue: null,
+        initialFieldValue: '',
+        converter: converter,
+        value: '',
+      );
+    });
+
+    test('stringConvertibleWithField fully specified', () async {
+      final target = PropertyDescriptorsBuilder();
+      final validator = ValidatorTester<String>();
+      final converter = intStringConverter;
+
+      target.stringConvertibleWithField(
+        name: 'prop',
+        stringConverter: intStringConverter,
+        asyncValidatorFactories: [validator.asyncValidator],
+        validatorFactories: [validator.validator],
+        initialValue: 123,
+      );
+
+      final value = DateTime.now().microsecondsSinceEpoch.toString();
+
+      final validationResult = verifyPropertyDescriptor<int, String>(
+        target,
+        name: 'prop',
+        initialPropertyValue: 123,
+        initialFieldValue: '123',
+        converter: converter,
+        value: value,
+      );
+
+      await validator.waitForPendingValidation();
+
+      expect(validationResult, isNull);
+      expect(validator.passedToValidator, value);
+      expect(validator.passedToAsyncValidator, value);
+    });
+
+    test('booleanWithField default', () {
+      final target = PropertyDescriptorsBuilder()
+        ..booleanWithField(
+          name: 'prop',
+        );
+      verifyPropertyDescriptor<bool, bool>(
+        target,
+        name: 'prop',
+        initialPropertyValue: false,
+        initialFieldValue: false,
+        value: true,
+      );
+    });
+
+    test('booleanWithField fully specified', () async {
+      final target = PropertyDescriptorsBuilder()
+        ..booleanWithField(
+          name: 'prop',
+          initialValue: true,
+        );
+
+      verifyPropertyDescriptor<bool, bool>(
+        target,
+        name: 'prop',
+        initialPropertyValue: true,
+        initialFieldValue: true,
+        value: true,
+      );
+    });
+
+    test('enumeratedWithField default', () {
+      final target = PropertyDescriptorsBuilder()
+        ..enumeratedWithField(
+          name: 'prop',
+        );
+      verifyPropertyDescriptor<Enum, Enum>(
+        target,
+        name: 'prop',
+        initialPropertyValue: null,
+        initialFieldValue: null,
+        value: _MyEnum.two,
+      );
+    });
+
+    test('enumeratedWithField fully specified', () async {
+      final target = PropertyDescriptorsBuilder()
+        ..enumeratedWithField(
+          name: 'prop',
+          initialValue: _MyEnum.one,
+        );
+
+      verifyPropertyDescriptor<_MyEnum, _MyEnum>(
+        target,
+        name: 'prop',
+        initialPropertyValue: _MyEnum.one,
+        initialFieldValue: _MyEnum.one,
+        value: _MyEnum.two,
+      );
+    });
+
+    test('integerWithField default', () {
+      final target = PropertyDescriptorsBuilder()
+        ..integerWithField(
+          name: 'prop',
+        );
+      verifyPropertyDescriptor<int, int>(
+        target,
+        name: 'prop',
+        initialPropertyValue: null,
+        initialFieldValue: null,
+        value: 0,
+      );
+    });
+
+    test('integerWithField fully specified', () async {
+      final validator = ValidatorTester<int>();
+      final target = PropertyDescriptorsBuilder()
+        ..integerWithField(
+          name: 'prop',
+          asyncValidatorFactories: [validator.asyncValidator],
+          validatorFactories: [validator.validator],
+          initialValue: 123,
+        );
+
+      final value = DateTime.now().microsecondsSinceEpoch;
+
+      final validationResult = verifyPropertyDescriptor<int, int>(
+        target,
+        name: 'prop',
+        initialPropertyValue: 123,
+        initialFieldValue: 123,
+        value: value,
+      );
+
+      await validator.waitForPendingValidation();
+
+      expect(validationResult, isNull);
+      expect(validator.passedToValidator, value);
+      expect(validator.passedToAsyncValidator, value);
+    });
+
+    test('realWithField default', () {
+      final target = PropertyDescriptorsBuilder()
+        ..realWithField(
+          name: 'prop',
+        );
+      verifyPropertyDescriptor<double, double>(
+        target,
+        name: 'prop',
+        initialPropertyValue: null,
+        initialFieldValue: null,
+        value: 0,
+      );
+    });
+
+    test('realWithField fully specified', () async {
+      final validator = ValidatorTester<double>();
+      final target = PropertyDescriptorsBuilder()
+        ..realWithField(
+          name: 'prop',
+          asyncValidatorFactories: [validator.asyncValidator],
+          validatorFactories: [validator.validator],
+          initialValue: 123.45,
+        );
+
+      final value = DateTime.now().microsecondsSinceEpoch / 1000.0;
+
+      final validationResult = verifyPropertyDescriptor<double, double>(
+        target,
+        name: 'prop',
+        initialPropertyValue: 123.45,
+        initialFieldValue: 123.45,
+        value: value,
+      );
+
+      await validator.waitForPendingValidation();
+
+      expect(validationResult, isNull);
+      expect(validator.passedToValidator, value);
+      expect(validator.passedToAsyncValidator, value);
+    });
+
+    test('bigIntWithField default', () {
+      final target = PropertyDescriptorsBuilder()
+        ..bigIntWithField(
+          name: 'prop',
+        );
+      verifyPropertyDescriptor<BigInt, BigInt>(
+        target,
+        name: 'prop',
+        initialPropertyValue: null,
+        initialFieldValue: null,
+        value: BigInt.zero,
+      );
+    });
+
+    test('bigIntWithField fully specified', () async {
+      final validator = ValidatorTester<BigInt>();
+      final target = PropertyDescriptorsBuilder()
+        ..bigIntWithField(
+          name: 'prop',
+          asyncValidatorFactories: [validator.asyncValidator],
+          validatorFactories: [validator.validator],
+          initialValue: BigInt.from(123),
+        );
+
+      final value = BigInt.from(DateTime.now().microsecondsSinceEpoch);
+
+      final validationResult = verifyPropertyDescriptor<BigInt, BigInt>(
+        target,
+        name: 'prop',
+        initialPropertyValue: BigInt.from(123),
+        initialFieldValue: BigInt.from(123),
+        value: value,
+      );
+
+      await validator.waitForPendingValidation();
+
+      expect(validationResult, isNull);
+      expect(validator.passedToValidator, value);
+      expect(validator.passedToAsyncValidator, value);
+    });
+  });
 }
