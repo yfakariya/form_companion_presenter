@@ -111,7 +111,7 @@ class _DefaultStringConverter extends DefaultValueConverter<String, String> {
       return '';
     }
 
-    return value as String;
+    return super.toFieldValue(value, locale);
   }
 }
 
