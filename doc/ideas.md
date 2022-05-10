@@ -178,7 +178,7 @@ Text('${value}_label'.tr())
 #### Lists
 
 **key** | **available in** | **description**
---|--
+--|--|--
 `PROPERTY_NAME` | any | Replaced with static token which is name of the property.
 `PROPERTY_VALUE_TYPE` | any | Replaced with static token which is `P` of `PropertyDescriptor<P, F>` for the property.
 `FIELD_VALUE_TYPE` | any | Replaced with static token which is `P` of `PropertyDescriptor<P, F>` for the property.
