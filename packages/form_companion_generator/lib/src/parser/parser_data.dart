@@ -8,6 +8,7 @@ import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
 import 'package:source_gen/source_gen.dart';
 
+import '../config.dart';
 import '../form_field_locator.dart';
 import '../model.dart';
 import '../node_provider.dart';
@@ -16,6 +17,9 @@ import '../utilities.dart';
 /// Represents a context information of parsing.
 @sealed
 class ParseContext {
+  /// A [Config].
+  final Config config;
+
   /// A [Logger] to record trace log for debugging.
   final Logger logger;
 
@@ -68,6 +72,7 @@ class ParseContext {
 
   /// Initialize a new [ParseContext] instance.
   ParseContext(
+    this.config,
     this.logger,
     this.nodeProvider,
     this.formFieldLocator,

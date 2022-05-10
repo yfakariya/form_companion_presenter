@@ -185,4 +185,6 @@ Text('${value}_label'.tr())
 `PROPERTY` | any | Replaced with static token which is local variable identifier of `PropertyDescriptor<P, F>` for the property.
 `LABEL_TEMPLATE` | `itemTemplates` | Replaced with expression resolved for `labelTemplate`.
 `HINT_TEMPLATE` | `itemTemplates` | Replaced with expression resolved for `hintTemplate`.
-`ITEM_VALUE` | `itemTemplates` | Replaced with static token which is local variable identifier of current enum value.
+`ITEM_VALUE` | `itemTemplates` | Replaced with static token which is local variable identifier which holds current enum member, bool value, or collection item.
+`ITEM_VALUE_TYPE` | `itemTemplates` | Replaced with static token which is a type of the `#ITEM_VALUE`.
+`ITEM_VALUE_STRING` | `itemTemplates` | String representation of `#ITEM_VALUE#`. This value will be same as `#ITEM_VALUE#` for `String`, will be `#ITEM_VALUE# ?? ''` for `String?`, will be `#ITEM_VALUE#.toString()` for non-string `T`, or will be `#ITEM_VALUE#?.toString() ?? ''` for non-string `T?`.

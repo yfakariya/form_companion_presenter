@@ -17,11 +17,12 @@ import 'package:source_gen/source_gen.dart';
 import 'package:test/test.dart';
 import 'package:tuple/tuple.dart';
 
-import 'emitter_test.dart';
 import 'session_resolver.dart';
 import 'test_helpers.dart';
 
 typedef FieldNameAndValueType = Tuple2<String, InterfaceType>;
+
+Config get _emptyConfig => Config(<String, dynamic>{});
 
 class ExpectedImport {
   final String identifier;
@@ -55,6 +56,8 @@ Future<void> main() async {
 
   final parametersLibrary = await getParametersLibrary();
   final dependencyHolder = parametersLibrary.lookupClass('DependencyHolder');
+
+  final defaultConfig = await readDefaultOptions();
 
   ClassElement findType(String name) {
     final type = presenterLibrary.findType(name);
@@ -204,6 +207,7 @@ Future<void> main() async {
       final targetClass = findType(name);
       final warnings = <String>[];
       final result = await getPropertiesAsync(
+        _emptyConfig,
         nodeProvider,
         formFieldLocator,
         findConstructor(targetClass),
@@ -234,6 +238,7 @@ Future<void> main() async {
       final warnings = <String>[];
       try {
         final result = await getPropertiesAsync(
+          _emptyConfig,
           nodeProvider,
           formFieldLocator,
           findConstructor(targetClass),
@@ -1616,7 +1621,9 @@ Future<void> main() async {
             formFieldConstructor,
             await ArgumentsHandler.createAsync(
               formFieldConstructor,
+              property,
               nodeProvider,
+              defaultConfig,
               isFormBuilder: isFormBuilder,
             ),
           ),
@@ -1685,7 +1692,9 @@ Future<void> main() async {
               formFieldConstructor,
               await ArgumentsHandler.createAsync(
                 formFieldConstructor,
+                property,
                 nodeProvider,
+                defaultConfig,
                 isFormBuilder: false,
               ),
             ),
@@ -1936,7 +1945,7 @@ Future<void> main() async {
       final baseCompanion = findType('BaseCompanion');
       try {
         await parseElementAsync(
-          emptyConfig,
+          _emptyConfig,
           nodeProvider,
           formFieldLocator,
           baseCompanion,

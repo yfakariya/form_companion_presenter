@@ -14,6 +14,7 @@ import 'dependency.dart';
 import 'node_provider.dart';
 import 'type_instantiation.dart';
 import 'utilities.dart';
+import 'utilities.dart' as u;
 
 /// Represents a parameter.
 @sealed
@@ -23,6 +24,9 @@ class ParameterInfo {
 
   /// Gets a static [DartType] of this parameter.
   final DartType type;
+
+  /// `true` if [type] is collection type (implements [Iterable]).
+  final bool isCollectionType;
 
   /// Gets a [FormalParameter] which holds syntax information of this parameter.
   final FormalParameter node;
@@ -58,8 +62,9 @@ class ParameterInfo {
     this.functionTypedParameter,
     this.keyword,
     this.defaultValue,
-    this.requirability,
-  );
+    this.requirability, {
+    required this.isCollectionType,
+  });
 
   /// Creates a new [ParameterInfo] isntance from specified [FormalParameter].
   static FutureOr<ParameterInfo> fromNodeAsync(
@@ -80,6 +85,7 @@ class ParameterInfo {
         base.keyword,
         base.defaultValue,
         base.requirability,
+        isCollectionType: base.isCollectionType,
       );
     }
 
@@ -96,6 +102,7 @@ class ParameterInfo {
         element.isRequiredNamed
             ? ParameterRequirability.required
             : ParameterRequirability.optional,
+        isCollectionType: u.isCollectionType(element.type, element),
       );
     }
 
@@ -117,6 +124,10 @@ class ParameterInfo {
         parameterElement.isRequiredNamed
             ? ParameterRequirability.required
             : ParameterRequirability.optional,
+        isCollectionType: u.isCollectionType(
+          parameterElement.type,
+          parameterElement,
+        ),
       );
     }
 
@@ -133,6 +144,7 @@ class ParameterInfo {
         element.isRequiredNamed
             ? ParameterRequirability.required
             : ParameterRequirability.optional,
+        isCollectionType: u.isCollectionType(element.type, element),
       );
     }
 
@@ -154,6 +166,7 @@ class ParameterInfo {
         keyword,
         null,
         ParameterRequirability.forciblyOptional,
+        isCollectionType: isCollectionType,
       );
 
   static FutureOr<TypeAnnotation?> _getFieldTypeAnnotationAsync(
@@ -316,6 +329,26 @@ abstract class GenericType {
   /// [InterfaceType].
   InterfaceType? get maybeAsInterfaceType;
 
+  /// Gets a [GenericType] which represents type of each items in this collection
+  /// type. `null` when this type is not a collection type.
+  ///
+  /// Note that collection type means that this type can assign to [Iterable],
+  /// and the value of this property should be single generic type argument of
+  /// casted [Iterable].
+  GenericType? get collectionItemType;
+
+  /// Whether this type is enum or not.
+  bool get isEnumType => false;
+
+  /// Whether this type is [bool] or not.
+  bool get isBoolType => false;
+
+  /// Whether this type is [String] or not.
+  bool get isStringType => false;
+
+  /// Whether this type is nullable or not.
+  bool get isNullable;
+
   /// Returns a new [GenericType] instance.
   factory GenericType.generic(
     DartType rawType,
@@ -443,6 +476,29 @@ class _NonGenericType extends GenericType {
   }
 
   @override
+  GenericType? get collectionItemType {
+    final itemType = getCollectionElementType(type, _contextElement);
+    return itemType == null
+        ? null
+        : GenericType.fromDartType(itemType, _contextElement);
+  }
+
+  @override
+  bool get isEnumType => u.isEnumType(type, _contextElement);
+
+  @override
+  bool get isBoolType =>
+      _contextElement.library!.typeSystem.promoteToNonNull(type).isDartCoreBool;
+
+  @override
+  bool get isStringType => _contextElement.library!.typeSystem
+      .promoteToNonNull(type)
+      .isDartCoreString;
+
+  @override
+  bool get isNullable => type.nullabilitySuffix != NullabilitySuffix.none;
+
+  @override
   List<GenericType> get typeArguments {
     final type = this.type;
     return type is InterfaceType
@@ -535,6 +591,28 @@ class _InstantiatedGenericInterfaceType extends GenericType {
   @override
   InterfaceType? get maybeAsInterfaceType => _interfaceType;
 
+  @override
+  GenericType? get collectionItemType {
+    final typeSystem = _interfaceType.element.library.typeSystem;
+    final typeProvider = _interfaceType.element.library.typeProvider;
+    if (!typeSystem.isAssignableTo(
+        _interfaceType, typeProvider.iterableDynamicType)) {
+      return null;
+    }
+
+    return GenericType.fromDartType(
+      _interfaceType
+          .asInstanceOf(typeProvider.iterableElement)!
+          .typeArguments
+          .single,
+      _interfaceType.element,
+    );
+  }
+
+  @override
+  bool get isNullable =>
+      _interfaceType.nullabilitySuffix != NullabilitySuffix.none;
+
   _InstantiatedGenericInterfaceType(
     this._interfaceType,
     this._rawType,
@@ -605,6 +683,10 @@ abstract class GenericFunctionType extends GenericType {
   @nonVirtual
   InterfaceType? get maybeAsInterfaceType => null;
 
+  @override
+  bool get isNullable =>
+      functionType.nullabilitySuffix != NullabilitySuffix.none;
+
   /// Gets a return type of the function type.
   GenericType get returnType;
 
@@ -629,6 +711,9 @@ class _InstantiatedGenericFunctionType extends GenericFunctionType {
   @override
   Iterable<GenericType> get parameterTypes =>
       functionType.parameters.map((p) => _instantiate(p.type));
+
+  @override
+  GenericType? get collectionItemType => null;
 
   _InstantiatedGenericFunctionType(
     FunctionType functionType,

@@ -211,7 +211,9 @@ Iterable<String> _emitFieldFactoryCore(
     buildContext: 'context',
     presenter: _presenterField,
     propertyDescriptor: propertyDescriptorVariable,
+    itemValue: 'x',
     indent: '      ',
+    warningFactory: (w) => '// $_todoHeader WARNING - $w',
   );
   yield '    );';
   yield '  }';

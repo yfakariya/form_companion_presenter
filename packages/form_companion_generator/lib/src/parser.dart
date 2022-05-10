@@ -52,6 +52,7 @@ FutureOr<PresenterDefinition> parseElementAsync(
   final isFormBuilder = mixinType == MixinType.formBuilderCompanionMixin;
   final warnings = <String>[];
   final properties = await getPropertiesAsync(
+    config,
     nodeProvider,
     formFieldLocator,
     constructor,
@@ -163,6 +164,7 @@ ConstructorElement findConstructor(
 /// If any global warnings is issued, the message will be added to [globalWarnings].
 @visibleForTesting
 FutureOr<List<PropertyAndFormFieldDefinition>> getPropertiesAsync(
+  Config config,
   NodeProvider nodeProvider,
   FormFieldLocator formFieldLocator,
   ConstructorElement constructor,
@@ -171,6 +173,7 @@ FutureOr<List<PropertyAndFormFieldDefinition>> getPropertiesAsync(
   required bool isFormBuilder,
 }) async {
   final context = ParseContext(
+    config,
     logger,
     nodeProvider,
     formFieldLocator,

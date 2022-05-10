@@ -2,6 +2,7 @@
 
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/type.dart';
+import 'package:form_companion_generator/src/config.dart';
 import 'package:form_companion_generator/src/form_field_locator.dart';
 import 'package:form_companion_generator/src/model.dart';
 import 'package:form_companion_generator/src/node_provider.dart';
@@ -13,6 +14,8 @@ import 'package:tuple/tuple.dart';
 
 import 'session_resolver.dart';
 import 'test_helpers.dart';
+
+Config get _emptyConfig => Config(<String, dynamic>{});
 
 class FailureFormFieldLocator implements FormFieldLocator {
   const FailureFormFieldLocator();
@@ -69,6 +72,7 @@ Future<void> main() async {
     try {
       result = await resolveFormFieldAsync(
         ParseContext(
+          _emptyConfig,
           logger,
           nodeProvider,
           formFieldLocator,
@@ -217,6 +221,7 @@ Future<void> main() async {
       () async {
         const isFormBuilder = false;
         final context = ParseContext(
+          _emptyConfig,
           logger,
           nodeProvider,
           const FailureFormFieldLocator(),

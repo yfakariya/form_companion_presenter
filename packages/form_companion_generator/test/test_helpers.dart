@@ -7,6 +7,8 @@ import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
 import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
+import 'package:build_config/build_config.dart';
+import 'package:form_companion_generator/src/config.dart';
 import 'package:form_companion_generator/src/model.dart';
 import 'package:path/path.dart' as path;
 import 'package:test/expect.dart';
@@ -212,4 +214,20 @@ GenericType toGenericType(DartType type) {
   }
 
   return GenericType.fromDartType(type, element);
+}
+
+Map<String, dynamic>? _defaultOptions;
+
+FutureOr<Config> readDefaultOptions() async {
+  if (_defaultOptions == null) {
+    final buildConfig = await BuildConfig.fromPackageDir('.');
+    _defaultOptions = buildConfig
+            .builderDefinitions[
+                'form_companion_generator:form_companion_generator']
+            ?.defaults
+            .options ??
+        <String, dynamic>{};
+  }
+
+  return Config(_defaultOptions!);
 }

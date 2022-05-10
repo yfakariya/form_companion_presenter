@@ -33,9 +33,7 @@ typedef PropertyDefinitionSpec = Tuple6<String, InterfaceType, InterfaceType,
 typedef FactoryParameterSpec = Tuple2<String, String>;
 typedef NamedFactorySpec = Tuple3<String?, String, List<FactoryParameterSpec>>;
 
-const emptyConfig = Config(<String, dynamic>{});
-
-// TODO(yfakariya): DropdownItems support w/ label template: see /doc/ideas.md
+Config get _emptyConfig => Config(<String, dynamic>{});
 
 Future<void> main() async {
   final logger = Logger('emitter_test');
@@ -48,6 +46,14 @@ Future<void> main() async {
   final dateTimeType = await getDateTimeType();
   final dateTimeRangeType = await getDateTimeRangeType();
   final rangeValuesType = await getRangeValuesType();
+
+  final nullableBoolType = await getNullableBoolType();
+  final nullableMyEnumType = await getNullableMyEnumType();
+  final nullableStringType = await getNullableStringType();
+  final nullableListOfStringType = await getNullableListOfStringType();
+  final nullableListOfNullableStringType =
+      await getNullableListOfNullableStringType();
+
   final textFormField = library.lookupClass('TextFormField');
   final dropdownButtonFormField =
       library.lookupClass('DropdownButtonFormField');
@@ -79,6 +85,8 @@ Future<void> main() async {
       library.getType('FormFieldWithPropertyParameter')!;
 
   final parametersLibrary = await getParametersLibrary();
+
+  final defaultConfig = await readDefaultOptions();
 
   FutureOr<List<PropertyAndFormFieldDefinition>> makePropertiesFully(
     Iterable<PropertyDefinitionSpec> specs, {
@@ -120,7 +128,9 @@ Future<void> main() async {
                       constructor,
                       await ArgumentsHandler.createAsync(
                         constructor,
+                        property,
                         nodeProvider,
+                        defaultConfig,
                         isFormBuilder: isFormBuilder,
                       ),
                     );
@@ -192,7 +202,7 @@ Future<void> main() async {
         properties: properties,
       );
       expect(
-        emitPropertyAccessor(data.name, data.properties, emptyConfig),
+        emitPropertyAccessor(data.name, data.properties, _emptyConfig),
         typedProperties('Test01', [Tuple3('prop', 'String', 'String')]),
       );
     });
@@ -230,7 +240,7 @@ Future<void> main() async {
         properties: properties,
       );
       expect(
-        emitPropertyAccessor(data.name, data.properties, emptyConfig),
+        emitPropertyAccessor(data.name, data.properties, _emptyConfig),
         typedProperties(
           'Test02',
           [
@@ -264,7 +274,7 @@ Future<void> main() async {
         properties: properties,
       );
       expect(
-        emitPropertyAccessor(data.name, data.properties, emptyConfig),
+        emitPropertyAccessor(data.name, data.properties, _emptyConfig),
         typedProperties(
           'Test01',
           [Tuple3('prop', 'List<MyEnum>', 'List<MyEnum>')],
@@ -292,7 +302,7 @@ Future<void> main() async {
           properties: properties,
         );
         expect(
-          emitGlobal(library, data, emptyConfig),
+          emitGlobal(library, data, _emptyConfig),
           [
             "import 'package:form_companion_presenter/form_companion_presenter.dart';",
             '',
@@ -318,7 +328,7 @@ Future<void> main() async {
         );
 
         expect(
-          emitGlobal(library, data, emptyConfig),
+          emitGlobal(library, data, _emptyConfig),
           [
             '// TODO(CompanionGenerator): WARNING - AAA',
             "import 'package:form_companion_presenter/form_companion_presenter.dart';",
@@ -345,7 +355,7 @@ Future<void> main() async {
         );
 
         expect(
-          emitGlobal(library, data, emptyConfig),
+          emitGlobal(library, data, _emptyConfig),
           [
             '// TODO(CompanionGenerator): WARNING - AAA',
             '// TODO(CompanionGenerator): WARNING - BBB',
@@ -379,7 +389,7 @@ Future<void> main() async {
           ),
           properties: properties,
         );
-        final lines = emitGlobal(library, data, emptyConfig).toList();
+        final lines = emitGlobal(library, data, _emptyConfig).toList();
         expect(
           lines,
           [
@@ -420,7 +430,7 @@ Future<void> main() async {
           ),
           properties: properties,
         );
-        final lines = emitGlobal(library, data, emptyConfig).toList();
+        final lines = emitGlobal(library, data, _emptyConfig).toList();
         expect(
           lines,
           [
@@ -465,7 +475,7 @@ Future<void> main() async {
           ),
           properties: properties,
         );
-        final lines = emitGlobal(library, data, emptyConfig).toList();
+        final lines = emitGlobal(library, data, _emptyConfig).toList();
         expect(
           lines,
           [
@@ -569,7 +579,7 @@ Future<void> main() async {
         properties: properties,
       );
       await expectLater(
-        await emitFieldFactoriesAsync(nodeProvider, data, emptyConfig),
+        await emitFieldFactoriesAsync(nodeProvider, data, _emptyConfig),
         fieldFactories('Test01', [textFormFieldFactory('prop')]),
       );
     });
@@ -607,7 +617,7 @@ Future<void> main() async {
         properties: properties,
       );
       await expectLater(
-        await emitFieldFactoriesAsync(nodeProvider, data, emptyConfig),
+        await emitFieldFactoriesAsync(nodeProvider, data, _emptyConfig),
         fieldFactories(
           'Test02',
           [
@@ -682,7 +692,9 @@ Future<void> main() async {
                     constructor,
                     await ArgumentsHandler.createAsync(
                       constructor,
+                      property,
                       nodeProvider,
+                      defaultConfig,
                       isFormBuilder: isFormBuilder,
                     ),
                   );
@@ -718,7 +730,7 @@ ${spec.item3.map((p) => '      ${p.item2}: ${p.item2}').join(',\n')},
         }
 
         await expectLater(
-          await emitFieldFactoriesAsync(nodeProvider, data, emptyConfig),
+          await emitFieldFactoriesAsync(nodeProvider, data, _emptyConfig),
           (expectedConstructorNameAndParameters.length == 1 &&
                   expectedConstructorNameAndParameters[0].item1 == null)
               ? fieldFactories(
@@ -915,7 +927,7 @@ ${spec.item3.map((p) => '      ${p.item2}: ${p.item2}').join(',\n')},
         );
 
         await expectLater(
-          await emitFieldFactoriesAsync(nodeProvider, data, emptyConfig),
+          await emitFieldFactoriesAsync(nodeProvider, data, _emptyConfig),
           '''
 /// Defines [FormField] factory methods for properties of [Test].
 class \$TestFieldFactory {
@@ -1151,7 +1163,11 @@ extension \$TestFieldFactoryExtension on Test {
             [toGenericType(library.typeProvider.stringType)],
             dropdownButtonFormField,
           ),
-          expectedBody: dropdownButtonFieldFactory('prop', 'String'),
+          expectedBody: dropdownButtonFieldFactory(
+            'prop',
+            'String',
+            withItemsTemplateError: true,
+          ),
         ),
       );
 
@@ -1167,7 +1183,11 @@ extension \$TestFieldFactoryExtension on Test {
             [toGenericType(library.typeProvider.intType)],
             dropdownButtonFormField,
           ),
-          expectedBody: dropdownButtonFieldFactory('prop', 'int'),
+          expectedBody: dropdownButtonFieldFactory(
+            'prop',
+            'int',
+            withItemsTemplateError: true,
+          ),
         ),
       );
 
@@ -1285,7 +1305,11 @@ extension \$TestFieldFactoryExtension on Test {
             [toGenericType(library.typeProvider.stringType)],
             formBuilderDropdown,
           ),
-          expectedBody: formBuilderDropdownFactory('prop', 'String'),
+          expectedBody: formBuilderDropdownFactory(
+            'prop',
+            'String',
+            withItemsTemplateError: true,
+          ),
         ),
       );
 
@@ -1446,7 +1470,6 @@ extension \$TestFieldFactoryExtension on Test {
           propertyValueType: library.typeProvider.stringType,
           fieldValueType: library.typeProvider.stringType,
           formFieldClass: formFieldWithPropertyParameter,
-          warnings: [],
           expectedBody: '''
   /// Gets a [FormField] for `prop` property.
   FormFieldWithPropertyParameter prop(
@@ -1458,9 +1481,7 @@ extension \$TestFieldFactoryExtension on Test {
     return FormFieldWithPropertyParameter(
       key: _presenter.getKey(property_.name, context),
       initialValue: property_.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
-      decoration: decoration ?? const InputDecoration().copyWith(
-        labelText: property_.name,
-      ),
+      decoration: decoration ?? const InputDecoration().copyWith(labelText: property_.name, hintText: null),
       onSaved: (v) => property_.setFieldValue(v, Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       validator: property_.getValidator(context),
       property: property,
@@ -1468,6 +1489,56 @@ extension \$TestFieldFactoryExtension on Test {
   }''',
         ),
       );
+
+      for (final type in [
+        library.typeProvider.boolType,
+        myEnumType,
+        library.typeProvider.stringType,
+        nullableBoolType,
+        nullableMyEnumType,
+        nullableStringType,
+      ]) {
+        test(
+          'items of $type',
+          () => testEmitFieldFactory(
+            isFormBuilder: false,
+            propertyValueType: type,
+            fieldValueType: type,
+            formFieldClass: dropdownButtonFormField,
+            expectedBody: dropdownButtonFieldFactory(
+              'prop',
+              type.getDisplayString(withNullability: true),
+              withItemsTemplateError:
+                  type.getDisplayString(withNullability: false) == 'String',
+            ),
+          ),
+        );
+      }
+
+      for (final type in [
+        library.typeProvider.listType(
+          library.typeProvider.stringType,
+        ),
+        nullableListOfStringType,
+        nullableListOfNullableStringType,
+        library.typeProvider.listType(
+          nullableStringType,
+        ),
+      ]) {
+        test(
+          'options of $type',
+          () => testEmitFieldFactory(
+            isFormBuilder: true,
+            propertyValueType: type,
+            fieldValueType: type,
+            formFieldClass: formBuilderFilterChip,
+            expectedBody: formBuilderFilterChipFactory(
+              'prop',
+              type.typeArguments.single.getDisplayString(withNullability: true),
+            ),
+          ),
+        );
+      }
     });
   });
 
@@ -1492,7 +1563,7 @@ extension \$TestFieldFactoryExtension on Test {
               isFormBuilder: true,
             ),
           ),
-          emptyConfig,
+          _emptyConfig,
         ).join('\n'),
         [
           '// TODO(CompanionGenerator): WARNING - AAA',
@@ -1531,7 +1602,7 @@ extension \$TestFieldFactoryExtension on Test {
             imports: [LibraryImport('dart:ui')],
             properties: [],
           ),
-          emptyConfig,
+          _emptyConfig,
         ).join('\n'),
         '''
 // TODO(CompanionGenerator): WARNING - AAA
@@ -1631,6 +1702,40 @@ extension \$${className}FieldFactoryExtension on $className {
 ''';
 }
 
+String itemsExpression(
+  String itemWidgetType,
+  String fieldValueType, {
+  bool isCollection = false,
+}) {
+  if (!isCollection) {
+    switch (fieldValueType) {
+      case 'bool':
+        return '[true, false].map((x) => $itemWidgetType<$fieldValueType>(value: x, child: Text(x.toString()))).toList()';
+      case 'bool?':
+        return "[true, false, null].map((x) => $itemWidgetType<$fieldValueType>(value: x, child: Text(x?.toString() ?? ''))).toList()";
+      case 'MyEnum':
+        return '[MyEnum.one, MyEnum.two].map((x) => $itemWidgetType<$fieldValueType>(value: x, child: Text(x.toString()))).toList()';
+      case 'MyEnum?':
+        return "[MyEnum.one, MyEnum.two, null].map((x) => $itemWidgetType<$fieldValueType>(value: x, child: Text(x?.toString() ?? ''))).toList()";
+      default:
+        break;
+    }
+  }
+
+  switch (fieldValueType) {
+    case 'String?':
+      return "property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))?.map((x) => $itemWidgetType<$fieldValueType>(value: x, child: Text(x ?? ''))).toList() ?? []";
+    case 'String':
+      return "property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))?.map((x) => $itemWidgetType<$fieldValueType>(value: x, child: Text(x))).toList() ?? []";
+    default:
+      if (fieldValueType.endsWith('?')) {
+        return "property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))?.map((x) => $itemWidgetType<$fieldValueType>(value: x, child: Text(x?.toString() ?? ''))).toList() ?? []";
+      } else {
+        return "property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))?.map((x) => $itemWidgetType<$fieldValueType>(value: x, child: Text(x.toString()))).toList() ?? []";
+      }
+  }
+}
+
 String textFormFieldFactory(
   String propertyName, {
   bool isAutovalidate = false,
@@ -1694,9 +1799,7 @@ String textFormFieldFactory(
       controller: controller,
       initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       focusNode: focusNode,
-      decoration: decoration ?? const InputDecoration().copyWith(
-        labelText: property.name,
-      ),
+      decoration: decoration ?? const InputDecoration().copyWith(labelText: property.name, hintText: null),
       keyboardType: keyboardType,
       textCapitalization: textCapitalization,
       textInputAction: textInputAction,
@@ -1720,7 +1823,7 @@ String textFormFieldFactory(
       minLines: minLines,
       expands: expands,
       maxLength: maxLength,
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+      onChanged: onChanged,
       onTap: onTap,
       onEditingComplete: onEditingComplete,
       onFieldSubmitted: onFieldSubmitted,
@@ -1751,12 +1854,19 @@ String dropdownButtonFieldFactory(
   String propertyName,
   String propertyType, {
   bool isAutovalidate = false,
+  bool withItemsTemplateError = false,
 }) =>
     '''
   /// Gets a [FormField] for `$propertyName` property.
   DropdownButtonFormField<$propertyType> $propertyName(
     BuildContext context, {
+'''
+    '${withItemsTemplateError ? '''
     required List<DropdownMenuItem<$propertyType>>? items,
+''' : '''
+    List<DropdownMenuItem<$propertyType>>? items,
+'''}'
+    '''
     DropdownButtonBuilder? selectedItemBuilder,
     Widget? hint,
     Widget? disabledHint,
@@ -1785,12 +1895,19 @@ String dropdownButtonFieldFactory(
     final property = _presenter.$propertyName;
     return DropdownButtonFormField<$propertyType>(
       key: _presenter.getKey(property.name, context),
+'''
+    '${withItemsTemplateError ? '''
+      // TODO(CompanionGenerator): WARNING - Template `items_item_template` is ignored because property's type `$propertyType` is not collection, enum, nor bool type.
       items: items,
+''' : '''
+      items: ${itemsExpression('DropdownMenuItem', propertyType)},
+'''}'
+    '''
       selectedItemBuilder: selectedItemBuilder,
       value: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       hint: hint,
       disabledHint: disabledHint,
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+      onChanged: onChanged ?? (_) {},
       onTap: onTap,
       elevation: elevation,
       style: style,
@@ -1805,9 +1922,7 @@ String dropdownButtonFieldFactory(
       focusNode: focusNode,
       autofocus: autofocus,
       dropdownColor: dropdownColor,
-      decoration: decoration ?? InputDecoration(
-        labelText: property.name,
-      ),
+      decoration: decoration ?? InputDecoration(labelText: property.name, hintText: null),
       onSaved: (v) => property.setFieldValue(v, Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       validator: property.getValidator(context),
       autovalidateMode: autovalidateMode ?? AutovalidateMode.${isAutovalidate ? 'onUserInteraction' : 'disabled'},
@@ -1852,10 +1967,8 @@ String formBuilderCheckboxFactory(
       name: property.name,
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
-      decoration: decoration ?? const InputDecoration(border: InputBorder.none, focusedBorder: InputBorder.none, enabledBorder: InputBorder.none, errorBorder: InputBorder.none, disabledBorder: InputBorder.none).copyWith(
-        labelText: property.name,
-      ),
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+      decoration: decoration ?? const InputDecoration(border: InputBorder.none, focusedBorder: InputBorder.none, enabledBorder: InputBorder.none, errorBorder: InputBorder.none, disabledBorder: InputBorder.none).copyWith(labelText: property.name, hintText: null),
+      onChanged: onChanged,
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.${isAutovalidate ? 'onUserInteraction' : 'disabled'},
@@ -1892,7 +2005,7 @@ String formBuilderCheckboxGroupFactory(
     AutovalidateMode? autovalidateMode,
     VoidCallback? onReset,
     FocusNode? focusNode,
-    required List<FormBuilderFieldOption<$propertyElementType>> options,
+    List<FormBuilderFieldOption<$propertyElementType>>? options,
     Color? activeColor,
     Color? checkColor,
     Color? focusColor,
@@ -1919,16 +2032,14 @@ String formBuilderCheckboxGroupFactory(
       name: property.name,
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
-      decoration: decoration ?? const InputDecoration().copyWith(
-        labelText: property.name,
-      ),
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+      decoration: decoration ?? const InputDecoration().copyWith(labelText: property.name, hintText: null),
+      onChanged: onChanged,
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.${isAutovalidate ? 'onUserInteraction' : 'disabled'},
       onReset: onReset,
       focusNode: focusNode,
-      options: options,
+      options: ${itemsExpression('FormBuilderFieldOption', propertyElementType, isCollection: true)},
       activeColor: activeColor,
       checkColor: checkColor,
       focusColor: focusColor,
@@ -1965,7 +2076,7 @@ String formBuilderChoiceChipFactory(
     FocusNode? focusNode,
     InputDecoration? decoration,
     Key? key,
-    required List<FormBuilderFieldOption<MyEnum>> options,
+    List<FormBuilderFieldOption<$propertyType>>? options,
     WrapAlignment alignment = WrapAlignment.start,
     Color? backgroundColor,
     WrapCrossAlignment crossAxisAlignment = WrapCrossAlignment.start,
@@ -1998,12 +2109,10 @@ String formBuilderChoiceChipFactory(
       enabled: enabled,
       focusNode: focusNode,
       validator: property.getValidator(context),
-      decoration: decoration ?? const InputDecoration().copyWith(
-        labelText: property.name,
-      ),
+      decoration: decoration ?? const InputDecoration().copyWith(labelText: property.name, hintText: null),
       key: key,
       name: property.name,
-      options: options,
+      options: ${itemsExpression('FormBuilderFieldOption', propertyType)},
       initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       alignment: alignment,
       backgroundColor: backgroundColor,
@@ -2027,7 +2136,7 @@ String formBuilderChoiceChipFactory(
       textDirection: textDirection,
       verticalDirection: verticalDirection,
       visualDensity: visualDensity,
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+      onChanged: onChanged,
       valueTransformer: valueTransformer,
       onReset: onReset,
     );
@@ -2103,10 +2212,8 @@ String formBuilderDateRangePickerFactory(
       name: property.name,
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
-      decoration: decoration ?? const InputDecoration().copyWith(
-        labelText: property.name,
-      ),
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+      decoration: decoration ?? const InputDecoration().copyWith(labelText: property.name, hintText: null),
+      onChanged: onChanged,
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.${isAutovalidate ? 'onUserInteraction' : 'disabled'},
@@ -2236,10 +2343,8 @@ String formBuilderDateTimePickerFactory(
       name: property.name,
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
-      decoration: decoration ?? const InputDecoration().copyWith(
-        labelText: property.name,
-      ),
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+      decoration: decoration ?? const InputDecoration().copyWith(labelText: property.name, hintText: null),
+      onChanged: onChanged,
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.${isAutovalidate ? 'onUserInteraction' : 'disabled'},
@@ -2303,6 +2408,7 @@ String formBuilderDropdownFactory(
   String propertyName,
   String propertyType, {
   bool isAutovalidate = false,
+  bool withItemsTemplateError = false,
 }) =>
     '''
   /// Gets a [FormField] for `$propertyName` property.
@@ -2316,7 +2422,13 @@ String formBuilderDropdownFactory(
     AutovalidateMode? autovalidateMode,
     VoidCallback? onReset,
     FocusNode? focusNode,
+'''
+    '${withItemsTemplateError ? '''
     required List<DropdownMenuItem<$propertyType>> items,
+''' : '''
+    List<DropdownMenuItem<$propertyType>>? items,
+'''}'
+    '''
     bool isExpanded = true,
     bool isDense = true,
     int elevation = 8,
@@ -2344,16 +2456,21 @@ String formBuilderDropdownFactory(
       name: property.name,
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
-      decoration: decoration ?? const InputDecoration().copyWith(
-        labelText: property.name,
-      ),
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+      decoration: decoration ?? const InputDecoration().copyWith(labelText: property.name, hintText: null),
+      onChanged: onChanged ?? (_) {},
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.${isAutovalidate ? 'onUserInteraction' : 'disabled'},
       onReset: onReset,
       focusNode: focusNode,
+'''
+    '${withItemsTemplateError ? '''
+      // TODO(CompanionGenerator): WARNING - Template `items_item_template` is ignored because property's type `$propertyType` is not collection, enum, nor bool type.
       items: items,
+''' : '''
+      items: ${itemsExpression('DropdownMenuItem', propertyType)},
+'''}'
+    '''
       isExpanded: isExpanded,
       isDense: isDense,
       elevation: elevation,
@@ -2391,7 +2508,7 @@ String formBuilderFilterChipFactory(
     FocusNode? focusNode,
     InputDecoration? decoration,
     Key? key,
-    required List<FormBuilderFieldOption<$propertyElementType>> options,
+    List<FormBuilderFieldOption<$propertyElementType>>? options,
     WrapAlignment alignment = WrapAlignment.start,
     Color? backgroundColor,
     Color? checkmarkColor,
@@ -2427,13 +2544,11 @@ String formBuilderFilterChipFactory(
       enabled: enabled,
       focusNode: focusNode,
       validator: property.getValidator(context),
-      decoration: decoration ?? const InputDecoration().copyWith(
-        labelText: property.name,
-      ),
+      decoration: decoration ?? const InputDecoration().copyWith(labelText: property.name, hintText: null),
       key: key,
       initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))!,
       name: property.name,
-      options: options,
+      options: ${itemsExpression('FormBuilderFieldOption', propertyElementType, isCollection: true)},
       alignment: alignment,
       backgroundColor: backgroundColor,
       checkmarkColor: checkmarkColor,
@@ -2459,7 +2574,7 @@ String formBuilderFilterChipFactory(
       spacing: spacing,
       textDirection: textDirection,
       verticalDirection: verticalDirection,
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+      onChanged: onChanged,
       valueTransformer: valueTransformer,
       onReset: onReset,
     );
@@ -2479,7 +2594,7 @@ String formBuilderRadioGroupFactory(
     FocusNode? focusNode,
     InputDecoration? decoration,
     Key? key,
-    required List<FormBuilderFieldOption<$propertyType>> options,
+    List<FormBuilderFieldOption<$propertyType>>? options,
     bool shouldRadioRequestFocus = false,
     Color? activeColor,
     ControlAffinity controlAffinity = ControlAffinity.leading,
@@ -2507,12 +2622,10 @@ String formBuilderRadioGroupFactory(
       enabled: enabled,
       focusNode: focusNode,
       validator: property.getValidator(context),
-      decoration: decoration ?? const InputDecoration().copyWith(
-        labelText: property.name,
-      ),
+      decoration: decoration ?? const InputDecoration().copyWith(labelText: property.name, hintText: null),
       key: key,
       name: property.name,
-      options: options,
+      options: ${itemsExpression('FormBuilderFieldOption', propertyType)},
       initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       shouldRadioRequestFocus: shouldRadioRequestFocus,
       activeColor: activeColor,
@@ -2531,7 +2644,7 @@ String formBuilderRadioGroupFactory(
       wrapSpacing: wrapSpacing,
       wrapTextDirection: wrapTextDirection,
       wrapVerticalDirection: wrapVerticalDirection,
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+      onChanged: onChanged,
       valueTransformer: valueTransformer,
       onReset: onReset,
     );
@@ -2575,10 +2688,8 @@ String formBuilderRangeSliderFactory(
       name: property.name,
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))!,
-      decoration: decoration ?? const InputDecoration().copyWith(
-        labelText: property.name,
-      ),
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+      decoration: decoration ?? const InputDecoration().copyWith(labelText: property.name, hintText: null),
+      onChanged: onChanged,
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.${isAutovalidate ? 'onUserInteraction' : 'disabled'},
@@ -2619,7 +2730,7 @@ String formBuilderSegmentedControlFactory(
     AutovalidateMode? autovalidateMode,
     VoidCallback? onReset,
     FocusNode? focusNode,
-    required List<FormBuilderFieldOption<MyEnum>> options,
+    List<FormBuilderFieldOption<$propertyType>>? options,
     Color? borderColor,
     Color? selectedColor,
     Color? pressedColor,
@@ -2633,16 +2744,14 @@ String formBuilderSegmentedControlFactory(
       name: property.name,
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
-      decoration: decoration ?? const InputDecoration().copyWith(
-        labelText: property.name,
-      ),
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+      decoration: decoration ?? const InputDecoration().copyWith(labelText: property.name, hintText: null),
+      onChanged: onChanged,
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.${isAutovalidate ? 'onUserInteraction' : 'disabled'},
       onReset: onReset,
       focusNode: focusNode,
-      options: options,
+      options: ${itemsExpression('FormBuilderFieldOption', propertyType)},
       borderColor: borderColor,
       selectedColor: selectedColor,
       pressedColor: pressedColor,
@@ -2692,10 +2801,8 @@ String formBuilderSliderFactory(
       name: property.name,
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))!,
-      decoration: decoration ?? const InputDecoration().copyWith(
-        labelText: property.name,
-      ),
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+      decoration: decoration ?? const InputDecoration().copyWith(labelText: property.name, hintText: null),
+      onChanged: onChanged,
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.${isAutovalidate ? 'onUserInteraction' : 'disabled'},
@@ -2758,10 +2865,8 @@ String formBuilderSwitchFactory(
       name: property.name,
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
-      decoration: decoration ?? const InputDecoration().copyWith(
-        labelText: property.name,
-      ),
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+      decoration: decoration ?? const InputDecoration().copyWith(labelText: property.name, hintText: null),
+      onChanged: onChanged,
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.${isAutovalidate ? 'onUserInteraction' : 'disabled'},
@@ -2850,10 +2955,8 @@ String formBuilderTextFieldFactory(
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       readOnly: readOnly,
-      decoration: decoration ?? const InputDecoration().copyWith(
-        labelText: property.name,
-      ),
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+      decoration: decoration ?? const InputDecoration().copyWith(labelText: property.name, hintText: null),
+      onChanged: onChanged,
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.${isAutovalidate ? 'onUserInteraction' : 'disabled'},

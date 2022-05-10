@@ -4,6 +4,7 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
+import 'package:form_companion_generator/src/config.dart';
 import 'package:form_companion_generator/src/form_field_locator.dart';
 import 'package:form_companion_generator/src/model.dart';
 import 'package:form_companion_generator/src/node_provider.dart';
@@ -52,6 +53,8 @@ class _MethodInvocationsFinder extends RecursiveAstVisitor<void> {
     super.visitMethodInvocation(node);
   }
 }
+
+Config get _emptyConfig => Config(<String, dynamic>{});
 
 Future<void> main() async {
   final logger = Logger('parser_resolve_property_test');
@@ -117,6 +120,7 @@ Future<void> main() async {
     try {
       result = await resolvePropertyDefinitionAsync(
         context: ParseContext(
+          _emptyConfig,
           logger,
           nodeProvider,
           formFieldLocator,

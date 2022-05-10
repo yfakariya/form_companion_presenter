@@ -45,7 +45,9 @@ FutureOr<PropertyAndFormFieldDefinition> resolveFormFieldAsync(
           declaration,
           await ArgumentsHandler.createAsync(
             declaration,
+            property,
             context.nodeProvider,
+            context.config,
             isFormBuilder: isFormBuilder,
           ),
         );
