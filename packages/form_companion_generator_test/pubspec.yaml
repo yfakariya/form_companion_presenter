@@ -18,7 +18,7 @@ dependencies:
 
 dev_dependencies:
   build_runner: ^2.1.7
-  flutter_lints: ^1.0.0
+  flutter_lints:  ^2.0.1
   form_companion_generator:
     path: ../../packages/form_companion_generator
 
