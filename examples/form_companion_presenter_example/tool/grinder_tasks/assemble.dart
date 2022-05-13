@@ -313,17 +313,19 @@ Map<String, _Macro> _setupMacro(
     'importFcp': "import '$destinationFileName.fcp.dart';",
   };
 
-  return simpleMacros.map((key, value) => MapEntry(
-        key,
-        (_, match, macroArg, output) {
-          if (macroArg == null) {
-            // without newline here.
-            output.sink.write(value);
-          } else {
-            output.sink.write(format(value, macroArg));
-          }
-        },
-      ))
+  return simpleMacros.map(
+    (key, value) => MapEntry(
+      key,
+      (_, match, macroArg, output) {
+        if (macroArg == null) {
+          // without newline here.
+          output.sink.write(value);
+        } else {
+          output.sink.write(format(value, macroArg));
+        }
+      },
+    ),
+  )
     ..['beginRemove'] = (line, match, arg, output) {
       output.enable = false;
       // Line itself is not written.

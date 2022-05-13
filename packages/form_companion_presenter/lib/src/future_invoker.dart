@@ -162,7 +162,8 @@ typedef AsyncOperationProgressCallback<P> = void Function(P progress);
 /// Callback which called when async operation is failed with error.
 /// The parameter is [AsyncInvocationFailureContext] to handle the error.
 typedef AsyncOperationFailureHandler<T> = void Function(
-    AsyncInvocationFailureContext<T> failure);
+  AsyncInvocationFailureContext<T> failure,
+);
 
 /// Defines interface which is the parameter of [FutureInvoker.execute] method
 /// must implement to notify asynchronous operation status.
@@ -310,15 +311,17 @@ abstract class FutureInvoker<T extends AsyncOperationNotifier<R, P>, R, P> {
     switch (_state.status) {
       case AsyncOperationStatus.completed:
         if (_isAlreadyHandled(parameter)) {
-          _log.fine(() =>
-              'Async operation result for parameter $parameter is cached.');
+          _log.fine(
+            () => 'Async operation result for parameter $parameter is cached.',
+          );
           return _state.result;
         }
         break;
       case AsyncOperationStatus.failed:
         if (_isAlreadyHandled(parameter)) {
-          _log.fine(() =>
-              'Async operation error for parameter $parameter is cached.');
+          _log.fine(
+            () => 'Async operation error for parameter $parameter is cached.',
+          );
           throw _state.error!;
         }
         break;
@@ -326,8 +329,10 @@ abstract class FutureInvoker<T extends AsyncOperationNotifier<R, P>, R, P> {
         break;
       case AsyncOperationStatus.inProgress:
         if (_isAlreadyHandled(parameter)) {
-          _log.fine(() =>
-              'Async operation result for parameter $parameter is in progress, returns cached value.');
+          _log.fine(
+            () =>
+                'Async operation result for parameter $parameter is in progress, returns cached value.',
+          );
           // Do nothing
           return _state.result;
         }
@@ -402,19 +407,24 @@ abstract class FutureInvoker<T extends AsyncOperationNotifier<R, P>, R, P> {
         );
         _nextValue = null;
         _log.fine(
-            () => 'Executing asynchronous operation with ${parameter?.value}.');
+          () => 'Executing asynchronous operation with ${parameter?.value}.',
+        );
 
         final result = await executeAsync(parameter.value);
 
         if (_processingValue != parameter) {
-          _log.fine(() =>
-              'Executed asynchronous operation with parameter "${parameter?.value}" but it was canceled, so discard result "$result".');
+          _log.fine(
+            () =>
+                'Executed asynchronous operation with parameter "${parameter?.value}" but it was canceled, so discard result "$result".',
+          );
           return;
         }
 
         finalSuccessfulState = _ParameterAndResult(parameter.value, result);
-        _log.fine(() =>
-            'Executed asynchronous operation with parameter "${parameter?.value}", result is "$result", check next request.');
+        _log.fine(
+          () =>
+              'Executed asynchronous operation with parameter "${parameter?.value}", result is "$result", check next request.',
+        );
       }
       // "executeAsync" may throw any exception, so catch-all is required here.
       // ignore: avoid_catches_without_on_clauses
@@ -475,8 +485,11 @@ abstract class FutureInvoker<T extends AsyncOperationNotifier<R, P>, R, P> {
 
     // Below lines should not throw anything except fatal runtime errors.
     if (finalSuccessfulState != null) {
-      _log.fine(() =>
-          'All requested asynchronous operations are done. Last result with parameter "${finalSuccessfulState?.parameter}" is "${finalSuccessfulState?.result}".');
+      _log.fine(
+        () =>
+            'All requested asynchronous operations are done. Last result with parameter '
+            '"${finalSuccessfulState?.parameter}" is "${finalSuccessfulState?.result}".',
+      );
 
       _state = _AsyncOperationState.completed(
         finalSuccessfulState.parameter,

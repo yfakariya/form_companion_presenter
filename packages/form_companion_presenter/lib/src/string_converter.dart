@@ -97,8 +97,8 @@ class _CallbackStringConverter<P extends Object> extends StringConverter<P> {
   })  : _stringify = (stringify ?? (v, _) => v.toString()),
         _defaultString = defaultString ?? '',
         _parse = parse,
-        _parseFailureMessageProvider =
-            parseFailureMessageProvider ?? _provideDefaultFailureMessage<P>,
+        _parseFailureMessageProvider = parseFailureMessageProvider ??
+            ((v, x, l) => _provideDefaultFailureMessage<P>(v, x, l)),
         _defaultValue = defaultValue ?? const ConversionResult(null);
 
   @override

@@ -31,7 +31,7 @@ FutureOr<PropertyDescriptorsBuilding> _processAssignmentAsync(
       context,
       contextElement,
       rightHand,
-    )!;
+    );
   }
 
   // rightHandBuilding should not be null.

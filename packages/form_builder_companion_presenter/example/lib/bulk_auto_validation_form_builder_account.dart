@@ -108,11 +108,13 @@ class _BulkAutoValidationFormBuilderAccountPane extends ConsumerWidget {
               ),
             ],
           ),
-          presenter.fields.age(context,
-              decoration: InputDecoration(
-                labelText: LocaleKeys.age_label.tr(),
-                hintText: LocaleKeys.age_hint.tr(),
-              )),
+          presenter.fields.age(
+            context,
+            decoration: InputDecoration(
+              labelText: LocaleKeys.age_label.tr(),
+              hintText: LocaleKeys.age_hint.tr(),
+            ),
+          ),
           presenter.fields.preferredRegions(
             context,
             decoration: InputDecoration(
@@ -188,8 +190,8 @@ class BulkAutoValidationFormBuilderAccountPresenter
           name: 'id',
           initialValue: initialState.id,
           validatorFactories: [
-            FormBuilderValidators.required,
-            FormBuilderValidators.email,
+            (_) => FormBuilderValidators.required(),
+            (_) => FormBuilderValidators.email(),
           ],
           asyncValidatorFactories: [
             Validator.id,
@@ -199,7 +201,7 @@ class BulkAutoValidationFormBuilderAccountPresenter
           name: 'name',
           initialValue: initialState.name,
           validatorFactories: [
-            FormBuilderValidators.required,
+            (_) => FormBuilderValidators.required(),
           ],
         )
         ..enumerated<Gender>(
@@ -210,8 +212,8 @@ class BulkAutoValidationFormBuilderAccountPresenter
           name: 'age',
           initialValue: initialState.age,
           validatorFactories: [
-            FormBuilderValidators.required,
-            (context) => FormBuilderValidators.min(context, 0),
+            (_) => FormBuilderValidators.required(),
+            (_) => FormBuilderValidators.min(0),
           ],
         )
         ..enumeratedList<Region>(
@@ -231,7 +233,13 @@ class BulkAutoValidationFormBuilderAccountPresenter
     final preferredRegions = this.preferredRegions.value!;
 
     // Call business logic.
-    if (!(await doSubmitLogic(id, name, gender, age, preferredRegions))) {
+    if (!(await doSubmitLogic(
+      id,
+      name,
+      gender,
+      age,
+      preferredRegions,
+    ))) {
       return;
     }
 

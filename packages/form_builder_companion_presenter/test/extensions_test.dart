@@ -53,27 +53,33 @@ class DummyBuildContext extends BuildContext {
   bool get debugDoingBuild => throw UnimplementedError();
 
   @override
-  InheritedWidget dependOnInheritedElement(InheritedElement ancestor,
-      {Object? aspect}) {
+  InheritedWidget dependOnInheritedElement(
+    InheritedElement ancestor, {
+    Object? aspect,
+  }) {
     throw UnimplementedError();
   }
 
   @override
-  T? dependOnInheritedWidgetOfExactType<T extends InheritedWidget>(
-      {Object? aspect}) {
+  T? dependOnInheritedWidgetOfExactType<T extends InheritedWidget>({
+    Object? aspect,
+  }) {
     // Required for getLocale() test.
     return null;
   }
 
   @override
-  DiagnosticsNode describeElement(String name,
-      {DiagnosticsTreeStyle style = DiagnosticsTreeStyle.errorProperty}) {
+  DiagnosticsNode describeElement(
+    String name, {
+    DiagnosticsTreeStyle style = DiagnosticsTreeStyle.errorProperty,
+  }) {
     throw UnimplementedError();
   }
 
   @override
-  List<DiagnosticsNode> describeMissingAncestor(
-      {required Type expectedAncestorType}) {
+  List<DiagnosticsNode> describeMissingAncestor({
+    required Type expectedAncestorType,
+  }) {
     throw UnimplementedError();
   }
 
@@ -83,8 +89,10 @@ class DummyBuildContext extends BuildContext {
   }
 
   @override
-  DiagnosticsNode describeWidget(String name,
-      {DiagnosticsTreeStyle style = DiagnosticsTreeStyle.errorProperty}) {
+  DiagnosticsNode describeWidget(
+    String name, {
+    DiagnosticsTreeStyle style = DiagnosticsTreeStyle.errorProperty,
+  }) {
     throw UnimplementedError();
   }
 
@@ -137,6 +145,11 @@ class DummyBuildContext extends BuildContext {
 
   @override
   Widget get widget => throw UnimplementedError();
+
+  @override
+  void dispatchNotification(Notification notification) {
+    throw UnimplementedError();
+  }
 }
 
 class _TestPresenterFeatures extends CompanionPresenterFeatures {
@@ -343,6 +356,7 @@ void main() {
         initialPropertyValue: null,
         initialFieldValue: null,
         value: DateTimeRange(
+          // ignore: avoid_redundant_argument_values
           start: DateTime(2000, 1, 1),
           end: DateTime(2000, 12, 31),
         ),
@@ -351,6 +365,7 @@ void main() {
 
     test('dateTimeRange fully specified', () async {
       final range = DateTimeRange(
+        // ignore: avoid_redundant_argument_values
         start: DateTime(2000, 1, 1),
         end: DateTime(2000, 12, 31),
       );
@@ -366,6 +381,7 @@ void main() {
         initialPropertyValue: range,
         initialFieldValue: range,
         value: DateTimeRange(
+          // ignore: avoid_redundant_argument_values
           start: DateTime(2020, 1, 1),
           end: DateTime(2020, 12, 31),
         ),

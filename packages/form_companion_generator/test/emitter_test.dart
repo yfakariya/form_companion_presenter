@@ -389,7 +389,7 @@ Future<void> main() async {
             "import 'package:flutter/gestures.dart' show GestureTapCallback;",
             "import 'package:flutter/material.dart' show InputCounterWidgetBuilder, InputDecoration, TextFormField;",
             "import 'package:flutter/painting.dart' show EdgeInsets, StrutStyle, TextAlignVertical, TextStyle;",
-            "import 'package:flutter/services.dart' show MaxLengthEnforcement, SmartDashesType, SmartQuotesType, TextCapitalization, TextInputAction, TextInputFormatter, TextInputType;",
+            "import 'package:flutter/services.dart' show MaxLengthEnforcement, MouseCursor, SmartDashesType, SmartQuotesType, TextCapitalization, TextInputAction, TextInputFormatter, TextInputType;",
             "import 'package:flutter/widgets.dart' show AutovalidateMode, BuildContext, FocusNode, Localizations, ScrollController, ScrollPhysics, TextEditingController, TextSelectionControls, ToolbarOptions;",
             "import 'package:form_companion_presenter/form_companion_presenter.dart';",
             '',
@@ -1677,7 +1677,7 @@ String textFormFieldFactory(
     Color? cursorColor,
     Brightness? keyboardAppearance,
     EdgeInsets scrollPadding = const EdgeInsets.all(20.0),
-    bool enableInteractiveSelection = true,
+    bool? enableInteractiveSelection,
     TextSelectionControls? selectionControls,
     InputCounterWidgetBuilder? buildCounter,
     ScrollPhysics? scrollPhysics,
@@ -1686,6 +1686,7 @@ String textFormFieldFactory(
     ScrollController? scrollController,
     String? restorationId,
     bool enableIMEPersonalizedLearning = true,
+    MouseCursor? mouseCursor,
   }) {
     final property = _presenter.$propertyName;
     return TextFormField(
@@ -1742,6 +1743,7 @@ String textFormFieldFactory(
       scrollController: scrollController,
       restorationId: restorationId,
       enableIMEPersonalizedLearning: enableIMEPersonalizedLearning,
+      mouseCursor: mouseCursor,
     );
   }''';
 
@@ -1778,6 +1780,7 @@ String dropdownButtonFieldFactory(
     double? menuMaxHeight,
     bool? enableFeedback,
     AlignmentGeometry alignment = AlignmentDirectional.centerStart,
+    BorderRadius? borderRadius,
   }) {
     final property = _presenter.$propertyName;
     return DropdownButtonFormField<$propertyType>(
@@ -1811,6 +1814,7 @@ String dropdownButtonFieldFactory(
       menuMaxHeight: menuMaxHeight,
       enableFeedback: enableFeedback,
       alignment: alignment,
+      borderRadius: borderRadius,
     );
   }''';
 

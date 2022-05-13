@@ -151,7 +151,7 @@ $code
         code: code,
         assertion: assertion == null ? null : (v) => assertion(v),
         errorAssertion: errorAssertion,
-        factory: VariableNode.new,
+        factory: (n, e) => VariableNode(n, e),
       );
 
   Future<void> testExecutableNode({

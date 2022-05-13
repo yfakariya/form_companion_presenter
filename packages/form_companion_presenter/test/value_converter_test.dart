@@ -74,7 +74,7 @@ void main() {
     test('non-null -> non-null, compatible', () {
       final value = DateTime.now().microsecond;
       testPropertyToFieldSuccess<int, num>(
-        DefaultValueConverter<int, num>.new,
+        () => DefaultValueConverter<int, num>(),
         value,
         value,
         defaultLocale,
@@ -84,7 +84,7 @@ void main() {
     test('non-null <- non-null, compatible', () {
       final value = DateTime.now().microsecond;
       testFieldToPropertySuccess<int, num>(
-        DefaultValueConverter<int, num>.new,
+        () => DefaultValueConverter<int, num>(),
         value,
         value,
         defaultLocale,
@@ -94,7 +94,7 @@ void main() {
     test('non-null -> non-null, incompatible', () {
       final value = DateTime.now().microsecond;
       testPropertyToFieldFailure<int, bool, StateError>(
-        DefaultValueConverter<int, bool>.new,
+        () => DefaultValueConverter<int, bool>(),
         value,
         defaultLocale,
         (e) => e.having(
@@ -108,7 +108,7 @@ void main() {
     test(
       'non-null <- non-null, incompatible',
       () => testFieldToPropertyFailure<int, bool>(
-        DefaultValueConverter<int, bool>.new,
+        () => DefaultValueConverter<int, bool>(),
         true,
         defaultLocale,
         message: 'bool is not compatible with int.',
@@ -119,7 +119,7 @@ void main() {
     test(
       'null -> null, compatible',
       () => testPropertyToFieldSuccess<int, num>(
-        DefaultValueConverter<int, num>.new,
+        () => DefaultValueConverter<int, num>(),
         null,
         null,
         defaultLocale,
@@ -129,7 +129,7 @@ void main() {
     test(
       'null <- null, compatible',
       () => testFieldToPropertySuccess<int, num>(
-        DefaultValueConverter<int, num>.new,
+        () => DefaultValueConverter<int, num>(),
         null,
         null,
         defaultLocale,
@@ -139,7 +139,7 @@ void main() {
     test(
       'null -> null, incompatible',
       () => testPropertyToFieldSuccess<int, bool>(
-        DefaultValueConverter<int, bool>.new,
+        () => DefaultValueConverter<int, bool>(),
         null,
         null,
         defaultLocale,
@@ -149,7 +149,7 @@ void main() {
     test(
       'null <- null, incompatible',
       () => testFieldToPropertySuccess<int, bool>(
-        DefaultValueConverter<int, bool>.new,
+        () => DefaultValueConverter<int, bool>(),
         null,
         null,
         defaultLocale,
@@ -187,7 +187,9 @@ void main() {
       Locale locale,
       SomeConversionResult<P> expectedResult,
       void Function(
-              SomeConversionResult<P> expected, SomeConversionResult<P> actual)
+        SomeConversionResult<P> expected,
+        SomeConversionResult<P> actual,
+      )
           resultAssertion,
     ) {
       late final F? actualInput;
@@ -283,7 +285,9 @@ void main() {
       Locale locale,
       SomeConversionResult<P> expectedResult,
       void Function(
-              SomeConversionResult<P> expected, SomeConversionResult<P> actual)
+        SomeConversionResult<P> expected,
+        SomeConversionResult<P> actual,
+      )
           resultAssertion,
     ) {
       late final String? actualInput;
@@ -367,9 +371,11 @@ void main() {
     test(
       'P -> String, default stringify is toString())',
       () {
-        final target = StringConverter<Object>.fromCallbacks(parse: (v, l, p) {
-          fail('parse is called!');
-        });
+        final target = StringConverter<Object>.fromCallbacks(
+          parse: (v, l, p) {
+            fail('parse is called!');
+          },
+        );
         final result = target.toFieldValue(Object(), defaultLocale);
         expect(result, Object().toString());
       },
@@ -448,7 +454,10 @@ void main() {
           result,
           isA<FailureResult<int>>()
               .having(
-                  (x) => x.message, 'message', 'Value is not a valid int. TEST')
+                (x) => x.message,
+                'message',
+                'Value is not a valid int. TEST',
+              )
               .having((x) => x.debugInfo, 'debugInfo', debugInfo),
         );
       },

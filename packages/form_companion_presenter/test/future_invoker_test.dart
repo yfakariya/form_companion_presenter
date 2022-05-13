@@ -334,7 +334,9 @@ void main() {
             Future<void> doTest(Future<String> Function(String) future) async {
               String? result1;
               final parameter = Parameter<String, void>(
-                  value: 'input', onCompleted: (r) => result1 = r);
+                value: 'input',
+                onCompleted: (r) => result1 = r,
+              );
               const expected = 'output';
               const defaultResult = 'default';
 
@@ -370,7 +372,7 @@ void main() {
             test(
               'sync',
               () => doTest(
-                Future.value,
+                (v) => Future.value(v),
               ),
             );
           });
@@ -382,9 +384,13 @@ void main() {
               String? result1;
               String? result2;
               final parameter1 = Parameter<String, void>(
-                  value: 'input1', onCompleted: (r) => result1 = r);
+                value: 'input1',
+                onCompleted: (r) => result1 = r,
+              );
               final parameter2 = Parameter<String, void>(
-                  value: 'input2', onCompleted: (r) => result2 = r);
+                value: 'input2',
+                onCompleted: (r) => result2 = r,
+              );
               const expected = 'output';
               const defaultResult = 'default';
 
@@ -435,8 +441,10 @@ void main() {
               expect(result2, equals('$expected${parameter2.value}'));
 
               // We can get cached result.
-              expect(target.execute(parameter2),
-                  equals('$expected${parameter2.value}'));
+              expect(
+                target.execute(parameter2),
+                equals('$expected${parameter2.value}'),
+              );
               expect(target.status, equals(AsyncOperationStatus.completed));
             }
 
@@ -452,7 +460,7 @@ void main() {
             test(
               'sync',
               () => doTest(
-                Future.value,
+                (v) => Future.value(v),
               ),
             );
           });
@@ -466,11 +474,17 @@ void main() {
               String? result3;
 
               final parameter1 = Parameter<String, void>(
-                  value: 'input1', onCompleted: (r) => result1 = r);
+                value: 'input1',
+                onCompleted: (r) => result1 = r,
+              );
               final parameter2 = Parameter<String, void>(
-                  value: 'input1', onCompleted: (r) => result2 = r);
+                value: 'input1',
+                onCompleted: (r) => result2 = r,
+              );
               final parameter3 = Parameter<String, void>(
-                  value: 'input2', onCompleted: (r) => result3 = r);
+                value: 'input2',
+                onCompleted: (r) => result3 = r,
+              );
               const expected = 'output';
               const defaultResult = 'default';
 
@@ -515,8 +529,10 @@ void main() {
               expect(result2, isNull);
 
               // We can get cached result.
-              expect(target.execute(parameter2),
-                  equals('$expected${parameter2.value}'));
+              expect(
+                target.execute(parameter2),
+                equals('$expected${parameter2.value}'),
+              );
 
               // These extra invocation actually 2 cases
               // 1) parameter2 is not executed rather than just waited to be
@@ -550,8 +566,10 @@ void main() {
               expect(result3, equals('$expected${parameter3.value}'));
 
               // We can get cached result.
-              expect(target.execute(parameter3),
-                  equals('$expected${parameter3.value}'));
+              expect(
+                target.execute(parameter3),
+                equals('$expected${parameter3.value}'),
+              );
               expect(target.status, equals(AsyncOperationStatus.completed));
             }
 
@@ -567,7 +585,7 @@ void main() {
             test(
               'sync',
               () => doTest(
-                Future.value,
+                (v) => Future.value(v),
               ),
             );
           });
@@ -577,7 +595,8 @@ void main() {
           group('1 request is executed asynchronously and remember exception.',
               () {
             Future<void> doTest(
-                Future<String> Function(Exception) future) async {
+              Future<String> Function(Exception) future,
+            ) async {
               AsyncError? failure1;
               final parameter = Parameter<String, void>(
                 value: 'input',
@@ -632,7 +651,8 @@ void main() {
               '2 request is executed asynchronously and remember later exception.',
               () {
             Future<void> doTest(
-                Future<String> Function(Exception) future) async {
+              Future<String> Function(Exception) future,
+            ) async {
               AsyncError? failure1;
               AsyncError? failure2;
               final parameter1 = Parameter<String, void>(
@@ -935,9 +955,13 @@ void main() {
           // ignore: unused_local_variable
           String? result2;
           final parameter1 = Parameter<String, void>(
-              value: 'input', onCompleted: (r) => result1 = r);
+            value: 'input',
+            onCompleted: (r) => result1 = r,
+          );
           final parameter2 = Parameter<String, void>(
-              value: 'INPUT', onCompleted: (r) => result2 = r);
+            value: 'INPUT',
+            onCompleted: (r) => result2 = r,
+          );
           const defaultResult = 'default';
 
           Parameter<String, void>? passed;
@@ -947,8 +971,10 @@ void main() {
               return Future.value(p.value);
             },
             defaultResult: defaultResult,
-            parameterEquality: CustomEquality((l, r) =>
-                const CaseInsensitiveEquality().equals(l.value, r.value)),
+            parameterEquality: CustomEquality(
+              (l, r) =>
+                  const CaseInsensitiveEquality().equals(l.value, r.value),
+            ),
           );
 
           // Assert precondition
@@ -987,9 +1013,13 @@ void main() {
             String? result1;
             String? result2;
             final parameter1 = Parameter<String, void>(
-                value: 'input1', onCompleted: (r) => result1 = r);
+              value: 'input1',
+              onCompleted: (r) => result1 = r,
+            );
             final parameter2 = Parameter<String, void>(
-                value: 'input2', onCompleted: (r) => result2 = r);
+              value: 'input2',
+              onCompleted: (r) => result2 = r,
+            );
             const defaultResult = 'default';
 
             final target = TestTarget<String, void>(
@@ -1074,9 +1104,13 @@ void main() {
             String? result1;
             String? result2;
             final parameter1 = Parameter<String, void>(
-                value: 'input', onCompleted: (r) => result1 = r);
+              value: 'input',
+              onCompleted: (r) => result1 = r,
+            );
             final parameter2 = Parameter<String, void>(
-                value: 'input', onCompleted: (r) => result2 = r);
+              value: 'input',
+              onCompleted: (r) => result2 = r,
+            );
             const defaultResult = 'default';
 
             final target = TestTarget<String, void>(

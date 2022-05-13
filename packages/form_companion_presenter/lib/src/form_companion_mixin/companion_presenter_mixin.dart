@@ -348,9 +348,11 @@ extension CompanionPresenterMixinExtension on CompanionPresenterMixin {
 
     // Creates completers to wait pending async validations.
     final completers = properties.values
-        .where((property) => property._asynvValidatorEntries.any(
-              (entry) => entry._executor.validating,
-            ))
+        .where(
+      (property) => property._asynvValidatorEntries.any(
+        (entry) => entry._executor.validating,
+      ),
+    )
         .map(
       (property) {
         final completer = Completer<bool>();

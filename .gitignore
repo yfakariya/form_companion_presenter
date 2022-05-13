@@ -77,3 +77,8 @@ build/
 !**/ios/**/default.mode2v3
 !**/ios/**/default.pbxuser
 !**/ios/**/default.perspectivev3
+
+# As https://dart.dev/guides/libraries/private-files#pubspeclock
+# `pubspec.lock` should be ignored because these are library packages
+# rather than application packages.
+pubspec.lock

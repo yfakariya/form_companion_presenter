@@ -87,15 +87,18 @@ final Map<PageId, List<MaterialPage<dynamic>>> _routeMap = {
   ],
   PageId.bulkAutoAccount: [
     const MaterialPage<dynamic>(
-        child: BulkAutoValidationFormBuilderAccountPage())
+      child: BulkAutoValidationFormBuilderAccountPage(),
+    )
   ],
   PageId.bulkAutoBooking: [
     const MaterialPage<dynamic>(
-        child: BulkAutoValidationFormBuilderBookingPage())
+      child: BulkAutoValidationFormBuilderBookingPage(),
+    )
   ],
   PageId.bulkAutoVanilla: [
     const MaterialPage<dynamic>(
-        child: BulkAutoValidationVanillaFormAccountPage())
+      child: BulkAutoValidationVanillaFormAccountPage(),
+    )
   ],
   PageId.manualAccount: [
     const MaterialPage<dynamic>(child: ManualValidationFormBuilderAccountPage())
@@ -114,8 +117,11 @@ void transitToScreen(WidgetTester tester, PageId page) {
       _routeMap[page]!;
 }
 
-BuildContext getBuildContext(WidgetTester tester) => tester.element(find
-    .byWidgetPredicate((widget) => widget.runtimeType.toString() == '_App'));
+BuildContext getBuildContext(WidgetTester tester) => tester.element(
+      find.byWidgetPredicate(
+        (widget) => widget.runtimeType.toString() == '_App',
+      ),
+    );
 
 T readStateFromProvider<T>(
   WidgetTester tester,
@@ -133,11 +139,16 @@ FormFieldState<T> findField<T>(
   WidgetTester tester,
   bool Function(FormField<T> widget) predicate,
 ) =>
-    tester.state(find.byWidgetPredicate(
-        (widget) => widget is FormField<T> && predicate(widget)));
+    tester.state(
+      find.byWidgetPredicate(
+        (widget) => widget is FormField<T> && predicate(widget),
+      ),
+    );
 
-void setAsyncValidationFutureFactory(WidgetTester tester,
-    Future<String?> Function(Duration, String? Function()) factory) {
+void setAsyncValidationFutureFactory(
+  WidgetTester tester,
+  Future<String?> Function(Duration, String? Function()) factory,
+) {
   readStateControllerFromProvider(tester, asyncValidationFutureFactory).state =
       factory;
 }
@@ -238,5 +249,6 @@ bool Function(FormField<dynamic>) formFieldPredicate<T>(String fieldName) =>
     };
 
 bool Function(FormField<dynamic>) formBuilderFieldPredicate<T>(
-        String fieldName) =>
+  String fieldName,
+) =>
     (widget) => (widget as FormBuilderField).name == fieldName;

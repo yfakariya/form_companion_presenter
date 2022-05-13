@@ -21,10 +21,12 @@ Future<void> runFormats({
   Future<void> _runFormat(String directory) async {
     final sources = await getDir(directory)
         .list(recursive: true, followLinks: false)
-        .where((f) =>
-            f.path.endsWith('.dart') &&
-            !f.path.endsWith('.freezed.dart') &&
-            !f.path.endsWith('.g.dart'))
+        .where(
+          (f) =>
+              f.path.endsWith('.dart') &&
+              !f.path.endsWith('.freezed.dart') &&
+              !f.path.endsWith('.g.dart'),
+        )
         .map((f) => path.relative(f.path, from: directory))
         .where((f) => !f.startsWith('.'))
         .toList();

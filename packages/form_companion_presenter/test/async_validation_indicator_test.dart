@@ -48,19 +48,21 @@ Widget _app(
   void Function(BuildContext) onBuilding,
 ) =>
     MaterialApp(
-        home: Scaffold(
-            body: FormHost(
-      child,
-      onBuilding,
-    )));
+      home: Scaffold(
+        body: FormHost(
+          child,
+          onBuilding,
+        ),
+      ),
+    );
 
 class Presenter with CompanionPresenterMixin, FormCompanionMixin {
   final FutureOr<void> Function() _doSubmitCalled;
 
-  Presenter(
-      {required PropertyDescriptorsBuilder properties,
-      FutureOr<void> Function()? doSubmitCalled})
-      : _doSubmitCalled = (doSubmitCalled ?? () {}) {
+  Presenter({
+    required PropertyDescriptorsBuilder properties,
+    FutureOr<void> Function()? doSubmitCalled,
+  }) : _doSubmitCalled = (doSubmitCalled ?? () {}) {
     initializeCompanionMixin(properties);
   }
 
@@ -75,27 +77,33 @@ class DummyBuildContext extends BuildContext {
   bool get debugDoingBuild => throw UnimplementedError();
 
   @override
-  InheritedWidget dependOnInheritedElement(InheritedElement ancestor,
-      {Object? aspect}) {
+  InheritedWidget dependOnInheritedElement(
+    InheritedElement ancestor, {
+    Object? aspect,
+  }) {
     throw UnimplementedError();
   }
 
   @override
-  T? dependOnInheritedWidgetOfExactType<T extends InheritedWidget>(
-      {Object? aspect}) {
+  T? dependOnInheritedWidgetOfExactType<T extends InheritedWidget>({
+    Object? aspect,
+  }) {
     // Required for getLocale() test.
     return null;
   }
 
   @override
-  DiagnosticsNode describeElement(String name,
-      {DiagnosticsTreeStyle style = DiagnosticsTreeStyle.errorProperty}) {
+  DiagnosticsNode describeElement(
+    String name, {
+    DiagnosticsTreeStyle style = DiagnosticsTreeStyle.errorProperty,
+  }) {
     throw UnimplementedError();
   }
 
   @override
-  List<DiagnosticsNode> describeMissingAncestor(
-      {required Type expectedAncestorType}) {
+  List<DiagnosticsNode> describeMissingAncestor({
+    required Type expectedAncestorType,
+  }) {
     throw UnimplementedError();
   }
 
@@ -105,8 +113,10 @@ class DummyBuildContext extends BuildContext {
   }
 
   @override
-  DiagnosticsNode describeWidget(String name,
-      {DiagnosticsTreeStyle style = DiagnosticsTreeStyle.errorProperty}) {
+  DiagnosticsNode describeWidget(
+    String name, {
+    DiagnosticsTreeStyle style = DiagnosticsTreeStyle.errorProperty,
+  }) {
     throw UnimplementedError();
   }
 
@@ -159,6 +169,11 @@ class DummyBuildContext extends BuildContext {
 
   @override
   Widget get widget => throw UnimplementedError();
+
+  @override
+  void dispatchNotification(Notification notification) {
+    throw UnimplementedError();
+  }
 }
 
 void main() {

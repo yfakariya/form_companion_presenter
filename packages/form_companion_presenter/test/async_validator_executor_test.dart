@@ -198,6 +198,7 @@ void main() {
         'Immediately success',
         () async => doTest<int>(
           validator: (value, options) {
+            // ignore: avoid_redundant_argument_values
             return Future.value(null);
           },
           onCompleted: (r, e) {
@@ -326,7 +327,7 @@ void main() {
       test('Optional parameter replaced with empty.', () {
         final target = ValidationInvocation<int>(
           validator: (value, options) {
-            return Future.delayed(Duration.zero, null);
+            return Future.delayed(Duration.zero);
           },
           value: 1,
           locale: defaultLocale,

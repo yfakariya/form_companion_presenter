@@ -20,6 +20,7 @@ class HomePage extends Screen {
       padding: const EdgeInsets.all(8),
       child: Column(
         mainAxisSize: MainAxisSize.min,
+        // ignore: avoid_redundant_argument_values
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

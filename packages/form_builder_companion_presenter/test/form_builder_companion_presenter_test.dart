@@ -158,10 +158,10 @@ Widget _app(Widget child) => MaterialApp(home: Scaffold(body: child));
 class Presenter with CompanionPresenterMixin, FormBuilderCompanionMixin {
   final FutureOr<void> Function() _doSubmitCalled;
 
-  Presenter(
-      {required PropertyDescriptorsBuilder properties,
-      FutureOr<void> Function()? doSubmitCalled})
-      : _doSubmitCalled = (doSubmitCalled ?? () {}) {
+  Presenter({
+    required PropertyDescriptorsBuilder properties,
+    FutureOr<void> Function()? doSubmitCalled,
+  }) : _doSubmitCalled = (doSubmitCalled ?? () {}) {
     initializeCompanionMixin(properties);
   }
 
@@ -544,7 +544,9 @@ void main() {
     });
 
     FutureOr<void> testAutoValidateMode(
-        WidgetTester tester, AutovalidateMode autovalidateMode) async {
+      WidgetTester tester,
+      AutovalidateMode autovalidateMode,
+    ) async {
       final presenter = Presenter(properties: PropertyDescriptorsBuilder());
       FormStateAdapter? adapter;
       await tester.pumpWidget(

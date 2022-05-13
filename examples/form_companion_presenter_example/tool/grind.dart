@@ -86,7 +86,8 @@ Future<void> easyL10n() async {
 }
 
 @Task(
-    'Run freezed and form_companion_generator. Specify --watch to run with watch mode.')
+  'Run freezed and form_companion_generator. Specify --watch to run with watch mode.',
+)
 Future<void> runBuildRunner() async {
   final command =
       context.invocation.arguments.getFlag('watch') ? 'watch' : 'build';

@@ -95,11 +95,13 @@ class _AccountPaneTemplate extends ConsumerWidget {
               ),
             ],
           ),
-          presenter.fields.age(context,
-              decoration: InputDecoration(
-                labelText: LocaleKeys.age_label.tr(),
-                hintText: LocaleKeys.age_hint.tr(),
-              )),
+          presenter.fields.age(
+            context,
+            decoration: InputDecoration(
+              labelText: LocaleKeys.age_label.tr(),
+              hintText: LocaleKeys.age_hint.tr(),
+            ),
+          ),
           //!macro beginBuilderOnly
           presenter.fields.preferredRegions(
             context,
@@ -181,8 +183,8 @@ class AccountPresenterTemplate extends StateNotifier<Account>
             Validator.email,
             //!macro endVanillaOnly
             //!macro beginBuilderOnly
-            FormBuilderValidators.required,
-            FormBuilderValidators.email,
+            (_) => FormBuilderValidators.required(),
+            (_) => FormBuilderValidators.email(),
             //!macro endBuilderOnly
           ],
           asyncValidatorFactories: [
@@ -197,7 +199,7 @@ class AccountPresenterTemplate extends StateNotifier<Account>
             Validator.required,
             //!macro endVanillaOnly
             //!macro beginBuilderOnly
-            FormBuilderValidators.required,
+            (_) => FormBuilderValidators.required(),
             //!macro endBuilderOnly
           ],
         )
@@ -214,8 +216,8 @@ class AccountPresenterTemplate extends StateNotifier<Account>
             Validator.min(0),
             //!macro endVanillaOnly
             //!macro beginBuilderOnly
-            FormBuilderValidators.required,
-            (context) => FormBuilderValidators.min(context, 0),
+            (_) => FormBuilderValidators.required(),
+            (_) => FormBuilderValidators.min(0),
             //!macro endBuilderOnly
           ],
         )
@@ -242,15 +244,14 @@ class AccountPresenterTemplate extends StateNotifier<Account>
 
     // Call business logic.
     if (!(await doSubmitLogic(
-        id,
-        name,
-        gender,
-        age
-        //!macro beginBuilderOnly
-        ,
-        preferredRegions
-        //!macro endBuilderOnly
-        ))) {
+      id,
+      name,
+      gender,
+      age,
+      //!macro beginBuilderOnly
+      preferredRegions,
+      //!macro endBuilderOnly
+    ))) {
       return;
     }
 
