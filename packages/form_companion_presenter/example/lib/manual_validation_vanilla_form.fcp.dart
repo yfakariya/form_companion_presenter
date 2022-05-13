@@ -34,6 +34,7 @@ import 'package:flutter/painting.dart'
     show
         AlignmentDirectional,
         AlignmentGeometry,
+        BorderRadius,
         EdgeInsets,
         StrutStyle,
         TextAlignVertical,
@@ -42,6 +43,7 @@ import 'package:flutter/painting.dart'
 import 'package:flutter/services.dart'
     show
         MaxLengthEnforcement,
+        MouseCursor,
         SmartDashesType,
         SmartQuotesType,
         TextCapitalization,
@@ -139,7 +141,7 @@ class $ManualValidationVanillaFormAccountPresenterFieldFactory {
     Color? cursorColor,
     Brightness? keyboardAppearance,
     EdgeInsets scrollPadding = const EdgeInsets.all(20.0),
-    bool enableInteractiveSelection = true,
+    bool? enableInteractiveSelection,
     TextSelectionControls? selectionControls,
     InputCounterWidgetBuilder? buildCounter,
     ScrollPhysics? scrollPhysics,
@@ -148,6 +150,7 @@ class $ManualValidationVanillaFormAccountPresenterFieldFactory {
     ScrollController? scrollController,
     String? restorationId,
     bool enableIMEPersonalizedLearning = true,
+    MouseCursor? mouseCursor,
   }) {
     final property = _presenter.id;
     return TextFormField(
@@ -207,6 +210,7 @@ class $ManualValidationVanillaFormAccountPresenterFieldFactory {
       scrollController: scrollController,
       restorationId: restorationId,
       enableIMEPersonalizedLearning: enableIMEPersonalizedLearning,
+      mouseCursor: mouseCursor,
     );
   }
 
@@ -251,7 +255,7 @@ class $ManualValidationVanillaFormAccountPresenterFieldFactory {
     Color? cursorColor,
     Brightness? keyboardAppearance,
     EdgeInsets scrollPadding = const EdgeInsets.all(20.0),
-    bool enableInteractiveSelection = true,
+    bool? enableInteractiveSelection,
     TextSelectionControls? selectionControls,
     InputCounterWidgetBuilder? buildCounter,
     ScrollPhysics? scrollPhysics,
@@ -260,6 +264,7 @@ class $ManualValidationVanillaFormAccountPresenterFieldFactory {
     ScrollController? scrollController,
     String? restorationId,
     bool enableIMEPersonalizedLearning = true,
+    MouseCursor? mouseCursor,
   }) {
     final property = _presenter.name;
     return TextFormField(
@@ -319,6 +324,7 @@ class $ManualValidationVanillaFormAccountPresenterFieldFactory {
       scrollController: scrollController,
       restorationId: restorationId,
       enableIMEPersonalizedLearning: enableIMEPersonalizedLearning,
+      mouseCursor: mouseCursor,
     );
   }
 
@@ -349,6 +355,7 @@ class $ManualValidationVanillaFormAccountPresenterFieldFactory {
     double? menuMaxHeight,
     bool? enableFeedback,
     AlignmentGeometry alignment = AlignmentDirectional.centerStart,
+    BorderRadius? borderRadius,
   }) {
     final property = _presenter.gender;
     return DropdownButtonFormField<Gender>(
@@ -385,6 +392,7 @@ class $ManualValidationVanillaFormAccountPresenterFieldFactory {
       menuMaxHeight: menuMaxHeight,
       enableFeedback: enableFeedback,
       alignment: alignment,
+      borderRadius: borderRadius,
     );
   }
 
@@ -429,7 +437,7 @@ class $ManualValidationVanillaFormAccountPresenterFieldFactory {
     Color? cursorColor,
     Brightness? keyboardAppearance,
     EdgeInsets scrollPadding = const EdgeInsets.all(20.0),
-    bool enableInteractiveSelection = true,
+    bool? enableInteractiveSelection,
     TextSelectionControls? selectionControls,
     InputCounterWidgetBuilder? buildCounter,
     ScrollPhysics? scrollPhysics,
@@ -438,6 +446,7 @@ class $ManualValidationVanillaFormAccountPresenterFieldFactory {
     ScrollController? scrollController,
     String? restorationId,
     bool enableIMEPersonalizedLearning = true,
+    MouseCursor? mouseCursor,
   }) {
     final property = _presenter.age;
     return TextFormField(
@@ -497,6 +506,7 @@ class $ManualValidationVanillaFormAccountPresenterFieldFactory {
       scrollController: scrollController,
       restorationId: restorationId,
       enableIMEPersonalizedLearning: enableIMEPersonalizedLearning,
+      mouseCursor: mouseCursor,
     );
   }
 }

@@ -183,8 +183,8 @@ class ManualValidationFormBuilderAccountPresenter extends StateNotifier<Account>
           name: 'id',
           initialValue: initialState.id,
           validatorFactories: [
-            FormBuilderValidators.required,
-            FormBuilderValidators.email,
+            (_) => FormBuilderValidators.required(),
+            (_) => FormBuilderValidators.email(),
           ],
           asyncValidatorFactories: [
             Validator.id,
@@ -194,7 +194,7 @@ class ManualValidationFormBuilderAccountPresenter extends StateNotifier<Account>
           name: 'name',
           initialValue: initialState.name,
           validatorFactories: [
-            FormBuilderValidators.required,
+            (_) => FormBuilderValidators.required(),
           ],
         )
         ..enumerated<Gender>(
@@ -205,8 +205,8 @@ class ManualValidationFormBuilderAccountPresenter extends StateNotifier<Account>
           name: 'age',
           initialValue: initialState.age,
           validatorFactories: [
-            FormBuilderValidators.required,
-            (context) => FormBuilderValidators.min(context, 0),
+            (_) => FormBuilderValidators.required(),
+            (_) => FormBuilderValidators.min(0),
           ],
         )
         ..enumeratedList<Region>(

@@ -12,34 +12,7 @@ part of 'models.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more informations: https://github.com/rrousselGit/freezed#custom-getters-and-methods');
-
-/// @nodoc
-class _$AccountTearOff {
-  const _$AccountTearOff();
-
-  AccountEmpty empty() {
-    return AccountEmpty();
-  }
-
-  AccountRegistered registered(
-      {required String id,
-      required String name,
-      required Gender gender,
-      required int age,
-      required List<Region> preferredRegions}) {
-    return AccountRegistered(
-      id: id,
-      name: name,
-      gender: gender,
-      age: age,
-      preferredRegions: preferredRegions,
-    );
-  }
-}
-
-/// @nodoc
-const $Account = _$AccountTearOff();
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#custom-getters-and-methods');
 
 /// @nodoc
 mixin _$Account {
@@ -105,21 +78,21 @@ class _$AccountCopyWithImpl<$Res> implements $AccountCopyWith<$Res> {
 }
 
 /// @nodoc
-abstract class $AccountEmptyCopyWith<$Res> {
-  factory $AccountEmptyCopyWith(
-          AccountEmpty value, $Res Function(AccountEmpty) then) =
-      _$AccountEmptyCopyWithImpl<$Res>;
+abstract class _$$AccountEmptyCopyWith<$Res> {
+  factory _$$AccountEmptyCopyWith(
+          _$AccountEmpty value, $Res Function(_$AccountEmpty) then) =
+      __$$AccountEmptyCopyWithImpl<$Res>;
 }
 
 /// @nodoc
-class _$AccountEmptyCopyWithImpl<$Res> extends _$AccountCopyWithImpl<$Res>
-    implements $AccountEmptyCopyWith<$Res> {
-  _$AccountEmptyCopyWithImpl(
-      AccountEmpty _value, $Res Function(AccountEmpty) _then)
-      : super(_value, (v) => _then(v as AccountEmpty));
+class __$$AccountEmptyCopyWithImpl<$Res> extends _$AccountCopyWithImpl<$Res>
+    implements _$$AccountEmptyCopyWith<$Res> {
+  __$$AccountEmptyCopyWithImpl(
+      _$AccountEmpty _value, $Res Function(_$AccountEmpty) _then)
+      : super(_value, (v) => _then(v as _$AccountEmpty));
 
   @override
-  AccountEmpty get _value => super._value as AccountEmpty;
+  _$AccountEmpty get _value => super._value as _$AccountEmpty;
 }
 
 /// @nodoc
@@ -135,7 +108,7 @@ class _$AccountEmpty extends AccountEmpty {
   @override
   bool operator ==(dynamic other) {
     return identical(this, other) ||
-        (other.runtimeType == runtimeType && other is AccountEmpty);
+        (other.runtimeType == runtimeType && other is _$AccountEmpty);
   }
 
   @override
@@ -216,10 +189,10 @@ abstract class AccountEmpty extends Account {
 }
 
 /// @nodoc
-abstract class $AccountRegisteredCopyWith<$Res> {
-  factory $AccountRegisteredCopyWith(
-          AccountRegistered value, $Res Function(AccountRegistered) then) =
-      _$AccountRegisteredCopyWithImpl<$Res>;
+abstract class _$$AccountRegisteredCopyWith<$Res> {
+  factory _$$AccountRegisteredCopyWith(
+          _$AccountRegistered value, $Res Function(_$AccountRegistered) then) =
+      __$$AccountRegisteredCopyWithImpl<$Res>;
   $Res call(
       {String id,
       String name,
@@ -229,14 +202,15 @@ abstract class $AccountRegisteredCopyWith<$Res> {
 }
 
 /// @nodoc
-class _$AccountRegisteredCopyWithImpl<$Res> extends _$AccountCopyWithImpl<$Res>
-    implements $AccountRegisteredCopyWith<$Res> {
-  _$AccountRegisteredCopyWithImpl(
-      AccountRegistered _value, $Res Function(AccountRegistered) _then)
-      : super(_value, (v) => _then(v as AccountRegistered));
+class __$$AccountRegisteredCopyWithImpl<$Res>
+    extends _$AccountCopyWithImpl<$Res>
+    implements _$$AccountRegisteredCopyWith<$Res> {
+  __$$AccountRegisteredCopyWithImpl(
+      _$AccountRegistered _value, $Res Function(_$AccountRegistered) _then)
+      : super(_value, (v) => _then(v as _$AccountRegistered));
 
   @override
-  AccountRegistered get _value => super._value as AccountRegistered;
+  _$AccountRegistered get _value => super._value as _$AccountRegistered;
 
   @override
   $Res call({
@@ -246,7 +220,7 @@ class _$AccountRegisteredCopyWithImpl<$Res> extends _$AccountCopyWithImpl<$Res>
     Object? age = freezed,
     Object? preferredRegions = freezed,
   }) {
-    return _then(AccountRegistered(
+    return _then(_$AccountRegistered(
       id: id == freezed
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
@@ -264,7 +238,7 @@ class _$AccountRegisteredCopyWithImpl<$Res> extends _$AccountCopyWithImpl<$Res>
           : age // ignore: cast_nullable_to_non_nullable
               as int,
       preferredRegions: preferredRegions == freezed
-          ? _value.preferredRegions
+          ? _value._preferredRegions
           : preferredRegions // ignore: cast_nullable_to_non_nullable
               as List<Region>,
     ));
@@ -279,8 +253,9 @@ class _$AccountRegistered extends AccountRegistered {
       required this.name,
       required this.gender,
       required this.age,
-      required this.preferredRegions})
-      : super._();
+      required final List<Region> preferredRegions})
+      : _preferredRegions = preferredRegions,
+        super._();
 
   @override
   final String id;
@@ -290,8 +265,12 @@ class _$AccountRegistered extends AccountRegistered {
   final Gender gender;
   @override
   final int age;
+  final List<Region> _preferredRegions;
   @override
-  final List<Region> preferredRegions;
+  List<Region> get preferredRegions {
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_preferredRegions);
+  }
 
   @override
   String toString() {
@@ -302,13 +281,13 @@ class _$AccountRegistered extends AccountRegistered {
   bool operator ==(dynamic other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is AccountRegistered &&
+            other is _$AccountRegistered &&
             const DeepCollectionEquality().equals(other.id, id) &&
             const DeepCollectionEquality().equals(other.name, name) &&
             const DeepCollectionEquality().equals(other.gender, gender) &&
             const DeepCollectionEquality().equals(other.age, age) &&
             const DeepCollectionEquality()
-                .equals(other.preferredRegions, preferredRegions));
+                .equals(other._preferredRegions, _preferredRegions));
   }
 
   @override
@@ -318,12 +297,12 @@ class _$AccountRegistered extends AccountRegistered {
       const DeepCollectionEquality().hash(name),
       const DeepCollectionEquality().hash(gender),
       const DeepCollectionEquality().hash(age),
-      const DeepCollectionEquality().hash(preferredRegions));
+      const DeepCollectionEquality().hash(_preferredRegions));
 
   @JsonKey(ignore: true)
   @override
-  $AccountRegisteredCopyWith<AccountRegistered> get copyWith =>
-      _$AccountRegisteredCopyWithImpl<AccountRegistered>(this, _$identity);
+  _$$AccountRegisteredCopyWith<_$AccountRegistered> get copyWith =>
+      __$$AccountRegisteredCopyWithImpl<_$AccountRegistered>(this, _$identity);
 
   @override
   @optionalTypeArgs
@@ -396,61 +375,22 @@ class _$AccountRegistered extends AccountRegistered {
 
 abstract class AccountRegistered extends Account {
   factory AccountRegistered(
-      {required String id,
-      required String name,
-      required Gender gender,
-      required int age,
-      required List<Region> preferredRegions}) = _$AccountRegistered;
+      {required final String id,
+      required final String name,
+      required final Gender gender,
+      required final int age,
+      required final List<Region> preferredRegions}) = _$AccountRegistered;
   AccountRegistered._() : super._();
 
-  String get id;
-  String get name;
-  Gender get gender;
-  int get age;
-  List<Region> get preferredRegions;
+  String get id => throw _privateConstructorUsedError;
+  String get name => throw _privateConstructorUsedError;
+  Gender get gender => throw _privateConstructorUsedError;
+  int get age => throw _privateConstructorUsedError;
+  List<Region> get preferredRegions => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
-  $AccountRegisteredCopyWith<AccountRegistered> get copyWith =>
+  _$$AccountRegisteredCopyWith<_$AccountRegistered> get copyWith =>
       throw _privateConstructorUsedError;
 }
-
-/// @nodoc
-class _$BookingTearOff {
-  const _$BookingTearOff();
-
-  BookingEmpty empty() {
-    return BookingEmpty();
-  }
-
-  BookingRegistered registered(
-      {required String bookingId,
-      required String userId,
-      required DateTimeRange stay,
-      required DateTime specialOfferDate,
-      required RoomType roomType,
-      required List<MealType> mealOffers,
-      required int persons,
-      required int babyBeds,
-      required bool smoking,
-      required double price,
-      required String note}) {
-    return BookingRegistered(
-      bookingId: bookingId,
-      userId: userId,
-      stay: stay,
-      specialOfferDate: specialOfferDate,
-      roomType: roomType,
-      mealOffers: mealOffers,
-      persons: persons,
-      babyBeds: babyBeds,
-      smoking: smoking,
-      price: price,
-      note: note,
-    );
-  }
-}
-
-/// @nodoc
-const $Booking = _$BookingTearOff();
 
 /// @nodoc
 mixin _$Booking {
@@ -546,21 +486,21 @@ class _$BookingCopyWithImpl<$Res> implements $BookingCopyWith<$Res> {
 }
 
 /// @nodoc
-abstract class $BookingEmptyCopyWith<$Res> {
-  factory $BookingEmptyCopyWith(
-          BookingEmpty value, $Res Function(BookingEmpty) then) =
-      _$BookingEmptyCopyWithImpl<$Res>;
+abstract class _$$BookingEmptyCopyWith<$Res> {
+  factory _$$BookingEmptyCopyWith(
+          _$BookingEmpty value, $Res Function(_$BookingEmpty) then) =
+      __$$BookingEmptyCopyWithImpl<$Res>;
 }
 
 /// @nodoc
-class _$BookingEmptyCopyWithImpl<$Res> extends _$BookingCopyWithImpl<$Res>
-    implements $BookingEmptyCopyWith<$Res> {
-  _$BookingEmptyCopyWithImpl(
-      BookingEmpty _value, $Res Function(BookingEmpty) _then)
-      : super(_value, (v) => _then(v as BookingEmpty));
+class __$$BookingEmptyCopyWithImpl<$Res> extends _$BookingCopyWithImpl<$Res>
+    implements _$$BookingEmptyCopyWith<$Res> {
+  __$$BookingEmptyCopyWithImpl(
+      _$BookingEmpty _value, $Res Function(_$BookingEmpty) _then)
+      : super(_value, (v) => _then(v as _$BookingEmpty));
 
   @override
-  BookingEmpty get _value => super._value as BookingEmpty;
+  _$BookingEmpty get _value => super._value as _$BookingEmpty;
 }
 
 /// @nodoc
@@ -576,7 +516,7 @@ class _$BookingEmpty extends BookingEmpty {
   @override
   bool operator ==(dynamic other) {
     return identical(this, other) ||
-        (other.runtimeType == runtimeType && other is BookingEmpty);
+        (other.runtimeType == runtimeType && other is _$BookingEmpty);
   }
 
   @override
@@ -687,10 +627,10 @@ abstract class BookingEmpty extends Booking {
 }
 
 /// @nodoc
-abstract class $BookingRegisteredCopyWith<$Res> {
-  factory $BookingRegisteredCopyWith(
-          BookingRegistered value, $Res Function(BookingRegistered) then) =
-      _$BookingRegisteredCopyWithImpl<$Res>;
+abstract class _$$BookingRegisteredCopyWith<$Res> {
+  factory _$$BookingRegisteredCopyWith(
+          _$BookingRegistered value, $Res Function(_$BookingRegistered) then) =
+      __$$BookingRegisteredCopyWithImpl<$Res>;
   $Res call(
       {String bookingId,
       String userId,
@@ -706,14 +646,15 @@ abstract class $BookingRegisteredCopyWith<$Res> {
 }
 
 /// @nodoc
-class _$BookingRegisteredCopyWithImpl<$Res> extends _$BookingCopyWithImpl<$Res>
-    implements $BookingRegisteredCopyWith<$Res> {
-  _$BookingRegisteredCopyWithImpl(
-      BookingRegistered _value, $Res Function(BookingRegistered) _then)
-      : super(_value, (v) => _then(v as BookingRegistered));
+class __$$BookingRegisteredCopyWithImpl<$Res>
+    extends _$BookingCopyWithImpl<$Res>
+    implements _$$BookingRegisteredCopyWith<$Res> {
+  __$$BookingRegisteredCopyWithImpl(
+      _$BookingRegistered _value, $Res Function(_$BookingRegistered) _then)
+      : super(_value, (v) => _then(v as _$BookingRegistered));
 
   @override
-  BookingRegistered get _value => super._value as BookingRegistered;
+  _$BookingRegistered get _value => super._value as _$BookingRegistered;
 
   @override
   $Res call({
@@ -729,7 +670,7 @@ class _$BookingRegisteredCopyWithImpl<$Res> extends _$BookingCopyWithImpl<$Res>
     Object? price = freezed,
     Object? note = freezed,
   }) {
-    return _then(BookingRegistered(
+    return _then(_$BookingRegistered(
       bookingId: bookingId == freezed
           ? _value.bookingId
           : bookingId // ignore: cast_nullable_to_non_nullable
@@ -751,7 +692,7 @@ class _$BookingRegisteredCopyWithImpl<$Res> extends _$BookingCopyWithImpl<$Res>
           : roomType // ignore: cast_nullable_to_non_nullable
               as RoomType,
       mealOffers: mealOffers == freezed
-          ? _value.mealOffers
+          ? _value._mealOffers
           : mealOffers // ignore: cast_nullable_to_non_nullable
               as List<MealType>,
       persons: persons == freezed
@@ -787,13 +728,14 @@ class _$BookingRegistered extends BookingRegistered {
       required this.stay,
       required this.specialOfferDate,
       required this.roomType,
-      required this.mealOffers,
+      required final List<MealType> mealOffers,
       required this.persons,
       required this.babyBeds,
       required this.smoking,
       required this.price,
       required this.note})
-      : super._();
+      : _mealOffers = mealOffers,
+        super._();
 
   @override
   final String bookingId;
@@ -805,8 +747,13 @@ class _$BookingRegistered extends BookingRegistered {
   final DateTime specialOfferDate;
   @override
   final RoomType roomType;
+  final List<MealType> _mealOffers;
   @override
-  final List<MealType> mealOffers;
+  List<MealType> get mealOffers {
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_mealOffers);
+  }
+
   @override
   final int persons;
   @override
@@ -827,7 +774,7 @@ class _$BookingRegistered extends BookingRegistered {
   bool operator ==(dynamic other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is BookingRegistered &&
+            other is _$BookingRegistered &&
             const DeepCollectionEquality().equals(other.bookingId, bookingId) &&
             const DeepCollectionEquality().equals(other.userId, userId) &&
             const DeepCollectionEquality().equals(other.stay, stay) &&
@@ -835,7 +782,7 @@ class _$BookingRegistered extends BookingRegistered {
                 .equals(other.specialOfferDate, specialOfferDate) &&
             const DeepCollectionEquality().equals(other.roomType, roomType) &&
             const DeepCollectionEquality()
-                .equals(other.mealOffers, mealOffers) &&
+                .equals(other._mealOffers, _mealOffers) &&
             const DeepCollectionEquality().equals(other.persons, persons) &&
             const DeepCollectionEquality().equals(other.babyBeds, babyBeds) &&
             const DeepCollectionEquality().equals(other.smoking, smoking) &&
@@ -851,7 +798,7 @@ class _$BookingRegistered extends BookingRegistered {
       const DeepCollectionEquality().hash(stay),
       const DeepCollectionEquality().hash(specialOfferDate),
       const DeepCollectionEquality().hash(roomType),
-      const DeepCollectionEquality().hash(mealOffers),
+      const DeepCollectionEquality().hash(_mealOffers),
       const DeepCollectionEquality().hash(persons),
       const DeepCollectionEquality().hash(babyBeds),
       const DeepCollectionEquality().hash(smoking),
@@ -860,8 +807,8 @@ class _$BookingRegistered extends BookingRegistered {
 
   @JsonKey(ignore: true)
   @override
-  $BookingRegisteredCopyWith<BookingRegistered> get copyWith =>
-      _$BookingRegisteredCopyWithImpl<BookingRegistered>(this, _$identity);
+  _$$BookingRegisteredCopyWith<_$BookingRegistered> get copyWith =>
+      __$$BookingRegisteredCopyWithImpl<_$BookingRegistered>(this, _$identity);
 
   @override
   @optionalTypeArgs
@@ -967,31 +914,31 @@ class _$BookingRegistered extends BookingRegistered {
 
 abstract class BookingRegistered extends Booking {
   factory BookingRegistered(
-      {required String bookingId,
-      required String userId,
-      required DateTimeRange stay,
-      required DateTime specialOfferDate,
-      required RoomType roomType,
-      required List<MealType> mealOffers,
-      required int persons,
-      required int babyBeds,
-      required bool smoking,
-      required double price,
-      required String note}) = _$BookingRegistered;
+      {required final String bookingId,
+      required final String userId,
+      required final DateTimeRange stay,
+      required final DateTime specialOfferDate,
+      required final RoomType roomType,
+      required final List<MealType> mealOffers,
+      required final int persons,
+      required final int babyBeds,
+      required final bool smoking,
+      required final double price,
+      required final String note}) = _$BookingRegistered;
   BookingRegistered._() : super._();
 
-  String get bookingId;
-  String get userId;
-  DateTimeRange get stay;
-  DateTime get specialOfferDate;
-  RoomType get roomType;
-  List<MealType> get mealOffers;
-  int get persons;
-  int get babyBeds;
-  bool get smoking;
-  double get price;
-  String get note;
+  String get bookingId => throw _privateConstructorUsedError;
+  String get userId => throw _privateConstructorUsedError;
+  DateTimeRange get stay => throw _privateConstructorUsedError;
+  DateTime get specialOfferDate => throw _privateConstructorUsedError;
+  RoomType get roomType => throw _privateConstructorUsedError;
+  List<MealType> get mealOffers => throw _privateConstructorUsedError;
+  int get persons => throw _privateConstructorUsedError;
+  int get babyBeds => throw _privateConstructorUsedError;
+  bool get smoking => throw _privateConstructorUsedError;
+  double get price => throw _privateConstructorUsedError;
+  String get note => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
-  $BookingRegisteredCopyWith<BookingRegistered> get copyWith =>
+  _$$BookingRegisteredCopyWith<_$BookingRegistered> get copyWith =>
       throw _privateConstructorUsedError;
 }
