@@ -60,12 +60,14 @@ class ValidatorTester<F extends Object> {
   F? get passedToValidator => _passedToValidator;
   F? get passedToAsyncValidator => _passedToAsyncValidator;
 
-  String? Function(F?) Function(BuildContext) get validator => (_) => (v) {
-        _passedToValidator = v;
-        return null;
-      };
+  String? Function(F?) Function(ValidatorCreationOptions) get validator =>
+      (_) => (v) {
+            _passedToValidator = v;
+            return null;
+          };
 
-  Future<String?> Function(F?, AsyncValidatorOptions) Function(BuildContext)
+  Future<String?> Function(F?, AsyncValidatorOptions)
+          Function(ValidatorCreationOptions)
       get asyncValidator => (_) => (v, o) async {
             _passedToAsyncValidator = v;
             if (!_completer.isCompleted) {
