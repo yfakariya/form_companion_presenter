@@ -28,8 +28,8 @@ class Validator {
         return 'Input must be a number.';
       };
 
-  static AsyncValidatorFactory<String> get id => (context) {
-        final container = ProviderScope.containerOf(context);
+  static AsyncValidatorFactory<String> get id => (options) {
+        final container = ProviderScope.containerOf(options.context);
         return (value, options) {
           if (value == null || value.isEmpty) {
             return 'ID is required.';

@@ -132,7 +132,14 @@ class PropertyDescriptor<P extends Object, F extends Object> {
   FormFieldValidator<F> getValidator(BuildContext context) =>
       _PropertyValidator<F>(
         [
-          ..._validatorFactories.map((f) => f(context)),
+          ..._validatorFactories.map(
+            (f) => f(
+              createValidatorCreationOptions(
+                context,
+                Localizations.maybeLocaleOf(context),
+              ),
+            ),
+          ),
         ],
         [
           ..._asynvValidatorEntries.map(

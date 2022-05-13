@@ -100,7 +100,9 @@ mixin FormCompanionMixin on CompanionPresenterMixin {
   }
 
   @override
-  @nonVirtual
+  @protected
+  @visibleForOverriding
+  @visibleForTesting
   bool canSubmit(BuildContext context) {
     final formState = maybeFormStateOf(context);
     if (formState == null ||

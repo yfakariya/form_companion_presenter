@@ -20,7 +20,12 @@ class _AsyncValidatorFactoryEntry<T extends Object> {
           canceledValidationErrorHandler: canceledValidationErrorHandler,
         );
 
-  AsyncValidator<T> createValidator(BuildContext context) => _factory(context);
+  AsyncValidator<T> createValidator(BuildContext context) => _factory(
+        createValidatorCreationOptions(
+          context,
+          Localizations.maybeLocaleOf(context),
+        ),
+      );
 }
 
 /// An entry for storage which holds a list of [AsyncValidator]
@@ -273,13 +278,10 @@ FormFieldValidatorFactory<F>
     createValidatorFactoryFromConverter<P extends Object, F extends Object>(
   ValueConverter<P, F> converter,
 ) =>
-        (x) => (v) {
+        (o) => (v) {
               final result = v == null
                   ? ConversionResult<P>(null)
-                  : converter.toPropertyValue(
-                      v,
-                      Localizations.maybeLocaleOf(x) ?? defaultLocale,
-                    );
+                  : converter.toPropertyValue(v, o.locale);
               if (result is FailureResult<P>) {
                 return result.message;
               }

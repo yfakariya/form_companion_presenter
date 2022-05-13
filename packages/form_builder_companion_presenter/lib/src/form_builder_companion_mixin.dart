@@ -77,9 +77,11 @@ mixin FormBuilderCompanionMixin on CompanionPresenterMixin {
   late final FormBuilderCompanionFeatures _presenterFeatures;
 
   @override
+  @nonVirtual
   CompanionPresenterFeatures get presenterFeatures => _presenterFeatures;
 
   @override
+  @nonVirtual
   void initializeCompanionMixin(PropertyDescriptorsBuilder properties) {
     _presenterFeatures = FormBuilderCompanionFeatures._(this);
     super.initializeCompanionMixin(properties);
@@ -99,7 +101,6 @@ mixin FormBuilderCompanionMixin on CompanionPresenterMixin {
   }
 
   @override
-  @nonVirtual
   @protected
   @visibleForOverriding
   @visibleForTesting

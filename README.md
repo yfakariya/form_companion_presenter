@@ -120,21 +120,21 @@ You can customize property behavior with `PropertyDescriptorsBuilder`'s method p
 
 * A custom value converter which converts between property type in presenter logic and field type in `FormField`.
 * One or more validators. Validators can be synchronous or asynchronous.
-  * For localization, actual parameters are `validatorFactories` and `asyncValidatorFactories`, which are list of factory functions which accept `BuildContext` and returns (async)validator function.
+  * For localization, actual parameters are `validatorFactories` and `asyncValidatorFactories`, which are list of factory functions which accept `ValidatorCreationOptions` and returns (async)validator function.
 
 ```dart
 PropertyDescriptorsBuilder()
   ..add(
     name: 'myProperty',
     validatorFactories: [
-      // Functions which accepts BuildContext, and then returns `String? Function(String?)`
-      (context) => ...,
+      // Functions which accepts ValidatorCreationOptions, and then returns `String? Function(String?)`
+      (options) => ...,
       // This is same signature for FormBuilderValidators.
       FormBuilderValidators.required,
     ],
     asyncValidatorFactories: [
-      // Functions which accepts BuildContext, and then returns `Future<String?> Function(String?, AsyncValidationOptions)`
-      (context) => ...,
+      // Functions which accepts ValidatorCreationOptions, and then returns `Future<String?> Function(String?, AsyncValidatorOptions)`
+      (options) => ...,
     ]
   )
 ```
