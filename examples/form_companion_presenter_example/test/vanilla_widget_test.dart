@@ -55,7 +55,9 @@ Future<void> main() async {
           final fieldState =
               findField<dynamic>(tester, fieldPredicate<dynamic>('id'));
           await tester.enterText(
-              find.byWidget(fieldState.widget), invalidEmail);
+            find.byWidget(fieldState.widget),
+            invalidEmail,
+          );
           await tester.pump();
           expect(fieldState.hasError, validationType.value != 'manual');
         },
@@ -331,9 +333,11 @@ Future<void> main() async {
               await tester.pump();
               await tester.pump();
 
-              verifySubmitButtonIsEnabled(tester,
-                  enabled: validationType.value != 'bulkAuto' ||
-                      pattern.shouldSuccess);
+              verifySubmitButtonIsEnabled(
+                tester,
+                enabled:
+                    validationType.value != 'bulkAuto' || pattern.shouldSuccess,
+              );
 
               verifyAsyncIndicatorIsShown(tester, shown: false);
               final state =

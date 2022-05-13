@@ -44,5 +44,7 @@ extension FormCompanionBuilderCompanionPropertyDescriptorsBuilderExtension
     List<T>? initialValues,
   }) =>
       addWithField<List<T>, List<T>, TField>(
-          name: name, initialValue: initialValues);
+        name: name,
+        initialValue: initialValues,
+      );
 }

@@ -187,7 +187,9 @@ void main() {
       Locale locale,
       SomeConversionResult<P> expectedResult,
       void Function(
-              SomeConversionResult<P> expected, SomeConversionResult<P> actual)
+        SomeConversionResult<P> expected,
+        SomeConversionResult<P> actual,
+      )
           resultAssertion,
     ) {
       late final F? actualInput;
@@ -283,7 +285,9 @@ void main() {
       Locale locale,
       SomeConversionResult<P> expectedResult,
       void Function(
-              SomeConversionResult<P> expected, SomeConversionResult<P> actual)
+        SomeConversionResult<P> expected,
+        SomeConversionResult<P> actual,
+      )
           resultAssertion,
     ) {
       late final String? actualInput;
@@ -367,9 +371,11 @@ void main() {
     test(
       'P -> String, default stringify is toString())',
       () {
-        final target = StringConverter<Object>.fromCallbacks(parse: (v, l, p) {
-          fail('parse is called!');
-        });
+        final target = StringConverter<Object>.fromCallbacks(
+          parse: (v, l, p) {
+            fail('parse is called!');
+          },
+        );
         final result = target.toFieldValue(Object(), defaultLocale);
         expect(result, Object().toString());
       },
@@ -448,7 +454,10 @@ void main() {
           result,
           isA<FailureResult<int>>()
               .having(
-                  (x) => x.message, 'message', 'Value is not a valid int. TEST')
+                (x) => x.message,
+                'message',
+                'Value is not a valid int. TEST',
+              )
               .having((x) => x.debugInfo, 'debugInfo', debugInfo),
         );
       },

@@ -277,7 +277,9 @@ FormFieldValidatorFactory<F>
               final result = v == null
                   ? ConversionResult<P>(null)
                   : converter.toPropertyValue(
-                      v, Localizations.maybeLocaleOf(x) ?? defaultLocale);
+                      v,
+                      Localizations.maybeLocaleOf(x) ?? defaultLocale,
+                    );
               if (result is FailureResult<P>) {
                 return result.message;
               }

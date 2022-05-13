@@ -108,11 +108,13 @@ class _BulkAutoValidationFormBuilderAccountPane extends ConsumerWidget {
               ),
             ],
           ),
-          presenter.fields.age(context,
-              decoration: InputDecoration(
-                labelText: LocaleKeys.age_label.tr(),
-                hintText: LocaleKeys.age_hint.tr(),
-              )),
+          presenter.fields.age(
+            context,
+            decoration: InputDecoration(
+              labelText: LocaleKeys.age_label.tr(),
+              hintText: LocaleKeys.age_hint.tr(),
+            ),
+          ),
           presenter.fields.preferredRegions(
             context,
             decoration: InputDecoration(
@@ -231,7 +233,13 @@ class BulkAutoValidationFormBuilderAccountPresenter
     final preferredRegions = this.preferredRegions.value!;
 
     // Call business logic.
-    if (!(await doSubmitLogic(id, name, gender, age, preferredRegions))) {
+    if (!(await doSubmitLogic(
+      id,
+      name,
+      gender,
+      age,
+      preferredRegions,
+    ))) {
       return;
     }
 

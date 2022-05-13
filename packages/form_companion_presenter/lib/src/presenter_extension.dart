@@ -23,7 +23,8 @@ extension CompanionPresenterMixinPropertiesExtension
   /// avoid name and type arguments mismatch, and provides developer tools'
   /// input auto completion friendly syntax.
   PropertyDescriptor<P, F> getProperty<P extends Object, F extends Object>(
-      String name) {
+    String name,
+  ) {
     final property = getPropertyInternal(name);
 
     if (property is! PropertyDescriptor<P, F>) {

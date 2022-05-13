@@ -135,8 +135,10 @@ class PropertyDescriptor<P extends Object, F extends Object> {
           ..._validatorFactories.map((f) => f(context)),
         ],
         [
-          ..._asynvValidatorEntries.map((e) =>
-              _AsyncValidatorEntry(e._executor, e.createValidator(context))),
+          ..._asynvValidatorEntries.map(
+            (e) =>
+                _AsyncValidatorEntry(e._executor, e.createValidator(context)),
+          ),
         ],
         presenter.getLocale(context),
         presenter.buildOnAsyncValidationCompleted(name, context),

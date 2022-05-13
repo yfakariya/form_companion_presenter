@@ -170,10 +170,10 @@ Widget _app(
 class Presenter with CompanionPresenterMixin, FormCompanionMixin {
   final FutureOr<void> Function() _doSubmitCalled;
 
-  Presenter(
-      {required PropertyDescriptorsBuilder properties,
-      FutureOr<void> Function()? doSubmitCalled})
-      : _doSubmitCalled = (doSubmitCalled ?? () {}) {
+  Presenter({
+    required PropertyDescriptorsBuilder properties,
+    FutureOr<void> Function()? doSubmitCalled,
+  }) : _doSubmitCalled = (doSubmitCalled ?? () {}) {
     initializeCompanionMixin(properties);
   }
 
@@ -551,7 +551,9 @@ void main() {
     });
 
     FutureOr<void> testAutoValidateMode(
-        WidgetTester tester, AutovalidateMode autovalidateMode) async {
+      WidgetTester tester,
+      AutovalidateMode autovalidateMode,
+    ) async {
       final presenter = Presenter(properties: PropertyDescriptorsBuilder());
       FormStateAdapter? adapter;
       await tester.pumpWidget(
@@ -775,20 +777,21 @@ void main() {
       final validationCompletion = Completer<void>();
       var validatorCalled = 0;
       final presenter = Presenter(
-          properties: PropertyDescriptorsBuilder()
-            ..add<String, String>(
-              name: 'prop',
-              asyncValidatorFactories: [
-                (context) => (value, options) async {
-                      validatorCalled++;
-                      await validationStopper.future;
-                      if (!validationCompletion.isCompleted) {
-                        validationCompletion.complete();
-                      }
-                      throw Exception(validatorCalled);
+        properties: PropertyDescriptorsBuilder()
+          ..add<String, String>(
+            name: 'prop',
+            asyncValidatorFactories: [
+              (context) => (value, options) async {
+                    validatorCalled++;
+                    await validationStopper.future;
+                    if (!validationCompletion.isCompleted) {
+                      validationCompletion.complete();
                     }
-              ],
-            ));
+                    throw Exception(validatorCalled);
+                  }
+            ],
+          ),
+      );
       late BuildContext lastContext;
       await widgetTester.pumpWidget(
         _app(
@@ -831,18 +834,19 @@ void main() {
       final validationCompletion = Completer<void>();
       var validatorCalled = 0;
       final presenter = Presenter(
-          properties: PropertyDescriptorsBuilder()
-            ..add<String, String>(
-              name: 'prop',
-              asyncValidatorFactories: [
-                (context) => (value, options) async {
-                      validatorCalled++;
-                      await validationStopper.future;
-                      validationCompletion.complete();
-                      throw Exception(validatorCalled);
-                    }
-              ],
-            ));
+        properties: PropertyDescriptorsBuilder()
+          ..add<String, String>(
+            name: 'prop',
+            asyncValidatorFactories: [
+              (context) => (value, options) async {
+                    validatorCalled++;
+                    await validationStopper.future;
+                    validationCompletion.complete();
+                    throw Exception(validatorCalled);
+                  }
+            ],
+          ),
+      );
       late BuildContext lastContext;
       await widgetTester.pumpWidget(
         _app(
@@ -892,20 +896,21 @@ void main() {
       final validationCompletion = Completer<void>();
       var validatorCalled = 0;
       final presenter = Presenter(
-          properties: PropertyDescriptorsBuilder()
-            ..add<String, String>(
-              name: 'prop',
-              asyncValidatorFactories: [
-                (context) => (value, options) async {
-                      validatorCalled++;
-                      await validationStopper.future;
-                      if (!validationCompletion.isCompleted) {
-                        validationCompletion.complete();
-                      }
-                      throw Exception(validatorCalled);
+        properties: PropertyDescriptorsBuilder()
+          ..add<String, String>(
+            name: 'prop',
+            asyncValidatorFactories: [
+              (context) => (value, options) async {
+                    validatorCalled++;
+                    await validationStopper.future;
+                    if (!validationCompletion.isCompleted) {
+                      validationCompletion.complete();
                     }
-              ],
-            ));
+                    throw Exception(validatorCalled);
+                  }
+            ],
+          ),
+      );
       late BuildContext lastContext;
       await widgetTester.pumpWidget(
         _app(
@@ -958,21 +963,22 @@ void main() {
       ];
       var validatorCalled = 0;
       final presenter = Presenter(
-          properties: PropertyDescriptorsBuilder()
-            ..add<String, String>(
-              name: 'prop',
-              asyncValidatorFactories: [
-                (context) => (value, options) async {
-                      final i = validatorCalled;
-                      validatorCalled++;
-                      if (i < validationStoppers.length) {
-                        await validationStoppers[i].future;
-                        validationCompletions[i].complete();
-                      }
-                      throw Exception(validatorCalled);
+        properties: PropertyDescriptorsBuilder()
+          ..add<String, String>(
+            name: 'prop',
+            asyncValidatorFactories: [
+              (context) => (value, options) async {
+                    final i = validatorCalled;
+                    validatorCalled++;
+                    if (i < validationStoppers.length) {
+                      await validationStoppers[i].future;
+                      validationCompletions[i].complete();
                     }
-              ],
-            ));
+                    throw Exception(validatorCalled);
+                  }
+            ],
+          ),
+      );
       late BuildContext lastContext;
       await widgetTester.pumpWidget(
         _app(
@@ -1041,29 +1047,30 @@ void main() {
         var validation1Called = 0;
         var validation2Called = 0;
         final presenter = Presenter(
-            properties: PropertyDescriptorsBuilder()
-              ..add<String, String>(
-                name: 'prop1',
-                asyncValidatorFactories: [
-                  (context) => (value, options) async {
-                        validation1Called++;
-                        await validationStopper.future;
-                        validationCompletion1.complete();
-                        throw Exception(validation1Called);
-                      }
-                ],
-              )
-              ..add<String, String>(
-                name: 'prop2',
-                asyncValidatorFactories: [
-                  (context) => (value, options) async {
-                        validation2Called++;
-                        await validationStopper.future;
-                        validationCompletion2.complete();
-                        throw Exception(validation2Called);
-                      }
-                ],
-              ));
+          properties: PropertyDescriptorsBuilder()
+            ..add<String, String>(
+              name: 'prop1',
+              asyncValidatorFactories: [
+                (context) => (value, options) async {
+                      validation1Called++;
+                      await validationStopper.future;
+                      validationCompletion1.complete();
+                      throw Exception(validation1Called);
+                    }
+              ],
+            )
+            ..add<String, String>(
+              name: 'prop2',
+              asyncValidatorFactories: [
+                (context) => (value, options) async {
+                      validation2Called++;
+                      await validationStopper.future;
+                      validationCompletion2.complete();
+                      throw Exception(validation2Called);
+                    }
+              ],
+            ),
+        );
         late BuildContext lastContext;
         await widgetTester.pumpWidget(
           _app(
@@ -1097,14 +1104,18 @@ void main() {
         );
         await widgetTester.pump();
         expect(
-            presenter.getProperty('prop1').hasPendingAsyncValidations, isTrue);
+          presenter.getProperty('prop1').hasPendingAsyncValidations,
+          isTrue,
+        );
 
         validationStopper.complete();
         await validationCompletion1.future;
         // pump for async completion
         await widgetTester.pump();
         expect(
-            presenter.getProperty('prop1').hasPendingAsyncValidations, isFalse);
+          presenter.getProperty('prop1').hasPendingAsyncValidations,
+          isFalse,
+        );
 
         expect(key.currentState?.hasError, isFalse);
         expect(key.currentState?.errorText, isNull);
@@ -1137,35 +1148,36 @@ void main() {
         var validation1Called = 0;
         var validation2Called = 0;
         final presenter = Presenter(
-            properties: PropertyDescriptorsBuilder()
-              ..add<String, String>(
-                name: 'prop1',
-                asyncValidatorFactories: [
-                  (context) => (value, options) async {
-                        final i = validation1Called;
-                        validation1Called++;
-                        if (i < validationStoppers1.length) {
-                          await validationStoppers1[i].future;
-                          validationCompletions1[i].complete();
-                        }
-                        throw Exception(validation1Called);
+          properties: PropertyDescriptorsBuilder()
+            ..add<String, String>(
+              name: 'prop1',
+              asyncValidatorFactories: [
+                (context) => (value, options) async {
+                      final i = validation1Called;
+                      validation1Called++;
+                      if (i < validationStoppers1.length) {
+                        await validationStoppers1[i].future;
+                        validationCompletions1[i].complete();
                       }
-                ],
-              )
-              ..add<String, String>(
-                name: 'prop2',
-                asyncValidatorFactories: [
-                  (context) => (value, options) async {
-                        final i = validation2Called;
-                        validation2Called++;
-                        if (i < validationStoppers2.length) {
-                          await validationStoppers2[i].future;
-                          validationCompletions2[i].complete();
-                        }
-                        throw Exception(validation2Called);
+                      throw Exception(validation1Called);
+                    }
+              ],
+            )
+            ..add<String, String>(
+              name: 'prop2',
+              asyncValidatorFactories: [
+                (context) => (value, options) async {
+                      final i = validation2Called;
+                      validation2Called++;
+                      if (i < validationStoppers2.length) {
+                        await validationStoppers2[i].future;
+                        validationCompletions2[i].complete();
                       }
-                ],
-              ));
+                      throw Exception(validation2Called);
+                    }
+              ],
+            ),
+        );
         late BuildContext lastContext;
         await widgetTester.pumpWidget(
           _app(
@@ -1201,55 +1213,73 @@ void main() {
 
         await widgetTester.enterText(
           find.byWidgetPredicate(
-              (w) => w is TextFormField && w.initialValue == 'prop1'),
+            (w) => w is TextFormField && w.initialValue == 'prop1',
+          ),
           'A',
         );
         await widgetTester.pump();
         expect(
-            presenter.getProperty('prop1').hasPendingAsyncValidations, isTrue);
+          presenter.getProperty('prop1').hasPendingAsyncValidations,
+          isTrue,
+        );
 
         validationStoppers1[0].complete();
         await validationCompletions1[0].future;
 
         expect(
-            presenter.getProperty('prop1').hasPendingAsyncValidations, isFalse);
+          presenter.getProperty('prop1').hasPendingAsyncValidations,
+          isFalse,
+        );
 
         expect(key1.currentState?.hasError, isFalse);
         expect(key1.currentState?.errorText, isNull);
 
         await widgetTester.enterText(
           find.byWidgetPredicate(
-              (w) => w is TextFormField && w.initialValue == 'prop2'),
+            (w) => w is TextFormField && w.initialValue == 'prop2',
+          ),
           'B',
         );
         await widgetTester.pump();
         expect(
-            presenter.getProperty('prop2').hasPendingAsyncValidations, isTrue);
+          presenter.getProperty('prop2').hasPendingAsyncValidations,
+          isTrue,
+        );
 
         validationStoppers2[0].complete();
         await validationCompletions2[0].future;
 
         expect(
-            presenter.getProperty('prop2').hasPendingAsyncValidations, isFalse);
+          presenter.getProperty('prop2').hasPendingAsyncValidations,
+          isFalse,
+        );
 
         expect(key2.currentState?.hasError, isFalse);
         expect(key2.currentState?.errorText, isNull);
 
         submit!();
         expect(
-            presenter.getProperty('prop1').hasPendingAsyncValidations, isTrue);
+          presenter.getProperty('prop1').hasPendingAsyncValidations,
+          isTrue,
+        );
         validationStoppers1[1].complete();
         await validationCompletions1[1].future;
 
         expect(
-            presenter.getProperty('prop2').hasPendingAsyncValidations, isTrue);
+          presenter.getProperty('prop2').hasPendingAsyncValidations,
+          isTrue,
+        );
         validationStoppers2[1].complete();
         await validationCompletions2[1].future;
 
         expect(
-            presenter.getProperty('prop1').hasPendingAsyncValidations, isFalse);
+          presenter.getProperty('prop1').hasPendingAsyncValidations,
+          isFalse,
+        );
         expect(
-            presenter.getProperty('prop2').hasPendingAsyncValidations, isFalse);
+          presenter.getProperty('prop2').hasPendingAsyncValidations,
+          isFalse,
+        );
 
         // Failure is reported as error.
         expect(key1.currentState?.hasError, isTrue);

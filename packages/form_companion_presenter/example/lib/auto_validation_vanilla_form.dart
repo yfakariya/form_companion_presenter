@@ -102,11 +102,13 @@ class _AutoValidationVanillaFormAccountPane extends ConsumerWidget {
               ),
             ],
           ),
-          presenter.fields.age(context,
-              decoration: InputDecoration(
-                labelText: LocaleKeys.age_label.tr(),
-                hintText: LocaleKeys.age_hint.tr(),
-              )),
+          presenter.fields.age(
+            context,
+            decoration: InputDecoration(
+              labelText: LocaleKeys.age_label.tr(),
+              hintText: LocaleKeys.age_hint.tr(),
+            ),
+          ),
           ElevatedButton(
             onPressed: presenter.submit(context),
             child: Text(
@@ -174,7 +176,12 @@ class AutoValidationVanillaFormAccountPresenter extends StateNotifier<Account>
     final age = this.age.value!;
 
     // Call business logic.
-    if (!(await doSubmitLogic(id, name, gender, age))) {
+    if (!(await doSubmitLogic(
+      id,
+      name,
+      gender,
+      age,
+    ))) {
       return;
     }
 

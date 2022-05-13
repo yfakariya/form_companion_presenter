@@ -100,27 +100,33 @@ class DummyBuildContext extends BuildContext {
   bool get debugDoingBuild => throw UnimplementedError();
 
   @override
-  InheritedWidget dependOnInheritedElement(InheritedElement ancestor,
-      {Object? aspect}) {
+  InheritedWidget dependOnInheritedElement(
+    InheritedElement ancestor, {
+    Object? aspect,
+  }) {
     throw UnimplementedError();
   }
 
   @override
-  T? dependOnInheritedWidgetOfExactType<T extends InheritedWidget>(
-      {Object? aspect}) {
+  T? dependOnInheritedWidgetOfExactType<T extends InheritedWidget>({
+    Object? aspect,
+  }) {
     // Required for getLocale() test.
     return null;
   }
 
   @override
-  DiagnosticsNode describeElement(String name,
-      {DiagnosticsTreeStyle style = DiagnosticsTreeStyle.errorProperty}) {
+  DiagnosticsNode describeElement(
+    String name, {
+    DiagnosticsTreeStyle style = DiagnosticsTreeStyle.errorProperty,
+  }) {
     throw UnimplementedError();
   }
 
   @override
-  List<DiagnosticsNode> describeMissingAncestor(
-      {required Type expectedAncestorType}) {
+  List<DiagnosticsNode> describeMissingAncestor({
+    required Type expectedAncestorType,
+  }) {
     throw UnimplementedError();
   }
 
@@ -130,8 +136,10 @@ class DummyBuildContext extends BuildContext {
   }
 
   @override
-  DiagnosticsNode describeWidget(String name,
-      {DiagnosticsTreeStyle style = DiagnosticsTreeStyle.errorProperty}) {
+  DiagnosticsNode describeWidget(
+    String name, {
+    DiagnosticsTreeStyle style = DiagnosticsTreeStyle.errorProperty,
+  }) {
     throw UnimplementedError();
   }
 
@@ -236,7 +244,9 @@ void main() {
         expect(target.properties.length, equals(2));
         expect(target.properties, contains('int'));
         expect(
-            target.properties['int'], isA<PropertyDescriptor<int, String>>());
+          target.properties['int'],
+          isA<PropertyDescriptor<int, String>>(),
+        );
 
         expect(target.properties, contains('string'));
         expect(
@@ -261,8 +271,10 @@ void main() {
             ..add<String, String>(name: 'string'),
         );
         expect(target.getProperty<int, String>('int'), isNotNull);
-        expect(target.getProperty<int, String>('int'),
-            same(target.properties['int']));
+        expect(
+          target.getProperty<int, String>('int'),
+          same(target.properties['int']),
+        );
 
         expect(target.getProperty<String, String>('string'), isNotNull);
         expect(
@@ -277,8 +289,10 @@ void main() {
             ..add<int, String>(name: 'int'),
         );
 
-        expect(() => target.getProperty<String, String>('string'),
-            throwsArgumentError);
+        expect(
+          () => target.getProperty<String, String>('string'),
+          throwsArgumentError,
+        );
       });
 
       test('throws StateError for incompatible type.', () {
@@ -288,7 +302,9 @@ void main() {
         );
 
         expect(
-            () => target.getProperty<String, String>('int'), throwsStateError);
+          () => target.getProperty<String, String>('int'),
+          throwsStateError,
+        );
       });
     });
 
@@ -377,12 +393,15 @@ void main() {
         final completer = Completer<void>();
         final target = TestPresenter(
           properties: PropertyDescriptorsBuilder()
-            ..add<int, String>(name: 'int', asyncValidatorFactories: [
-              (_) => (value, options) async {
-                    await completer.future;
-                    return null;
-                  }
-            ]),
+            ..add<int, String>(
+              name: 'int',
+              asyncValidatorFactories: [
+                (_) => (value, options) async {
+                      await completer.future;
+                      return null;
+                    }
+              ],
+            ),
         );
 
         expect(target.hasPendingAsyncValidations('int'), isFalse);
@@ -392,12 +411,15 @@ void main() {
         final completer = Completer<void>();
         final target = TestPresenter(
           properties: PropertyDescriptorsBuilder()
-            ..add<int, int>(name: 'int', asyncValidatorFactories: [
-              (_) => (value, options) async {
-                    await completer.future;
-                    return null;
-                  }
-            ]),
+            ..add<int, int>(
+              name: 'int',
+              asyncValidatorFactories: [
+                (_) => (value, options) async {
+                      await completer.future;
+                      return null;
+                    }
+              ],
+            ),
         );
 
         target
@@ -411,12 +433,15 @@ void main() {
         final completer = Completer<void>();
         final target = TestPresenter(
           properties: PropertyDescriptorsBuilder()
-            ..add<int, int>(name: 'int', asyncValidatorFactories: [
-              (_) => (value, options) async {
-                    completer.complete();
-                    return null;
-                  }
-            ]),
+            ..add<int, int>(
+              name: 'int',
+              asyncValidatorFactories: [
+                (_) => (value, options) async {
+                      completer.complete();
+                      return null;
+                    }
+              ],
+            ),
         );
 
         target
@@ -490,9 +515,12 @@ void main() {
       TestPresenter? target;
       target = TestPresenter(
         properties: PropertyDescriptorsBuilder()
-          ..add(name: 'valid', validatorFactories: [
-            (_) => (v) => null,
-          ]),
+          ..add(
+            name: 'valid',
+            validatorFactories: [
+              (_) => (v) => null,
+            ],
+          ),
         doSubmitCalled: doSubmitCalled.complete,
         maybeFormStateOfCalled: (_) => FixedFormStateAdapter(
           autovalidateMode: AutovalidateMode.onUserInteraction,
@@ -527,28 +555,28 @@ void main() {
 
       final values = <int?>[];
       final target = TestPresenter(
-          properties: PropertyDescriptorsBuilder()
-            ..add<int, int>(
-              name: 'prop',
-              asyncValidatorFactories: [
-                (context) => (value, options) async {
-                      values.add(value);
-                      if (value != null) {
-                        await asyncOperationStartGates[value].future;
-                      }
+        properties: PropertyDescriptorsBuilder()
+          ..add<int, int>(
+            name: 'prop',
+            asyncValidatorFactories: [
+              (context) => (value, options) async {
+                    values.add(value);
+                    if (value != null) {
+                      await asyncOperationStartGates[value].future;
+                    }
 
-                      try {
-                        return value?.toString() ?? 'null';
-                      } finally {
-                        final completion =
-                            asyncOperationCompletions[value ?? 0];
-                        if (!completion.isCompleted) {
-                          completion.complete();
-                        }
+                    try {
+                      return value?.toString() ?? 'null';
+                    } finally {
+                      final completion = asyncOperationCompletions[value ?? 0];
+                      if (!completion.isCompleted) {
+                        completion.complete();
                       }
                     }
-              ],
-            ));
+                  }
+            ],
+          ),
+      );
 
       final validator =
           target.getProperty<int, int>('prop').getValidator(context);
@@ -721,13 +749,17 @@ void main() {
           bool dummyValidateResult,
         ) async {
           var stateValidateCalled = false;
-          final state = FixedFormStateAdapter(onValidate: () {
-            stateValidateCalled = true;
-            return dummyValidateResult;
-          });
+          final state = FixedFormStateAdapter(
+            onValidate: () {
+              stateValidateCalled = true;
+              return dummyValidateResult;
+            },
+          );
 
           expect(
-              await presenter.validateAll(state), equals(dummyValidateResult));
+            await presenter.validateAll(state),
+            equals(dummyValidateResult),
+          );
           expect(stateValidateCalled, isTrue);
         }
 
@@ -748,18 +780,21 @@ void main() {
           var asyncValidatorCalled = false;
           final target = TestPresenter(
             properties: PropertyDescriptorsBuilder()
-              ..add<int, int>(name: 'int', asyncValidatorFactories: [
-                (_) => (value, options) async {
-                      final result = await Future.delayed(
-                        Duration.zero,
-                        () {
-                          return (expectedResult ?? false) ? null : 'ERROR';
-                        },
-                      );
-                      asyncValidatorCalled = true;
-                      return result;
-                    }
-              ]),
+              ..add<int, int>(
+                name: 'int',
+                asyncValidatorFactories: [
+                  (_) => (value, options) async {
+                        final result = await Future.delayed(
+                          Duration.zero,
+                          () {
+                            return (expectedResult ?? false) ? null : 'ERROR';
+                          },
+                        );
+                        asyncValidatorCalled = true;
+                        return result;
+                      }
+                ],
+              ),
             maybeFormStateOfCalled: (_) => state,
           );
           final validationResults = <bool>[];
@@ -852,7 +887,9 @@ void main() {
           );
           expect(
             target.getPropertyValidator<String>(
-                'prop', DummyBuildContext())('123'),
+              'prop',
+              DummyBuildContext(),
+            )('123'),
             isNull,
           );
         },
@@ -870,7 +907,9 @@ void main() {
           );
           expect(
             target.getPropertyValidator<String>(
-                'prop', DummyBuildContext())('ABC'),
+              'prop',
+              DummyBuildContext(),
+            )('ABC'),
             'Value is not a valid int.',
           );
         },
@@ -888,7 +927,9 @@ void main() {
           );
           expect(
             target.getPropertyValidator<String>(
-                'prop', DummyBuildContext())(null),
+              'prop',
+              DummyBuildContext(),
+            )(null),
             isNull,
           );
         },

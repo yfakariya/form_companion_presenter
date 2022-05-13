@@ -95,11 +95,13 @@ class _AccountPaneTemplate extends ConsumerWidget {
               ),
             ],
           ),
-          presenter.fields.age(context,
-              decoration: InputDecoration(
-                labelText: LocaleKeys.age_label.tr(),
-                hintText: LocaleKeys.age_hint.tr(),
-              )),
+          presenter.fields.age(
+            context,
+            decoration: InputDecoration(
+              labelText: LocaleKeys.age_label.tr(),
+              hintText: LocaleKeys.age_hint.tr(),
+            ),
+          ),
           //!macro beginBuilderOnly
           presenter.fields.preferredRegions(
             context,
@@ -242,15 +244,14 @@ class AccountPresenterTemplate extends StateNotifier<Account>
 
     // Call business logic.
     if (!(await doSubmitLogic(
-        id,
-        name,
-        gender,
-        age
-        //!macro beginBuilderOnly
-        ,
-        preferredRegions
-        //!macro endBuilderOnly
-        ))) {
+      id,
+      name,
+      gender,
+      age,
+      //!macro beginBuilderOnly
+      preferredRegions,
+      //!macro endBuilderOnly
+    ))) {
       return;
     }
 

@@ -24,7 +24,8 @@ Future<void> enablePubGet() => enablePubGetCore(
     );
 
 @Task(
-    'Run `flutter format` for all project but except *.g.dart, *.freezed.dart, and .dart_tools/**/*.dart')
+  'Run `flutter format` for all project but except *.g.dart, *.freezed.dart, and .dart_tools/**/*.dart',
+)
 Future<void> format() => formatCore();
 
 @Task(
