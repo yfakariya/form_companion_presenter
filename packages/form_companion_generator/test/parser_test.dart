@@ -2080,6 +2080,7 @@ final _expectedImports = {
       'package:flutter/services.dart',
       shows: [
         'MaxLengthEnforcement',
+        'MouseCursor',
         'SmartDashesType',
         'SmartQuotesType',
         'TextCapitalization',
@@ -2112,7 +2113,7 @@ final _expectedImports = {
     ),
     ExpectedImport(
       'package:flutter/painting.dart',
-      shows: ['AlignmentDirectional', 'AlignmentGeometry'],
+      shows: ['AlignmentDirectional', 'AlignmentGeometry', 'BorderRadius'],
     ),
     ExpectedImport(
       'package:flutter/widgets.dart',

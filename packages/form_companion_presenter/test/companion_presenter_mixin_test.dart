@@ -184,6 +184,11 @@ class DummyBuildContext extends BuildContext {
 
   @override
   Widget get widget => throw UnimplementedError();
+
+  @override
+  void dispatchNotification(Notification notification) {
+    throw UnimplementedError();
+  }
 }
 
 void main() {
