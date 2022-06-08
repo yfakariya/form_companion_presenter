@@ -82,7 +82,7 @@ class TypeInstantiationContext {
     if (parameter is TypeParameterType) {
       // Map `Foo` to `T` here.
       mapping[parameter.getDisplayString(withNullability: false)] =
-          argument.getDisplayString(withNullability: false);
+          argument.getDisplayString(withNullability: true);
       return;
     }
 

@@ -104,6 +104,52 @@ FutureOr<InterfaceType> getDateTimeRangeType() async =>
 FutureOr<InterfaceType> getRangeValuesType() async =>
     (await getFormFieldsLibrary()).lookupType('RangeValues');
 
+LibraryElement? _nullablesLibrary;
+
+FutureOr<LibraryElement> _getNullablesLibrary() async {
+  if (_nullablesLibrary != null) {
+    return _nullablesLibrary!;
+  }
+
+  return _nullablesLibrary =
+      (await getResolvedLibraryResult('nullables.dart')).element;
+}
+
+FutureOr<InterfaceType> getNullableBoolType() async =>
+    (await _getNullablesLibrary())
+        .topLevelElements
+        .whereType<TopLevelVariableElement>()
+        .singleWhere((e) => e.name == 'nullableBool')
+        .type as InterfaceType;
+
+FutureOr<InterfaceType> getNullableMyEnumType() async =>
+    (await _getNullablesLibrary())
+        .topLevelElements
+        .whereType<TopLevelVariableElement>()
+        .singleWhere((e) => e.name == 'nullableMyEnum')
+        .type as InterfaceType;
+
+FutureOr<InterfaceType> getNullableStringType() async =>
+    (await _getNullablesLibrary())
+        .topLevelElements
+        .whereType<TopLevelVariableElement>()
+        .singleWhere((e) => e.name == 'nullableString')
+        .type as InterfaceType;
+
+FutureOr<InterfaceType> getNullableListOfStringType() async =>
+    (await _getNullablesLibrary())
+        .topLevelElements
+        .whereType<TopLevelVariableElement>()
+        .singleWhere((e) => e.name == 'nullableListOfString')
+        .type as InterfaceType;
+
+FutureOr<InterfaceType> getNullableListOfNullableStringType() async =>
+    (await _getNullablesLibrary())
+        .topLevelElements
+        .whereType<TopLevelVariableElement>()
+        .singleWhere((e) => e.name == 'nullableListOfNullableString')
+        .type as InterfaceType;
+
 ClassElement lookupExportedClass(LibraryElement library, String name) {
   {
     final result = library.getType(name);

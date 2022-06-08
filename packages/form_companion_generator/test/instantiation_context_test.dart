@@ -19,6 +19,8 @@ Future<void> main() async {
   Logger.root.level = Level.INFO;
   logger.onRecord.listen(print);
 
+  final nullableStringType = await getNullableStringType();
+
   FutureOr<void> testCore({
     required String code,
     required GenericType Function(LibraryElement) valueTypeProvider,
@@ -98,6 +100,23 @@ class DropdownButtonFormField<T> extends FormField<T> {}
       formFieldGenericArgumentsProvider: (t) => [toGenericType(t.stringType)],
       assertion: (x) {
         expect(x.getMappedType('T'), 'String');
+      },
+    ),
+  );
+
+  test(
+    'nullable generic',
+    () => testCore(
+      code: '''
+class FormField<T> {}
+class DropdownButtonFormField<T> extends FormField<T> {}
+''',
+      classFinder: (l) => l.getType('DropdownButtonFormField')!,
+      valueTypeProvider: (l) => toGenericType(nullableStringType),
+      formFieldGenericArgumentsProvider: (_) =>
+          [toGenericType(nullableStringType)],
+      assertion: (x) {
+        expect(x.getMappedType('T'), 'String?');
       },
     ),
   );
