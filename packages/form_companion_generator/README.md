@@ -204,6 +204,9 @@ builders:
       # Put options here
 ```
 
+> **Note**
+> You can refer general specification of `build.yaml` in [build_package documentation](https://pub.dev/packages/build_config).
+
 ### Available Options
 
 **key** | **type** | **default** | **description**
