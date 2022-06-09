@@ -11,14 +11,39 @@ import 'package:form_companion_generator/src/model.dart';
 import 'package:form_companion_generator/src/node_provider.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:test/test.dart';
-import 'package:tuple/tuple.dart';
 
 import 'test_helpers.dart';
 
-/// caseName, parameterName, typeArguments, expectedTypeArguments,
-/// displayStringWithNullability, displayStringWithoutNullability, rawTypeName
-typedef TypeSpec = Tuple7<String, String, List<DartType>, List<String>, String,
-    String, String>;
+class TypeSpec {
+  final String caseName;
+  final String parameterName;
+  final List<DartType> typeArguments;
+  final List<String> expectedTypeArguments;
+  final String displayStringWithNullability;
+  final String displayStringWithoutNullability;
+  final String rawTypeName;
+  final TypeKind kind;
+  final String? collectionItemType;
+
+  TypeSpec(
+    this.caseName,
+    this.parameterName,
+    this.typeArguments,
+    this.expectedTypeArguments,
+    this.displayStringWithNullability,
+    this.displayStringWithoutNullability,
+    this.rawTypeName,
+    this.kind,
+    this.collectionItemType,
+  );
+}
+
+enum TypeKind {
+  boolType,
+  enumType,
+  stringType,
+  otherType,
+}
 
 Future<void> main() async {
   final libraryReader = LibraryReader(
@@ -214,41 +239,70 @@ class C {
       required String rawTypeName,
       required String displayStringWithNullability,
       required String displayStringWithoutNullability,
+      required TypeKind kind,
+      required bool isNullable,
+      required String? collectionItemType,
     }) async {
       if (sourceType is InterfaceType) {
         expect(
           target.maybeAsInterfaceType?.getDisplayString(withNullability: true),
           sourceType.getDisplayString(withNullability: true),
-          reason: 'maybeAsInterfaceType',
+          reason: 'maybeAsInterfaceType : ${target.runtimeType}',
         );
       } else {
         expect(
           target.maybeAsInterfaceType,
           isNull,
-          reason: 'maybeAsInterfaceType',
+          reason: 'maybeAsInterfaceType : ${target.runtimeType}',
         );
       }
 
       expect(
         target.rawType.getDisplayString(withNullability: false),
         rawTypeName,
-        reason: 'rawType',
+        reason: 'rawType : ${target.runtimeType}',
       );
 
       expect(
         target.toString(),
         displayStringWithNullability,
-        reason: 'toString()',
+        reason: 'toString() : ${target.runtimeType}',
       );
       expect(
         target.getDisplayString(withNullability: false),
         displayStringWithoutNullability,
-        reason: 'getDisplayString(withNullability: false)',
+        reason:
+            'getDisplayString(withNullability: false) : ${target.runtimeType}',
       );
       expect(
         target.typeArguments.map((e) => e.toString()).toList().toString(),
         expectedTypeArguments.toString(),
-        reason: 'typeArguments',
+        reason: 'typeArguments : ${target.runtimeType}',
+      );
+      expect(
+        target.isBoolType,
+        kind == TypeKind.boolType,
+        reason: 'isBoolType : ${target.runtimeType}',
+      );
+      expect(
+        target.isEnumType,
+        kind == TypeKind.enumType,
+        reason: 'isEnumType : ${target.runtimeType}',
+      );
+      expect(
+        target.isStringType,
+        kind == TypeKind.stringType,
+        reason: 'isStringType : ${target.runtimeType}',
+      );
+      expect(
+        target.isNullable,
+        isNullable,
+        reason: 'isNullable : ${target.runtimeType}',
+      );
+      expect(
+        target.collectionItemType?.getDisplayString(withNullability: true),
+        collectionItemType,
+        reason: 'collectionItemType : ${target.runtimeType}',
       );
     }
 
@@ -259,6 +313,9 @@ class C {
       required String rawTypeName,
       required String displayStringWithNullability,
       required String displayStringWithoutNullability,
+      required TypeKind kind,
+      required bool isNullable,
+      required String? collectionItemType,
     }) async {
       final type = source.type;
       final target = typeArguments.isEmpty
@@ -271,6 +328,9 @@ class C {
         rawTypeName: rawTypeName,
         displayStringWithNullability: displayStringWithNullability,
         displayStringWithoutNullability: displayStringWithoutNullability,
+        kind: kind,
+        isNullable: isNullable,
+        collectionItemType: collectionItemType,
       );
     }
 
@@ -285,6 +345,8 @@ class C {
             'String?',
             'String',
             'String',
+            TypeKind.stringType,
+            null,
           ),
           TypeSpec(
             'generic, non-alias',
@@ -294,6 +356,8 @@ class C {
             'List<String?>?',
             'List<String>',
             'List<E>',
+            TypeKind.otherType,
+            'String',
           ),
           TypeSpec(
             'instantiated-generic, non-alias',
@@ -303,6 +367,8 @@ class C {
             'List<int?>?',
             'List<int>',
             'List<E>',
+            TypeKind.otherType,
+            'int',
           ),
           TypeSpec(
             'non-generic, alias',
@@ -312,6 +378,8 @@ class C {
             'AString?',
             'AString',
             'String',
+            TypeKind.stringType,
+            null,
           ),
           TypeSpec(
             'generic, alias',
@@ -321,6 +389,8 @@ class C {
             'AList<String?>?',
             'AList<String>',
             'List<E>',
+            TypeKind.otherType,
+            'String',
           ),
           TypeSpec(
             'instantiated-generic, alias',
@@ -330,31 +400,41 @@ class C {
             'AList<int?>?',
             'AList<int>',
             'List<E>',
+            TypeKind.otherType,
+            'int',
           ),
         ]) {
           final nullability = nullable ? 'nullable' : 'non-nullable';
-          final caseName = 'interface type, ${spec.item1}, $nullability';
-          final parameter = interfaceTypeParameters[nullability]![spec.item2]!;
+          final caseName = 'interface type, ${spec.caseName}, $nullability';
+          final parameter =
+              interfaceTypeParameters[nullability]![spec.parameterName]!;
           final typeArguments = (nullable
-                  ? spec.item3
-                  : spec.item3.map(typeSystem.promoteToNonNull))
+                  ? spec.typeArguments
+                  : spec.typeArguments.map(typeSystem.promoteToNonNull))
               .map((t) => GenericType.fromDartType(t, parameter))
               .toList();
-          final expectedTypeArguments =
-              nullable ? spec.item4.map((t) => '$t?').toList() : spec.item4;
-          final displayStringWithoutNullability = spec.item6;
-          final displayStringWithNullability =
-              nullable ? spec.item5 : displayStringWithoutNullability;
-          final rawTypeName = spec.item7;
+          final expectedTypeArguments = nullable
+              ? spec.expectedTypeArguments.map((t) => '$t?').toList()
+              : spec.expectedTypeArguments;
+          final displayStringWithoutNullability =
+              spec.displayStringWithoutNullability;
+          final displayStringWithNullability = nullable
+              ? spec.displayStringWithNullability
+              : displayStringWithoutNullability;
           test(
             caseName,
             () => testGenericType(
               source: parameter,
-              rawTypeName: rawTypeName,
+              rawTypeName: spec.rawTypeName,
               typeArguments: typeArguments,
               expectedTypeArguments: expectedTypeArguments,
               displayStringWithNullability: displayStringWithNullability,
               displayStringWithoutNullability: displayStringWithoutNullability,
+              kind: spec.kind,
+              isNullable: nullable,
+              collectionItemType: spec.collectionItemType != null
+                  ? '${spec.collectionItemType}${nullable ? '?' : ''}'
+                  : null,
             ),
           );
         }
@@ -372,6 +452,8 @@ class C {
             'int? Function(String?)?',
             'int Function(String)',
             'int Function(String)',
+            TypeKind.otherType,
+            null,
           ),
           TypeSpec(
             'generic, non-alias',
@@ -381,6 +463,8 @@ class C {
             'String? Function(String?)?',
             'String Function(String)',
             'T Function(T)',
+            TypeKind.otherType,
+            null,
           ),
           TypeSpec(
             'parameterized, non-alias',
@@ -390,6 +474,8 @@ class C {
             'String? Function(String?)?',
             'String Function(String)',
             'S Function<S>(S)',
+            TypeKind.otherType,
+            null,
           ),
           TypeSpec(
             'instantiated-generic, non-alias',
@@ -399,6 +485,8 @@ class C {
             'List<int>? Function(Map<String?, int?>?)?',
             'List<int> Function(Map<String, int>)',
             'List<int> Function(Map<String, int>)',
+            TypeKind.otherType,
+            null,
           ),
           TypeSpec(
             'non-generic, alias',
@@ -408,6 +496,8 @@ class C {
             'NonGenericCallback?',
             'NonGenericCallback',
             'int Function(String)',
+            TypeKind.otherType,
+            null,
           ),
           TypeSpec(
             'generic, alias',
@@ -417,6 +507,8 @@ class C {
             'GenericCallback<String?>?',
             'GenericCallback<String>',
             'void Function<T>(T)',
+            TypeKind.otherType,
+            null,
           ),
           TypeSpec(
             'instantiated-generic, alias',
@@ -426,31 +518,39 @@ class C {
             'GenericCallback<int?>?',
             'GenericCallback<int>',
             'void Function<T>(T)',
+            TypeKind.otherType,
+            null,
           ),
         ]) {
           final nullability = nullable ? 'nullable' : 'non-nullable';
-          final caseName = 'function type, ${spec.item1}, $nullability';
-          final parameter = functionTypeParameters[nullability]![spec.item2]!;
+          final caseName = 'function type, ${spec.caseName}, $nullability';
+          final parameter =
+              functionTypeParameters[nullability]![spec.parameterName]!;
           final typeArguments = (nullable
-                  ? spec.item3
-                  : spec.item3.map(typeSystem.promoteToNonNull))
+                  ? spec.typeArguments
+                  : spec.typeArguments.map(typeSystem.promoteToNonNull))
               .map((t) => GenericType.fromDartType(t, parameter))
               .toList();
-          final expectedTypeArguments =
-              nullable ? spec.item4.map((t) => '$t?').toList() : spec.item4;
-          final displayStringWithoutNullability = spec.item6;
-          final displayStringWithNullability =
-              nullable ? spec.item5 : displayStringWithoutNullability;
-          final rawTypeName = spec.item7;
+          final expectedTypeArguments = nullable
+              ? spec.expectedTypeArguments.map((t) => '$t?').toList()
+              : spec.expectedTypeArguments;
+          final displayStringWithoutNullability =
+              spec.displayStringWithoutNullability;
+          final displayStringWithNullability = nullable
+              ? spec.displayStringWithNullability
+              : displayStringWithoutNullability;
           test(
             caseName,
             () => testGenericType(
               source: parameter,
-              rawTypeName: rawTypeName,
+              rawTypeName: spec.rawTypeName,
               typeArguments: typeArguments,
               expectedTypeArguments: expectedTypeArguments,
               displayStringWithNullability: displayStringWithNullability,
               displayStringWithoutNullability: displayStringWithoutNullability,
+              kind: spec.kind,
+              isNullable: nullable,
+              collectionItemType: spec.collectionItemType,
             ),
           );
         }
@@ -465,6 +565,8 @@ class C {
           'void Function([int])?',
           'void Function([int])',
           'void Function([int])',
+          TypeKind.otherType,
+          null,
         ),
         TypeSpec(
           'with named parameters',
@@ -475,22 +577,26 @@ class C {
           'void Function({int optional, required String required})?',
           'void Function({int optional, required String required})',
           'void Function({int optional, required String required})',
+          TypeKind.otherType,
+          null,
         ),
       ]) {
-        final caseName = 'function type, ${spec.item1}';
-        final parameter = functionTypeParameters['complex']![spec.item2]!;
-        final displayStringWithNullability = spec.item5;
-        final displayStringWithoutNullability = spec.item6;
-        final rawTypeName = spec.item7;
+        final caseName = 'function type, ${spec.caseName}';
+        final parameter =
+            functionTypeParameters['complex']![spec.parameterName]!;
         test(
           caseName,
           () => testGenericType(
             source: parameter,
-            rawTypeName: rawTypeName,
+            rawTypeName: spec.rawTypeName,
             typeArguments: [],
             expectedTypeArguments: [],
-            displayStringWithNullability: displayStringWithNullability,
-            displayStringWithoutNullability: displayStringWithoutNullability,
+            displayStringWithNullability: spec.displayStringWithNullability,
+            displayStringWithoutNullability:
+                spec.displayStringWithoutNullability,
+            kind: spec.kind,
+            isNullable: true,
+            collectionItemType: spec.collectionItemType,
           ),
         );
       } // complex function types
@@ -508,6 +614,9 @@ class C {
             rawTypeName: 'String',
             displayStringWithNullability: 'String',
             displayStringWithoutNullability: 'String',
+            kind: TypeKind.stringType,
+            collectionItemType: null,
+            isNullable: false,
           );
         },
       );
@@ -525,6 +634,9 @@ class C {
             rawTypeName: 'int Function(String)',
             displayStringWithNullability: 'int Function(String)',
             displayStringWithoutNullability: 'int Function(String)',
+            kind: TypeKind.otherType,
+            collectionItemType: null,
+            isNullable: false,
           );
         },
       );
@@ -551,6 +663,9 @@ class C {
             rawTypeName: 'Map<K, V>',
             displayStringWithNullability: 'Map<String, int>',
             displayStringWithoutNullability: 'Map<String, int>',
+            kind: TypeKind.otherType,
+            collectionItemType: null,
+            isNullable: false,
           );
         },
       );
@@ -573,6 +688,9 @@ class C {
             rawTypeName: 'R Function<T, R>(T)',
             displayStringWithNullability: 'int Function(String)',
             displayStringWithoutNullability: 'int Function(String)',
+            kind: TypeKind.otherType,
+            collectionItemType: null,
+            isNullable: false,
           );
         },
       );
@@ -591,6 +709,9 @@ class C {
             rawTypeName: 'Never',
             displayStringWithNullability: 'Never',
             displayStringWithoutNullability: 'Never',
+            kind: TypeKind.otherType,
+            collectionItemType: null,
+            isNullable: false,
           );
         },
       );
@@ -609,6 +730,9 @@ class C {
             displayStringWithNullability: 'MultiGenericFunction<int, String>',
             displayStringWithoutNullability:
                 'MultiGenericFunction<int, String>',
+            kind: TypeKind.otherType,
+            collectionItemType: null,
+            isNullable: false,
           );
         },
       );
@@ -633,6 +757,9 @@ class C {
             rawTypeName: 'Map<K, V>',
             displayStringWithNullability: 'AMap<String, int>',
             displayStringWithoutNullability: 'AMap<String, int>',
+            kind: TypeKind.otherType,
+            collectionItemType: null,
+            isNullable: false,
           );
         },
       );
@@ -657,6 +784,9 @@ class C {
             rawTypeName: 'R Function<S, R>(S)',
             displayStringWithNullability: 'String Function(int)',
             displayStringWithoutNullability: 'String Function(int)',
+            kind: TypeKind.otherType,
+            collectionItemType: null,
+            isNullable: false,
           );
         },
       );
@@ -674,6 +804,9 @@ class C {
             rawTypeName: 'Map<K, V>',
             displayStringWithNullability: 'StringIntMap',
             displayStringWithoutNullability: 'StringIntMap',
+            kind: TypeKind.otherType,
+            collectionItemType: null,
+            isNullable: false,
           );
         },
       );
@@ -691,6 +824,9 @@ class C {
             rawTypeName: 'R Function<T, R>(T)',
             displayStringWithNullability: 'InstantiatedMultiGenericFunction',
             displayStringWithoutNullability: 'InstantiatedMultiGenericFunction',
+            kind: TypeKind.otherType,
+            collectionItemType: null,
+            isNullable: false,
           );
         },
       );

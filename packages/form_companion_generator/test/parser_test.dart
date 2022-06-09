@@ -1839,6 +1839,48 @@ Future<void> main() async {
         ]);
       },
     );
+
+    test('template import is reflected', () async {
+      final result = await collectDependenciesAsync(
+        presenterLibrary.element,
+        Config(<String, dynamic>{
+          'argument_templates': {
+            'DropdownButtonFormField': {
+              'items': {
+                'item_template': '#ARGUMENT#',
+                'imports': {
+                  'Text': 'package:flutter/widgets.dart',
+                  'b.A': 'package:c.dart',
+                }
+              }
+            }
+          }
+        }),
+        [
+          await makeProperty(
+            'DropdownButtonFormField',
+            myEnumType,
+            myEnumType.element,
+            isFormBuilder: false,
+          ),
+        ],
+        nodeProvider,
+        logger,
+        isFormBuilder: false,
+      );
+
+      assertImports(result, [
+        ..._expectedImports['DropdownButtonFormField']!,
+        ExpectedImport('enum.dart', shows: ['MyEnum']),
+        ExpectedImport('presenter.dart'),
+        ExpectedImport(
+          'package:c.dart',
+          prefixes: [
+            MapEntry('b', ['A']),
+          ],
+        )
+      ]);
+    });
   });
 
   group('parseElementAsync (integration tests)', () {

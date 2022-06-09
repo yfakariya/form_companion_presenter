@@ -1,5 +1,7 @@
 // See LICENCE file in the root.
 
+import 'package:meta/meta.dart';
+
 import 'macro_keys.dart';
 
 /// Represents configuration.
@@ -168,6 +170,10 @@ class Config {
 class NamedTemplates {
   final Map<String, String> _namedTemplates;
 
+  /// Returns `true` when this template is empty.
+  @visibleForTesting
+  bool get isEmpty => _namedTemplates.isEmpty;
+
   /// Initializes a new instance from [Map] of [String].
   ///
   /// Keys are names of templates.
@@ -183,6 +189,10 @@ class NamedTemplates {
 class ArgumentTemplates {
   // class -> property
   final Map<String, Map<String, ArgumentTemplate>> _argumentTemplates;
+
+  /// Returns `true` when this template is empty.
+  @visibleForTesting
+  bool get isEmpty => _argumentTemplates.isEmpty;
 
   /// Initializes a new instance from [Map] of [ArgumentTemplate].
   ///
