@@ -2129,7 +2129,10 @@ final _expectedImports = {
     ),
     ExpectedImport(
       'package:flutter/widgets.dart',
-      shows: ['Widget'],
+      shows: [
+        'Text', // From default items.item_template
+        'Widget',
+      ],
     ),
   ]),
   'FormBuilderCheckbox': _merge([
@@ -2171,7 +2174,10 @@ final _expectedImports = {
     ),
     ExpectedImport(
       'package:flutter/widgets.dart',
-      shows: ['Widget'],
+      shows: [
+        'Text', // From default options.item_template
+        'Widget',
+      ],
     ),
     ExpectedImport(
       'package:flutter_form_builder/flutter_form_builder.dart',
@@ -2206,6 +2212,12 @@ final _expectedImports = {
     ExpectedImport(
       'package:flutter/rendering.dart',
       shows: ['WrapAlignment', 'WrapCrossAlignment'],
+    ),
+    ExpectedImport(
+      'package:flutter/widgets.dart',
+      shows: [
+        'Text', // From default options.item_template
+      ],
     ),
     ExpectedImport(
       'package:flutter_form_builder/flutter_form_builder.dart',
@@ -2325,7 +2337,11 @@ final _expectedImports = {
     ),
     ExpectedImport(
       'package:flutter/widgets.dart',
-      shows: ['Icon', 'Widget'],
+      shows: [
+        'Icon',
+        'Text', // From default items.item_template
+        'Widget',
+      ],
     ),
     ExpectedImport(
       'package:flutter_form_builder/flutter_form_builder.dart',
@@ -2357,6 +2373,12 @@ final _expectedImports = {
       shows: ['WrapAlignment', 'WrapCrossAlignment'],
     ),
     ExpectedImport(
+      'package:flutter/widgets.dart',
+      shows: [
+        'Text', // From default options.item_template
+      ],
+    ),
+    ExpectedImport(
       'package:flutter_form_builder/flutter_form_builder.dart',
       shows: ['FormBuilderFieldOption', 'FormBuilderFilterChip'],
     ),
@@ -2381,7 +2403,10 @@ final _expectedImports = {
     ),
     ExpectedImport(
       'package:flutter/widgets.dart',
-      shows: ['Widget'],
+      shows: [
+        'Text', // From default options.item_template
+        'Widget',
+      ],
     ),
     ExpectedImport(
       'package:flutter_form_builder/flutter_form_builder.dart',
@@ -2417,6 +2442,12 @@ final _expectedImports = {
     ExpectedImport(
       'package:flutter/painting.dart',
       shows: ['EdgeInsetsGeometry'],
+    ),
+    ExpectedImport(
+      'package:flutter/widgets.dart',
+      shows: [
+        'Text', // From default options.item_template
+      ],
     ),
     ExpectedImport(
       'package:flutter_form_builder/flutter_form_builder.dart',
