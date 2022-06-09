@@ -600,13 +600,7 @@ class _InstantiatedGenericInterfaceType extends GenericType {
       return null;
     }
 
-    return GenericType.fromDartType(
-      _interfaceType
-          .asInstanceOf(typeProvider.iterableElement)!
-          .typeArguments
-          .single,
-      _interfaceType.element,
-    );
+    return typeArguments.single;
   }
 
   @override
