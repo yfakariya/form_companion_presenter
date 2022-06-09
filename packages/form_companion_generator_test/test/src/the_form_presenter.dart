@@ -14,9 +14,8 @@ class TheFormPresenter with CompanionPresenterMixin, FormCompanionMixin {
       PropertyDescriptorsBuilder()
         ..string(name: 'propString')
         ..enumerated<MyEnum>(name: 'propEnum')
-        ..addWithField<List<String>, List<String>,
-            DropdownButtonFormField<List<String>>>(
-          name: 'propStringList',
+        ..addWithField<String, String, DropdownButtonFormField<String>>(
+          name: 'propString2',
         )
         ..integerText(
           name: 'propInt',
