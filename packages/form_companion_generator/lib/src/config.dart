@@ -207,6 +207,8 @@ class ArgumentTemplates {
       null;
 }
 
+// TODO(yfakariya): testing imports and errors
+
 /// Represents each item of `argument_templates`.
 class ArgumentTemplate {
   /// Value of template, if this template is NOT an item template.
@@ -238,25 +240,12 @@ class ArgumentTemplate {
   static MapEntry<String, ArgumentTemplate> parse(
     MapEntry<dynamic, dynamic> rawArgumentTemplate,
   ) {
-    final dynamic propertyOrItemTemplate = rawArgumentTemplate.key;
-    if (propertyOrItemTemplate is! String) {
+    final dynamic property = rawArgumentTemplate.key;
+    if (property is! String) {
       throw ArgumentError(
         "Unexpected key type of property of 'argument_templates': "
-        '${propertyOrItemTemplate.runtimeType}',
+        '${property.runtimeType}',
       );
-    }
-
-    late final String property;
-    late final bool isItemTemplate;
-    if (propertyOrItemTemplate.endsWith('_item_template')) {
-      property = propertyOrItemTemplate.substring(
-        0,
-        propertyOrItemTemplate.length - '_item_template'.length,
-      );
-      isItemTemplate = true;
-    } else {
-      property = propertyOrItemTemplate;
-      isItemTemplate = false;
     }
 
     final dynamic simpleOrStructuredTemplate = rawArgumentTemplate.value;
@@ -264,32 +253,46 @@ class ArgumentTemplate {
       return MapEntry(
         property,
         ArgumentTemplate(
-          isItemTemplate ? null : simpleOrStructuredTemplate,
-          isItemTemplate ? simpleOrStructuredTemplate : null,
+          simpleOrStructuredTemplate,
+          null,
           [],
         ),
       );
     } else if (simpleOrStructuredTemplate is Map) {
-      final dynamic templateValue = simpleOrStructuredTemplate['template'];
-      if (templateValue is! String) {
-        throw ArgumentError(
-          "'$propertyOrItemTemplate' property of "
-          "'argument_templates' must have String 'template' property "
-          'but the type is: ${templateValue.runtimeType}',
+      final dynamic itemTemplateValue =
+          simpleOrStructuredTemplate['item_template'];
+      if (itemTemplateValue is String) {
+        return MapEntry(
+          property,
+          ArgumentTemplate(
+            null,
+            itemTemplateValue,
+            TemplateImports.parse(simpleOrStructuredTemplate['imports']),
+          ),
         );
       }
 
-      return MapEntry(
-        property,
-        ArgumentTemplate(
-          isItemTemplate ? null : templateValue,
-          isItemTemplate ? templateValue : null,
-          TemplateImports.parse(simpleOrStructuredTemplate['imports']),
-        ),
+      final dynamic templateValue = simpleOrStructuredTemplate['template'];
+      if (templateValue is String) {
+        return MapEntry(
+          property,
+          ArgumentTemplate(
+            null,
+            templateValue,
+            TemplateImports.parse(simpleOrStructuredTemplate['imports']),
+          ),
+        );
+      }
+
+      throw ArgumentError(
+        "'$property' property of "
+        "'argument_templates' must have String 'template' or 'item_template' "
+        "property but the type of 'template' is: ${templateValue.runtimeType}, "
+        "and the type of 'item_template' is: ${itemTemplateValue.runtimeType}.",
       );
     } else {
       throw ArgumentError(
-        "Unexpected value type of '$propertyOrItemTemplate' property of "
+        "Unexpected value type of '$property' property of "
         "'argument_templates': ${simpleOrStructuredTemplate.runtimeType}",
       );
     }
@@ -301,8 +304,9 @@ class ArgumentTemplate {
 /// This class can represents shorthand String typed template,
 /// which represents import without any type restrictions and a prefix.
 class TemplateImports {
-  static final RegExp _prefixedTypePattern =
-      RegExp(r'(?<Prefix>^[a-z$][a-z_$0-9]*)?\.(?<Type>[A-Z$][A-Za-z_$0-9]*)$');
+  static final RegExp _prefixedTypePattern = RegExp(
+    r'^((?<Prefix>[a-z$][a-z_$0-9]*)?\.)?(?<Type>[A-Za-z$][A-Za-z_$0-9]*)$',
+  );
 
   /// URI for importing package.
   final String uri;

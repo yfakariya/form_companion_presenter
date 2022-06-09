@@ -17,21 +17,25 @@ builders:
             autovalidateMode: '#ARGUMENT# ?? #AUTO_VALIDATE_MODE#'
             decoration: '#ARGUMENT# ?? #DEFAULT_VALUE_COPY_OR_NEW#(labelText: #LABEL_TEMPLATE#, hintText: #HINT_TEMPLATE#)'
           DropdownButtonFormField:
-            # TODO: should be String or Object (with item_template)
-            items_item_template: 'DropdownMenuItem<#ITEM_VALUE_TYPE#>(value: #ITEM_VALUE#, child: #ITEM_WIDGET_TEMPLATE#)'
-            # items:
-            #   item_template: 'DropdownMenuItem<#ITEM_VALUE_TYPE#>(value: #ITEM_VALUE#, child: #ITEM_WIDGET_TEMPLATE#)'
+            items:
+              item_template: 'DropdownMenuItem<#ITEM_VALUE_TYPE#>(value: #ITEM_VALUE#, child: #ITEM_WIDGET_TEMPLATE#)'
             onChanged: '#ARGUMENT# ?? (_) {}' # Tip: required to work correctly
           FormBuilderDropdown:
-            items_item_template: 'DropdownMenuItem<#ITEM_VALUE_TYPE#>(value: #ITEM_VALUE#, child: #ITEM_WIDGET_TEMPLATE#)'
+            items:
+              item_template: 'DropdownMenuItem<#ITEM_VALUE_TYPE#>(value: #ITEM_VALUE#, child: #ITEM_WIDGET_TEMPLATE#)'
             onChanged: '#ARGUMENT# ?? (_) {}' # Tip: required to work correctly
           FormBuilderCheckboxGroup:
-            options_item_template: 'FormBuilderFieldOption<#ITEM_VALUE_TYPE#>(value: #ITEM_VALUE#, child: #ITEM_WIDGET_TEMPLATE#)'
+            options:
+              item_template: 'FormBuilderFieldOption<#ITEM_VALUE_TYPE#>(value: #ITEM_VALUE#, child: #ITEM_WIDGET_TEMPLATE#)'
           FormBuilderChoiceChip:
-            options_item_template: 'FormBuilderFieldOption<#ITEM_VALUE_TYPE#>(value: #ITEM_VALUE#, child: #ITEM_WIDGET_TEMPLATE#)'
+            options:
+              item_template: 'FormBuilderFieldOption<#ITEM_VALUE_TYPE#>(value: #ITEM_VALUE#, child: #ITEM_WIDGET_TEMPLATE#)'
           FormBuilderFilterChip:
-            options_item_template: 'FormBuilderFieldOption<#ITEM_VALUE_TYPE#>(value: #ITEM_VALUE#, child: #ITEM_WIDGET_TEMPLATE#)'
+            options:
+              item_template: 'FormBuilderFieldOption<#ITEM_VALUE_TYPE#>(value: #ITEM_VALUE#, child: #ITEM_WIDGET_TEMPLATE#)'
           FormBuilderRadioGroup:
-            options_item_template: 'FormBuilderFieldOption<#ITEM_VALUE_TYPE#>(value: #ITEM_VALUE#, child: #ITEM_WIDGET_TEMPLATE#)'
+            options:
+              item_template: 'FormBuilderFieldOption<#ITEM_VALUE_TYPE#>(value: #ITEM_VALUE#, child: #ITEM_WIDGET_TEMPLATE#)'
           FormBuilderSegmentedControl:
-            options_item_template: 'FormBuilderFieldOption<#ITEM_VALUE_TYPE#>(value: #ITEM_VALUE#, child: #ITEM_WIDGET_TEMPLATE#)'
+            options:
+              item_template: 'FormBuilderFieldOption<#ITEM_VALUE_TYPE#>(value: #ITEM_VALUE#, child: #ITEM_WIDGET_TEMPLATE#)'
