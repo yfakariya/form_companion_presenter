@@ -34,17 +34,6 @@ class ArgumentMacroContext {
   /// `FormField`'s constructor parameter.
   String get parameter => _contextValues[ContextValueKeys.argument]!;
 
-  /// Current item of list like field value of `PropertyDescriptor`.
-  ///
-  /// * If the value is [Iterable] type, then this value is each item of it.
-  /// * If the value is enum type, then this value is each members of the enum.
-  ///   * If the value is also nullable, `null` is also listed as this value.
-  /// * If the value is [bool] type, then this value is `true` or `false`.
-  ///   * If the value is also nullable, `null` is also listed as this value.
-  ///
-  /// This value can be used in items template only.
-  String get itemValue => _contextValues[ContextValueKeys.itemValue]!;
-
   /// A type of current assigning constructor parameter.
   DartType get parameterType => _parameterType!;
 
@@ -59,7 +48,7 @@ class ArgumentMacroContext {
     required String presenter,
     required String? autovalidateMode,
     required NamedTemplates namedTemplates,
-    required String? itemValue,
+    required String itemValue,
     required String? itemValueType,
     required String? itemValueString,
   })  : _contextValues = {
@@ -73,12 +62,8 @@ class ArgumentMacroContext {
         _namedTemplates = namedTemplates {
     _contextValues[ContextValueKeys.autoValidateMode] =
         autovalidateMode ?? 'AutovalidateMode.disabled';
+    _contextValues[ContextValueKeys.itemValue] = itemValue;
 
-    if (itemValue != null) {
-      _contextValues[ContextValueKeys.itemValue] = itemValue;
-    } else {
-      _contextValues.remove(ContextValueKeys.itemValue);
-    }
     if (itemValueType != null) {
       _contextValues[ContextValueKeys.itemValueType] = itemValueType;
     }

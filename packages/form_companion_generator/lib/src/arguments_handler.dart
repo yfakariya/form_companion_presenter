@@ -5,7 +5,6 @@ import 'dart:async';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
-import 'package:analyzer/dart/element/type.dart';
 import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
 
@@ -14,58 +13,6 @@ import 'macro.dart';
 import 'model.dart';
 import 'node_provider.dart';
 import 'utilities.dart';
-
-/// Represents context information for emitter functions.
-@sealed
-class AssignmentContext {
-  /// [PresenterDefinition].
-  final PresenterDefinition data;
-
-  /// A name of a local variable storing `PropertyDescriptor<T>`, which holds
-  /// validator, saved value, etc.
-  final String propertyDescriptor;
-
-  /// A name of a parameter typed `BuildContext` to access widget tree data.
-  final String buildContext;
-
-  /// A name of a field which stores presenter instance which provides key
-  /// creation.
-  final String presenter;
-
-  String _parameterName = '';
-
-  /// Gets a current parameter name.
-  String get parameterName => _parameterName;
-
-  /// Gets a current parameter type;
-  late DartType parameterType;
-
-  String? _defaultValue;
-
-  /// Gets a default value of the assigned parameter.
-  String? get defaultValue => _defaultValue;
-
-  /// Initializes a new [AssignmentContext] instance.
-  AssignmentContext({
-    required this.data,
-    required this.propertyDescriptor,
-    required this.buildContext,
-    required this.presenter,
-  });
-
-  /// Refresh instance for new parameter with specified informations.
-  // ignore: avoid_returning_this
-  AssignmentContext withParameter(
-    String name,
-    DartType type,
-    String? defaultValue,
-  ) {
-    _parameterName = name;
-    parameterType = type;
-    _defaultValue = defaultValue;
-    return this;
-  }
-}
 
 /// Handles arguments for a constructor of form field
 /// and a form field factory which wraps the constructor.
