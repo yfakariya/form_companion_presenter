@@ -43,12 +43,7 @@ class LibraryImport {
   /// Adds a specified [Identifier] as imported from this [library].
   void addType(Identifier identifier) {
     if (identifier is PrefixedIdentifier) {
-      final prefixed = _prefixes[identifier.prefix.name];
-      if (prefixed == null) {
-        _prefixes[identifier.prefix.name] = {identifier.identifier.name};
-      } else {
-        prefixed.add(identifier.identifier.name);
-      }
+      addTypeNameToPrefixed(identifier.prefix.name, identifier.identifier.name);
     } else {
       assert(identifier is SimpleIdentifier);
       addTypeName(identifier.name);
@@ -56,7 +51,19 @@ class LibraryImport {
   }
 
   /// Adds a specified named type as imported from this [library].
-  void addTypeName(String typeName) => _types.add(typeName);
+  void addTypeName(String typeName) {
+    _types.add(typeName);
+  }
+
+  /// Adds a specified named type as imported from this [library] with specified [prefix].
+  void addTypeNameToPrefixed(String prefix, String typeName) {
+    final prefixed = _prefixes[prefix];
+    if (prefixed == null) {
+      _prefixes[prefix] = {typeName};
+    } else {
+      prefixed.add(typeName);
+    }
+  }
 }
 
 /// A visitor for [AstNode] tree to collect dependent libraries.
@@ -268,6 +275,16 @@ class DependentLibraryCollector extends RecursiveAstVisitor<void> {
   void recordTypeIdDirect(String libraryIdentifier, String typeName) =>
       _getLibraryImportEntryDirect(libraryIdentifier, null)
           ?.addTypeName(typeName);
+
+  /// Record import for specified [Identifier] which is imported from
+  /// the library specified as [libraryIdentifier] with [libraryPrefix].
+  void recordTypeIdDirectWithLibraryPrefix(
+    String libraryIdentifier,
+    String libraryPrefix,
+    String typeName,
+  ) =>
+      _getLibraryImportEntryDirect(libraryIdentifier, null)
+          ?.addTypeNameToPrefixed(libraryPrefix, typeName);
 
   Future<AstNode> _beginGetElementDeclaration(String fieldName) async =>
       _nodeProvider

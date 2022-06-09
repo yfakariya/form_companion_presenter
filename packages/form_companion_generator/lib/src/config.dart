@@ -143,7 +143,6 @@ class Config {
     if (_materializedItemTemplates == null) {
       final dynamic rawItemTemplates = _underlying[_argumentTemplatesKey];
       if (rawItemTemplates is Map) {
-        // TODO(yfakariya): Item templates should be property instead of key suffix.
         _materializedItemTemplates = ArgumentTemplates({
           for (final e in rawItemTemplates.entries
               .where((x) => x.key is String && x.value is Map))
@@ -311,8 +310,8 @@ class TemplateImports {
   /// URI for importing package.
   final String uri;
 
-  /// Prefix for import, if any.
-  final String? prefix;
+  /// Prefix for import if any. If not prefixed, this value will be empty string.
+  final String prefix;
 
   /// Type to be showed from the package.
   /// This value can be empty for "import everything".
@@ -336,7 +335,7 @@ class TemplateImports {
     if (imports == null) {
       return [];
     } else if (imports is String) {
-      return [TemplateImports(imports, null, [])];
+      return [TemplateImports(imports, '', [])];
     } else if (imports is! Map) {
       throw ArgumentError(
         "Unexpected type of 'imports': ${imports.runtimeType}",

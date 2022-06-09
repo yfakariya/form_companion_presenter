@@ -194,6 +194,7 @@ Future<void> main() async {
         warnings: [],
         imports: await collectDependenciesAsync(
           library,
+          defaultConfig,
           properties,
           nodeProvider,
           logger,
@@ -232,6 +233,7 @@ Future<void> main() async {
         warnings: [],
         imports: await collectDependenciesAsync(
           library,
+          defaultConfig,
           properties,
           nodeProvider,
           logger,
@@ -266,6 +268,7 @@ Future<void> main() async {
         warnings: [],
         imports: await collectDependenciesAsync(
           library,
+          defaultConfig,
           properties,
           nodeProvider,
           logger,
@@ -382,6 +385,7 @@ Future<void> main() async {
           warnings: [],
           imports: await collectDependenciesAsync(
             library,
+            defaultConfig,
             properties,
             nodeProvider,
             logger,
@@ -423,6 +427,7 @@ Future<void> main() async {
           warnings: [],
           imports: await collectDependenciesAsync(
             library,
+            defaultConfig,
             properties,
             nodeProvider,
             logger,
@@ -468,6 +473,7 @@ Future<void> main() async {
           warnings: ['AAA', 'BBB'],
           imports: await collectDependenciesAsync(
             library,
+            defaultConfig,
             properties,
             nodeProvider,
             logger,
@@ -515,6 +521,7 @@ Future<void> main() async {
           warnings: ['AAA', 'BBB'],
           imports: await collectDependenciesAsync(
             library,
+            defaultConfig,
             properties,
             nodeProvider,
             logger,
@@ -571,6 +578,7 @@ Future<void> main() async {
         warnings: [],
         imports: await collectDependenciesAsync(
           library,
+          defaultConfig,
           properties,
           nodeProvider,
           logger,
@@ -609,6 +617,7 @@ Future<void> main() async {
         warnings: [],
         imports: await collectDependenciesAsync(
           library,
+          defaultConfig,
           properties,
           nodeProvider,
           logger,
@@ -1094,6 +1103,7 @@ extension \$TestFieldFactoryExtension on Test {
         warnings: [],
         imports: await collectDependenciesAsync(
           library,
+          defaultConfig,
           properties,
           nodeProvider,
           logger,

@@ -71,6 +71,7 @@ FutureOr<PresenterDefinition> parseElementAsync(
         ? []
         : await collectDependenciesAsync(
             element.library,
+            config,
             properties,
             nodeProvider,
             logger,
@@ -289,6 +290,7 @@ Element _getDeclaringElement(MethodInvocation expression) {
 /// dependency for [presenterLibrary] will be ignored.
 FutureOr<List<LibraryImport>> collectDependenciesAsync(
   LibraryElement presenterLibrary,
+  Config config,
   Iterable<PropertyAndFormFieldDefinition> properties,
   NodeProvider nodeProvider,
   Logger logger, {
@@ -334,6 +336,25 @@ FutureOr<List<LibraryImport>> collectDependenciesAsync(
           'package:flutter/widgets.dart',
           'Localizations',
         );
+
+      for (final import in argumentsHandler.allParameters.expand((p) => config
+          .argumentTemplates
+          .get(property.formFieldTypeName, p.name)
+          .imports)) {
+        if (import.prefix.isEmpty) {
+          for (final type in import.types) {
+            collector.recordTypeIdDirect(import.uri, type);
+          }
+        } else {
+          for (final type in import.types) {
+            collector.recordTypeIdDirectWithLibraryPrefix(
+              import.uri,
+              import.prefix,
+              type,
+            );
+          }
+        }
+      }
 
       await collector.endAsync();
     }

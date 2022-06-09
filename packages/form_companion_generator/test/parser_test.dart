@@ -1704,6 +1704,7 @@ Future<void> main() async {
 
         final result = await collectDependenciesAsync(
           dependencyHolder.library,
+          defaultConfig,
           [propertyAndField],
           nodeProvider,
           logger,
@@ -1729,6 +1730,7 @@ Future<void> main() async {
     }) async {
       final result = await collectDependenciesAsync(
         presenterLibrary.element,
+        defaultConfig,
         [
           await makeProperty(
             fieldName,
@@ -1817,6 +1819,7 @@ Future<void> main() async {
             .single;
         final result = await collectDependenciesAsync(
           presenterLibrary.element,
+          defaultConfig,
           [
             await makeProperty(
               'DropdownButtonFormField',
