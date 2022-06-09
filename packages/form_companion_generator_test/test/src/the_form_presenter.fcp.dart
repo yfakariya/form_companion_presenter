@@ -34,6 +34,7 @@ import 'package:flutter/painting.dart'
     show
         AlignmentDirectional,
         AlignmentGeometry,
+        BorderRadius,
         EdgeInsets,
         StrutStyle,
         TextAlignVertical,
@@ -42,6 +43,7 @@ import 'package:flutter/painting.dart'
 import 'package:flutter/services.dart'
     show
         MaxLengthEnforcement,
+        MouseCursor,
         SmartDashesType,
         SmartQuotesType,
         TextCapitalization,
@@ -57,6 +59,7 @@ import 'package:flutter/widgets.dart'
         Localizations,
         ScrollController,
         ScrollPhysics,
+        Text,
         TextEditingController,
         TextSelectionControls,
         ToolbarOptions,
@@ -80,11 +83,10 @@ extension $TheFormPresenterPropertyExtension on TheFormPresenter {
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
       properties['propEnum']! as PropertyDescriptor<MyEnum, MyEnum>;
 
-  /// Gets a [PropertyDescriptor] of `propStringList` property.
-  PropertyDescriptor<List<String>, List<String>> get propStringList =>
+  /// Gets a [PropertyDescriptor] of `propString2` property.
+  PropertyDescriptor<String, String> get propString2 =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-      properties['propStringList']!
-          as PropertyDescriptor<List<String>, List<String>>;
+      properties['propString2']! as PropertyDescriptor<String, String>;
 
   /// Gets a [PropertyDescriptor] of `propInt` property.
   PropertyDescriptor<int, String> get propInt =>
@@ -139,7 +141,7 @@ class $TheFormPresenterFieldFactory {
     Color? cursorColor,
     Brightness? keyboardAppearance,
     EdgeInsets scrollPadding = const EdgeInsets.all(20.0),
-    bool enableInteractiveSelection = true,
+    bool? enableInteractiveSelection,
     TextSelectionControls? selectionControls,
     InputCounterWidgetBuilder? buildCounter,
     ScrollPhysics? scrollPhysics,
@@ -148,6 +150,7 @@ class $TheFormPresenterFieldFactory {
     ScrollController? scrollController,
     String? restorationId,
     bool enableIMEPersonalizedLearning = true,
+    MouseCursor? mouseCursor,
   }) {
     final property = _presenter.propString;
     return TextFormField(
@@ -157,9 +160,8 @@ class $TheFormPresenterFieldFactory {
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       focusNode: focusNode,
       decoration: decoration ??
-          const InputDecoration().copyWith(
-            labelText: property.name,
-          ),
+          const InputDecoration()
+              .copyWith(labelText: property.name, hintText: null),
       keyboardType: keyboardType,
       textCapitalization: textCapitalization,
       textInputAction: textInputAction,
@@ -183,7 +185,7 @@ class $TheFormPresenterFieldFactory {
       minLines: minLines,
       expands: expands,
       maxLength: maxLength,
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+      onChanged: onChanged,
       onTap: onTap,
       onEditingComplete: onEditingComplete,
       onFieldSubmitted: onFieldSubmitted,
@@ -207,13 +209,14 @@ class $TheFormPresenterFieldFactory {
       scrollController: scrollController,
       restorationId: restorationId,
       enableIMEPersonalizedLearning: enableIMEPersonalizedLearning,
+      mouseCursor: mouseCursor,
     );
   }
 
   /// Gets a [FormField] for `propEnum` property.
   DropdownButtonFormField<MyEnum> propEnum(
     BuildContext context, {
-    required List<DropdownMenuItem<MyEnum>>? items,
+    List<DropdownMenuItem<MyEnum>>? items,
     DropdownButtonBuilder? selectedItemBuilder,
     Widget? hint,
     Widget? disabledHint,
@@ -237,17 +240,21 @@ class $TheFormPresenterFieldFactory {
     double? menuMaxHeight,
     bool? enableFeedback,
     AlignmentGeometry alignment = AlignmentDirectional.centerStart,
+    BorderRadius? borderRadius,
   }) {
     final property = _presenter.propEnum;
     return DropdownButtonFormField<MyEnum>(
       key: _presenter.getKey(property.name, context),
-      items: items,
+      items: [MyEnum.one, MyEnum.two]
+          .map((x) =>
+              DropdownMenuItem<MyEnum>(value: x, child: Text(x.toString())))
+          .toList(),
       selectedItemBuilder: selectedItemBuilder,
       value: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       hint: hint,
       disabledHint: disabledHint,
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+      onChanged: onChanged ?? (_) {},
       onTap: onTap,
       elevation: elevation,
       style: style,
@@ -263,9 +270,7 @@ class $TheFormPresenterFieldFactory {
       autofocus: autofocus,
       dropdownColor: dropdownColor,
       decoration: decoration ??
-          InputDecoration(
-            labelText: property.name,
-          ),
+          InputDecoration(labelText: property.name, hintText: null),
       onSaved: (v) => property.setFieldValue(
           v, Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       validator: property.getValidator(context),
@@ -273,17 +278,18 @@ class $TheFormPresenterFieldFactory {
       menuMaxHeight: menuMaxHeight,
       enableFeedback: enableFeedback,
       alignment: alignment,
+      borderRadius: borderRadius,
     );
   }
 
-  /// Gets a [FormField] for `propStringList` property.
-  DropdownButtonFormField<List<String>> propStringList(
+  /// Gets a [FormField] for `propString2` property.
+  DropdownButtonFormField<String> propString2(
     BuildContext context, {
-    required List<DropdownMenuItem<List<String>>>? items,
+    required List<DropdownMenuItem<String>>? items,
     DropdownButtonBuilder? selectedItemBuilder,
     Widget? hint,
     Widget? disabledHint,
-    ValueChanged<List<String>?>? onChanged,
+    ValueChanged<String?>? onChanged,
     VoidCallback? onTap,
     int elevation = 8,
     TextStyle? style,
@@ -303,9 +309,10 @@ class $TheFormPresenterFieldFactory {
     double? menuMaxHeight,
     bool? enableFeedback,
     AlignmentGeometry alignment = AlignmentDirectional.centerStart,
+    BorderRadius? borderRadius,
   }) {
-    final property = _presenter.propStringList;
-    return DropdownButtonFormField<List<String>>(
+    final property = _presenter.propString2;
+    return DropdownButtonFormField<String>(
       key: _presenter.getKey(property.name, context),
       items: items,
       selectedItemBuilder: selectedItemBuilder,
@@ -313,7 +320,7 @@ class $TheFormPresenterFieldFactory {
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       hint: hint,
       disabledHint: disabledHint,
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+      onChanged: onChanged ?? (_) {},
       onTap: onTap,
       elevation: elevation,
       style: style,
@@ -329,9 +336,7 @@ class $TheFormPresenterFieldFactory {
       autofocus: autofocus,
       dropdownColor: dropdownColor,
       decoration: decoration ??
-          InputDecoration(
-            labelText: property.name,
-          ),
+          InputDecoration(labelText: property.name, hintText: null),
       onSaved: (v) => property.setFieldValue(
           v, Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       validator: property.getValidator(context),
@@ -339,6 +344,7 @@ class $TheFormPresenterFieldFactory {
       menuMaxHeight: menuMaxHeight,
       enableFeedback: enableFeedback,
       alignment: alignment,
+      borderRadius: borderRadius,
     );
   }
 
@@ -383,7 +389,7 @@ class $TheFormPresenterFieldFactory {
     Color? cursorColor,
     Brightness? keyboardAppearance,
     EdgeInsets scrollPadding = const EdgeInsets.all(20.0),
-    bool enableInteractiveSelection = true,
+    bool? enableInteractiveSelection,
     TextSelectionControls? selectionControls,
     InputCounterWidgetBuilder? buildCounter,
     ScrollPhysics? scrollPhysics,
@@ -392,6 +398,7 @@ class $TheFormPresenterFieldFactory {
     ScrollController? scrollController,
     String? restorationId,
     bool enableIMEPersonalizedLearning = true,
+    MouseCursor? mouseCursor,
   }) {
     final property = _presenter.propInt;
     return TextFormField(
@@ -401,9 +408,8 @@ class $TheFormPresenterFieldFactory {
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       focusNode: focusNode,
       decoration: decoration ??
-          const InputDecoration().copyWith(
-            labelText: property.name,
-          ),
+          const InputDecoration()
+              .copyWith(labelText: property.name, hintText: null),
       keyboardType: keyboardType,
       textCapitalization: textCapitalization,
       textInputAction: textInputAction,
@@ -427,7 +433,7 @@ class $TheFormPresenterFieldFactory {
       minLines: minLines,
       expands: expands,
       maxLength: maxLength,
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+      onChanged: onChanged,
       onTap: onTap,
       onEditingComplete: onEditingComplete,
       onFieldSubmitted: onFieldSubmitted,
@@ -451,6 +457,7 @@ class $TheFormPresenterFieldFactory {
       scrollController: scrollController,
       restorationId: restorationId,
       enableIMEPersonalizedLearning: enableIMEPersonalizedLearning,
+      mouseCursor: mouseCursor,
     );
   }
 }

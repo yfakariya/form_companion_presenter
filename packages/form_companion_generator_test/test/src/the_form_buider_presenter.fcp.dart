@@ -82,6 +82,7 @@ import 'package:flutter/widgets.dart'
         RouteSettings,
         ScrollController,
         ScrollPhysics,
+        Text,
         TextEditingController,
         ToolbarOptions,
         TransitionBuilder,
@@ -278,10 +279,9 @@ class $TheFormBuilderPresenterFieldFactory {
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       readOnly: readOnly,
       decoration: decoration ??
-          const InputDecoration().copyWith(
-            labelText: property.name,
-          ),
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+          const InputDecoration()
+              .copyWith(labelText: property.name, hintText: null),
+      onChanged: onChanged,
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.onUserInteraction,
@@ -342,7 +342,7 @@ class $TheFormBuilderPresenterFieldFactory {
     AutovalidateMode? autovalidateMode,
     VoidCallback? onReset,
     FocusNode? focusNode,
-    required List<DropdownMenuItem<MyEnum>> items,
+    List<DropdownMenuItem<MyEnum>>? items,
     bool isExpanded = true,
     bool isDense = true,
     int elevation = 8,
@@ -372,16 +372,18 @@ class $TheFormBuilderPresenterFieldFactory {
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       decoration: decoration ??
-          const InputDecoration().copyWith(
-            labelText: property.name,
-          ),
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+          const InputDecoration()
+              .copyWith(labelText: property.name, hintText: null),
+      onChanged: onChanged ?? (_) {},
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.onUserInteraction,
       onReset: onReset,
       focusNode: focusNode,
-      items: items,
+      items: [MyEnum.one, MyEnum.two]
+          .map((x) =>
+              DropdownMenuItem<MyEnum>(value: x, child: Text(x.toString())))
+          .toList(),
       isExpanded: isExpanded,
       isDense: isDense,
       elevation: elevation,
@@ -439,10 +441,9 @@ class $TheFormBuilderPresenterFieldFactory {
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       decoration: decoration ??
-          const InputDecoration().copyWith(
-            labelText: property.name,
-          ),
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+          const InputDecoration()
+              .copyWith(labelText: property.name, hintText: null),
+      onChanged: onChanged,
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.onUserInteraction,
@@ -536,10 +537,9 @@ class $TheFormBuilderPresenterFieldFactory {
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       decoration: decoration ??
-          const InputDecoration().copyWith(
-            labelText: property.name,
-          ),
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+          const InputDecoration()
+              .copyWith(labelText: property.name, hintText: null),
+      onChanged: onChanged,
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.onUserInteraction,
@@ -666,10 +666,9 @@ class $TheFormBuilderPresenterFieldFactory {
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       decoration: decoration ??
-          const InputDecoration().copyWith(
-            labelText: property.name,
-          ),
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+          const InputDecoration()
+              .copyWith(labelText: property.name, hintText: null),
+      onChanged: onChanged,
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.onUserInteraction,
@@ -760,10 +759,9 @@ class $TheFormBuilderPresenterFieldFactory {
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))!,
       decoration: decoration ??
-          const InputDecoration().copyWith(
-            labelText: property.name,
-          ),
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+          const InputDecoration()
+              .copyWith(labelText: property.name, hintText: null),
+      onChanged: onChanged,
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.onUserInteraction,
@@ -795,7 +793,7 @@ class $TheFormBuilderPresenterFieldFactory {
     FocusNode? focusNode,
     InputDecoration? decoration,
     Key? key,
-    required List<FormBuilderFieldOption<MyEnum>> options,
+    List<FormBuilderFieldOption<MyEnum>>? options,
     WrapAlignment alignment = WrapAlignment.start,
     Color? backgroundColor,
     Color? checkmarkColor,
@@ -832,14 +830,19 @@ class $TheFormBuilderPresenterFieldFactory {
       focusNode: focusNode,
       validator: property.getValidator(context),
       decoration: decoration ??
-          const InputDecoration().copyWith(
-            labelText: property.name,
-          ),
+          const InputDecoration()
+              .copyWith(labelText: property.name, hintText: null),
       key: key,
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))!,
       name: property.name,
-      options: options,
+      options: property
+              .getFieldValue(Localizations.maybeLocaleOf(context) ??
+                  const Locale('en', 'US'))
+              ?.map((x) => FormBuilderFieldOption<MyEnum>(
+                  value: x, child: Text(x.toString())))
+              .toList() ??
+          [],
       alignment: alignment,
       backgroundColor: backgroundColor,
       checkmarkColor: checkmarkColor,
@@ -865,7 +868,7 @@ class $TheFormBuilderPresenterFieldFactory {
       spacing: spacing,
       textDirection: textDirection,
       verticalDirection: verticalDirection,
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+      onChanged: onChanged,
       valueTransformer: valueTransformer,
       onReset: onReset,
     );
@@ -879,7 +882,7 @@ class $TheFormBuilderPresenterFieldFactory {
     FocusNode? focusNode,
     InputDecoration? decoration,
     Key? key,
-    required List<FormBuilderFieldOption<bool>> options,
+    List<FormBuilderFieldOption<bool>>? options,
     WrapAlignment alignment = WrapAlignment.start,
     Color? backgroundColor,
     Color? checkmarkColor,
@@ -916,14 +919,19 @@ class $TheFormBuilderPresenterFieldFactory {
       focusNode: focusNode,
       validator: property.getValidator(context),
       decoration: decoration ??
-          const InputDecoration().copyWith(
-            labelText: property.name,
-          ),
+          const InputDecoration()
+              .copyWith(labelText: property.name, hintText: null),
       key: key,
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))!,
       name: property.name,
-      options: options,
+      options: property
+              .getFieldValue(Localizations.maybeLocaleOf(context) ??
+                  const Locale('en', 'US'))
+              ?.map((x) => FormBuilderFieldOption<bool>(
+                  value: x, child: Text(x.toString())))
+              .toList() ??
+          [],
       alignment: alignment,
       backgroundColor: backgroundColor,
       checkmarkColor: checkmarkColor,
@@ -949,7 +957,7 @@ class $TheFormBuilderPresenterFieldFactory {
       spacing: spacing,
       textDirection: textDirection,
       verticalDirection: verticalDirection,
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+      onChanged: onChanged,
       valueTransformer: valueTransformer,
       onReset: onReset,
     );
@@ -992,10 +1000,8 @@ class $TheFormBuilderPresenterFieldFactory {
                   enabledBorder: InputBorder.none,
                   errorBorder: InputBorder.none,
                   disabledBorder: InputBorder.none)
-              .copyWith(
-            labelText: property.name,
-          ),
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+              .copyWith(labelText: property.name, hintText: null),
+      onChanged: onChanged,
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.onUserInteraction,
@@ -1026,7 +1032,7 @@ class $TheFormBuilderPresenterFieldFactory {
     AutovalidateMode? autovalidateMode,
     VoidCallback? onReset,
     FocusNode? focusNode,
-    required List<FormBuilderFieldOption<MyEnum>> options,
+    List<FormBuilderFieldOption<MyEnum>>? options,
     Color? activeColor,
     Color? checkColor,
     Color? focusColor,
@@ -1055,16 +1061,21 @@ class $TheFormBuilderPresenterFieldFactory {
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       decoration: decoration ??
-          const InputDecoration().copyWith(
-            labelText: property.name,
-          ),
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+          const InputDecoration()
+              .copyWith(labelText: property.name, hintText: null),
+      onChanged: onChanged,
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.onUserInteraction,
       onReset: onReset,
       focusNode: focusNode,
-      options: options,
+      options: property
+              .getFieldValue(Localizations.maybeLocaleOf(context) ??
+                  const Locale('en', 'US'))
+              ?.map((x) => FormBuilderFieldOption<MyEnum>(
+                  value: x, child: Text(x.toString())))
+              .toList() ??
+          [],
       activeColor: activeColor,
       checkColor: checkColor,
       focusColor: focusColor,
@@ -1095,7 +1106,7 @@ class $TheFormBuilderPresenterFieldFactory {
     FocusNode? focusNode,
     InputDecoration? decoration,
     Key? key,
-    required List<FormBuilderFieldOption<MyEnum>> options,
+    List<FormBuilderFieldOption<MyEnum>>? options,
     WrapAlignment alignment = WrapAlignment.start,
     Color? backgroundColor,
     WrapCrossAlignment crossAxisAlignment = WrapCrossAlignment.start,
@@ -1129,12 +1140,14 @@ class $TheFormBuilderPresenterFieldFactory {
       focusNode: focusNode,
       validator: property.getValidator(context),
       decoration: decoration ??
-          const InputDecoration().copyWith(
-            labelText: property.name,
-          ),
+          const InputDecoration()
+              .copyWith(labelText: property.name, hintText: null),
       key: key,
       name: property.name,
-      options: options,
+      options: [MyEnum.one, MyEnum.two]
+          .map((x) => FormBuilderFieldOption<MyEnum>(
+              value: x, child: Text(x.toString())))
+          .toList(),
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       alignment: alignment,
@@ -1159,7 +1172,7 @@ class $TheFormBuilderPresenterFieldFactory {
       textDirection: textDirection,
       verticalDirection: verticalDirection,
       visualDensity: visualDensity,
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+      onChanged: onChanged,
       valueTransformer: valueTransformer,
       onReset: onReset,
     );
@@ -1173,7 +1186,7 @@ class $TheFormBuilderPresenterFieldFactory {
     FocusNode? focusNode,
     InputDecoration? decoration,
     Key? key,
-    required List<FormBuilderFieldOption<MyEnum>> options,
+    List<FormBuilderFieldOption<MyEnum>>? options,
     WrapAlignment alignment = WrapAlignment.start,
     Color? backgroundColor,
     Color? checkmarkColor,
@@ -1210,14 +1223,19 @@ class $TheFormBuilderPresenterFieldFactory {
       focusNode: focusNode,
       validator: property.getValidator(context),
       decoration: decoration ??
-          const InputDecoration().copyWith(
-            labelText: property.name,
-          ),
+          const InputDecoration()
+              .copyWith(labelText: property.name, hintText: null),
       key: key,
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))!,
       name: property.name,
-      options: options,
+      options: property
+              .getFieldValue(Localizations.maybeLocaleOf(context) ??
+                  const Locale('en', 'US'))
+              ?.map((x) => FormBuilderFieldOption<MyEnum>(
+                  value: x, child: Text(x.toString())))
+              .toList() ??
+          [],
       alignment: alignment,
       backgroundColor: backgroundColor,
       checkmarkColor: checkmarkColor,
@@ -1243,7 +1261,7 @@ class $TheFormBuilderPresenterFieldFactory {
       spacing: spacing,
       textDirection: textDirection,
       verticalDirection: verticalDirection,
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+      onChanged: onChanged,
       valueTransformer: valueTransformer,
       onReset: onReset,
     );
@@ -1257,7 +1275,7 @@ class $TheFormBuilderPresenterFieldFactory {
     FocusNode? focusNode,
     InputDecoration? decoration,
     Key? key,
-    required List<FormBuilderFieldOption<MyEnum>> options,
+    List<FormBuilderFieldOption<MyEnum>>? options,
     bool shouldRadioRequestFocus = false,
     Color? activeColor,
     ControlAffinity controlAffinity = ControlAffinity.leading,
@@ -1286,12 +1304,14 @@ class $TheFormBuilderPresenterFieldFactory {
       focusNode: focusNode,
       validator: property.getValidator(context),
       decoration: decoration ??
-          const InputDecoration().copyWith(
-            labelText: property.name,
-          ),
+          const InputDecoration()
+              .copyWith(labelText: property.name, hintText: null),
       key: key,
       name: property.name,
-      options: options,
+      options: [MyEnum.one, MyEnum.two]
+          .map((x) => FormBuilderFieldOption<MyEnum>(
+              value: x, child: Text(x.toString())))
+          .toList(),
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       shouldRadioRequestFocus: shouldRadioRequestFocus,
@@ -1311,7 +1331,7 @@ class $TheFormBuilderPresenterFieldFactory {
       wrapSpacing: wrapSpacing,
       wrapTextDirection: wrapTextDirection,
       wrapVerticalDirection: wrapVerticalDirection,
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+      onChanged: onChanged,
       valueTransformer: valueTransformer,
       onReset: onReset,
     );
@@ -1328,7 +1348,7 @@ class $TheFormBuilderPresenterFieldFactory {
     AutovalidateMode? autovalidateMode,
     VoidCallback? onReset,
     FocusNode? focusNode,
-    required List<FormBuilderFieldOption<MyEnum>> options,
+    List<FormBuilderFieldOption<MyEnum>>? options,
     Color? borderColor,
     Color? selectedColor,
     Color? pressedColor,
@@ -1344,16 +1364,18 @@ class $TheFormBuilderPresenterFieldFactory {
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       decoration: decoration ??
-          const InputDecoration().copyWith(
-            labelText: property.name,
-          ),
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+          const InputDecoration()
+              .copyWith(labelText: property.name, hintText: null),
+      onChanged: onChanged,
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.onUserInteraction,
       onReset: onReset,
       focusNode: focusNode,
-      options: options,
+      options: [MyEnum.one, MyEnum.two]
+          .map((x) => FormBuilderFieldOption<MyEnum>(
+              value: x, child: Text(x.toString())))
+          .toList(),
       borderColor: borderColor,
       selectedColor: selectedColor,
       pressedColor: pressedColor,
@@ -1400,10 +1422,9 @@ class $TheFormBuilderPresenterFieldFactory {
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))!,
       decoration: decoration ??
-          const InputDecoration().copyWith(
-            labelText: property.name,
-          ),
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+          const InputDecoration()
+              .copyWith(labelText: property.name, hintText: null),
+      onChanged: onChanged,
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.onUserInteraction,
@@ -1492,10 +1513,9 @@ class $TheFormBuilderPresenterFieldFactory {
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       readOnly: readOnly,
       decoration: decoration ??
-          const InputDecoration().copyWith(
-            labelText: property.name,
-          ),
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+          const InputDecoration()
+              .copyWith(labelText: property.name, hintText: null),
+      onChanged: onChanged,
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.onUserInteraction,
