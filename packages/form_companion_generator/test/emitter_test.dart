@@ -579,7 +579,7 @@ Future<void> main() async {
         properties: properties,
       );
       await expectLater(
-        await emitFieldFactoriesAsync(nodeProvider, data, _emptyConfig),
+        await emitFieldFactoriesAsync(nodeProvider, data, _emptyConfig, logger),
         fieldFactories('Test01', [textFormFieldFactory('prop')]),
       );
     });
@@ -617,7 +617,7 @@ Future<void> main() async {
         properties: properties,
       );
       await expectLater(
-        await emitFieldFactoriesAsync(nodeProvider, data, _emptyConfig),
+        await emitFieldFactoriesAsync(nodeProvider, data, _emptyConfig, logger),
         fieldFactories(
           'Test02',
           [
@@ -730,7 +730,12 @@ ${spec.item3.map((p) => '      ${p.item2}: ${p.item2}').join(',\n')},
         }
 
         await expectLater(
-          await emitFieldFactoriesAsync(nodeProvider, data, _emptyConfig),
+          await emitFieldFactoriesAsync(
+            nodeProvider,
+            data,
+            _emptyConfig,
+            logger,
+          ),
           (expectedConstructorNameAndParameters.length == 1 &&
                   expectedConstructorNameAndParameters[0].item1 == null)
               ? fieldFactories(
@@ -927,7 +932,12 @@ ${spec.item3.map((p) => '      ${p.item2}: ${p.item2}').join(',\n')},
         );
 
         await expectLater(
-          await emitFieldFactoriesAsync(nodeProvider, data, _emptyConfig),
+          await emitFieldFactoriesAsync(
+            nodeProvider,
+            data,
+            _emptyConfig,
+            logger,
+          ),
           '''
 /// Defines [FormField] factory methods for properties of [Test].
 class \$TestFieldFactory {
@@ -1096,6 +1106,7 @@ extension \$TestFieldFactoryExtension on Test {
         nodeProvider,
         data,
         properties.first,
+        logger,
       ).toList();
 
       expect(lines.isNotEmpty, isTrue);
@@ -1166,7 +1177,7 @@ extension \$TestFieldFactoryExtension on Test {
           expectedBody: dropdownButtonFieldFactory(
             'prop',
             'String',
-            withItemsTemplateError: true,
+            isNotEnumNorBool: true,
           ),
         ),
       );
@@ -1186,7 +1197,7 @@ extension \$TestFieldFactoryExtension on Test {
           expectedBody: dropdownButtonFieldFactory(
             'prop',
             'int',
-            withItemsTemplateError: true,
+            isNotEnumNorBool: true,
           ),
         ),
       );
@@ -1308,7 +1319,7 @@ extension \$TestFieldFactoryExtension on Test {
           expectedBody: formBuilderDropdownFactory(
             'prop',
             'String',
-            withItemsTemplateError: true,
+            isNotEnumNorBool: true,
           ),
         ),
       );
@@ -1508,7 +1519,7 @@ extension \$TestFieldFactoryExtension on Test {
             expectedBody: dropdownButtonFieldFactory(
               'prop',
               type.getDisplayString(withNullability: true),
-              withItemsTemplateError:
+              isNotEnumNorBool:
                   type.getDisplayString(withNullability: false) == 'String',
             ),
           ),
@@ -1564,6 +1575,7 @@ extension \$TestFieldFactoryExtension on Test {
             ),
           ),
           _emptyConfig,
+          logger,
         ).join('\n'),
         [
           '// TODO(CompanionGenerator): WARNING - AAA',
@@ -1603,6 +1615,7 @@ extension \$TestFieldFactoryExtension on Test {
             properties: [],
           ),
           _emptyConfig,
+          logger,
         ).join('\n'),
         '''
 // TODO(CompanionGenerator): WARNING - AAA
@@ -1854,14 +1867,14 @@ String dropdownButtonFieldFactory(
   String propertyName,
   String propertyType, {
   bool isAutovalidate = false,
-  bool withItemsTemplateError = false,
+  bool isNotEnumNorBool = false,
 }) =>
     '''
   /// Gets a [FormField] for `$propertyName` property.
   DropdownButtonFormField<$propertyType> $propertyName(
     BuildContext context, {
 '''
-    '${withItemsTemplateError ? '''
+    '${isNotEnumNorBool ? '''
     required List<DropdownMenuItem<$propertyType>>? items,
 ''' : '''
     List<DropdownMenuItem<$propertyType>>? items,
@@ -1896,8 +1909,7 @@ String dropdownButtonFieldFactory(
     return DropdownButtonFormField<$propertyType>(
       key: _presenter.getKey(property.name, context),
 '''
-    '${withItemsTemplateError ? '''
-      // TODO(CompanionGenerator): WARNING - Template `items_item_template` is ignored because property's type `$propertyType` is not collection, enum, nor bool type.
+    '${isNotEnumNorBool ? '''
       items: items,
 ''' : '''
       items: ${itemsExpression('DropdownMenuItem', propertyType)},
@@ -2408,7 +2420,7 @@ String formBuilderDropdownFactory(
   String propertyName,
   String propertyType, {
   bool isAutovalidate = false,
-  bool withItemsTemplateError = false,
+  bool isNotEnumNorBool = false,
 }) =>
     '''
   /// Gets a [FormField] for `$propertyName` property.
@@ -2423,7 +2435,7 @@ String formBuilderDropdownFactory(
     VoidCallback? onReset,
     FocusNode? focusNode,
 '''
-    '${withItemsTemplateError ? '''
+    '${isNotEnumNorBool ? '''
     required List<DropdownMenuItem<$propertyType>> items,
 ''' : '''
     List<DropdownMenuItem<$propertyType>>? items,
@@ -2464,8 +2476,7 @@ String formBuilderDropdownFactory(
       onReset: onReset,
       focusNode: focusNode,
 '''
-    '${withItemsTemplateError ? '''
-      // TODO(CompanionGenerator): WARNING - Template `items_item_template` is ignored because property's type `$propertyType` is not collection, enum, nor bool type.
+    '${isNotEnumNorBool ? '''
       items: items,
 ''' : '''
       items: ${itemsExpression('DropdownMenuItem', propertyType)},

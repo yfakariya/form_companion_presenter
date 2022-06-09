@@ -6,6 +6,7 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
+import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
 
 import 'config.dart';
@@ -211,7 +212,7 @@ class ArgumentsHandler {
     required String presenter,
     required String itemValue,
     required String indent,
-    required String Function(String) warningFactory,
+    required Logger logger,
   }) sync* {
     final macroContext = ArgumentMacroContext(
       propertyName: _property.name,
@@ -236,11 +237,11 @@ class ArgumentsHandler {
           '${context.parameter} (${context.parameterType.getDisplayString(withNullability: true)})';
       if (itemTemplate != null) {
         if (_itemValueType == null) {
-          yield warningFactory(
-            'Template `${context.parameter}_item_template` is ignored '
-            "because property's type "
-            '`${_property.fieldType.getDisplayString(withNullability: true)}` '
-            'is not collection, enum, nor bool type.',
+          logger.fine(
+            'Use `template` instead of `item_template` because type of '
+            '`${_property.name}` property of presenter `${data.name}` is not '
+            'collection, enum, or bool type. '
+            'The type is `${_property.fieldType.getDisplayString(withNullability: true)}`.',
           );
         } else {
           if (_constantItemValues != null) {

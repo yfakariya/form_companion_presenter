@@ -4,6 +4,7 @@ import 'dart:async';
 
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
+import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
 
 import 'config.dart';
@@ -24,6 +25,7 @@ Stream<Object> emitFromData(
   NodeProvider nodeProvider,
   PresenterDefinition data,
   Config config,
+  Logger logger,
 ) async* {
   if (data.properties.isEmpty) {
     for (final warning in data.warnings) {
@@ -40,7 +42,7 @@ Stream<Object> emitFromData(
 
   yield emitPropertyAccessor(data.name, data.properties, config);
 
-  yield await emitFieldFactoriesAsync(nodeProvider, data, config);
+  yield await emitFieldFactoriesAsync(nodeProvider, data, config, logger);
 }
 
 final _formCompanionPresenterImport = LibraryImport(
