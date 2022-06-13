@@ -97,11 +97,16 @@ class Config {
         _materializedNamedTemplates = NamedTemplates(
           Map.fromEntries(
             rawNamedTemplates.entries
-                .where((x) => x.key is String && x.value is String)
+                .map(
+                  (e) => _checkMapType<String, String>(
+                    e,
+                    "property of 'named_templates'",
+                  ),
+                )
                 .map(
                   (e) => MapEntry(
-                    e.key.toString().toUpperCase(),
-                    e.value.toString(),
+                    e.key.toUpperCase(),
+                    e.value,
                   ),
                 ),
           ),
@@ -146,11 +151,18 @@ class Config {
       final dynamic rawItemTemplates = _underlying[_argumentTemplatesKey];
       if (rawItemTemplates is Map) {
         _materializedItemTemplates = ArgumentTemplates({
-          for (final e in rawItemTemplates.entries
-              .where((x) => x.key is String && x.value is Map))
-            e.key as String: {
-              for (final t
-                  in (e.value as Map).entries.map(ArgumentTemplate.parse))
+          for (final e in rawItemTemplates.entries.map((x) =>
+              _checkMapType<String, Map<dynamic, dynamic>>(
+                  x, "property of 'argument_templates'")))
+            e.key: {
+              for (final t in e.value.entries
+                  .map(
+                    (x) => _checkMapType<String, dynamic>(
+                      x,
+                      "'${e.key}' property of 'argument_templates'",
+                    ),
+                  )
+                  .map((x) => ArgumentTemplate.parse(x, e.key)))
                 t.key: t.value
             },
         });
@@ -164,6 +176,32 @@ class Config {
 
   /// Initializes a new instance with values from builder options.
   Config(this._underlying);
+}
+
+MapEntry<K, V> _checkMapType<K, V>(
+  MapEntry<dynamic, dynamic> entry,
+  String context,
+) {
+  final dynamic key = entry.key;
+  if (key is! K) {
+    throw ArgumentError(
+      'Unexpected key type of $context: '
+      // ignore: avoid_dynamic_calls
+      '${key.runtimeType}. Keys must be $K.',
+    );
+  }
+
+  final dynamic value = entry.value;
+
+  if (value is! V) {
+    throw ArgumentError(
+      "Unexpected value type of '$key' $context: "
+      // ignore: avoid_dynamic_calls
+      '${value.runtimeType}. Values must be $V.',
+    );
+  }
+
+  return MapEntry<K, V>(key, value);
 }
 
 /// Represents `named_templates` configuration property.
@@ -216,8 +254,6 @@ class ArgumentTemplates {
       null;
 }
 
-// TODO(yfakariya): testing imports and errors
-
 /// Represents each item of `argument_templates`.
 class ArgumentTemplate {
   /// Value of template, if this template is NOT an item template.
@@ -247,20 +283,13 @@ class ArgumentTemplate {
   ///
   /// For any type error, [ArgumentError] will be thrown.
   static MapEntry<String, ArgumentTemplate> parse(
-    MapEntry<dynamic, dynamic> rawArgumentTemplate,
+    MapEntry<String, dynamic> rawArgumentTemplate,
+    String context,
   ) {
-    final dynamic property = rawArgumentTemplate.key;
-    if (property is! String) {
-      throw ArgumentError(
-        "Unexpected key type of property of 'argument_templates': "
-        '${property.runtimeType}',
-      );
-    }
-
     final dynamic simpleOrStructuredTemplate = rawArgumentTemplate.value;
     if (simpleOrStructuredTemplate is String) {
       return MapEntry(
-        property,
+        rawArgumentTemplate.key,
         ArgumentTemplate(
           simpleOrStructuredTemplate,
           null,
@@ -272,7 +301,7 @@ class ArgumentTemplate {
           simpleOrStructuredTemplate['item_template'];
       if (itemTemplateValue is String) {
         return MapEntry(
-          property,
+          rawArgumentTemplate.key,
           ArgumentTemplate(
             null,
             itemTemplateValue,
@@ -284,25 +313,26 @@ class ArgumentTemplate {
       final dynamic templateValue = simpleOrStructuredTemplate['template'];
       if (templateValue is String) {
         return MapEntry(
-          property,
+          rawArgumentTemplate.key,
           ArgumentTemplate(
-            null,
             templateValue,
+            null,
             TemplateImports.parse(simpleOrStructuredTemplate['imports']),
           ),
         );
       }
 
       throw ArgumentError(
-        "'$property' property of "
+        "'${rawArgumentTemplate.key}' property of '$context' property of"
         "'argument_templates' must have String 'template' or 'item_template' "
         "property but the type of 'template' is: ${templateValue.runtimeType}, "
         "and the type of 'item_template' is: ${itemTemplateValue.runtimeType}.",
       );
     } else {
       throw ArgumentError(
-        "Unexpected value type of '$property' property of "
-        "'argument_templates': ${simpleOrStructuredTemplate.runtimeType}",
+        "Unexpected value type of '${rawArgumentTemplate.key}' property of "
+        "'argument_templates': ${simpleOrStructuredTemplate.runtimeType}. "
+        'Value must be String or object.',
       );
     }
   }
@@ -366,7 +396,7 @@ class TemplateImports {
       if (mayBeUri is! String) {
         throw ArgumentError(
           "Unexpected property value type of '$typeMayBePrefixed' property of "
-          "'imports': ${typeMayBePrefixed.runtimeType}",
+          "'imports': ${mayBeUri.runtimeType}",
         );
       }
 
