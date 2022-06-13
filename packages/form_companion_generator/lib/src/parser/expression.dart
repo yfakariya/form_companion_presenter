@@ -21,7 +21,9 @@ FutureOr<PropertyDescriptorsBuilding?> _parseExpressionAsync(
   } else if (unparenthesized is AssignmentExpression) {
     if (!isPropertyDescriptorsBuilder(unparenthesized.staticType)) {
       context.logger.fine(
-          "Skip assignment expression '$expression' because right hand type is not $pdbTypeName at ${getNodeLocation(expression, contextElement)}.");
+        "Skip assignment expression '$expression' because right hand type is "
+        'not $pdbTypeName at ${getNodeLocation(expression, contextElement)}.',
+      );
       return null;
     }
 
@@ -258,7 +260,9 @@ FutureOr<PropertyDescriptorsBuilding?> _parseExpressionAsync(
   }
 
   context.logger.fine(
-      "Skip trivial expression '$expression'(${unparenthesized.runtimeType}) at ${getNodeLocation(expression, contextElement)}.");
+    "Skip trivial expression '$expression'(${unparenthesized.runtimeType}) "
+    'at ${getNodeLocation(expression, contextElement)}.',
+  );
   return null;
 }
 

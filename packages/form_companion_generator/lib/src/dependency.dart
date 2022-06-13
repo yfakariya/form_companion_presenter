@@ -223,14 +223,17 @@ class DependentLibraryCollector extends RecursiveAstVisitor<void> {
         .toList();
 
     final candidates = libraries
-        .where((l) =>
-            l.exportedLibraries.any((e) => e.identifier == sourceLibraryId))
+        .where(
+          (l) =>
+              l.exportedLibraries.any((e) => e.identifier == sourceLibraryId),
+        )
         .toList();
 
     if (candidates.isEmpty) {
       throw AnalysisException(
-          "Failed to resolve logical library for source library '$sourceLibraryId'"
-          " for '$targetElement' in the directory '$libraryDirectory'. ");
+        "Failed to resolve logical library for source library '$sourceLibraryId'"
+        " for '$targetElement' in the directory '$libraryDirectory'. ",
+      );
     }
 
     final result = candidates.first.identifier;

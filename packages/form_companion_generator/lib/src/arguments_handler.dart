@@ -77,8 +77,10 @@ class ArgumentsHandler {
       final members = (type.rawType.element! as ClassElement)
           .fields
           .where((f) => f.type == type.rawType && f.isConst && f.isStatic)
-          .map((f) =>
-              '${f.type.getDisplayString(withNullability: false)}.${f.name}')
+          .map(
+            (f) =>
+                '${f.type.getDisplayString(withNullability: false)}.${f.name}',
+          )
           .join(', ');
       return type.isNullable ? '[$members, null]' : '[$members]';
     } else if (type.isBoolType) {

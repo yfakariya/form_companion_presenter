@@ -144,7 +144,10 @@ class FormBuilderCheckBoxGroup<T> extends FormField<List<T>> {}
       Tuple3('non-aliased -> aliased', 'void Function()', 'Callback'),
       Tuple3('aliased -> aliased', 'Callback', 'Callback'),
       Tuple3(
-          'non-aliased -> non-aliased', 'void Function()', 'void Function()'),
+        'non-aliased -> non-aliased',
+        'void Function()',
+        'void Function()',
+      ),
     ]) {
       test(
         spec.item1,

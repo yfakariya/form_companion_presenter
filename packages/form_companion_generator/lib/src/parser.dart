@@ -229,11 +229,13 @@ FutureOr<List<PropertyAndFormFieldDefinition>> getPropertiesAsync(
     constructor,
     isFormBuilder: isFormBuilder,
   )
-      .map((m) async => await resolveFormFieldAsync(
-            context,
-            m,
-            isFormBuilder: isFormBuilder,
-          ))
+      .map(
+        (m) async => await resolveFormFieldAsync(
+          context,
+          m,
+          isFormBuilder: isFormBuilder,
+        ),
+      )
       .toListAsync();
 }
 
@@ -337,10 +339,11 @@ FutureOr<List<LibraryImport>> collectDependenciesAsync(
           'Localizations',
         );
 
-      for (final import in argumentsHandler.allParameters.expand((p) => config
-          .argumentTemplates
-          .get(property.formFieldTypeName, p.name)
-          .imports)) {
+      for (final import in argumentsHandler.allParameters.expand(
+        (p) => config.argumentTemplates
+            .get(property.formFieldTypeName, p.name)
+            .imports,
+      )) {
         if (import.prefix.isEmpty) {
           for (final type in import.types) {
             collector.recordTypeIdDirect(import.uri, type);

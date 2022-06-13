@@ -116,7 +116,8 @@ Future<void> main() async {
     final value = findAnnotation(className).computeConstantValue();
     if (value == null) {
       throw AssertionError(
-          'Failed to resolve annotation of "$className" class.');
+        'Failed to resolve annotation of "$className" class.',
+      );
     }
 
     return ConstantReader(value);

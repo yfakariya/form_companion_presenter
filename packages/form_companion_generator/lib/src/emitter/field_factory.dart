@@ -226,7 +226,8 @@ Iterable<String> _emitFieldFactoryCore(
 }
 
 Iterable<String> _emitPropertyWarnings(
-    PropertyAndFormFieldDefinition property) sync* {
+  PropertyAndFormFieldDefinition property,
+) sync* {
   if (property.instantiationContext == null ||
       property.formFieldConstructors.isEmpty) {
     // We cannot handle this pattern.

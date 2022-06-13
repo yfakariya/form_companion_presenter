@@ -151,9 +151,12 @@ class Config {
       final dynamic rawItemTemplates = _underlying[_argumentTemplatesKey];
       if (rawItemTemplates is Map) {
         _materializedItemTemplates = ArgumentTemplates({
-          for (final e in rawItemTemplates.entries.map((x) =>
-              _checkMapType<String, Map<dynamic, dynamic>>(
-                  x, "property of 'argument_templates'")))
+          for (final e in rawItemTemplates.entries.map(
+            (x) => _checkMapType<String, Map<dynamic, dynamic>>(
+              x,
+              "property of 'argument_templates'",
+            ),
+          ))
             e.key: {
               for (final t in e.value.entries
                   .map(

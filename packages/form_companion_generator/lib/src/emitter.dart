@@ -72,8 +72,10 @@ Iterable<String> emitGlobal(
   final packageImports =
       sortedImports.where((i) => i.library.startsWith('package:')).toList();
   final relativeImports = sortedImports
-      .where((i) =>
-          !i.library.startsWith('dart:') && !i.library.startsWith('package:'))
+      .where(
+        (i) =>
+            !i.library.startsWith('dart:') && !i.library.startsWith('package:'),
+      )
       .toList();
 
   if (config.asPart) {

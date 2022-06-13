@@ -662,7 +662,9 @@ Future<void> main() async {
                     e.item2,
                     [
                       FactoryParameterSpec(
-                          'InputDecoration?', 'inputDecoration'),
+                        'InputDecoration?',
+                        'inputDecoration',
+                      ),
                       FactoryParameterSpec('String?', e.item3),
                     ],
                   ),
@@ -718,8 +720,10 @@ Future<void> main() async {
           ],
         );
 
-        String fieldFactory(NamedFactorySpec spec,
-            {required bool hasNamedConstructors}) {
+        String fieldFactory(
+          NamedFactorySpec spec, {
+          required bool hasNamedConstructors,
+        }) {
           final methodName = spec.item1 ??
               (hasNamedConstructors ? 'withDefaultConstructor' : propertyName);
           final construtorName = spec.item1 == null
@@ -750,8 +754,12 @@ ${spec.item3.map((p) => '      ${p.item2}: ${p.item2}').join(',\n')},
               ? fieldFactories(
                   'Test',
                   expectedConstructorNameAndParameters
-                      .map((e) => fieldFactory(e,
-                          hasNamedConstructors: hasNamedConstructors))
+                      .map(
+                        (e) => fieldFactory(
+                          e,
+                          hasNamedConstructors: hasNamedConstructors,
+                        ),
+                      )
                       .toList(),
                 )
               : multiFieldFactories(
@@ -759,8 +767,12 @@ ${spec.item3.map((p) => '      ${p.item2}: ${p.item2}').join(',\n')},
                   [propertyName],
                   {
                     propertyName: expectedConstructorNameAndParameters
-                        .map((e) => fieldFactory(e,
-                            hasNamedConstructors: hasNamedConstructors))
+                        .map(
+                          (e) => fieldFactory(
+                            e,
+                            hasNamedConstructors: hasNamedConstructors,
+                          ),
+                        )
                         .toList()
                   },
                 ),
@@ -891,9 +903,13 @@ ${spec.item3.map((p) => '      ${p.item2}: ${p.item2}').join(',\n')},
       () async {
         const isFormBuilder = false;
         final constructorWithNamedConstructorsClass = lookupExportedClass(
-            parametersLibrary, 'ConstructorWithNamedConstructors');
+          parametersLibrary,
+          'ConstructorWithNamedConstructors',
+        );
         final factoryWithNamedConstructorsClass = lookupExportedClass(
-            parametersLibrary, 'FactoryWithNamedConstructors');
+          parametersLibrary,
+          'FactoryWithNamedConstructors',
+        );
 
         final data = PresenterDefinition(
           name: 'Test',
@@ -1709,8 +1725,10 @@ ${factories.isEmpty ? '  // No properties were found.' : factories[propertyName]
   return '''
 /// Defines [FormField] factory methods for properties of [$className].
 class \$${className}FieldFactory {
-${propertyNames.map((e) => '  /// Gets a [FormField] factory for `$e` property.\n'
-          '  final \$\$$className${pascalize(e)}FieldFactory $e;').join('\n')}
+${propertyNames.map(
+            (e) => '  /// Gets a [FormField] factory for `$e` property.\n'
+                '  final \$\$$className${pascalize(e)}FieldFactory $e;',
+          ).join('\n')}
 
   \$${className}FieldFactory._($className presenter) :
     ${propertyNames.map((e) => '$e = \$\$$className${pascalize(e)}FieldFactory(presenter)').join(',\n      ')};

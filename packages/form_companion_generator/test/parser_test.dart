@@ -247,11 +247,13 @@ Future<void> main() async {
           isFormBuilder: true,
         );
         fail(
-          'No error occurred. Properties: {${result.map((e) => '{name: ${e.name}, '
-              'propertyType: ${e.propertyValueType}, '
-              'fieldType: ${e.fieldValueType}, '
-              'formFieldType: ${e.formFieldTypeName}, '
-              'warnings: ${e.warnings}}').join(', ')}}',
+          'No error occurred. Properties: {${result.map(
+                (e) => '{name: ${e.name}, '
+                    'propertyType: ${e.propertyValueType}, '
+                    'fieldType: ${e.fieldValueType}, '
+                    'formFieldType: ${e.formFieldTypeName}, '
+                    'warnings: ${e.warnings}}',
+              ).join(', ')}}',
         );
       }
       // ignore: avoid_catching_errors
@@ -664,49 +666,57 @@ Future<void> main() async {
         test(
           'no addition - warning',
           () => testGetPropertiesNoProperties(
-              'Refers${fieldPrefix}WithNoAddition'),
+            'Refers${fieldPrefix}WithNoAddition',
+          ),
         );
 
         test(
           'with getter for inline initialized - detected',
           () => testGetPropertiesSuccess(
-              'Refers${fieldPrefix}GetterForInlineInitialized'),
+            'Refers${fieldPrefix}GetterForInlineInitialized',
+          ),
         );
 
         test(
           'with getter for factory initialized - detected',
           () => testGetPropertiesSuccess(
-              'Refers${fieldPrefix}GetterForFactoryInitialized'),
+            'Refers${fieldPrefix}GetterForFactoryInitialized',
+          ),
         );
 
         test(
           'with getter for factory method - detected',
           () => testGetPropertiesSuccess(
-              'Refers${fieldPrefix}GetterForFactoryMethod'),
+            'Refers${fieldPrefix}GetterForFactoryMethod',
+          ),
         );
 
         test(
           'refers member from cascading factory method calls - detected',
           () => testGetPropertiesSuccess(
-              'Refers${fieldPrefix}CascadingFactoryMethod'),
+            'Refers${fieldPrefix}CascadingFactoryMethod',
+          ),
         );
 
         test(
           'refers member from classic factory method calls - detected',
           () => testGetPropertiesSuccess(
-              'Refers${fieldPrefix}ClassicFactoryMethod'),
+            'Refers${fieldPrefix}ClassicFactoryMethod',
+          ),
         );
 
         test(
           'refers member from classic factory method with helpers calls - detected',
           () => testGetPropertiesSuccess(
-              'Refers${fieldPrefix}WithHelpersFactoryMethod'),
+            'Refers${fieldPrefix}WithHelpersFactoryMethod',
+          ),
         );
 
         test(
           'calls cascading factory method - detected',
           () => testGetPropertiesSuccess(
-              'Calls${functionPrefix}CascadingFactory'),
+            'Calls${functionPrefix}CascadingFactory',
+          ),
         );
 
         test(
@@ -718,7 +728,8 @@ Future<void> main() async {
         test(
           'calls classic factory method with helpers - detected',
           () => testGetPropertiesSuccess(
-              'Calls${functionPrefix}WithHelperFactory'),
+            'Calls${functionPrefix}WithHelperFactory',
+          ),
         );
       });
     }
@@ -1715,8 +1726,10 @@ Future<void> main() async {
           result,
           [
             expected,
-            ExpectedImport('package:flutter/widgets.dart',
-                shows: ['BuildContext', 'Localizations']),
+            ExpectedImport(
+              'package:flutter/widgets.dart',
+              shows: ['BuildContext', 'Localizations'],
+            ),
             ExpectedImport('parameters.dart'),
           ],
         );

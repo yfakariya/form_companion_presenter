@@ -134,9 +134,10 @@ class _Scope {
   final Map<String, FunctionDeclaration> localFunctions;
   bool isReturned = false;
 
-  _Scope(Map<String, PropertyDescriptorsBuilding> outerBuildings,
-      Map<String, FunctionDeclaration> outerLocalFunctions)
-      : buildings = Map.from(outerBuildings),
+  _Scope(
+    Map<String, PropertyDescriptorsBuilding> outerBuildings,
+    Map<String, FunctionDeclaration> outerLocalFunctions,
+  )   : buildings = Map.from(outerBuildings),
         localFunctions = Map.from(outerLocalFunctions);
 }
 
@@ -158,7 +159,10 @@ class PropertyDescriptorsBuilding {
   bool _isMutable = false;
 
   PropertyDescriptorsBuilding._(
-      this.variableName, this._buildings, this._isMutable);
+    this.variableName,
+    this._buildings,
+    this._isMutable,
+  );
 
   /// Creates new [PropertyDescriptorsBuilding] for `PropertyDescriptorsBuilder`
   /// instantiation.
@@ -168,7 +172,10 @@ class PropertyDescriptorsBuilding {
   /// which name is [newVariableName].
   PropertyDescriptorsBuilding chain(String newVariableName) {
     return PropertyDescriptorsBuilding._(
-        newVariableName, _buildings, _isMutable);
+      newVariableName,
+      _buildings,
+      _isMutable,
+    );
   }
 
   /// Adds a detected property building operation,

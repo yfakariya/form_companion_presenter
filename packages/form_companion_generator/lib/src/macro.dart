@@ -120,8 +120,9 @@ class ArgumentMacroContext {
       if (macroValue == null) {
         if (!allowsUnresolved) {
           throw InvalidGenerationSourceError(
-              'Unknown macro `#$macroKey#` in $context, position: ${match.start}.',
-              todo: 'Revise template in the `build.yaml` file.');
+            'Unknown macro `#$macroKey#` in $context, position: ${match.start}.',
+            todo: 'Revise template in the `build.yaml` file.',
+          );
         } else {
           buffer.write(input.substring(match.start, match.end));
         }

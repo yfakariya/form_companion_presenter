@@ -154,9 +154,10 @@ void processFunctionTypeFormalParameter(
   sink
     ..write(' ')
     ..write(
-        emitParameterContext == EmitParameterContext.methodOrFunctionParameter
-            ? parameter.identifier.name
-            : 'Function');
+      emitParameterContext == EmitParameterContext.methodOrFunctionParameter
+          ? parameter.identifier.name
+          : 'Function',
+    );
   _processTypeParameters(
     context,
     parameter.typeParameters?.typeParameters,

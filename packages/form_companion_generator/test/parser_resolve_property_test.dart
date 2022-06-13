@@ -74,7 +74,8 @@ Future<void> main() async {
   final myEnumType = await getMyEnumType();
 
   List<MethodInvocationSpec> findMethodInvocations(
-      String enclosingFunctionName) {
+    String enclosingFunctionName,
+  ) {
     final element = library.topLevelElements
         .whereType<FunctionElement>()
         .where((e) => e.name == enclosingFunctionName)

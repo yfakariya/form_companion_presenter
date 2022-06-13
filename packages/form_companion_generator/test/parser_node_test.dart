@@ -54,7 +54,9 @@ class _LocalFunctionFinder extends RecursiveAstVisitor<void> {
 Future<void> main() async {
   Future<void> testCore<T>({
     required FutureOr<Tuple2<AstNode, Element>> Function(
-            Resolver, LibraryElement)
+      Resolver,
+      LibraryElement,
+    )
         targetSelector,
     required String code,
     required T Function(AstNode node, Element element) factory,

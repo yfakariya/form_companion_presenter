@@ -273,8 +273,10 @@ Future<void> main() async {
             c.every((e) => e.constructor.declaredElement!.isPublic),
             isTrue,
             reason: c
-                .map((e) => '${e.constructor.name} -> '
-                    'isPublic: ${e.constructor.declaredElement?.isPublic}')
+                .map(
+                  (e) => '${e.constructor.name} -> '
+                      'isPublic: ${e.constructor.declaredElement?.isPublic}',
+                )
                 .join('\n'),
           );
           expect(
@@ -286,8 +288,10 @@ Future<void> main() async {
             c.map((e) => e.constructor.declaredElement!.isFactory),
             constructorSpecs.map((e) => e.item2),
             reason: c
-                .map((e) => '${e.constructor.name} -> '
-                    'isFactory: ${e.constructor.declaredElement?.isFactory}')
+                .map(
+                  (e) => '${e.constructor.name} -> '
+                      'isFactory: ${e.constructor.declaredElement?.isFactory}',
+                )
                 .join('\n'),
           );
         },
