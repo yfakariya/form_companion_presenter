@@ -601,7 +601,9 @@ class _InstantiatedGenericInterfaceType extends GenericType {
     final typeSystem = _interfaceType.element.library.typeSystem;
     final typeProvider = _interfaceType.element.library.typeProvider;
     if (!typeSystem.isAssignableTo(
-        _interfaceType, typeProvider.iterableDynamicType)) {
+      typeSystem.promoteToNonNull(_interfaceType),
+      typeProvider.iterableDynamicType,
+    )) {
       return null;
     }
 
