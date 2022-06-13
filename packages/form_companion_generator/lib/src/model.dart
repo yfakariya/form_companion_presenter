@@ -488,12 +488,17 @@ class _NonGenericType extends GenericType {
 
   @override
   bool get isBoolType =>
-      _contextElement.library!.typeSystem.promoteToNonNull(type).isDartCoreBool;
+      _contextElement.library?.typeSystem
+          .promoteToNonNull(type)
+          .isDartCoreBool ??
+      false;
 
   @override
-  bool get isStringType => _contextElement.library!.typeSystem
-      .promoteToNonNull(type)
-      .isDartCoreString;
+  bool get isStringType =>
+      _contextElement.library?.typeSystem
+          .promoteToNonNull(type)
+          .isDartCoreString ??
+      false;
 
   @override
   bool get isNullable => type.nullabilitySuffix != NullabilitySuffix.none;

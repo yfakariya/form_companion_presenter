@@ -98,7 +98,12 @@ String? getNodeLocation(AstNode node, Element contextElement) {
 
 /// Determines that whether [type] is collection type in context of [element].
 bool isCollectionType(DartType type, Element element) {
-  final library = element.library!;
+  final library = element.library;
+  if (library == null) {
+    // maybe Never, etc.
+    return false;
+  }
+
   return library.typeSystem.isAssignableTo(
     library.typeSystem.promoteToNonNull(type),
     library.typeProvider.iterableDynamicType,
@@ -107,7 +112,12 @@ bool isCollectionType(DartType type, Element element) {
 
 /// Determines that whether [type] is enum type in context of [element].
 bool isEnumType(DartType type, Element element) {
-  final library = element.library!;
+  final library = element.library;
+  if (library == null) {
+    // maybe Never, etc.
+    return false;
+  }
+
   return library.typeSystem.isAssignableTo(
     library.typeSystem.promoteToNonNull(type),
     library.typeProvider.enumType!,
