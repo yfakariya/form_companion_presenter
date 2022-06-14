@@ -215,7 +215,7 @@ builders:
 `as_part` | bool | `false` | If `true`, generated `*.fcp.dart` file will be part of original files (files without `.fcp` suffix), shares namespaces and imports. This is convinient if you use many 3rd party imports in your properties, but it leads member name conflicts and might lead poor code completion (intellisense) experience.
 `extra_libraries` | String, or list of string | empty | Specify package uri with `package:...` format which adds hint for generator to find importing libraries. Note that if the library is not referenced actually, the import entry will not be emitted.
 `named_templates` | map of string | (see previous `named_templates` section) | Defines or overrides named templates. All values are string.
-`named_templates` | (see previous `argument_templates` section) | (see previous `argument_templates` section) | Defines or overrides argument templates. All values are string, or map of string (for item templates).
+`argument_templates` | (see previous `argument_templates` section) | (see previous `argument_templates` section) | Defines or overrides argument templates. All values are string, or map of string (for item templates).
 
 ### Macros Available in Tempaltes
 
