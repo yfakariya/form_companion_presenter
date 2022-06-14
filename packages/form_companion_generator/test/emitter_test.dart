@@ -87,10 +87,15 @@ Future<void> main() async {
   final parametersLibrary = await getParametersLibrary();
 
   final defaultConfig = await readDefaultOptions();
+  final defaultConfigWithUsesEnumTrue =
+      await readDefaultOptions(<String, dynamic>{'uses_enum_name': true});
+  final defaultConfigWithUsesEnumFalse =
+      await readDefaultOptions(<String, dynamic>{'uses_enum_name': false});
 
   FutureOr<List<PropertyAndFormFieldDefinition>> makePropertiesFully(
     Iterable<PropertyDefinitionSpec> specs, {
     required bool isFormBuilder,
+    Config? config,
   }) async =>
       await specs.map((spec) async {
         final name = spec.item1;
@@ -127,10 +132,11 @@ Future<void> main() async {
                     return FormFieldConstructorDefinition(
                       constructor,
                       await ArgumentsHandler.createAsync(
+                        library.languageVersion,
                         constructor,
                         property,
                         nodeProvider,
-                        defaultConfig,
+                        config ?? defaultConfig,
                         isFormBuilder: isFormBuilder,
                       ),
                     );
@@ -631,7 +637,7 @@ Future<void> main() async {
           'Test02',
           [
             textFormFieldFactory('prop1'),
-            dropdownButtonFieldFactory('prop2', 'bool'),
+            dropdownButtonFieldFactory('prop2', 'bool', usesEnumName: true),
           ],
         ),
       );
@@ -702,6 +708,7 @@ Future<void> main() async {
                   return FormFieldConstructorDefinition(
                     constructor,
                     await ArgumentsHandler.createAsync(
+                      library.languageVersion,
                       constructor,
                       property,
                       nodeProvider,
@@ -981,7 +988,7 @@ class \$TestFieldFactory {
 
 ${textFormFieldFactory('prop1')}
 
-${dropdownButtonFieldFactory('prop3', 'bool')}
+${dropdownButtonFieldFactory('prop3', 'bool', usesEnumName: true)}
 }
 
 /// A [FormField] factory for `p` property of [Test].
@@ -1093,6 +1100,7 @@ extension \$TestFieldFactoryExtension on Test {
       required InterfaceType propertyValueType,
       required InterfaceType fieldValueType,
       required ClassElement? formFieldClass,
+      Config? config,
       GenericType? preferredFieldType,
       bool doAutovalidate = false,
       List<String>? warnings,
@@ -1110,6 +1118,7 @@ extension \$TestFieldFactoryExtension on Test {
             realWarnings,
           )
         ],
+        config: config,
         isFormBuilder: isFormBuilder,
       );
       final data = PresenterDefinition(
@@ -1119,7 +1128,7 @@ extension \$TestFieldFactoryExtension on Test {
         warnings: [],
         imports: await collectDependenciesAsync(
           library,
-          defaultConfig,
+          config ?? defaultConfig,
           properties,
           nodeProvider,
           logger,
@@ -1183,7 +1192,11 @@ extension \$TestFieldFactoryExtension on Test {
             propertyValueType: type,
             fieldValueType: type,
             formFieldClass: dropdownButtonFormField,
-            expectedBody: dropdownButtonFieldFactory('prop', typeName),
+            expectedBody: dropdownButtonFieldFactory(
+              'prop',
+              typeName,
+              usesEnumName: true,
+            ),
           ),
         );
       }
@@ -1204,6 +1217,7 @@ extension \$TestFieldFactoryExtension on Test {
             'prop',
             'String',
             isNotEnumNorBool: true,
+            usesEnumName: true,
           ),
         ),
       );
@@ -1224,6 +1238,7 @@ extension \$TestFieldFactoryExtension on Test {
             'prop',
             'int',
             isNotEnumNorBool: true,
+            usesEnumName: true,
           ),
         ),
       );
@@ -1282,7 +1297,11 @@ extension \$TestFieldFactoryExtension on Test {
           propertyValueType: myEnumType,
           fieldValueType: myEnumType,
           formFieldClass: formBuilderDropdown,
-          expectedBody: formBuilderDropdownFactory('prop', 'MyEnum'),
+          expectedBody: formBuilderDropdownFactory(
+            'prop',
+            'MyEnum',
+            usesEnumName: true,
+          ),
         ),
       );
 
@@ -1346,6 +1365,7 @@ extension \$TestFieldFactoryExtension on Test {
             'prop',
             'String',
             isNotEnumNorBool: true,
+            usesEnumName: true,
           ),
         ),
       );
@@ -1424,31 +1444,51 @@ extension \$TestFieldFactoryExtension on Test {
           'FormBuilderCheckboxGroup',
           library.typeProvider.listType(myEnumType),
           formBuilderCheckboxGroup,
-          formBuilderCheckboxGroupFactory('prop', 'MyEnum'),
+          formBuilderCheckboxGroupFactory(
+            'prop',
+            'MyEnum',
+            usesEnumName: true,
+          ),
         ),
         FormBuilderTestSpec(
           'FormBuilderChoiceChip',
           myEnumType,
           formBuilderChoiceChip,
-          formBuilderChoiceChipFactory('prop', 'MyEnum'),
+          formBuilderChoiceChipFactory(
+            'prop',
+            'MyEnum',
+            usesEnumName: true,
+          ),
         ),
         FormBuilderTestSpec(
           'FormBuilderFilterChip',
           library.typeProvider.listType(myEnumType),
           formBuilderFilterChip,
-          formBuilderFilterChipFactory('prop', 'MyEnum'),
+          formBuilderFilterChipFactory(
+            'prop',
+            'MyEnum',
+            usesEnumName: true,
+          ),
         ),
         FormBuilderTestSpec(
           'FormBuilderRadioGroup',
           myEnumType,
           formBuilderRadioGroup,
-          formBuilderRadioGroupFactory('prop', 'MyEnum'),
+          formBuilderRadioGroupFactory(
+            'prop',
+            'MyEnum',
+            usesEnumName: true,
+          ),
         ),
         FormBuilderTestSpec(
           'FormBuilderSegmentedControl',
           myEnumType,
           formBuilderSegmentedControl,
-          formBuilderSegmentedControlFactory('prop', 'MyEnum'),
+          formBuilderSegmentedControlFactory(
+            'prop',
+            'MyEnum',
+            usesEnumName: true,
+          ),
         ),
       ]) {
         test(
@@ -1547,9 +1587,36 @@ extension \$TestFieldFactoryExtension on Test {
               type.getDisplayString(withNullability: true),
               isNotEnumNorBool:
                   type.getDisplayString(withNullability: false) == 'String',
+              usesEnumName: true,
             ),
           ),
         );
+      }
+
+      for (final forceEnumName in [true, false]) {
+        final method = forceEnumName ? 'name' : 'toString()';
+        for (final type in [
+          myEnumType,
+          nullableMyEnumType,
+        ]) {
+          test(
+            'items of $type (force Enum.$method)',
+            () => testEmitFieldFactory(
+              config: forceEnumName
+                  ? defaultConfigWithUsesEnumTrue
+                  : defaultConfigWithUsesEnumFalse,
+              isFormBuilder: false,
+              propertyValueType: type,
+              fieldValueType: type,
+              formFieldClass: dropdownButtonFormField,
+              expectedBody: dropdownButtonFieldFactory(
+                'prop',
+                type.getDisplayString(withNullability: true),
+                usesEnumName: forceEnumName,
+              ),
+            ),
+          );
+        }
       }
 
       for (final type in [
@@ -1572,6 +1639,8 @@ extension \$TestFieldFactoryExtension on Test {
             expectedBody: formBuilderFilterChipFactory(
               'prop',
               type.typeArguments.single.getDisplayString(withNullability: true),
+              // string only
+              usesEnumName: true,
             ),
           ),
         );
@@ -1747,7 +1816,10 @@ String itemsExpression(
   String itemWidgetType,
   String fieldValueType, {
   bool isCollection = false,
+  required bool usesEnumName,
 }) {
+  final enumToString = usesEnumName ? 'name' : 'toString()';
+
   if (!isCollection) {
     switch (fieldValueType) {
       case 'bool':
@@ -1755,9 +1827,9 @@ String itemsExpression(
       case 'bool?':
         return "[true, false, null].map((x) => $itemWidgetType<$fieldValueType>(value: x, child: Text(x?.toString() ?? ''))).toList()";
       case 'MyEnum':
-        return '[MyEnum.one, MyEnum.two].map((x) => $itemWidgetType<$fieldValueType>(value: x, child: Text(x.toString()))).toList()';
+        return '[MyEnum.one, MyEnum.two].map((x) => $itemWidgetType<$fieldValueType>(value: x, child: Text(x.$enumToString))).toList()';
       case 'MyEnum?':
-        return "[MyEnum.one, MyEnum.two, null].map((x) => $itemWidgetType<$fieldValueType>(value: x, child: Text(x?.toString() ?? ''))).toList()";
+        return "[MyEnum.one, MyEnum.two, null].map((x) => $itemWidgetType<$fieldValueType>(value: x, child: Text(x?.$enumToString ?? ''))).toList()";
       default:
         break;
     }
@@ -1769,10 +1841,11 @@ String itemsExpression(
     case 'String':
       return "property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))?.map((x) => $itemWidgetType<$fieldValueType>(value: x, child: Text(x))).toList() ?? []";
     default:
+      final toString = fieldValueType == 'MyEnum' ? enumToString : 'toString()';
       if (fieldValueType.endsWith('?')) {
-        return "property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))?.map((x) => $itemWidgetType<$fieldValueType>(value: x, child: Text(x?.toString() ?? ''))).toList() ?? []";
+        return "property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))?.map((x) => $itemWidgetType<$fieldValueType>(value: x, child: Text(x?.$toString ?? ''))).toList() ?? []";
       } else {
-        return "property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))?.map((x) => $itemWidgetType<$fieldValueType>(value: x, child: Text(x.toString()))).toList() ?? []";
+        return "property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))?.map((x) => $itemWidgetType<$fieldValueType>(value: x, child: Text(x.$toString))).toList() ?? []";
       }
   }
 }
@@ -1894,6 +1967,7 @@ String textFormFieldFactory(
 String dropdownButtonFieldFactory(
   String propertyName,
   String propertyType, {
+  required bool usesEnumName,
   bool isAutovalidate = false,
   bool isNotEnumNorBool = false,
 }) =>
@@ -1940,7 +2014,7 @@ String dropdownButtonFieldFactory(
     '${isNotEnumNorBool ? '''
       items: items,
 ''' : '''
-      items: ${itemsExpression('DropdownMenuItem', propertyType)},
+      items: ${itemsExpression('DropdownMenuItem', propertyType, usesEnumName: usesEnumName)},
 '''}'
     '''
       selectedItemBuilder: selectedItemBuilder,
@@ -2031,6 +2105,7 @@ String formBuilderCheckboxFactory(
 String formBuilderCheckboxGroupFactory(
   String propertyName,
   String propertyElementType, {
+  required bool usesEnumName,
   bool isAutovalidate = false,
 }) =>
     '''
@@ -2079,7 +2154,7 @@ String formBuilderCheckboxGroupFactory(
       autovalidateMode: autovalidateMode ?? AutovalidateMode.${isAutovalidate ? 'onUserInteraction' : 'disabled'},
       onReset: onReset,
       focusNode: focusNode,
-      options: ${itemsExpression('FormBuilderFieldOption', propertyElementType, isCollection: true)},
+      options: ${itemsExpression('FormBuilderFieldOption', propertyElementType, isCollection: true, usesEnumName: usesEnumName)},
       activeColor: activeColor,
       checkColor: checkColor,
       focusColor: focusColor,
@@ -2105,6 +2180,7 @@ String formBuilderCheckboxGroupFactory(
 String formBuilderChoiceChipFactory(
   String propertyName,
   String propertyType, {
+  required bool usesEnumName,
   bool isAutovalidate = false,
 }) =>
     '''
@@ -2152,7 +2228,7 @@ String formBuilderChoiceChipFactory(
       decoration: decoration ?? const InputDecoration().copyWith(labelText: property.name, hintText: null),
       key: key,
       name: property.name,
-      options: ${itemsExpression('FormBuilderFieldOption', propertyType)},
+      options: ${itemsExpression('FormBuilderFieldOption', propertyType, usesEnumName: usesEnumName)},
       initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       alignment: alignment,
       backgroundColor: backgroundColor,
@@ -2447,6 +2523,7 @@ String formBuilderDateTimePickerFactory(
 String formBuilderDropdownFactory(
   String propertyName,
   String propertyType, {
+  required bool usesEnumName,
   bool isAutovalidate = false,
   bool isNotEnumNorBool = false,
 }) =>
@@ -2507,7 +2584,7 @@ String formBuilderDropdownFactory(
     '${isNotEnumNorBool ? '''
       items: items,
 ''' : '''
-      items: ${itemsExpression('DropdownMenuItem', propertyType)},
+      items: ${itemsExpression('DropdownMenuItem', propertyType, usesEnumName: usesEnumName)},
 '''}'
     '''
       isExpanded: isExpanded,
@@ -2536,6 +2613,7 @@ String formBuilderDropdownFactory(
 String formBuilderFilterChipFactory(
   String propertyName,
   String propertyElementType, {
+  required bool usesEnumName,
   bool isAutovalidate = false,
 }) =>
     '''
@@ -2587,7 +2665,7 @@ String formBuilderFilterChipFactory(
       key: key,
       initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))!,
       name: property.name,
-      options: ${itemsExpression('FormBuilderFieldOption', propertyElementType, isCollection: true)},
+      options: ${itemsExpression('FormBuilderFieldOption', propertyElementType, isCollection: true, usesEnumName: usesEnumName)},
       alignment: alignment,
       backgroundColor: backgroundColor,
       checkmarkColor: checkmarkColor,
@@ -2622,6 +2700,7 @@ String formBuilderFilterChipFactory(
 String formBuilderRadioGroupFactory(
   String propertyName,
   String propertyType, {
+  required bool usesEnumName,
   bool isAutovalidate = false,
 }) =>
     '''
@@ -2664,7 +2743,7 @@ String formBuilderRadioGroupFactory(
       decoration: decoration ?? const InputDecoration().copyWith(labelText: property.name, hintText: null),
       key: key,
       name: property.name,
-      options: ${itemsExpression('FormBuilderFieldOption', propertyType)},
+      options: ${itemsExpression('FormBuilderFieldOption', propertyType, usesEnumName: usesEnumName)},
       initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       shouldRadioRequestFocus: shouldRadioRequestFocus,
       activeColor: activeColor,
@@ -2755,6 +2834,7 @@ String formBuilderRangeSliderFactory(
 String formBuilderSegmentedControlFactory(
   String propertyName,
   String propertyType, {
+  required bool usesEnumName,
   bool isAutovalidate = false,
 }) =>
     '''
@@ -2790,7 +2870,7 @@ String formBuilderSegmentedControlFactory(
       autovalidateMode: autovalidateMode ?? AutovalidateMode.${isAutovalidate ? 'onUserInteraction' : 'disabled'},
       onReset: onReset,
       focusNode: focusNode,
-      options: ${itemsExpression('FormBuilderFieldOption', propertyType)},
+      options: ${itemsExpression('FormBuilderFieldOption', propertyType, usesEnumName: usesEnumName)},
       borderColor: borderColor,
       selectedColor: selectedColor,
       pressedColor: pressedColor,

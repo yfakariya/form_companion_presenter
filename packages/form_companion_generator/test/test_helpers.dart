@@ -218,7 +218,9 @@ GenericType toGenericType(DartType type) {
 
 Map<String, dynamic>? _defaultOptions;
 
-FutureOr<Config> readDefaultOptions() async {
+FutureOr<Config> readDefaultOptions([
+  Map<String, dynamic> override = const <String, dynamic>{},
+]) async {
   if (_defaultOptions == null) {
     final buildConfig = await BuildConfig.fromPackageDir('.');
     _defaultOptions = buildConfig
@@ -229,5 +231,10 @@ FutureOr<Config> readDefaultOptions() async {
         <String, dynamic>{};
   }
 
-  return Config(_defaultOptions!);
+  final defaultOptions = <String, dynamic>{..._defaultOptions!};
+  for (final entry in override.entries) {
+    defaultOptions[entry.key] = entry.value;
+  }
+
+  return Config(defaultOptions);
 }

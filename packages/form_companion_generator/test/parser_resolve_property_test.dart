@@ -121,6 +121,7 @@ Future<void> main() async {
     try {
       result = await resolvePropertyDefinitionAsync(
         context: ParseContext(
+          library.languageVersion,
           _emptyConfig,
           logger,
           nodeProvider,

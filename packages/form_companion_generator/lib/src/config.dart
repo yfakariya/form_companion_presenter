@@ -1,5 +1,6 @@
 // See LICENCE file in the root.
 
+import 'package:analyzer/dart/element/element.dart';
 import 'package:meta/meta.dart';
 
 import 'macro_keys.dart';
@@ -21,6 +22,7 @@ import 'macro_keys.dart';
 class Config {
   static const _autovalidateByDefaultKey = 'autovalidate_by_default';
   static const _extraLibrariesKey = 'extra_libraries';
+  static const _usesEnumNameKey = 'uses_enum_name';
 
   /// Key of [asPart] in config.
   static const asPartKey = 'as_part';
@@ -54,6 +56,31 @@ class Config {
   /// However, it is hard for developers of the presenter library because it
   /// requires them to describe many imports with avoiding name conflicts.
   bool get asPart => _underlying[asPartKey] == true;
+
+  /// Whether the `#ITEM_VALUE_STRING#` macro uses `Enum.name` extension property
+  /// instead of `Enum.toString()` method for enum items.
+  ///
+  /// [version] must be version of target library to be processed.
+  bool getUsesEnumName(LibraryLanguageVersion version) {
+    final dynamic rawValue = _underlying[_usesEnumNameKey];
+    if (rawValue is bool) {
+      return rawValue;
+    } else {
+      // >= 2.15
+      if (version.effective.major < 2 || version.effective.minor < 15) {
+        return false;
+      }
+
+      if (version.effective.major == 2 &&
+          version.effective.minor == 15 &&
+          version.effective.patch == 0) {
+        // 2.15.0-xxx is not allowed, but 2.15.1-xxx is allowed.
+        return !version.effective.isPreRelease;
+      }
+
+      return true;
+    }
+  }
 
   /// Ordered list of extra libraries to resolve `preferredFieldType`s.
   /// Each entries must be specified as 'package:` form URI.

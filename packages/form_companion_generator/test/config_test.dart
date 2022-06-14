@@ -1,7 +1,33 @@
 // See LICENCE file in the root.
 
+import 'package:analyzer/dart/element/element.dart';
 import 'package:form_companion_generator/src/config.dart';
+import 'package:pub_semver/pub_semver.dart';
 import 'package:test/test.dart';
+
+final ver2_15 = LibraryLanguageVersion(
+  package: Version(2, 15, 0),
+  override: Version(2, 15, 0),
+);
+
+final ver2_15_0_pre = LibraryLanguageVersion(
+  package: Version(2, 15, 0, pre: '-pre'),
+  override: Version(2, 15, 0, pre: '-pre'),
+);
+final ver2_15_1_pre = LibraryLanguageVersion(
+  package: Version(2, 15, 1, pre: '-pre'),
+  override: Version(2, 15, 1, pre: '-pre'),
+);
+
+final ver2_15_withBuild = LibraryLanguageVersion(
+  package: Version(2, 15, 0, build: 'DEADBEEF'),
+  override: Version(2, 15, 0, build: 'DEADBEEF'),
+);
+
+final ver2_14_999 = LibraryLanguageVersion(
+  package: Version(2, 14, 999),
+  override: Version(2, 14, 999),
+);
 
 void main() {
   test('constructor and defaults', () {
@@ -54,6 +80,53 @@ void main() {
       final target =
           Config(<String, dynamic>{'autovalidate_by_default': 'true'});
       expect(target.autovalidateByDefault, isTrue);
+    });
+  });
+
+  group('usesEnumName', () {
+    test('true -> true', () {
+      final target = Config(const <String, dynamic>{'uses_enum_name': true});
+      expect(target.getUsesEnumName(ver2_15), isTrue);
+    });
+
+    test('false -> false', () {
+      final target = Config(const <String, dynamic>{'uses_enum_name': false});
+      expect(target.getUsesEnumName(ver2_15), isFalse);
+    });
+
+    test('undefined, 2.15 -- true', () {
+      final target = Config(const <String, dynamic>{});
+      expect(target.getUsesEnumName(ver2_15), isTrue);
+    });
+
+    test('undefined, 2.14.999 -- false', () {
+      final target = Config(const <String, dynamic>{});
+      expect(target.getUsesEnumName(ver2_14_999), isFalse);
+    });
+
+    test('undefined, 2.15.0-pre -- false', () {
+      final target = Config(const <String, dynamic>{});
+      expect(target.getUsesEnumName(ver2_15_0_pre), isFalse);
+    });
+
+    test('undefined, 2.15.1-pre -- true', () {
+      final target = Config(const <String, dynamic>{});
+      expect(target.getUsesEnumName(ver2_15_1_pre), isTrue);
+    });
+
+    test('undefined, 2.15+DEADBEAF -- true', () {
+      final target = Config(const <String, dynamic>{});
+      expect(target.getUsesEnumName(ver2_15_withBuild), isTrue);
+    });
+
+    test('invalid casing -- default', () {
+      final target = Config(const <String, dynamic>{'uses_enum_name': true});
+      expect(target.getUsesEnumName(ver2_15), isTrue);
+    });
+
+    test('non boolean -- default', () {
+      final target = Config(const <String, dynamic>{'uses_enum_name': 'true'});
+      expect(target.getUsesEnumName(ver2_15), isTrue);
     });
   });
 

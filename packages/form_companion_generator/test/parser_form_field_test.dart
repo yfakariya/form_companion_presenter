@@ -72,6 +72,7 @@ Future<void> main() async {
     try {
       result = await resolveFormFieldAsync(
         ParseContext(
+          library.languageVersion,
           _emptyConfig,
           logger,
           nodeProvider,
@@ -221,6 +222,7 @@ Future<void> main() async {
       () async {
         const isFormBuilder = false;
         final context = ParseContext(
+          library.languageVersion,
           _emptyConfig,
           logger,
           nodeProvider,

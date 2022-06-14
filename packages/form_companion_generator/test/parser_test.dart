@@ -208,6 +208,7 @@ Future<void> main() async {
       final warnings = <String>[];
       final result = await getPropertiesAsync(
         _emptyConfig,
+        presenterLibrary.element.languageVersion,
         nodeProvider,
         formFieldLocator,
         findConstructor(targetClass),
@@ -239,6 +240,7 @@ Future<void> main() async {
       try {
         final result = await getPropertiesAsync(
           _emptyConfig,
+          presenterLibrary.element.languageVersion,
           nodeProvider,
           formFieldLocator,
           findConstructor(targetClass),
@@ -1631,6 +1633,7 @@ Future<void> main() async {
           FormFieldConstructorDefinition(
             formFieldConstructor,
             await ArgumentsHandler.createAsync(
+              presenterLibrary.element.languageVersion,
               formFieldConstructor,
               property,
               nodeProvider,
@@ -1702,6 +1705,7 @@ Future<void> main() async {
             FormFieldConstructorDefinition(
               formFieldConstructor,
               await ArgumentsHandler.createAsync(
+                presenterLibrary.element.languageVersion,
                 formFieldConstructor,
                 property,
                 nodeProvider,

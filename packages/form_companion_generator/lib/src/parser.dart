@@ -53,6 +53,7 @@ FutureOr<PresenterDefinition> parseElementAsync(
   final warnings = <String>[];
   final properties = await getPropertiesAsync(
     config,
+    element.library.languageVersion,
     nodeProvider,
     formFieldLocator,
     constructor,
@@ -166,6 +167,7 @@ ConstructorElement findConstructor(
 @visibleForTesting
 FutureOr<List<PropertyAndFormFieldDefinition>> getPropertiesAsync(
   Config config,
+  LibraryLanguageVersion languageVersion,
   NodeProvider nodeProvider,
   FormFieldLocator formFieldLocator,
   ConstructorElement constructor,
@@ -174,6 +176,7 @@ FutureOr<List<PropertyAndFormFieldDefinition>> getPropertiesAsync(
   required bool isFormBuilder,
 }) async {
   final context = ParseContext(
+    languageVersion,
     config,
     logger,
     nodeProvider,

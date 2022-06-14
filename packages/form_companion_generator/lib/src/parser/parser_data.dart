@@ -17,6 +17,9 @@ import '../utilities.dart';
 /// Represents a context information of parsing.
 @sealed
 class ParseContext {
+  /// Language version of the target library.
+  final LibraryLanguageVersion languageVersion;
+
   /// A [Config].
   final Config config;
 
@@ -72,6 +75,7 @@ class ParseContext {
 
   /// Initialize a new [ParseContext] instance.
   ParseContext(
+    this.languageVersion,
     this.config,
     this.logger,
     this.nodeProvider,

@@ -20,6 +20,7 @@ import 'utilities.dart';
 class ArgumentsHandler {
   final PropertyDefinition _property;
   final bool _isFormBuilder;
+  final bool _usesEnumName;
   final String _formFieldType;
   final List<ParameterInfo> _fieldConstructorParameters;
   final ArgumentTemplates _templates;
@@ -58,9 +59,11 @@ class ArgumentsHandler {
     this._templates,
     this._namedTemplates, {
     required bool isFormBuilder,
+    required bool usesEnumName,
   })  : _isFormBuilder = isFormBuilder,
         _itemValueType = _tryGetItemValueType(_property),
-        _constantItemValues = _tryGetConstantItemValues(_property);
+        _constantItemValues = _tryGetConstantItemValues(_property),
+        _usesEnumName = usesEnumName;
 
   static String? _tryGetItemValueType(PropertyDefinition property) {
     final type = property.fieldType;
@@ -92,8 +95,9 @@ class ArgumentsHandler {
 
   String? _tryGetItemValueAsStringExpression(
     PropertyDefinition property,
-    String? itemValue,
-  ) {
+    String? itemValue, {
+    required bool usesEnumName,
+  }) {
     if (_itemValueType == null) {
       return null;
     }
@@ -101,6 +105,8 @@ class ArgumentsHandler {
     final type = property.fieldType.collectionItemType ?? property.fieldType;
     if (type.isStringType) {
       return type.isNullable ? "$itemValue ?? ''" : itemValue;
+    } else if (type.isEnumType && usesEnumName) {
+      return type.isNullable ? "$itemValue?.name ?? ''" : '$itemValue.name';
     } else {
       return type.isNullable
           ? "$itemValue?.toString() ?? ''"
@@ -110,6 +116,7 @@ class ArgumentsHandler {
 
   /// Creates a new [ArgumentsHandler] instance for specified [constructor].
   static FutureOr<ArgumentsHandler> createAsync(
+    LibraryLanguageVersion languageVersion,
     ConstructorDeclaration constructor,
     PropertyDefinition property,
     NodeProvider nodeProvider,
@@ -126,6 +133,7 @@ class ArgumentsHandler {
         config.argumentTemplates,
         config.namedTemplates,
         isFormBuilder: isFormBuilder,
+        usesEnumName: config.getUsesEnumName(languageVersion),
       );
 
   bool _isIntrinsic(ParameterInfo parameter) {
@@ -176,7 +184,11 @@ class ArgumentsHandler {
       namedTemplates: _namedTemplates,
       itemValue: itemValue,
       itemValueType: _itemValueType,
-      itemValueString: _tryGetItemValueAsStringExpression(_property, itemValue),
+      itemValueString: _tryGetItemValueAsStringExpression(
+        _property,
+        itemValue,
+        usesEnumName: _usesEnumName,
+      ),
     );
 
     Iterable<String> emitDefault(ArgumentMacroContext context) sync* {
