@@ -7,11 +7,11 @@ import 'package:source_gen/source_gen.dart';
 import 'config.dart';
 import 'macro_keys.dart';
 
+final _macroFinder = RegExp(r'#(?<Macro>[A-Z]+(_[A-Z]+)*)#');
+
 /// Represents macro's context for current argument assignment.
 @sealed
 class ArgumentMacroContext {
-  static final _macroFinder = RegExp(r'#(?<Macro>[A-Z]+(_[A-Z]+)*)#');
-
   final Map<String, String> _contextValues;
   final NamedTemplates _namedTemplates;
 
@@ -148,7 +148,16 @@ class ArgumentMacroContext {
   ) =>
       applyMacro(
         context,
-        applyMacro(context, input, _namedTemplates.get, allowsUnresolved: true),
+        applyMacro(
+          context,
+          input,
+          (v) => _namedTemplates.get(v)?.value,
+          allowsUnresolved: true,
+        ),
         (k) => _contextValues[k],
       );
 }
+
+/// Extract macro keys from specified [value].
+Iterable<String> extractMacroKeys(String value) =>
+    _macroFinder.allMatches(value).map((m) => m.namedGroup('Macro')!);

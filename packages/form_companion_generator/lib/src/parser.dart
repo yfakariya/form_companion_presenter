@@ -14,6 +14,7 @@ import 'arguments_handler.dart';
 import 'config.dart';
 import 'dependency.dart';
 import 'form_field_locator.dart';
+import 'macro.dart';
 import 'model.dart';
 import 'node_provider.dart';
 import 'parser/parser_data.dart';
@@ -301,6 +302,22 @@ FutureOr<List<LibraryImport>> collectDependenciesAsync(
   Logger logger, {
   required bool isFormBuilder,
 }) async {
+  Iterable<TemplateImports> getImports(
+    PropertyAndFormFieldDefinition property,
+    ParameterInfo parameter,
+  ) {
+    final argumentTemplate = config.argumentTemplates
+        .get(property.formFieldTypeName, parameter.name);
+    final usedMacros = extractMacroKeys(
+      argumentTemplate.itemTemplate ?? argumentTemplate.value ?? '',
+    );
+
+    return [
+      ...argumentTemplate.imports,
+      ...usedMacros.expand((m) => config.namedTemplates.get(m)?.imports ?? [])
+    ];
+  }
+
   final collector = DependentLibraryCollector(
     nodeProvider,
     await nodeProvider.libraries.toList(),
@@ -343,21 +360,27 @@ FutureOr<List<LibraryImport>> collectDependenciesAsync(
         );
 
       for (final import in argumentsHandler.allParameters.expand(
-        (p) => config.argumentTemplates
-            .get(property.formFieldTypeName, p.name)
-            .imports,
+        (p) => getImports(property, p),
       )) {
         if (import.prefix.isEmpty) {
-          for (final type in import.types) {
-            collector.recordTypeIdDirect(import.uri, type);
+          if (import.types.isEmpty) {
+            collector.recordLibraryImport(import.uri);
+          } else {
+            for (final type in import.types) {
+              collector.recordTypeIdDirect(import.uri, type);
+            }
           }
         } else {
-          for (final type in import.types) {
-            collector.recordTypeIdDirectWithLibraryPrefix(
-              import.uri,
-              import.prefix,
-              type,
-            );
+          if (import.types.isEmpty) {
+            collector.recordLibraryImportWithPrefix(import.uri, import.prefix);
+          } else {
+            for (final type in import.types) {
+              collector.recordTypeIdDirectWithLibraryPrefix(
+                import.uri,
+                import.prefix,
+                type,
+              );
+            }
           }
         }
       }

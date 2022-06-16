@@ -107,10 +107,10 @@ Iterable<String> emitGlobal(
 
 Iterable<String> _emitImport(LibraryImport import, bool mustBeComment) sync* {
   final prefix = mustBeComment ? '// ' : '';
-  final sortedTypes = [...import.showingTypes]..sort();
-  if (sortedTypes.isEmpty) {
+  if (import.shouldEmitSimpleImports) {
     yield "${prefix}import '${import.library}';";
-  } else {
+  } else if (import.showingTypes.isNotEmpty) {
+    final sortedTypes = [...import.showingTypes]..sort();
     yield "${prefix}import '${import.library}' show ${sortedTypes.join(', ')};";
   }
 

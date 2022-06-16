@@ -116,24 +116,9 @@ The `item_template` represents a tempalte for each item of collection, and it is
 
 If the field value type of the property is not a "collection-like" type, the item template is ignored, so the parameter uses default template.
 
-##### Imports
+In addition, some macro keys are only available in Item Templates. See below for details of macro keys.
 
-You can specify `import` directive in `imports` property of the each argument templates. `imports` property can be string or map.
-
-If you specify string value for `imports`, the string will be treated as a single import URI such as `package:intl/intl.dart`.
-
-If you specify map, the keys and values must be string. The keys and values will be treated as following:
-
-* If the key has only ASCII identifier letters (`[A-Za-z$][A-Za-z_$0-9]*` in regex), then the key represents the type name should be written after `show` keyword of the `import` directive.
-* If the key has ASCII lower alpha-numeric letters (`[a-z$][a-z_$0-9]*` in regex), following 1 dot (`.`), and ASCII identifier letters (`[A-Za-z$][A-Za-z_$0-9]*` in regex), then the key represents prefix and the type name. The prefix should be written after `as` keyword, and the type name should be written after `show` keyword, of the `import` directive respectively.
-* The key which has any other format is not allowed.
-* The value is URI of the importing package.
-
-It is recommended to use map format to avoid unepxected name confliction in generated code. Simple (string format) import should be used for localization related import only (names `L10n` or `LocaleKeys` should not be conflicted).
-
-Note that if you specify duplicated `imports` entries in the `build.yaml`, they are just merged.
-
-##### Example
+##### Example of Argument Templates
 
 The following code list shows sample `argument_templates` in `build.yaml`:
 
@@ -141,9 +126,6 @@ The following code list shows sample `argument_templates` in `build.yaml`:
 builders:
   form_companion_generator:
     options:
-      named_templates:
-          label_template: 'L10n.#PRESENTER#_#PROPERTY#_label'
-          hint_template: 'L10n.#PRESENTER#_#PROPERTY#_hint'
       argument_templates:
         default:
           autovalidateMode: '#ARGUMENT# ?? #AUTO_VALIDATE_MODE#'
@@ -173,7 +155,7 @@ As you notice, keys of `named_templates` are case insensitive when they defined.
 
 NOTE: Another `named_templates` entry reference in `named_templates` are NOT supported.
 
-#### Predefined Named Templates
+##### Predefined Named Templates
 
 There are three predefined named templates as following table. Note that some of them use macros described later.
 
@@ -184,6 +166,44 @@ hint_template | `null` | Default template to be used for `hintText` of `InputDec
 item_widget_template | `Text(#ITEM_VALUE_STRING#)` | Default template to be used in predefined item templates for `items` and `options` to specify `widget` parameter for widgets of field items like `DropdownMenuItem<T>` or `FormBuilderOption<T>`.
 
 Tip: If you specify `hint_template`, it is recommended to specify `hint` argument template for `DropdownButtonFormField` and `FormBuilderDropdown` with value `'#ARGUMENT# ?? #HINT_TEMPLATE#'`.
+
+##### Example of Named Templates
+
+The following code list shows sample `named_templates` in `build.yaml`:
+
+```yaml
+builders:
+  form_companion_generator:
+    options:
+      named_templates:
+          label_template:
+            template: 'L10n.#PRESENTER#_#PROPERTY#_label'
+            imports:
+              - 'package:intl/intl.dart`
+              - 'package:myapp/src/locale/l10n.dart'
+          hint_template: 'L10n.#PRESENTER#_#PROPERTY#_hint'
+            imports:
+              - 'package:intl/intl.dart`
+              - 'package:myapp/src/locale/l10n.dart'
+
+```
+
+#### Imports in Templates
+
+You can specify `import` directive in `imports` property of the each argument templates and named templates. `imports` property can be string or map.
+
+If you specify string value for `imports`, the string will be treated as a single import URI such as `package:intl/intl.dart`.
+
+If you specify map, the keys and values must be string. The keys and values will be treated as following:
+
+* If the key has only ASCII identifier letters (`[A-Za-z$][A-Za-z_$0-9]*` in regex), then the key represents the type name should be written after `show` keyword of the `import` directive.
+* If the key has ASCII lower alpha-numeric letters (`[a-z$][a-z_$0-9]*` in regex), following 1 dot (`.`), and ASCII identifier letters (`[A-Za-z$][A-Za-z_$0-9]*` in regex), then the key represents prefix and the type name. The prefix should be written after `as` keyword, and the type name should be written after `show` keyword, of the `import` directive respectively.
+* The key which has any other format is not allowed.
+* The value is URI of the importing package.
+
+It is recommended to use map format to avoid unepxected name confliction in generated code. Simple (string format) import should be used for localization related import only (names `L10n` or `LocaleKeys` should not be conflicted).
+
+Note that if you specify duplicated `imports` entries in the `build.yaml`, they are just merged.
 
 #### Macro
 

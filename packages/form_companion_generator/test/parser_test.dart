@@ -1860,19 +1860,49 @@ Future<void> main() async {
     test('template import is reflected', () async {
       final result = await collectDependenciesAsync(
         presenterLibrary.element,
-        Config(<String, dynamic>{
-          'argument_templates': {
-            'DropdownButtonFormField': {
-              'items': {
-                'item_template': '#ARGUMENT#',
+        Config(
+          <String, dynamic>{
+            'named_templates': {
+              'label_template': {
+                'template': '#PROPERTY#.name',
+                'imports': 'package:ok/ok1.dart',
+              },
+              'hint_template': {
+                'template': 'null',
+                'imports': 'package:ok/ok2.dart',
+              },
+              'item_widget_template': {
+                'template': 'Text(#ITEM_VALUE_STRING#)',
                 'imports': {
                   'Text': 'package:flutter/widgets.dart',
-                  'b.A': 'package:c.dart',
-                }
+                },
+              },
+              'unused_template': {
+                'template': '#ARGUMENT#',
+                'imports': 'package:ng/ng1.dart',
               }
-            }
-          }
-        }),
+            },
+            'argument_templates': {
+              'default': {
+                'decoration': {
+                  'template':
+                      '#ARGUMENT# ?? #DEFAULT_VALUE_COPY_OR_NEW#(labelText: #LABEL_TEMPLATE#, hintText: #HINT_TEMPLATE#)',
+                  'imports': {
+                    'b.A': 'package:ok/ok1.dart',
+                    'c.B': 'package:ok/ok3.dart',
+                  },
+                },
+              },
+              'DropdownButtonFormField': {
+                'items': {
+                  'item_template':
+                      'DropdownMenuItem<#ITEM_VALUE_TYPE#>(value: #ITEM_VALUE#, child: #ITEM_WIDGET_TEMPLATE#)',
+                },
+                'onChanged': '#ARGUMENT# ?? (_) {}',
+              },
+            },
+          },
+        ),
         [
           await makeProperty(
             'DropdownButtonFormField',
@@ -1889,13 +1919,22 @@ Future<void> main() async {
       assertImports(result, [
         ..._expectedImports['DropdownButtonFormField']!,
         ExpectedImport('enum.dart', shows: ['MyEnum']),
-        ExpectedImport('presenter.dart'),
         ExpectedImport(
-          'package:c.dart',
+          'package:ok/ok1.dart',
           prefixes: [
             MapEntry('b', ['A']),
           ],
-        )
+        ),
+        ExpectedImport(
+          'package:ok/ok2.dart',
+        ),
+        ExpectedImport(
+          'package:ok/ok3.dart',
+          prefixes: [
+            MapEntry('c', ['B']),
+          ],
+        ),
+        ExpectedImport('presenter.dart'),
       ]);
     });
   });

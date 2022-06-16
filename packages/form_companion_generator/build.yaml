@@ -11,7 +11,10 @@ builders:
         named_templates:
           label_template: '#PROPERTY#.name'
           hint_template: 'null'
-          item_widget_template: 'Text(#ITEM_VALUE_STRING#)'
+          item_widget_template: 
+              template: 'Text(#ITEM_VALUE_STRING#)'
+              imports:
+                Text: 'package:flutter/widgets.dart'
         argument_templates:
           default:
             autovalidateMode: '#ARGUMENT# ?? #AUTO_VALIDATE_MODE#'
@@ -19,37 +22,23 @@ builders:
           DropdownButtonFormField:
             items:
               item_template: 'DropdownMenuItem<#ITEM_VALUE_TYPE#>(value: #ITEM_VALUE#, child: #ITEM_WIDGET_TEMPLATE#)'
-              imports:
-                Text: 'package:flutter/widgets.dart'
             onChanged: '#ARGUMENT# ?? (_) {}' # Tip: required to work correctly
           FormBuilderDropdown:
             items:
               item_template: 'DropdownMenuItem<#ITEM_VALUE_TYPE#>(value: #ITEM_VALUE#, child: #ITEM_WIDGET_TEMPLATE#)'
-              imports:
-                Text: 'package:flutter/widgets.dart'
             onChanged: '#ARGUMENT# ?? (_) {}' # Tip: required to work correctly
           FormBuilderCheckboxGroup:
             options:
               item_template: 'FormBuilderFieldOption<#ITEM_VALUE_TYPE#>(value: #ITEM_VALUE#, child: #ITEM_WIDGET_TEMPLATE#)'
-              imports:
-                Text: 'package:flutter/widgets.dart'
           FormBuilderChoiceChip:
             options:
               item_template: 'FormBuilderFieldOption<#ITEM_VALUE_TYPE#>(value: #ITEM_VALUE#, child: #ITEM_WIDGET_TEMPLATE#)'
-              imports:
-                Text: 'package:flutter/widgets.dart'
           FormBuilderFilterChip:
             options:
               item_template: 'FormBuilderFieldOption<#ITEM_VALUE_TYPE#>(value: #ITEM_VALUE#, child: #ITEM_WIDGET_TEMPLATE#)'
-              imports:
-                Text: 'package:flutter/widgets.dart'
           FormBuilderRadioGroup:
             options:
               item_template: 'FormBuilderFieldOption<#ITEM_VALUE_TYPE#>(value: #ITEM_VALUE#, child: #ITEM_WIDGET_TEMPLATE#)'
-              imports:
-                Text: 'package:flutter/widgets.dart'
           FormBuilderSegmentedControl:
             options:
               item_template: 'FormBuilderFieldOption<#ITEM_VALUE_TYPE#>(value: #ITEM_VALUE#, child: #ITEM_WIDGET_TEMPLATE#)'
-              imports:
-                Text: 'package:flutter/widgets.dart'

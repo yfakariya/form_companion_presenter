@@ -125,17 +125,12 @@ class Config {
           Map.fromEntries(
             rawNamedTemplates.entries
                 .map(
-                  (e) => _checkMapType<String, String>(
+                  (e) => _checkMapType<String, dynamic>(
                     e,
                     "property of 'named_templates'",
                   ),
                 )
-                .map(
-                  (e) => MapEntry(
-                    e.key.toUpperCase(),
-                    e.value,
-                  ),
-                ),
+                .map(NamedTemplate.parse),
           ),
         );
       } else {
@@ -236,7 +231,7 @@ MapEntry<K, V> _checkMapType<K, V>(
 
 /// Represents `named_templates` configuration property.
 class NamedTemplates {
-  final Map<String, String> _namedTemplates;
+  final Map<String, NamedTemplate> _namedTemplates;
 
   /// Returns `true` when this template is empty.
   @visibleForTesting
@@ -250,7 +245,7 @@ class NamedTemplates {
   /// Gets a specified template.
   ///
   /// This method returns `null` when the specified template is not defined.
-  String? get(String name) => _namedTemplates[name];
+  NamedTemplate? get(String name) => _namedTemplates[name];
 }
 
 /// Represents `argument_templates` configuration property.
@@ -282,6 +277,62 @@ class ArgumentTemplates {
       (_argumentTemplates[className]?[parameterName] ??
           _argumentTemplates['default']?[parameterName]) !=
       null;
+}
+
+/// Represents each item of `named_templates`.
+class NamedTemplate {
+  /// Value of this template.
+  final String? value;
+
+  /// Collection of related imports. This value can be empty.
+  final Iterable<TemplateImports> imports;
+
+  /// Initializes a new instance with [value] and [imports].
+  const NamedTemplate(this.value, this.imports);
+
+  /// Parses raw yaml property entry ([MapEntry]) to [MapEntry] of [String]
+  /// (template name) and [NamedTemplate].
+  ///
+  /// This method also change case of key to upper case.
+  ///
+  /// For any type error, [ArgumentError] will be thrown.
+  static MapEntry<String, NamedTemplate> parse(
+    MapEntry<String, dynamic> rawNamedTemplate,
+  ) {
+    final dynamic simpleOrStructuredTemplate = rawNamedTemplate.value;
+    if (simpleOrStructuredTemplate is String) {
+      return MapEntry(
+        rawNamedTemplate.key.toUpperCase(),
+        NamedTemplate(
+          simpleOrStructuredTemplate,
+          [],
+        ),
+      );
+    } else if (simpleOrStructuredTemplate is Map) {
+      final dynamic templateValue = simpleOrStructuredTemplate['template'];
+      if (templateValue is String) {
+        return MapEntry(
+          rawNamedTemplate.key.toUpperCase(),
+          NamedTemplate(
+            templateValue,
+            TemplateImports.parse(simpleOrStructuredTemplate['imports']),
+          ),
+        );
+      }
+
+      throw ArgumentError(
+        "'${rawNamedTemplate.key}' property of 'named_templates' must have "
+        "String 'template' property but the type of 'template' is: "
+        '${templateValue.runtimeType}.',
+      );
+    } else {
+      throw ArgumentError(
+        "Unexpected value type of '${rawNamedTemplate.key}' property of "
+        "'named_templates': ${simpleOrStructuredTemplate.runtimeType}. "
+        'Value must be String or object.',
+      );
+    }
+  }
 }
 
 /// Represents each item of `argument_templates`.

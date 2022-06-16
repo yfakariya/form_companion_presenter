@@ -187,10 +187,10 @@ void main() {
       final target = Config(<String, dynamic>{
         'named_templates': {'key': 'VALUE'},
       });
-      expect(
-        target.namedTemplates.get('KEY'),
-        'VALUE',
-      );
+      final result = target.namedTemplates.get('KEY');
+      expect(result, isNotNull);
+      expect(result!.value, 'VALUE');
+      expect(result.imports, isEmpty);
     });
 
     test('empty maps is harmless', () {
@@ -234,10 +234,154 @@ void main() {
             (e) => e.message,
             'message',
             "Unexpected value type of 'map' property of 'named_templates': int. "
-                'Values must be String.',
+                'Value must be String or object.',
           ),
         ),
       );
+    });
+
+    group('imports', () {
+      void testImports(
+        dynamic input,
+        List<TemplateImports> expected,
+      ) {
+        final target = Config(<String, dynamic>{
+          'named_templates': {
+            'template': <dynamic, dynamic>{
+              'template': 'value',
+              'imports': input,
+            }
+          },
+        });
+        final result = target.namedTemplates.get('TEMPLATE');
+        expect(result, isNotNull);
+        expect(result!.value, 'value');
+        expected.sort((l, r) {
+          final uri = l.uri.compareTo(r.uri);
+          if (uri != 0) {
+            return uri;
+          }
+
+          return l.prefix.compareTo(r.prefix);
+        });
+        final imports = result.imports.toList();
+        expect(imports.length, expected.length);
+        for (var i = 0; i < expected.length; i++) {
+          expect(imports[i].uri, expected[i].uri, reason: '[$i].uri');
+          expect(imports[i].prefix, expected[i].prefix, reason: '[$i].prefix');
+          expect(imports[i].types, expected[i].types, reason: '[$i].types');
+        }
+      }
+
+      test(
+        'simple string should be non-prefixed uri without types',
+        () => testImports(
+          'package:a/b.dart',
+          [TemplateImports('package:a/b.dart', '', [])],
+        ),
+      );
+
+      test(
+        'string map should be prefixed uri with types',
+        () => testImports(
+          {
+            'a.TypeA': 'package:a/b.dart',
+            'TypeAA': 'package:a/b.dart',
+            'b.TypeB': 'package:b/c.dart',
+            'TypeBB': 'package:b/c.dart',
+          },
+          [
+            TemplateImports('package:a/b.dart', '', ['TypeAA']),
+            TemplateImports('package:a/b.dart', 'a', ['TypeA']),
+            TemplateImports('package:b/c.dart', '', ['TypeBB']),
+            TemplateImports('package:b/c.dart', 'b', ['TypeB']),
+          ],
+        ),
+      );
+
+      test('non map imports cause error', () {
+        final target = Config(<String, dynamic>{
+          'named_templates': {
+            'template': <dynamic, dynamic>{
+              'template': 'value',
+              'imports': 0,
+            }
+          },
+        });
+        expect(
+          () => target.namedTemplates.get('TEMPLATE'),
+          throwsA(
+            isA<ArgumentError>().having(
+              (e) => e.message,
+              'message',
+              "Unexpected type of 'imports': int",
+            ),
+          ),
+        );
+      });
+
+      test('non string key in imports cause error', () {
+        final target = Config(<String, dynamic>{
+          'named_templates': {
+            'template': <dynamic, dynamic>{
+              'template': 'value',
+              'imports': {0: '0'},
+            }
+          },
+        });
+        expect(
+          () => target.namedTemplates.get('TEMPLATE'),
+          throwsA(
+            isA<ArgumentError>().having(
+              (e) => e.message,
+              'message',
+              "Unexpected property key type of 'imports': int",
+            ),
+          ),
+        );
+      });
+
+      test('non string value in imports cause error', () {
+        final target = Config(<String, dynamic>{
+          'named_templates': {
+            'template': <dynamic, dynamic>{
+              'template': 'value',
+              'imports': {'0': 0},
+            }
+          },
+        });
+        expect(
+          () => target.namedTemplates.get('TEMPLATE'),
+          throwsA(
+            isA<ArgumentError>().having(
+              (e) => e.message,
+              'message',
+              "Unexpected property value type of '0' property of 'imports': int",
+            ),
+          ),
+        );
+      });
+
+      test('invalid format key cause error', () {
+        final target = Config(<String, dynamic>{
+          'named_templates': {
+            'template': <dynamic, dynamic>{
+              'template': 'value',
+              'imports': {'a.b.c': 'a/b.dart'},
+            }
+          },
+        });
+        expect(
+          () => target.namedTemplates.get('TEMPLATE'),
+          throwsA(
+            isA<ArgumentError>().having(
+              (e) => e.message,
+              'message',
+              "Unexpected property key format of 'imports': 'a.b.c'",
+            ),
+          ),
+        );
+      });
     });
   });
 

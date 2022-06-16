@@ -41,8 +41,9 @@ Future<void> main() async {
   test(
     'All known context values replaced',
     () {
-      final target =
-          createTarget(NamedTemplates({'THE_TEMPLATE': 'theTemplate'}));
+      final target = createTarget(
+        NamedTemplates({'THE_TEMPLATE': NamedTemplate('theTemplate', [])}),
+      );
 
       expect(
         target.resolve('CONTEXT', '$baseInput|#THE_TEMPLATE#'),
@@ -54,8 +55,9 @@ Future<void> main() async {
   test(
     'Macro in named template can be resolved',
     () {
-      final target =
-          createTarget(NamedTemplates({'THE_TEMPLATE': '#ARGUMENT#'}));
+      final target = createTarget(
+        NamedTemplates({'THE_TEMPLATE': NamedTemplate('#ARGUMENT#', [])}),
+      );
 
       expect(
         target.resolve('CONTEXT', '$baseInput|#THE_TEMPLATE#'),
@@ -70,8 +72,8 @@ Future<void> main() async {
       final target = createTarget(
         NamedTemplates(
           {
-            'THE_TEMPLATE': '#ANOTHER_TEMPLATE#',
-            'ANOTHER_TEMPLATE': 'OK',
+            'THE_TEMPLATE': NamedTemplate('#ANOTHER_TEMPLATE#', []),
+            'ANOTHER_TEMPLATE': NamedTemplate('OK', []),
           },
         ),
       );

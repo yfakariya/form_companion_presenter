@@ -461,6 +461,97 @@ Future<void> main() async {
           ],
         );
       });
+
+      test('template import is reflected', () async {
+        final properties = await makeProperty(
+          'prop1',
+          dateTimeType,
+          dateTimeType,
+          formBuilderDateTimePicker,
+          isFormBuilder: true,
+        );
+        final data = PresenterDefinition(
+          name: 'Test',
+          isFormBuilder: true,
+          doAutovalidate: false,
+          warnings: [],
+          imports: await collectDependenciesAsync(
+            library,
+            Config(
+              <String, dynamic>{
+                'named_templates': {
+                  'label_template': {
+                    'template': '#PROPERTY#.name',
+                    'imports': 'package:ok/ok1.dart',
+                  },
+                  'hint_template': {
+                    'template': 'null',
+                    'imports': 'package:ok/ok2.dart',
+                  },
+                  'item_widget_template': {
+                    'template': 'Text(#ITEM_VALUE_STRING#)',
+                    'imports': {
+                      'Text': 'package:flutter/widgets.dart',
+                    },
+                  },
+                  'unused_template': {
+                    'template': '#ARGUMENT#',
+                    'imports': 'package:ng/ng1.dart',
+                  }
+                },
+                'argument_templates': {
+                  'default': {
+                    'decoration': {
+                      'template':
+                          '#ARGUMENT# ?? #DEFAULT_VALUE_COPY_OR_NEW#(labelText: #LABEL_TEMPLATE#, hintText: #HINT_TEMPLATE#)',
+                      'imports': {
+                        'b.A': 'package:ok/ok1.dart',
+                        'c.B': 'package:ok/ok3.dart',
+                      },
+                    },
+                  },
+                  'DropdownButtonFormField': {
+                    'items': {
+                      'item_template':
+                          'DropdownMenuItem<#ITEM_VALUE_TYPE#>(value: #ITEM_VALUE#, child: #ITEM_WIDGET_TEMPLATE#)',
+                    },
+                    'onChanged': '#ARGUMENT# ?? (_) {}',
+                  },
+                },
+              },
+            ),
+            properties,
+            nodeProvider,
+            logger,
+            isFormBuilder: false,
+          ),
+          properties: properties,
+        );
+
+        final lines = emitGlobal(library, data, _emptyConfig).toList();
+        expect(
+          lines,
+          [
+            "import 'dart:ui' show Brightness, Color, Locale, Radius, TextAlign, VoidCallback;",
+            "import 'dart:ui' as ui show TextDirection;",
+            '',
+            "import 'package:flutter/foundation.dart' show Key, ValueChanged;",
+            "import 'package:flutter/material.dart' show DatePickerEntryMode, DatePickerMode, Icons, InputCounterWidgetBuilder, InputDecoration, SelectableDayPredicate, TimeOfDay, TimePickerEntryMode;",
+            "import 'package:flutter/painting.dart' show EdgeInsets, StrutStyle, TextStyle;",
+            "import 'package:flutter/services.dart' show MaxLengthEnforcement, TextCapitalization, TextInputAction, TextInputFormatter, TextInputType;",
+            "import 'package:flutter/widgets.dart' show AutovalidateMode, BuildContext, FocusNode, Icon, Localizations, RouteSettings, TextEditingController, TransitionBuilder;",
+            "import 'package:flutter_form_builder/flutter_form_builder.dart' show FormBuilderDateTimePicker, InputType, ValueTransformer;",
+            "import 'package:form_companion_presenter/form_companion_presenter.dart';",
+            "import 'package:intl/intl.dart' show DateFormat;",
+            "import 'package:ok/ok1.dart';",
+            "import 'package:ok/ok1.dart' as b show A;",
+            "import 'package:ok/ok2.dart';",
+            "import 'package:ok/ok3.dart' as c show B;",
+            '',
+            "import 'form_fields.dart';"
+          ],
+        );
+      });
     });
 
     group('warnings and imports mix', () {
