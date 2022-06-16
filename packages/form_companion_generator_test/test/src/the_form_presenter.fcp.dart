@@ -246,8 +246,7 @@ class $TheFormPresenterFieldFactory {
     return DropdownButtonFormField<MyEnum>(
       key: _presenter.getKey(property.name, context),
       items: [MyEnum.one, MyEnum.two]
-          .map((x) =>
-              DropdownMenuItem<MyEnum>(value: x, child: Text(x.toString())))
+          .map((x) => DropdownMenuItem<MyEnum>(value: x, child: Text(x.name)))
           .toList(),
       selectedItemBuilder: selectedItemBuilder,
       value: property.getFieldValue(
