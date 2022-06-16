@@ -13,6 +13,7 @@ import 'dart:ui'
         Clip,
         Color,
         Locale,
+        Offset,
         Radius,
         TextAlign,
         TextDirection,
@@ -32,6 +33,7 @@ import 'package:flutter/material.dart'
         DateTimeRange,
         DropdownButtonBuilder,
         DropdownMenuItem,
+        EntryModeChangeCallback,
         Icons,
         InputBorder,
         InputCounterWidgetBuilder,
@@ -44,16 +46,20 @@ import 'package:flutter/material.dart'
         SemanticFormatterCallback,
         TimeOfDay,
         TimePickerEntryMode,
-        VisualDensity,
-        kMinInteractiveDimension;
+        VisualDensity;
 
 import 'package:flutter/painting.dart'
     show
+        AlignmentDirectional,
+        AlignmentGeometry,
         Axis,
+        BorderRadius,
+        CircleBorder,
         EdgeInsets,
         EdgeInsetsGeometry,
         ImageProvider,
         OutlinedBorder,
+        ShapeBorder,
         StrutStyle,
         TextAlignVertical,
         TextStyle,
@@ -94,6 +100,7 @@ import 'package:flutter_form_builder/flutter_form_builder.dart'
         DisplayValues,
         FormBuilderCheckbox,
         FormBuilderCheckboxGroup,
+        FormBuilderChipOption,
         FormBuilderChoiceChip,
         FormBuilderDateRangePicker,
         FormBuilderDateTimePicker,
@@ -360,9 +367,12 @@ class $TheFormBuilderPresenterFieldFactory {
     bool shouldRequestFocus = false,
     Color? dropdownColor,
     Color? focusColor,
-    double itemHeight = kMinInteractiveDimension,
+    double? itemHeight,
     DropdownButtonBuilder? selectedItemBuilder,
     double? menuMaxHeight,
+    bool? enableFeedback,
+    BorderRadius? borderRadius,
+    AlignmentGeometry alignment = AlignmentDirectional.centerStart,
   }) {
     final property = _presenter.propEnum;
     return FormBuilderDropdown<MyEnum>(
@@ -381,8 +391,7 @@ class $TheFormBuilderPresenterFieldFactory {
       onReset: onReset,
       focusNode: focusNode,
       items: [MyEnum.one, MyEnum.two]
-          .map((x) =>
-              DropdownMenuItem<MyEnum>(value: x, child: Text(x.toString())))
+          .map((x) => DropdownMenuItem<MyEnum>(value: x, child: Text(x.name)))
           .toList(),
       isExpanded: isExpanded,
       isDense: isDense,
@@ -404,6 +413,9 @@ class $TheFormBuilderPresenterFieldFactory {
       itemHeight: itemHeight,
       selectedItemBuilder: selectedItemBuilder,
       menuMaxHeight: menuMaxHeight,
+      enableFeedback: enableFeedback,
+      borderRadius: borderRadius,
+      alignment: alignment,
     );
   }
 
@@ -481,7 +493,7 @@ class $TheFormBuilderPresenterFieldFactory {
     EdgeInsets scrollPadding = const EdgeInsets.all(20.0),
     double cursorWidth = 2.0,
     bool enableInteractiveSelection = true,
-    Icon resetIcon = const Icon(Icons.close),
+    Widget? resetIcon = const Icon(Icons.close),
     TimeOfDay initialTime = const TimeOfDay(hour: 12, minute: 0),
     TextInputType keyboardType = TextInputType.text,
     TextAlign textAlign = TextAlign.start,
@@ -528,6 +540,8 @@ class $TheFormBuilderPresenterFieldFactory {
     RouteSettings? routeSettings,
     StrutStyle? strutStyle,
     SelectableDayPredicate? selectableDayPredicate,
+    Offset? anchorPoint,
+    EntryModeChangeCallback? onEntryModeChanged,
   }) {
     final property = _presenter.propDateTime;
     return FormBuilderDateTimePicker(
@@ -596,6 +610,8 @@ class $TheFormBuilderPresenterFieldFactory {
       routeSettings: routeSettings,
       strutStyle: strutStyle,
       selectableDayPredicate: selectableDayPredicate,
+      anchorPoint: anchorPoint,
+      onEntryModeChanged: onEntryModeChanged,
     );
   }
 
@@ -793,8 +809,9 @@ class $TheFormBuilderPresenterFieldFactory {
     FocusNode? focusNode,
     InputDecoration? decoration,
     Key? key,
-    List<FormBuilderFieldOption<MyEnum>>? options,
+    List<FormBuilderChipOption<MyEnum>>? options,
     WrapAlignment alignment = WrapAlignment.start,
+    ShapeBorder avatarBorder = const CircleBorder(),
     Color? backgroundColor,
     Color? checkmarkColor,
     Clip clipBehavior = Clip.none,
@@ -839,11 +856,12 @@ class $TheFormBuilderPresenterFieldFactory {
       options: property
               .getFieldValue(Localizations.maybeLocaleOf(context) ??
                   const Locale('en', 'US'))
-              ?.map((x) => FormBuilderFieldOption<MyEnum>(
-                  value: x, child: Text(x.toString())))
+              ?.map((x) =>
+                  FormBuilderChipOption<MyEnum>(value: x, child: Text(x.name)))
               .toList() ??
           [],
       alignment: alignment,
+      avatarBorder: avatarBorder,
       backgroundColor: backgroundColor,
       checkmarkColor: checkmarkColor,
       clipBehavior: clipBehavior,
@@ -882,8 +900,9 @@ class $TheFormBuilderPresenterFieldFactory {
     FocusNode? focusNode,
     InputDecoration? decoration,
     Key? key,
-    List<FormBuilderFieldOption<bool>>? options,
+    List<FormBuilderChipOption<bool>>? options,
     WrapAlignment alignment = WrapAlignment.start,
+    ShapeBorder avatarBorder = const CircleBorder(),
     Color? backgroundColor,
     Color? checkmarkColor,
     Clip clipBehavior = Clip.none,
@@ -928,11 +947,12 @@ class $TheFormBuilderPresenterFieldFactory {
       options: property
               .getFieldValue(Localizations.maybeLocaleOf(context) ??
                   const Locale('en', 'US'))
-              ?.map((x) => FormBuilderFieldOption<bool>(
+              ?.map((x) => FormBuilderChipOption<bool>(
                   value: x, child: Text(x.toString())))
               .toList() ??
           [],
       alignment: alignment,
+      avatarBorder: avatarBorder,
       backgroundColor: backgroundColor,
       checkmarkColor: checkmarkColor,
       clipBehavior: clipBehavior,
@@ -1072,8 +1092,8 @@ class $TheFormBuilderPresenterFieldFactory {
       options: property
               .getFieldValue(Localizations.maybeLocaleOf(context) ??
                   const Locale('en', 'US'))
-              ?.map((x) => FormBuilderFieldOption<MyEnum>(
-                  value: x, child: Text(x.toString())))
+              ?.map((x) =>
+                  FormBuilderFieldOption<MyEnum>(value: x, child: Text(x.name)))
               .toList() ??
           [],
       activeColor: activeColor,
@@ -1106,8 +1126,9 @@ class $TheFormBuilderPresenterFieldFactory {
     FocusNode? focusNode,
     InputDecoration? decoration,
     Key? key,
-    List<FormBuilderFieldOption<MyEnum>>? options,
+    List<FormBuilderChipOption<MyEnum>>? options,
     WrapAlignment alignment = WrapAlignment.start,
+    ShapeBorder avatarBorder = const CircleBorder(),
     Color? backgroundColor,
     WrapCrossAlignment crossAxisAlignment = WrapCrossAlignment.start,
     Axis direction = Axis.horizontal,
@@ -1145,12 +1166,13 @@ class $TheFormBuilderPresenterFieldFactory {
       key: key,
       name: property.name,
       options: [MyEnum.one, MyEnum.two]
-          .map((x) => FormBuilderFieldOption<MyEnum>(
-              value: x, child: Text(x.toString())))
+          .map((x) =>
+              FormBuilderChipOption<MyEnum>(value: x, child: Text(x.name)))
           .toList(),
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       alignment: alignment,
+      avatarBorder: avatarBorder,
       backgroundColor: backgroundColor,
       crossAxisAlignment: crossAxisAlignment,
       direction: direction,
@@ -1186,8 +1208,9 @@ class $TheFormBuilderPresenterFieldFactory {
     FocusNode? focusNode,
     InputDecoration? decoration,
     Key? key,
-    List<FormBuilderFieldOption<MyEnum>>? options,
+    List<FormBuilderChipOption<MyEnum>>? options,
     WrapAlignment alignment = WrapAlignment.start,
+    ShapeBorder avatarBorder = const CircleBorder(),
     Color? backgroundColor,
     Color? checkmarkColor,
     Clip clipBehavior = Clip.none,
@@ -1232,11 +1255,12 @@ class $TheFormBuilderPresenterFieldFactory {
       options: property
               .getFieldValue(Localizations.maybeLocaleOf(context) ??
                   const Locale('en', 'US'))
-              ?.map((x) => FormBuilderFieldOption<MyEnum>(
-                  value: x, child: Text(x.toString())))
+              ?.map((x) =>
+                  FormBuilderChipOption<MyEnum>(value: x, child: Text(x.name)))
               .toList() ??
           [],
       alignment: alignment,
+      avatarBorder: avatarBorder,
       backgroundColor: backgroundColor,
       checkmarkColor: checkmarkColor,
       clipBehavior: clipBehavior,
@@ -1309,8 +1333,8 @@ class $TheFormBuilderPresenterFieldFactory {
       key: key,
       name: property.name,
       options: [MyEnum.one, MyEnum.two]
-          .map((x) => FormBuilderFieldOption<MyEnum>(
-              value: x, child: Text(x.toString())))
+          .map((x) =>
+              FormBuilderFieldOption<MyEnum>(value: x, child: Text(x.name)))
           .toList(),
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
@@ -1373,8 +1397,8 @@ class $TheFormBuilderPresenterFieldFactory {
       onReset: onReset,
       focusNode: focusNode,
       options: [MyEnum.one, MyEnum.two]
-          .map((x) => FormBuilderFieldOption<MyEnum>(
-              value: x, child: Text(x.toString())))
+          .map((x) =>
+              FormBuilderFieldOption<MyEnum>(value: x, child: Text(x.name)))
           .toList(),
       borderColor: borderColor,
       selectedColor: selectedColor,
