@@ -106,9 +106,9 @@ To specify argument template for specific constructor parameter for all `FormFie
 
 ##### Item Template
 
- effective keys are `item_template` only. In addition, `item_template` is only available in properties which have "collection-like" field value type.
+As described before, each entries under properties in `argument_templates` may have `item_template` property instead of `template` property. The value of `item_template` is referred as Item Template.
 
-"collection-like" types are one of following:
+The `item_template` represents a tempalte for each item of collection, and it is only available in properties which have "collection-like" field value types, which are one of following:
 
 * `Iterable<E>` or its subtypes (including `List<E>`). Item template should be applied for each items of the `Iterable<E>` value (thus, the item value type is `E`).
 * Any enum type. Item template should be applied for each members of the enum type (thus, the item value type is the enum type). Note that if the type is nullable, then `null` is also included in head of the members.
@@ -232,4 +232,19 @@ In template values, you can use defined named templates or following context spe
 `HINT_TEMPLATE` | `itemTemplates` | Replaced with expression resolved for `hintTemplate`.
 `ITEM_VALUE` | `itemTemplates` | Replaced with static token which is local variable identifier which holds current enum member, bool value, or collection item.
 `ITEM_VALUE_TYPE` | `itemTemplates` | Replaced with static token which is a type of the `#ITEM_VALUE`.
-`ITEM_VALUE_STRING` | `itemTemplates` | String representation of `#ITEM_VALUE#`. This value will be same as `#ITEM_VALUE#` for `String`, will be `#ITEM_VALUE# ?? ''` for `String?`, will be `#ITEM_VALUE#.toString()` for non-string `T`, or will be `#ITEM_VALUE#?.toString() ?? ''` for non-string `T?`.
+`ITEM_VALUE_STRING` | `itemTemplates` | See below "About `#ITEM_VALUE_STRING#`.
+
+#### About `#ITEM_VALUE_STRING#`
+
+`#ITEM_VALUE_STRING#` macro will be replaced with string representation of `#ITEM_VALUE#`. This value will vary on the type of items type as following:
+
+**item type** | **other condition** | **replacement result**
+--|--|--
+`String` | - | `#ITEM_VALUE#`
+`String?` | - | `#ITEM_VALUE# ?? ''`
+enum | Dart SDK version >= 2.15 or `uses_enum_name` option is set to `true` | `#ITEM_VALUE#.name`
+enum | Dart SDK version < 2.15 or `uses_enum_name` option is set to `false` | `#ITEM_VALUE#.toString()`
+enum (nullable) | Dart SDK version >= 2.15 or `uses_enum_name` option is set to `true` | `#ITEM_VALUE#?.name ?? ''`
+enum (nullable) | Dart SDK version < 2.15 or `uses_enum_name` option is set to `false` | `#ITEM_VALUE#?.toString() ?? ''`
+other types | - | `#IETM_VALUE#.toString()`
+other types (nullable) | - | `#IETM_VALUE#?.toString() ?? ''`
