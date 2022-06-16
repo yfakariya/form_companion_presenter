@@ -5,6 +5,7 @@ import 'dart:async';
 import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/type.dart';
 import 'package:source_gen/source_gen.dart';
 
 // Defines utilities.
@@ -93,4 +94,54 @@ String? getNodeLocation(AstNode node, Element contextElement) {
       ?.parsedUnit;
 
   return '${unit?.path ?? '(unknown)'}:${unit?.lineInfo.getLocation(node.offset) ?? '(unknown)'}';
+}
+
+/// Determines that whether [type] is collection type in context of [element].
+bool isCollectionType(DartType type, Element element) {
+  final library = element.library;
+  if (library == null) {
+    // maybe Never, etc.
+    return false;
+  }
+
+  return library.typeSystem.isAssignableTo(
+    library.typeSystem.promoteToNonNull(type),
+    library.typeProvider.iterableDynamicType,
+  );
+}
+
+/// Determines that whether [type] is enum type in context of [element].
+bool isEnumType(DartType type, Element element) {
+  final library = element.library;
+  if (library == null) {
+    // maybe Never, etc.
+    return false;
+  }
+
+  return library.typeSystem.isAssignableTo(
+    library.typeSystem.promoteToNonNull(type),
+    library.typeProvider.enumType!,
+  );
+}
+
+/// Returns [DartType] when the [type] is collection type in context of [element].
+/// This function returns `null` for non-collection [type].
+DartType? getCollectionElementType(DartType type, Element element) {
+  if (type is! InterfaceType || !isCollectionType(type, element)) {
+    return null;
+  }
+
+  final library = element.library!;
+  if (type.element == library.typeProvider.iterableElement) {
+    return type.typeArguments.single;
+  }
+
+  for (final superClass in type.allSupertypes) {
+    final found = getCollectionElementType(superClass, element);
+    if (found != null) {
+      return found;
+    }
+  }
+
+  return null;
 }

@@ -12,11 +12,12 @@ Future<String> emitFieldFactoriesAsync(
   NodeProvider nodeProvider,
   PresenterDefinition data,
   Config config,
+  Logger logger,
 ) async {
   assert(data.properties.isNotEmpty);
 
   return '''
-${_emitFieldFactoriesClasses(nodeProvider, data).join('\n')}
+${_emitFieldFactoriesClasses(nodeProvider, data, logger).join('\n')}
 
 /// Defines an extension property to get [\$${data.name}FieldFactory] from [${data.name}].
 extension \$${data.name}FieldFactoryExtension on ${data.name} {
@@ -29,6 +30,7 @@ extension \$${data.name}FieldFactoryExtension on ${data.name} {
 Iterable<String> _emitFieldFactoriesClasses(
   NodeProvider nodeProvider,
   PresenterDefinition data,
+  Logger logger,
 ) sync* {
   final propertyWithComplexFormFields =
       data.properties.where((p) => !p.isSimpleFormField).toList();
@@ -76,7 +78,7 @@ Iterable<String> _emitFieldFactoriesClasses(
     // For newline before lines.
     yield '';
 
-    yield* emitFieldFactory(nodeProvider, data, property);
+    yield* emitFieldFactory(nodeProvider, data, property, logger);
   }
 
   yield '}';
@@ -115,6 +117,7 @@ Iterable<String> _emitFieldFactoriesClasses(
         data,
         property,
         constructor,
+        logger,
       );
     }
 
@@ -143,6 +146,7 @@ Iterable<String> emitFieldFactory(
   NodeProvider nodeProvider,
   PresenterDefinition data,
   PropertyAndFormFieldDefinition property,
+  Logger logger,
 ) sync* {
   yield* _emitPropertyWarnings(property);
 
@@ -155,6 +159,7 @@ Iterable<String> emitFieldFactory(
     data,
     property,
     property.formFieldConstructors.single,
+    logger,
   );
 }
 
@@ -163,6 +168,7 @@ Iterable<String> _emitFieldFactoryCore(
   PresenterDefinition data,
   PropertyAndFormFieldDefinition property,
   FormFieldConstructorDefinition constructor,
+  Logger logger,
 ) sync* {
   final instantiationContext = property.instantiationContext;
   if (instantiationContext == null) {
@@ -211,14 +217,17 @@ Iterable<String> _emitFieldFactoryCore(
     buildContext: 'context',
     presenter: _presenterField,
     propertyDescriptor: propertyDescriptorVariable,
+    itemValue: 'x',
     indent: '      ',
+    logger: logger,
   );
   yield '    );';
   yield '  }';
 }
 
 Iterable<String> _emitPropertyWarnings(
-    PropertyAndFormFieldDefinition property) sync* {
+  PropertyAndFormFieldDefinition property,
+) sync* {
   if (property.instantiationContext == null ||
       property.formFieldConstructors.isEmpty) {
     // We cannot handle this pattern.

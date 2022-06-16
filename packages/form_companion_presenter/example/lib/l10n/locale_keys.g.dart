@@ -60,10 +60,10 @@ abstract class  LocaleKeys {
   static const stay_label = 'stay.label';
   static const stay_hint = 'stay.hint';
   static const stay = 'stay';
-  static const specialOffer_description = 'specialOffer.description';
-  static const specialOffer_label = 'specialOffer.label';
-  static const specialOffer_hint = 'specialOffer.hint';
-  static const specialOffer = 'specialOffer';
+  static const specialOfferDate_description = 'specialOfferDate.description';
+  static const specialOfferDate_label = 'specialOfferDate.label';
+  static const specialOfferDate_hint = 'specialOfferDate.hint';
+  static const specialOfferDate = 'specialOfferDate';
   static const roomType_label = 'roomType.label';
   static const roomType_hint = 'roomType.hint';
   static const roomType_standard = 'roomType.standard';

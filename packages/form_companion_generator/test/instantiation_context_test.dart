@@ -19,6 +19,8 @@ Future<void> main() async {
   Logger.root.level = Level.INFO;
   logger.onRecord.listen(print);
 
+  final nullableStringType = await getNullableStringType();
+
   FutureOr<void> testCore({
     required String code,
     required GenericType Function(LibraryElement) valueTypeProvider,
@@ -103,6 +105,23 @@ class DropdownButtonFormField<T> extends FormField<T> {}
   );
 
   test(
+    'nullable generic',
+    () => testCore(
+      code: '''
+class FormField<T> {}
+class DropdownButtonFormField<T> extends FormField<T> {}
+''',
+      classFinder: (l) => l.getType('DropdownButtonFormField')!,
+      valueTypeProvider: (l) => toGenericType(nullableStringType),
+      formFieldGenericArgumentsProvider: (_) =>
+          [toGenericType(nullableStringType)],
+      assertion: (x) {
+        expect(x.getMappedType('T'), 'String?');
+      },
+    ),
+  );
+
+  test(
     'nested generic',
     () => testCore(
       code: '''
@@ -125,7 +144,10 @@ class FormBuilderCheckBoxGroup<T> extends FormField<List<T>> {}
       Tuple3('non-aliased -> aliased', 'void Function()', 'Callback'),
       Tuple3('aliased -> aliased', 'Callback', 'Callback'),
       Tuple3(
-          'non-aliased -> non-aliased', 'void Function()', 'void Function()'),
+        'non-aliased -> non-aliased',
+        'void Function()',
+        'void Function()',
+      ),
     ]) {
       test(
         spec.item1,

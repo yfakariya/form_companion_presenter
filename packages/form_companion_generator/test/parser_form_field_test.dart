@@ -2,6 +2,7 @@
 
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/type.dart';
+import 'package:form_companion_generator/src/config.dart';
 import 'package:form_companion_generator/src/form_field_locator.dart';
 import 'package:form_companion_generator/src/model.dart';
 import 'package:form_companion_generator/src/node_provider.dart';
@@ -13,6 +14,8 @@ import 'package:tuple/tuple.dart';
 
 import 'session_resolver.dart';
 import 'test_helpers.dart';
+
+Config get _emptyConfig => Config(<String, dynamic>{});
 
 class FailureFormFieldLocator implements FormFieldLocator {
   const FailureFormFieldLocator();
@@ -69,6 +72,8 @@ Future<void> main() async {
     try {
       result = await resolveFormFieldAsync(
         ParseContext(
+          library.languageVersion,
+          _emptyConfig,
           logger,
           nodeProvider,
           formFieldLocator,
@@ -217,6 +222,8 @@ Future<void> main() async {
       () async {
         const isFormBuilder = false;
         final context = ParseContext(
+          library.languageVersion,
+          _emptyConfig,
           logger,
           nodeProvider,
           const FailureFormFieldLocator(),
@@ -268,8 +275,10 @@ Future<void> main() async {
             c.every((e) => e.constructor.declaredElement!.isPublic),
             isTrue,
             reason: c
-                .map((e) => '${e.constructor.name} -> '
-                    'isPublic: ${e.constructor.declaredElement?.isPublic}')
+                .map(
+                  (e) => '${e.constructor.name} -> '
+                      'isPublic: ${e.constructor.declaredElement?.isPublic}',
+                )
                 .join('\n'),
           );
           expect(
@@ -281,8 +290,10 @@ Future<void> main() async {
             c.map((e) => e.constructor.declaredElement!.isFactory),
             constructorSpecs.map((e) => e.item2),
             reason: c
-                .map((e) => '${e.constructor.name} -> '
-                    'isFactory: ${e.constructor.declaredElement?.isFactory}')
+                .map(
+                  (e) => '${e.constructor.name} -> '
+                      'isFactory: ${e.constructor.declaredElement?.isFactory}',
+                )
                 .join('\n'),
           );
         },

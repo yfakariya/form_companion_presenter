@@ -33,9 +33,7 @@ typedef PropertyDefinitionSpec = Tuple6<String, InterfaceType, InterfaceType,
 typedef FactoryParameterSpec = Tuple2<String, String>;
 typedef NamedFactorySpec = Tuple3<String?, String, List<FactoryParameterSpec>>;
 
-const emptyConfig = Config(<String, dynamic>{});
-
-// TODO(yfakariya): DropdownItems support w/ label template: see /doc/ideas.md
+Config get _emptyConfig => Config(<String, dynamic>{});
 
 Future<void> main() async {
   final logger = Logger('emitter_test');
@@ -48,6 +46,14 @@ Future<void> main() async {
   final dateTimeType = await getDateTimeType();
   final dateTimeRangeType = await getDateTimeRangeType();
   final rangeValuesType = await getRangeValuesType();
+
+  final nullableBoolType = await getNullableBoolType();
+  final nullableMyEnumType = await getNullableMyEnumType();
+  final nullableStringType = await getNullableStringType();
+  final nullableListOfStringType = await getNullableListOfStringType();
+  final nullableListOfNullableStringType =
+      await getNullableListOfNullableStringType();
+
   final textFormField = library.lookupClass('TextFormField');
   final dropdownButtonFormField =
       library.lookupClass('DropdownButtonFormField');
@@ -80,9 +86,16 @@ Future<void> main() async {
 
   final parametersLibrary = await getParametersLibrary();
 
+  final defaultConfig = await readDefaultOptions();
+  final defaultConfigWithUsesEnumTrue =
+      await readDefaultOptions(<String, dynamic>{'uses_enum_name': true});
+  final defaultConfigWithUsesEnumFalse =
+      await readDefaultOptions(<String, dynamic>{'uses_enum_name': false});
+
   FutureOr<List<PropertyAndFormFieldDefinition>> makePropertiesFully(
     Iterable<PropertyDefinitionSpec> specs, {
     required bool isFormBuilder,
+    Config? config,
   }) async =>
       await specs.map((spec) async {
         final name = spec.item1;
@@ -119,8 +132,11 @@ Future<void> main() async {
                     return FormFieldConstructorDefinition(
                       constructor,
                       await ArgumentsHandler.createAsync(
+                        library.languageVersion,
                         constructor,
+                        property,
                         nodeProvider,
+                        config ?? defaultConfig,
                         isFormBuilder: isFormBuilder,
                       ),
                     );
@@ -184,6 +200,7 @@ Future<void> main() async {
         warnings: [],
         imports: await collectDependenciesAsync(
           library,
+          defaultConfig,
           properties,
           nodeProvider,
           logger,
@@ -192,7 +209,7 @@ Future<void> main() async {
         properties: properties,
       );
       expect(
-        emitPropertyAccessor(data.name, data.properties, emptyConfig),
+        emitPropertyAccessor(data.name, data.properties, _emptyConfig),
         typedProperties('Test01', [Tuple3('prop', 'String', 'String')]),
       );
     });
@@ -222,6 +239,7 @@ Future<void> main() async {
         warnings: [],
         imports: await collectDependenciesAsync(
           library,
+          defaultConfig,
           properties,
           nodeProvider,
           logger,
@@ -230,7 +248,7 @@ Future<void> main() async {
         properties: properties,
       );
       expect(
-        emitPropertyAccessor(data.name, data.properties, emptyConfig),
+        emitPropertyAccessor(data.name, data.properties, _emptyConfig),
         typedProperties(
           'Test02',
           [
@@ -256,6 +274,7 @@ Future<void> main() async {
         warnings: [],
         imports: await collectDependenciesAsync(
           library,
+          defaultConfig,
           properties,
           nodeProvider,
           logger,
@@ -264,7 +283,7 @@ Future<void> main() async {
         properties: properties,
       );
       expect(
-        emitPropertyAccessor(data.name, data.properties, emptyConfig),
+        emitPropertyAccessor(data.name, data.properties, _emptyConfig),
         typedProperties(
           'Test01',
           [Tuple3('prop', 'List<MyEnum>', 'List<MyEnum>')],
@@ -292,7 +311,7 @@ Future<void> main() async {
           properties: properties,
         );
         expect(
-          emitGlobal(library, data, emptyConfig),
+          emitGlobal(library, data, _emptyConfig),
           [
             "import 'package:form_companion_presenter/form_companion_presenter.dart';",
             '',
@@ -318,7 +337,7 @@ Future<void> main() async {
         );
 
         expect(
-          emitGlobal(library, data, emptyConfig),
+          emitGlobal(library, data, _emptyConfig),
           [
             '// TODO(CompanionGenerator): WARNING - AAA',
             "import 'package:form_companion_presenter/form_companion_presenter.dart';",
@@ -345,7 +364,7 @@ Future<void> main() async {
         );
 
         expect(
-          emitGlobal(library, data, emptyConfig),
+          emitGlobal(library, data, _emptyConfig),
           [
             '// TODO(CompanionGenerator): WARNING - AAA',
             '// TODO(CompanionGenerator): WARNING - BBB',
@@ -372,6 +391,7 @@ Future<void> main() async {
           warnings: [],
           imports: await collectDependenciesAsync(
             library,
+            defaultConfig,
             properties,
             nodeProvider,
             logger,
@@ -379,7 +399,7 @@ Future<void> main() async {
           ),
           properties: properties,
         );
-        final lines = emitGlobal(library, data, emptyConfig).toList();
+        final lines = emitGlobal(library, data, _emptyConfig).toList();
         expect(
           lines,
           [
@@ -413,6 +433,7 @@ Future<void> main() async {
           warnings: [],
           imports: await collectDependenciesAsync(
             library,
+            defaultConfig,
             properties,
             nodeProvider,
             logger,
@@ -420,7 +441,7 @@ Future<void> main() async {
           ),
           properties: properties,
         );
-        final lines = emitGlobal(library, data, emptyConfig).toList();
+        final lines = emitGlobal(library, data, _emptyConfig).toList();
         expect(
           lines,
           [
@@ -435,6 +456,97 @@ Future<void> main() async {
             "import 'package:flutter_form_builder/flutter_form_builder.dart' show FormBuilderDateTimePicker, InputType, ValueTransformer;",
             "import 'package:form_companion_presenter/form_companion_presenter.dart';",
             "import 'package:intl/intl.dart' show DateFormat;",
+            '',
+            "import 'form_fields.dart';"
+          ],
+        );
+      });
+
+      test('template import is reflected', () async {
+        final properties = await makeProperty(
+          'prop1',
+          dateTimeType,
+          dateTimeType,
+          formBuilderDateTimePicker,
+          isFormBuilder: true,
+        );
+        final data = PresenterDefinition(
+          name: 'Test',
+          isFormBuilder: true,
+          doAutovalidate: false,
+          warnings: [],
+          imports: await collectDependenciesAsync(
+            library,
+            Config(
+              <String, dynamic>{
+                'named_templates': {
+                  'label_template': {
+                    'template': '#PROPERTY#.name',
+                    'imports': 'package:ok/ok1.dart',
+                  },
+                  'hint_template': {
+                    'template': 'null',
+                    'imports': 'package:ok/ok2.dart',
+                  },
+                  'item_widget_template': {
+                    'template': 'Text(#ITEM_VALUE_STRING#)',
+                    'imports': {
+                      'Text': 'package:flutter/widgets.dart',
+                    },
+                  },
+                  'unused_template': {
+                    'template': '#ARGUMENT#',
+                    'imports': 'package:ng/ng1.dart',
+                  }
+                },
+                'argument_templates': {
+                  'default': {
+                    'decoration': {
+                      'template':
+                          '#ARGUMENT# ?? #DEFAULT_VALUE_COPY_OR_NEW#(labelText: #LABEL_TEMPLATE#, hintText: #HINT_TEMPLATE#)',
+                      'imports': {
+                        'b.A': 'package:ok/ok1.dart',
+                        'c.B': 'package:ok/ok3.dart',
+                      },
+                    },
+                  },
+                  'DropdownButtonFormField': {
+                    'items': {
+                      'item_template':
+                          'DropdownMenuItem<#ITEM_VALUE_TYPE#>(value: #ITEM_VALUE#, child: #ITEM_WIDGET_TEMPLATE#)',
+                    },
+                    'onChanged': '#ARGUMENT# ?? (_) {}',
+                  },
+                },
+              },
+            ),
+            properties,
+            nodeProvider,
+            logger,
+            isFormBuilder: false,
+          ),
+          properties: properties,
+        );
+
+        final lines = emitGlobal(library, data, _emptyConfig).toList();
+        expect(
+          lines,
+          [
+            "import 'dart:ui' show Brightness, Color, Locale, Radius, TextAlign, VoidCallback;",
+            "import 'dart:ui' as ui show TextDirection;",
+            '',
+            "import 'package:flutter/foundation.dart' show Key, ValueChanged;",
+            "import 'package:flutter/material.dart' show DatePickerEntryMode, DatePickerMode, Icons, InputCounterWidgetBuilder, InputDecoration, SelectableDayPredicate, TimeOfDay, TimePickerEntryMode;",
+            "import 'package:flutter/painting.dart' show EdgeInsets, StrutStyle, TextStyle;",
+            "import 'package:flutter/services.dart' show MaxLengthEnforcement, TextCapitalization, TextInputAction, TextInputFormatter, TextInputType;",
+            "import 'package:flutter/widgets.dart' show AutovalidateMode, BuildContext, FocusNode, Icon, Localizations, RouteSettings, TextEditingController, TransitionBuilder;",
+            "import 'package:flutter_form_builder/flutter_form_builder.dart' show FormBuilderDateTimePicker, InputType, ValueTransformer;",
+            "import 'package:form_companion_presenter/form_companion_presenter.dart';",
+            "import 'package:intl/intl.dart' show DateFormat;",
+            "import 'package:ok/ok1.dart';",
+            "import 'package:ok/ok1.dart' as b show A;",
+            "import 'package:ok/ok2.dart';",
+            "import 'package:ok/ok3.dart' as c show B;",
             '',
             "import 'form_fields.dart';"
           ],
@@ -458,6 +570,7 @@ Future<void> main() async {
           warnings: ['AAA', 'BBB'],
           imports: await collectDependenciesAsync(
             library,
+            defaultConfig,
             properties,
             nodeProvider,
             logger,
@@ -465,7 +578,7 @@ Future<void> main() async {
           ),
           properties: properties,
         );
-        final lines = emitGlobal(library, data, emptyConfig).toList();
+        final lines = emitGlobal(library, data, _emptyConfig).toList();
         expect(
           lines,
           [
@@ -505,6 +618,7 @@ Future<void> main() async {
           warnings: ['AAA', 'BBB'],
           imports: await collectDependenciesAsync(
             library,
+            defaultConfig,
             properties,
             nodeProvider,
             logger,
@@ -561,6 +675,7 @@ Future<void> main() async {
         warnings: [],
         imports: await collectDependenciesAsync(
           library,
+          defaultConfig,
           properties,
           nodeProvider,
           logger,
@@ -569,7 +684,7 @@ Future<void> main() async {
         properties: properties,
       );
       await expectLater(
-        await emitFieldFactoriesAsync(nodeProvider, data, emptyConfig),
+        await emitFieldFactoriesAsync(nodeProvider, data, _emptyConfig, logger),
         fieldFactories('Test01', [textFormFieldFactory('prop')]),
       );
     });
@@ -599,6 +714,7 @@ Future<void> main() async {
         warnings: [],
         imports: await collectDependenciesAsync(
           library,
+          defaultConfig,
           properties,
           nodeProvider,
           logger,
@@ -607,12 +723,12 @@ Future<void> main() async {
         properties: properties,
       );
       await expectLater(
-        await emitFieldFactoriesAsync(nodeProvider, data, emptyConfig),
+        await emitFieldFactoriesAsync(nodeProvider, data, _emptyConfig, logger),
         fieldFactories(
           'Test02',
           [
             textFormFieldFactory('prop1'),
-            dropdownButtonFieldFactory('prop2', 'bool'),
+            dropdownButtonFieldFactory('prop2', 'bool', usesEnumName: true),
           ],
         ),
       );
@@ -643,7 +759,9 @@ Future<void> main() async {
                     e.item2,
                     [
                       FactoryParameterSpec(
-                          'InputDecoration?', 'inputDecoration'),
+                        'InputDecoration?',
+                        'inputDecoration',
+                      ),
                       FactoryParameterSpec('String?', e.item3),
                     ],
                   ),
@@ -681,8 +799,11 @@ Future<void> main() async {
                   return FormFieldConstructorDefinition(
                     constructor,
                     await ArgumentsHandler.createAsync(
+                      library.languageVersion,
                       constructor,
+                      property,
                       nodeProvider,
+                      defaultConfig,
                       isFormBuilder: isFormBuilder,
                     ),
                   );
@@ -697,8 +818,10 @@ Future<void> main() async {
           ],
         );
 
-        String fieldFactory(NamedFactorySpec spec,
-            {required bool hasNamedConstructors}) {
+        String fieldFactory(
+          NamedFactorySpec spec, {
+          required bool hasNamedConstructors,
+        }) {
           final methodName = spec.item1 ??
               (hasNamedConstructors ? 'withDefaultConstructor' : propertyName);
           final construtorName = spec.item1 == null
@@ -718,14 +841,23 @@ ${spec.item3.map((p) => '      ${p.item2}: ${p.item2}').join(',\n')},
         }
 
         await expectLater(
-          await emitFieldFactoriesAsync(nodeProvider, data, emptyConfig),
+          await emitFieldFactoriesAsync(
+            nodeProvider,
+            data,
+            _emptyConfig,
+            logger,
+          ),
           (expectedConstructorNameAndParameters.length == 1 &&
                   expectedConstructorNameAndParameters[0].item1 == null)
               ? fieldFactories(
                   'Test',
                   expectedConstructorNameAndParameters
-                      .map((e) => fieldFactory(e,
-                          hasNamedConstructors: hasNamedConstructors))
+                      .map(
+                        (e) => fieldFactory(
+                          e,
+                          hasNamedConstructors: hasNamedConstructors,
+                        ),
+                      )
                       .toList(),
                 )
               : multiFieldFactories(
@@ -733,8 +865,12 @@ ${spec.item3.map((p) => '      ${p.item2}: ${p.item2}').join(',\n')},
                   [propertyName],
                   {
                     propertyName: expectedConstructorNameAndParameters
-                        .map((e) => fieldFactory(e,
-                            hasNamedConstructors: hasNamedConstructors))
+                        .map(
+                          (e) => fieldFactory(
+                            e,
+                            hasNamedConstructors: hasNamedConstructors,
+                          ),
+                        )
                         .toList()
                   },
                 ),
@@ -865,9 +1001,13 @@ ${spec.item3.map((p) => '      ${p.item2}: ${p.item2}').join(',\n')},
       () async {
         const isFormBuilder = false;
         final constructorWithNamedConstructorsClass = lookupExportedClass(
-            parametersLibrary, 'ConstructorWithNamedConstructors');
+          parametersLibrary,
+          'ConstructorWithNamedConstructors',
+        );
         final factoryWithNamedConstructorsClass = lookupExportedClass(
-            parametersLibrary, 'FactoryWithNamedConstructors');
+          parametersLibrary,
+          'FactoryWithNamedConstructors',
+        );
 
         final data = PresenterDefinition(
           name: 'Test',
@@ -915,7 +1055,12 @@ ${spec.item3.map((p) => '      ${p.item2}: ${p.item2}').join(',\n')},
         );
 
         await expectLater(
-          await emitFieldFactoriesAsync(nodeProvider, data, emptyConfig),
+          await emitFieldFactoriesAsync(
+            nodeProvider,
+            data,
+            _emptyConfig,
+            logger,
+          ),
           '''
 /// Defines [FormField] factory methods for properties of [Test].
 class \$TestFieldFactory {
@@ -934,7 +1079,7 @@ class \$TestFieldFactory {
 
 ${textFormFieldFactory('prop1')}
 
-${dropdownButtonFieldFactory('prop3', 'bool')}
+${dropdownButtonFieldFactory('prop3', 'bool', usesEnumName: true)}
 }
 
 /// A [FormField] factory for `p` property of [Test].
@@ -1046,6 +1191,7 @@ extension \$TestFieldFactoryExtension on Test {
       required InterfaceType propertyValueType,
       required InterfaceType fieldValueType,
       required ClassElement? formFieldClass,
+      Config? config,
       GenericType? preferredFieldType,
       bool doAutovalidate = false,
       List<String>? warnings,
@@ -1063,6 +1209,7 @@ extension \$TestFieldFactoryExtension on Test {
             realWarnings,
           )
         ],
+        config: config,
         isFormBuilder: isFormBuilder,
       );
       final data = PresenterDefinition(
@@ -1072,6 +1219,7 @@ extension \$TestFieldFactoryExtension on Test {
         warnings: [],
         imports: await collectDependenciesAsync(
           library,
+          config ?? defaultConfig,
           properties,
           nodeProvider,
           logger,
@@ -1084,6 +1232,7 @@ extension \$TestFieldFactoryExtension on Test {
         nodeProvider,
         data,
         properties.first,
+        logger,
       ).toList();
 
       expect(lines.isNotEmpty, isTrue);
@@ -1134,7 +1283,11 @@ extension \$TestFieldFactoryExtension on Test {
             propertyValueType: type,
             fieldValueType: type,
             formFieldClass: dropdownButtonFormField,
-            expectedBody: dropdownButtonFieldFactory('prop', typeName),
+            expectedBody: dropdownButtonFieldFactory(
+              'prop',
+              typeName,
+              usesEnumName: true,
+            ),
           ),
         );
       }
@@ -1151,7 +1304,12 @@ extension \$TestFieldFactoryExtension on Test {
             [toGenericType(library.typeProvider.stringType)],
             dropdownButtonFormField,
           ),
-          expectedBody: dropdownButtonFieldFactory('prop', 'String'),
+          expectedBody: dropdownButtonFieldFactory(
+            'prop',
+            'String',
+            isNotEnumNorBool: true,
+            usesEnumName: true,
+          ),
         ),
       );
 
@@ -1167,7 +1325,12 @@ extension \$TestFieldFactoryExtension on Test {
             [toGenericType(library.typeProvider.intType)],
             dropdownButtonFormField,
           ),
-          expectedBody: dropdownButtonFieldFactory('prop', 'int'),
+          expectedBody: dropdownButtonFieldFactory(
+            'prop',
+            'int',
+            isNotEnumNorBool: true,
+            usesEnumName: true,
+          ),
         ),
       );
 
@@ -1225,7 +1388,11 @@ extension \$TestFieldFactoryExtension on Test {
           propertyValueType: myEnumType,
           fieldValueType: myEnumType,
           formFieldClass: formBuilderDropdown,
-          expectedBody: formBuilderDropdownFactory('prop', 'MyEnum'),
+          expectedBody: formBuilderDropdownFactory(
+            'prop',
+            'MyEnum',
+            usesEnumName: true,
+          ),
         ),
       );
 
@@ -1285,7 +1452,12 @@ extension \$TestFieldFactoryExtension on Test {
             [toGenericType(library.typeProvider.stringType)],
             formBuilderDropdown,
           ),
-          expectedBody: formBuilderDropdownFactory('prop', 'String'),
+          expectedBody: formBuilderDropdownFactory(
+            'prop',
+            'String',
+            isNotEnumNorBool: true,
+            usesEnumName: true,
+          ),
         ),
       );
 
@@ -1363,31 +1535,51 @@ extension \$TestFieldFactoryExtension on Test {
           'FormBuilderCheckboxGroup',
           library.typeProvider.listType(myEnumType),
           formBuilderCheckboxGroup,
-          formBuilderCheckboxGroupFactory('prop', 'MyEnum'),
+          formBuilderCheckboxGroupFactory(
+            'prop',
+            'MyEnum',
+            usesEnumName: true,
+          ),
         ),
         FormBuilderTestSpec(
           'FormBuilderChoiceChip',
           myEnumType,
           formBuilderChoiceChip,
-          formBuilderChoiceChipFactory('prop', 'MyEnum'),
+          formBuilderChoiceChipFactory(
+            'prop',
+            'MyEnum',
+            usesEnumName: true,
+          ),
         ),
         FormBuilderTestSpec(
           'FormBuilderFilterChip',
           library.typeProvider.listType(myEnumType),
           formBuilderFilterChip,
-          formBuilderFilterChipFactory('prop', 'MyEnum'),
+          formBuilderFilterChipFactory(
+            'prop',
+            'MyEnum',
+            usesEnumName: true,
+          ),
         ),
         FormBuilderTestSpec(
           'FormBuilderRadioGroup',
           myEnumType,
           formBuilderRadioGroup,
-          formBuilderRadioGroupFactory('prop', 'MyEnum'),
+          formBuilderRadioGroupFactory(
+            'prop',
+            'MyEnum',
+            usesEnumName: true,
+          ),
         ),
         FormBuilderTestSpec(
           'FormBuilderSegmentedControl',
           myEnumType,
           formBuilderSegmentedControl,
-          formBuilderSegmentedControlFactory('prop', 'MyEnum'),
+          formBuilderSegmentedControlFactory(
+            'prop',
+            'MyEnum',
+            usesEnumName: true,
+          ),
         ),
       ]) {
         test(
@@ -1446,7 +1638,6 @@ extension \$TestFieldFactoryExtension on Test {
           propertyValueType: library.typeProvider.stringType,
           fieldValueType: library.typeProvider.stringType,
           formFieldClass: formFieldWithPropertyParameter,
-          warnings: [],
           expectedBody: '''
   /// Gets a [FormField] for `prop` property.
   FormFieldWithPropertyParameter prop(
@@ -1458,9 +1649,7 @@ extension \$TestFieldFactoryExtension on Test {
     return FormFieldWithPropertyParameter(
       key: _presenter.getKey(property_.name, context),
       initialValue: property_.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
-      decoration: decoration ?? const InputDecoration().copyWith(
-        labelText: property_.name,
-      ),
+      decoration: decoration ?? const InputDecoration().copyWith(labelText: property_.name, hintText: null),
       onSaved: (v) => property_.setFieldValue(v, Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       validator: property_.getValidator(context),
       property: property,
@@ -1468,6 +1657,85 @@ extension \$TestFieldFactoryExtension on Test {
   }''',
         ),
       );
+
+      for (final type in [
+        library.typeProvider.boolType,
+        myEnumType,
+        library.typeProvider.stringType,
+        nullableBoolType,
+        nullableMyEnumType,
+        nullableStringType,
+      ]) {
+        test(
+          'items of $type',
+          () => testEmitFieldFactory(
+            isFormBuilder: false,
+            propertyValueType: type,
+            fieldValueType: type,
+            formFieldClass: dropdownButtonFormField,
+            expectedBody: dropdownButtonFieldFactory(
+              'prop',
+              type.getDisplayString(withNullability: true),
+              isNotEnumNorBool:
+                  type.getDisplayString(withNullability: false) == 'String',
+              usesEnumName: true,
+            ),
+          ),
+        );
+      }
+
+      for (final forceEnumName in [true, false]) {
+        final method = forceEnumName ? 'name' : 'toString()';
+        for (final type in [
+          myEnumType,
+          nullableMyEnumType,
+        ]) {
+          test(
+            'items of $type (force Enum.$method)',
+            () => testEmitFieldFactory(
+              config: forceEnumName
+                  ? defaultConfigWithUsesEnumTrue
+                  : defaultConfigWithUsesEnumFalse,
+              isFormBuilder: false,
+              propertyValueType: type,
+              fieldValueType: type,
+              formFieldClass: dropdownButtonFormField,
+              expectedBody: dropdownButtonFieldFactory(
+                'prop',
+                type.getDisplayString(withNullability: true),
+                usesEnumName: forceEnumName,
+              ),
+            ),
+          );
+        }
+      }
+
+      for (final type in [
+        library.typeProvider.listType(
+          library.typeProvider.stringType,
+        ),
+        nullableListOfStringType,
+        nullableListOfNullableStringType,
+        library.typeProvider.listType(
+          nullableStringType,
+        ),
+      ]) {
+        test(
+          'options of $type',
+          () => testEmitFieldFactory(
+            isFormBuilder: true,
+            propertyValueType: type,
+            fieldValueType: type,
+            formFieldClass: formBuilderFilterChip,
+            expectedBody: formBuilderFilterChipFactory(
+              'prop',
+              type.typeArguments.single.getDisplayString(withNullability: true),
+              // string only
+              usesEnumName: true,
+            ),
+          ),
+        );
+      }
     });
   });
 
@@ -1492,7 +1760,8 @@ extension \$TestFieldFactoryExtension on Test {
               isFormBuilder: true,
             ),
           ),
-          emptyConfig,
+          _emptyConfig,
+          logger,
         ).join('\n'),
         [
           '// TODO(CompanionGenerator): WARNING - AAA',
@@ -1531,7 +1800,8 @@ extension \$TestFieldFactoryExtension on Test {
             imports: [LibraryImport('dart:ui')],
             properties: [],
           ),
-          emptyConfig,
+          _emptyConfig,
+          logger,
         ).join('\n'),
         '''
 // TODO(CompanionGenerator): WARNING - AAA
@@ -1615,8 +1885,10 @@ ${factories.isEmpty ? '  // No properties were found.' : factories[propertyName]
   return '''
 /// Defines [FormField] factory methods for properties of [$className].
 class \$${className}FieldFactory {
-${propertyNames.map((e) => '  /// Gets a [FormField] factory for `$e` property.\n'
-          '  final \$\$$className${pascalize(e)}FieldFactory $e;').join('\n')}
+${propertyNames.map(
+            (e) => '  /// Gets a [FormField] factory for `$e` property.\n'
+                '  final \$\$$className${pascalize(e)}FieldFactory $e;',
+          ).join('\n')}
 
   \$${className}FieldFactory._($className presenter) :
     ${propertyNames.map((e) => '$e = \$\$$className${pascalize(e)}FieldFactory(presenter)').join(',\n      ')};
@@ -1629,6 +1901,44 @@ extension \$${className}FieldFactoryExtension on $className {
   \$${className}FieldFactory get fields => \$${className}FieldFactory._(this);
 }
 ''';
+}
+
+String itemsExpression(
+  String itemWidgetType,
+  String fieldValueType, {
+  bool isCollection = false,
+  required bool usesEnumName,
+}) {
+  final enumToString = usesEnumName ? 'name' : 'toString()';
+
+  if (!isCollection) {
+    switch (fieldValueType) {
+      case 'bool':
+        return '[true, false].map((x) => $itemWidgetType<$fieldValueType>(value: x, child: Text(x.toString()))).toList()';
+      case 'bool?':
+        return "[true, false, null].map((x) => $itemWidgetType<$fieldValueType>(value: x, child: Text(x?.toString() ?? ''))).toList()";
+      case 'MyEnum':
+        return '[MyEnum.one, MyEnum.two].map((x) => $itemWidgetType<$fieldValueType>(value: x, child: Text(x.$enumToString))).toList()';
+      case 'MyEnum?':
+        return "[MyEnum.one, MyEnum.two, null].map((x) => $itemWidgetType<$fieldValueType>(value: x, child: Text(x?.$enumToString ?? ''))).toList()";
+      default:
+        break;
+    }
+  }
+
+  switch (fieldValueType) {
+    case 'String?':
+      return "property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))?.map((x) => $itemWidgetType<$fieldValueType>(value: x, child: Text(x ?? ''))).toList() ?? []";
+    case 'String':
+      return "property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))?.map((x) => $itemWidgetType<$fieldValueType>(value: x, child: Text(x))).toList() ?? []";
+    default:
+      final toString = fieldValueType == 'MyEnum' ? enumToString : 'toString()';
+      if (fieldValueType.endsWith('?')) {
+        return "property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))?.map((x) => $itemWidgetType<$fieldValueType>(value: x, child: Text(x?.$toString ?? ''))).toList() ?? []";
+      } else {
+        return "property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))?.map((x) => $itemWidgetType<$fieldValueType>(value: x, child: Text(x.$toString))).toList() ?? []";
+      }
+  }
 }
 
 String textFormFieldFactory(
@@ -1694,9 +2004,7 @@ String textFormFieldFactory(
       controller: controller,
       initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       focusNode: focusNode,
-      decoration: decoration ?? const InputDecoration().copyWith(
-        labelText: property.name,
-      ),
+      decoration: decoration ?? const InputDecoration().copyWith(labelText: property.name, hintText: null),
       keyboardType: keyboardType,
       textCapitalization: textCapitalization,
       textInputAction: textInputAction,
@@ -1720,7 +2028,7 @@ String textFormFieldFactory(
       minLines: minLines,
       expands: expands,
       maxLength: maxLength,
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+      onChanged: onChanged,
       onTap: onTap,
       onEditingComplete: onEditingComplete,
       onFieldSubmitted: onFieldSubmitted,
@@ -1750,13 +2058,21 @@ String textFormFieldFactory(
 String dropdownButtonFieldFactory(
   String propertyName,
   String propertyType, {
+  required bool usesEnumName,
   bool isAutovalidate = false,
+  bool isNotEnumNorBool = false,
 }) =>
     '''
   /// Gets a [FormField] for `$propertyName` property.
   DropdownButtonFormField<$propertyType> $propertyName(
     BuildContext context, {
+'''
+    '${isNotEnumNorBool ? '''
     required List<DropdownMenuItem<$propertyType>>? items,
+''' : '''
+    List<DropdownMenuItem<$propertyType>>? items,
+'''}'
+    '''
     DropdownButtonBuilder? selectedItemBuilder,
     Widget? hint,
     Widget? disabledHint,
@@ -1785,12 +2101,18 @@ String dropdownButtonFieldFactory(
     final property = _presenter.$propertyName;
     return DropdownButtonFormField<$propertyType>(
       key: _presenter.getKey(property.name, context),
+'''
+    '${isNotEnumNorBool ? '''
       items: items,
+''' : '''
+      items: ${itemsExpression('DropdownMenuItem', propertyType, usesEnumName: usesEnumName)},
+'''}'
+    '''
       selectedItemBuilder: selectedItemBuilder,
       value: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       hint: hint,
       disabledHint: disabledHint,
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+      onChanged: onChanged ?? (_) {},
       onTap: onTap,
       elevation: elevation,
       style: style,
@@ -1805,9 +2127,7 @@ String dropdownButtonFieldFactory(
       focusNode: focusNode,
       autofocus: autofocus,
       dropdownColor: dropdownColor,
-      decoration: decoration ?? InputDecoration(
-        labelText: property.name,
-      ),
+      decoration: decoration ?? InputDecoration(labelText: property.name, hintText: null),
       onSaved: (v) => property.setFieldValue(v, Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       validator: property.getValidator(context),
       autovalidateMode: autovalidateMode ?? AutovalidateMode.${isAutovalidate ? 'onUserInteraction' : 'disabled'},
@@ -1852,10 +2172,8 @@ String formBuilderCheckboxFactory(
       name: property.name,
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
-      decoration: decoration ?? const InputDecoration(border: InputBorder.none, focusedBorder: InputBorder.none, enabledBorder: InputBorder.none, errorBorder: InputBorder.none, disabledBorder: InputBorder.none).copyWith(
-        labelText: property.name,
-      ),
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+      decoration: decoration ?? const InputDecoration(border: InputBorder.none, focusedBorder: InputBorder.none, enabledBorder: InputBorder.none, errorBorder: InputBorder.none, disabledBorder: InputBorder.none).copyWith(labelText: property.name, hintText: null),
+      onChanged: onChanged,
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.${isAutovalidate ? 'onUserInteraction' : 'disabled'},
@@ -1878,6 +2196,7 @@ String formBuilderCheckboxFactory(
 String formBuilderCheckboxGroupFactory(
   String propertyName,
   String propertyElementType, {
+  required bool usesEnumName,
   bool isAutovalidate = false,
 }) =>
     '''
@@ -1892,7 +2211,7 @@ String formBuilderCheckboxGroupFactory(
     AutovalidateMode? autovalidateMode,
     VoidCallback? onReset,
     FocusNode? focusNode,
-    required List<FormBuilderFieldOption<$propertyElementType>> options,
+    List<FormBuilderFieldOption<$propertyElementType>>? options,
     Color? activeColor,
     Color? checkColor,
     Color? focusColor,
@@ -1919,16 +2238,14 @@ String formBuilderCheckboxGroupFactory(
       name: property.name,
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
-      decoration: decoration ?? const InputDecoration().copyWith(
-        labelText: property.name,
-      ),
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+      decoration: decoration ?? const InputDecoration().copyWith(labelText: property.name, hintText: null),
+      onChanged: onChanged,
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.${isAutovalidate ? 'onUserInteraction' : 'disabled'},
       onReset: onReset,
       focusNode: focusNode,
-      options: options,
+      options: ${itemsExpression('FormBuilderFieldOption', propertyElementType, isCollection: true, usesEnumName: usesEnumName)},
       activeColor: activeColor,
       checkColor: checkColor,
       focusColor: focusColor,
@@ -1954,6 +2271,7 @@ String formBuilderCheckboxGroupFactory(
 String formBuilderChoiceChipFactory(
   String propertyName,
   String propertyType, {
+  required bool usesEnumName,
   bool isAutovalidate = false,
 }) =>
     '''
@@ -1965,7 +2283,7 @@ String formBuilderChoiceChipFactory(
     FocusNode? focusNode,
     InputDecoration? decoration,
     Key? key,
-    required List<FormBuilderFieldOption<MyEnum>> options,
+    List<FormBuilderFieldOption<$propertyType>>? options,
     WrapAlignment alignment = WrapAlignment.start,
     Color? backgroundColor,
     WrapCrossAlignment crossAxisAlignment = WrapCrossAlignment.start,
@@ -1998,12 +2316,10 @@ String formBuilderChoiceChipFactory(
       enabled: enabled,
       focusNode: focusNode,
       validator: property.getValidator(context),
-      decoration: decoration ?? const InputDecoration().copyWith(
-        labelText: property.name,
-      ),
+      decoration: decoration ?? const InputDecoration().copyWith(labelText: property.name, hintText: null),
       key: key,
       name: property.name,
-      options: options,
+      options: ${itemsExpression('FormBuilderFieldOption', propertyType, usesEnumName: usesEnumName)},
       initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       alignment: alignment,
       backgroundColor: backgroundColor,
@@ -2027,7 +2343,7 @@ String formBuilderChoiceChipFactory(
       textDirection: textDirection,
       verticalDirection: verticalDirection,
       visualDensity: visualDensity,
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+      onChanged: onChanged,
       valueTransformer: valueTransformer,
       onReset: onReset,
     );
@@ -2103,10 +2419,8 @@ String formBuilderDateRangePickerFactory(
       name: property.name,
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
-      decoration: decoration ?? const InputDecoration().copyWith(
-        labelText: property.name,
-      ),
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+      decoration: decoration ?? const InputDecoration().copyWith(labelText: property.name, hintText: null),
+      onChanged: onChanged,
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.${isAutovalidate ? 'onUserInteraction' : 'disabled'},
@@ -2236,10 +2550,8 @@ String formBuilderDateTimePickerFactory(
       name: property.name,
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
-      decoration: decoration ?? const InputDecoration().copyWith(
-        labelText: property.name,
-      ),
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+      decoration: decoration ?? const InputDecoration().copyWith(labelText: property.name, hintText: null),
+      onChanged: onChanged,
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.${isAutovalidate ? 'onUserInteraction' : 'disabled'},
@@ -2302,7 +2614,9 @@ String formBuilderDateTimePickerFactory(
 String formBuilderDropdownFactory(
   String propertyName,
   String propertyType, {
+  required bool usesEnumName,
   bool isAutovalidate = false,
+  bool isNotEnumNorBool = false,
 }) =>
     '''
   /// Gets a [FormField] for `$propertyName` property.
@@ -2316,7 +2630,13 @@ String formBuilderDropdownFactory(
     AutovalidateMode? autovalidateMode,
     VoidCallback? onReset,
     FocusNode? focusNode,
+'''
+    '${isNotEnumNorBool ? '''
     required List<DropdownMenuItem<$propertyType>> items,
+''' : '''
+    List<DropdownMenuItem<$propertyType>>? items,
+'''}'
+    '''
     bool isExpanded = true,
     bool isDense = true,
     int elevation = 8,
@@ -2344,16 +2664,20 @@ String formBuilderDropdownFactory(
       name: property.name,
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
-      decoration: decoration ?? const InputDecoration().copyWith(
-        labelText: property.name,
-      ),
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+      decoration: decoration ?? const InputDecoration().copyWith(labelText: property.name, hintText: null),
+      onChanged: onChanged ?? (_) {},
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.${isAutovalidate ? 'onUserInteraction' : 'disabled'},
       onReset: onReset,
       focusNode: focusNode,
+'''
+    '${isNotEnumNorBool ? '''
       items: items,
+''' : '''
+      items: ${itemsExpression('DropdownMenuItem', propertyType, usesEnumName: usesEnumName)},
+'''}'
+    '''
       isExpanded: isExpanded,
       isDense: isDense,
       elevation: elevation,
@@ -2380,6 +2704,7 @@ String formBuilderDropdownFactory(
 String formBuilderFilterChipFactory(
   String propertyName,
   String propertyElementType, {
+  required bool usesEnumName,
   bool isAutovalidate = false,
 }) =>
     '''
@@ -2391,7 +2716,7 @@ String formBuilderFilterChipFactory(
     FocusNode? focusNode,
     InputDecoration? decoration,
     Key? key,
-    required List<FormBuilderFieldOption<$propertyElementType>> options,
+    List<FormBuilderFieldOption<$propertyElementType>>? options,
     WrapAlignment alignment = WrapAlignment.start,
     Color? backgroundColor,
     Color? checkmarkColor,
@@ -2427,13 +2752,11 @@ String formBuilderFilterChipFactory(
       enabled: enabled,
       focusNode: focusNode,
       validator: property.getValidator(context),
-      decoration: decoration ?? const InputDecoration().copyWith(
-        labelText: property.name,
-      ),
+      decoration: decoration ?? const InputDecoration().copyWith(labelText: property.name, hintText: null),
       key: key,
       initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))!,
       name: property.name,
-      options: options,
+      options: ${itemsExpression('FormBuilderFieldOption', propertyElementType, isCollection: true, usesEnumName: usesEnumName)},
       alignment: alignment,
       backgroundColor: backgroundColor,
       checkmarkColor: checkmarkColor,
@@ -2459,7 +2782,7 @@ String formBuilderFilterChipFactory(
       spacing: spacing,
       textDirection: textDirection,
       verticalDirection: verticalDirection,
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+      onChanged: onChanged,
       valueTransformer: valueTransformer,
       onReset: onReset,
     );
@@ -2468,6 +2791,7 @@ String formBuilderFilterChipFactory(
 String formBuilderRadioGroupFactory(
   String propertyName,
   String propertyType, {
+  required bool usesEnumName,
   bool isAutovalidate = false,
 }) =>
     '''
@@ -2479,7 +2803,7 @@ String formBuilderRadioGroupFactory(
     FocusNode? focusNode,
     InputDecoration? decoration,
     Key? key,
-    required List<FormBuilderFieldOption<$propertyType>> options,
+    List<FormBuilderFieldOption<$propertyType>>? options,
     bool shouldRadioRequestFocus = false,
     Color? activeColor,
     ControlAffinity controlAffinity = ControlAffinity.leading,
@@ -2507,12 +2831,10 @@ String formBuilderRadioGroupFactory(
       enabled: enabled,
       focusNode: focusNode,
       validator: property.getValidator(context),
-      decoration: decoration ?? const InputDecoration().copyWith(
-        labelText: property.name,
-      ),
+      decoration: decoration ?? const InputDecoration().copyWith(labelText: property.name, hintText: null),
       key: key,
       name: property.name,
-      options: options,
+      options: ${itemsExpression('FormBuilderFieldOption', propertyType, usesEnumName: usesEnumName)},
       initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       shouldRadioRequestFocus: shouldRadioRequestFocus,
       activeColor: activeColor,
@@ -2531,7 +2853,7 @@ String formBuilderRadioGroupFactory(
       wrapSpacing: wrapSpacing,
       wrapTextDirection: wrapTextDirection,
       wrapVerticalDirection: wrapVerticalDirection,
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+      onChanged: onChanged,
       valueTransformer: valueTransformer,
       onReset: onReset,
     );
@@ -2575,10 +2897,8 @@ String formBuilderRangeSliderFactory(
       name: property.name,
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))!,
-      decoration: decoration ?? const InputDecoration().copyWith(
-        labelText: property.name,
-      ),
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+      decoration: decoration ?? const InputDecoration().copyWith(labelText: property.name, hintText: null),
+      onChanged: onChanged,
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.${isAutovalidate ? 'onUserInteraction' : 'disabled'},
@@ -2605,6 +2925,7 @@ String formBuilderRangeSliderFactory(
 String formBuilderSegmentedControlFactory(
   String propertyName,
   String propertyType, {
+  required bool usesEnumName,
   bool isAutovalidate = false,
 }) =>
     '''
@@ -2619,7 +2940,7 @@ String formBuilderSegmentedControlFactory(
     AutovalidateMode? autovalidateMode,
     VoidCallback? onReset,
     FocusNode? focusNode,
-    required List<FormBuilderFieldOption<MyEnum>> options,
+    List<FormBuilderFieldOption<$propertyType>>? options,
     Color? borderColor,
     Color? selectedColor,
     Color? pressedColor,
@@ -2633,16 +2954,14 @@ String formBuilderSegmentedControlFactory(
       name: property.name,
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
-      decoration: decoration ?? const InputDecoration().copyWith(
-        labelText: property.name,
-      ),
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+      decoration: decoration ?? const InputDecoration().copyWith(labelText: property.name, hintText: null),
+      onChanged: onChanged,
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.${isAutovalidate ? 'onUserInteraction' : 'disabled'},
       onReset: onReset,
       focusNode: focusNode,
-      options: options,
+      options: ${itemsExpression('FormBuilderFieldOption', propertyType, usesEnumName: usesEnumName)},
       borderColor: borderColor,
       selectedColor: selectedColor,
       pressedColor: pressedColor,
@@ -2692,10 +3011,8 @@ String formBuilderSliderFactory(
       name: property.name,
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))!,
-      decoration: decoration ?? const InputDecoration().copyWith(
-        labelText: property.name,
-      ),
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+      decoration: decoration ?? const InputDecoration().copyWith(labelText: property.name, hintText: null),
+      onChanged: onChanged,
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.${isAutovalidate ? 'onUserInteraction' : 'disabled'},
@@ -2758,10 +3075,8 @@ String formBuilderSwitchFactory(
       name: property.name,
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
-      decoration: decoration ?? const InputDecoration().copyWith(
-        labelText: property.name,
-      ),
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+      decoration: decoration ?? const InputDecoration().copyWith(labelText: property.name, hintText: null),
+      onChanged: onChanged,
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.${isAutovalidate ? 'onUserInteraction' : 'disabled'},
@@ -2850,10 +3165,8 @@ String formBuilderTextFieldFactory(
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       readOnly: readOnly,
-      decoration: decoration ?? const InputDecoration().copyWith(
-        labelText: property.name,
-      ),
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+      decoration: decoration ?? const InputDecoration().copyWith(labelText: property.name, hintText: null),
+      onChanged: onChanged,
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.${isAutovalidate ? 'onUserInteraction' : 'disabled'},

@@ -96,7 +96,7 @@ class CodegenLoader extends AssetLoader{
     "label": "Stay *",
     "hint": "Specify stay period."
   },
-  "specialOffer": {
+  "specialOfferDate": {
     "description": "You can get special offer! When do you want to receive?",
     "label": "When will you receive special offer? *",
     "hint": "Specify the day in your stay."
@@ -225,7 +225,7 @@ static const Map<String,dynamic> ja = {
     "label": "滞在期間 *",
     "hint": "滞在期間を指定してください。"
   },
-  "specialOffer": {
+  "specialOfferDate": {
     "description": "現在特別なプレゼントをご用意しております。受け取り日を指定してください。",
     "label": "特別プレゼントの受取日 *",
     "hint": "滞在期間中の日にちを指定してください。"

@@ -86,6 +86,7 @@ class CompanionGenerator extends Generator {
         _logger,
       ),
       _config,
+      _logger,
     )) {
       yield value.toString();
     }

@@ -17,11 +17,12 @@ import 'package:source_gen/source_gen.dart';
 import 'package:test/test.dart';
 import 'package:tuple/tuple.dart';
 
-import 'emitter_test.dart';
 import 'session_resolver.dart';
 import 'test_helpers.dart';
 
 typedef FieldNameAndValueType = Tuple2<String, InterfaceType>;
+
+Config get _emptyConfig => Config(<String, dynamic>{});
 
 class ExpectedImport {
   final String identifier;
@@ -55,6 +56,8 @@ Future<void> main() async {
 
   final parametersLibrary = await getParametersLibrary();
   final dependencyHolder = parametersLibrary.lookupClass('DependencyHolder');
+
+  final defaultConfig = await readDefaultOptions();
 
   ClassElement findType(String name) {
     final type = presenterLibrary.findType(name);
@@ -204,6 +207,8 @@ Future<void> main() async {
       final targetClass = findType(name);
       final warnings = <String>[];
       final result = await getPropertiesAsync(
+        _emptyConfig,
+        presenterLibrary.element.languageVersion,
         nodeProvider,
         formFieldLocator,
         findConstructor(targetClass),
@@ -234,6 +239,8 @@ Future<void> main() async {
       final warnings = <String>[];
       try {
         final result = await getPropertiesAsync(
+          _emptyConfig,
+          presenterLibrary.element.languageVersion,
           nodeProvider,
           formFieldLocator,
           findConstructor(targetClass),
@@ -242,11 +249,13 @@ Future<void> main() async {
           isFormBuilder: true,
         );
         fail(
-          'No error occurred. Properties: {${result.map((e) => '{name: ${e.name}, '
-              'propertyType: ${e.propertyValueType}, '
-              'fieldType: ${e.fieldValueType}, '
-              'formFieldType: ${e.formFieldTypeName}, '
-              'warnings: ${e.warnings}}').join(', ')}}',
+          'No error occurred. Properties: {${result.map(
+                (e) => '{name: ${e.name}, '
+                    'propertyType: ${e.propertyValueType}, '
+                    'fieldType: ${e.fieldValueType}, '
+                    'formFieldType: ${e.formFieldTypeName}, '
+                    'warnings: ${e.warnings}}',
+              ).join(', ')}}',
         );
       }
       // ignore: avoid_catching_errors
@@ -659,49 +668,57 @@ Future<void> main() async {
         test(
           'no addition - warning',
           () => testGetPropertiesNoProperties(
-              'Refers${fieldPrefix}WithNoAddition'),
+            'Refers${fieldPrefix}WithNoAddition',
+          ),
         );
 
         test(
           'with getter for inline initialized - detected',
           () => testGetPropertiesSuccess(
-              'Refers${fieldPrefix}GetterForInlineInitialized'),
+            'Refers${fieldPrefix}GetterForInlineInitialized',
+          ),
         );
 
         test(
           'with getter for factory initialized - detected',
           () => testGetPropertiesSuccess(
-              'Refers${fieldPrefix}GetterForFactoryInitialized'),
+            'Refers${fieldPrefix}GetterForFactoryInitialized',
+          ),
         );
 
         test(
           'with getter for factory method - detected',
           () => testGetPropertiesSuccess(
-              'Refers${fieldPrefix}GetterForFactoryMethod'),
+            'Refers${fieldPrefix}GetterForFactoryMethod',
+          ),
         );
 
         test(
           'refers member from cascading factory method calls - detected',
           () => testGetPropertiesSuccess(
-              'Refers${fieldPrefix}CascadingFactoryMethod'),
+            'Refers${fieldPrefix}CascadingFactoryMethod',
+          ),
         );
 
         test(
           'refers member from classic factory method calls - detected',
           () => testGetPropertiesSuccess(
-              'Refers${fieldPrefix}ClassicFactoryMethod'),
+            'Refers${fieldPrefix}ClassicFactoryMethod',
+          ),
         );
 
         test(
           'refers member from classic factory method with helpers calls - detected',
           () => testGetPropertiesSuccess(
-              'Refers${fieldPrefix}WithHelpersFactoryMethod'),
+            'Refers${fieldPrefix}WithHelpersFactoryMethod',
+          ),
         );
 
         test(
           'calls cascading factory method - detected',
           () => testGetPropertiesSuccess(
-              'Calls${functionPrefix}CascadingFactory'),
+            'Calls${functionPrefix}CascadingFactory',
+          ),
         );
 
         test(
@@ -713,7 +730,8 @@ Future<void> main() async {
         test(
           'calls classic factory method with helpers - detected',
           () => testGetPropertiesSuccess(
-              'Calls${functionPrefix}WithHelperFactory'),
+            'Calls${functionPrefix}WithHelperFactory',
+          ),
         );
       });
     }
@@ -1615,8 +1633,11 @@ Future<void> main() async {
           FormFieldConstructorDefinition(
             formFieldConstructor,
             await ArgumentsHandler.createAsync(
+              presenterLibrary.element.languageVersion,
               formFieldConstructor,
+              property,
               nodeProvider,
+              defaultConfig,
               isFormBuilder: isFormBuilder,
             ),
           ),
@@ -1684,8 +1705,11 @@ Future<void> main() async {
             FormFieldConstructorDefinition(
               formFieldConstructor,
               await ArgumentsHandler.createAsync(
+                presenterLibrary.element.languageVersion,
                 formFieldConstructor,
+                property,
                 nodeProvider,
+                defaultConfig,
                 isFormBuilder: false,
               ),
             ),
@@ -1695,6 +1719,7 @@ Future<void> main() async {
 
         final result = await collectDependenciesAsync(
           dependencyHolder.library,
+          defaultConfig,
           [propertyAndField],
           nodeProvider,
           logger,
@@ -1705,8 +1730,10 @@ Future<void> main() async {
           result,
           [
             expected,
-            ExpectedImport('package:flutter/widgets.dart',
-                shows: ['BuildContext', 'Localizations']),
+            ExpectedImport(
+              'package:flutter/widgets.dart',
+              shows: ['BuildContext', 'Localizations'],
+            ),
             ExpectedImport('parameters.dart'),
           ],
         );
@@ -1720,6 +1747,7 @@ Future<void> main() async {
     }) async {
       final result = await collectDependenciesAsync(
         presenterLibrary.element,
+        defaultConfig,
         [
           await makeProperty(
             fieldName,
@@ -1808,6 +1836,7 @@ Future<void> main() async {
             .single;
         final result = await collectDependenciesAsync(
           presenterLibrary.element,
+          defaultConfig,
           [
             await makeProperty(
               'DropdownButtonFormField',
@@ -1827,6 +1856,87 @@ Future<void> main() async {
         ]);
       },
     );
+
+    test('template import is reflected', () async {
+      final result = await collectDependenciesAsync(
+        presenterLibrary.element,
+        Config(
+          <String, dynamic>{
+            'named_templates': {
+              'label_template': {
+                'template': '#PROPERTY#.name',
+                'imports': 'package:ok/ok1.dart',
+              },
+              'hint_template': {
+                'template': 'null',
+                'imports': 'package:ok/ok2.dart',
+              },
+              'item_widget_template': {
+                'template': 'Text(#ITEM_VALUE_STRING#)',
+                'imports': {
+                  'Text': 'package:flutter/widgets.dart',
+                },
+              },
+              'unused_template': {
+                'template': '#ARGUMENT#',
+                'imports': 'package:ng/ng1.dart',
+              }
+            },
+            'argument_templates': {
+              'default': {
+                'decoration': {
+                  'template':
+                      '#ARGUMENT# ?? #DEFAULT_VALUE_COPY_OR_NEW#(labelText: #LABEL_TEMPLATE#, hintText: #HINT_TEMPLATE#)',
+                  'imports': {
+                    'b.A': 'package:ok/ok1.dart',
+                    'c.B': 'package:ok/ok3.dart',
+                  },
+                },
+              },
+              'DropdownButtonFormField': {
+                'items': {
+                  'item_template':
+                      'DropdownMenuItem<#ITEM_VALUE_TYPE#>(value: #ITEM_VALUE#, child: #ITEM_WIDGET_TEMPLATE#)',
+                },
+                'onChanged': '#ARGUMENT# ?? (_) {}',
+              },
+            },
+          },
+        ),
+        [
+          await makeProperty(
+            'DropdownButtonFormField',
+            myEnumType,
+            myEnumType.element,
+            isFormBuilder: false,
+          ),
+        ],
+        nodeProvider,
+        logger,
+        isFormBuilder: false,
+      );
+
+      assertImports(result, [
+        ..._expectedImports['DropdownButtonFormField']!,
+        ExpectedImport('enum.dart', shows: ['MyEnum']),
+        ExpectedImport(
+          'package:ok/ok1.dart',
+          prefixes: [
+            MapEntry('b', ['A']),
+          ],
+        ),
+        ExpectedImport(
+          'package:ok/ok2.dart',
+        ),
+        ExpectedImport(
+          'package:ok/ok3.dart',
+          prefixes: [
+            MapEntry('c', ['B']),
+          ],
+        ),
+        ExpectedImport('presenter.dart'),
+      ]);
+    });
   });
 
   group('parseElementAsync (integration tests)', () {
@@ -1936,7 +2046,7 @@ Future<void> main() async {
       final baseCompanion = findType('BaseCompanion');
       try {
         await parseElementAsync(
-          emptyConfig,
+          _emptyConfig,
           nodeProvider,
           formFieldLocator,
           baseCompanion,
@@ -2117,7 +2227,10 @@ final _expectedImports = {
     ),
     ExpectedImport(
       'package:flutter/widgets.dart',
-      shows: ['Widget'],
+      shows: [
+        'Text', // From default items.item_template
+        'Widget',
+      ],
     ),
   ]),
   'FormBuilderCheckbox': _merge([
@@ -2159,7 +2272,10 @@ final _expectedImports = {
     ),
     ExpectedImport(
       'package:flutter/widgets.dart',
-      shows: ['Widget'],
+      shows: [
+        'Text', // From default options.item_template
+        'Widget',
+      ],
     ),
     ExpectedImport(
       'package:flutter_form_builder/flutter_form_builder.dart',
@@ -2194,6 +2310,12 @@ final _expectedImports = {
     ExpectedImport(
       'package:flutter/rendering.dart',
       shows: ['WrapAlignment', 'WrapCrossAlignment'],
+    ),
+    ExpectedImport(
+      'package:flutter/widgets.dart',
+      shows: [
+        'Text', // From default options.item_template
+      ],
     ),
     ExpectedImport(
       'package:flutter_form_builder/flutter_form_builder.dart',
@@ -2313,7 +2435,11 @@ final _expectedImports = {
     ),
     ExpectedImport(
       'package:flutter/widgets.dart',
-      shows: ['Icon', 'Widget'],
+      shows: [
+        'Icon',
+        'Text', // From default items.item_template
+        'Widget',
+      ],
     ),
     ExpectedImport(
       'package:flutter_form_builder/flutter_form_builder.dart',
@@ -2345,6 +2471,12 @@ final _expectedImports = {
       shows: ['WrapAlignment', 'WrapCrossAlignment'],
     ),
     ExpectedImport(
+      'package:flutter/widgets.dart',
+      shows: [
+        'Text', // From default options.item_template
+      ],
+    ),
+    ExpectedImport(
       'package:flutter_form_builder/flutter_form_builder.dart',
       shows: ['FormBuilderFieldOption', 'FormBuilderFilterChip'],
     ),
@@ -2369,7 +2501,10 @@ final _expectedImports = {
     ),
     ExpectedImport(
       'package:flutter/widgets.dart',
-      shows: ['Widget'],
+      shows: [
+        'Text', // From default options.item_template
+        'Widget',
+      ],
     ),
     ExpectedImport(
       'package:flutter_form_builder/flutter_form_builder.dart',
@@ -2405,6 +2540,12 @@ final _expectedImports = {
     ExpectedImport(
       'package:flutter/painting.dart',
       shows: ['EdgeInsetsGeometry'],
+    ),
+    ExpectedImport(
+      'package:flutter/widgets.dart',
+      shows: [
+        'Text', // From default options.item_template
+      ],
     ),
     ExpectedImport(
       'package:flutter_form_builder/flutter_form_builder.dart',

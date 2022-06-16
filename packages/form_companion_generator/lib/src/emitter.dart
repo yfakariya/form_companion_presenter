@@ -4,6 +4,7 @@ import 'dart:async';
 
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
+import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
 
 import 'config.dart';
@@ -24,6 +25,7 @@ Stream<Object> emitFromData(
   NodeProvider nodeProvider,
   PresenterDefinition data,
   Config config,
+  Logger logger,
 ) async* {
   if (data.properties.isEmpty) {
     for (final warning in data.warnings) {
@@ -40,7 +42,7 @@ Stream<Object> emitFromData(
 
   yield emitPropertyAccessor(data.name, data.properties, config);
 
-  yield await emitFieldFactoriesAsync(nodeProvider, data, config);
+  yield await emitFieldFactoriesAsync(nodeProvider, data, config, logger);
 }
 
 final _formCompanionPresenterImport = LibraryImport(
@@ -70,8 +72,10 @@ Iterable<String> emitGlobal(
   final packageImports =
       sortedImports.where((i) => i.library.startsWith('package:')).toList();
   final relativeImports = sortedImports
-      .where((i) =>
-          !i.library.startsWith('dart:') && !i.library.startsWith('package:'))
+      .where(
+        (i) =>
+            !i.library.startsWith('dart:') && !i.library.startsWith('package:'),
+      )
       .toList();
 
   if (config.asPart) {
@@ -103,10 +107,10 @@ Iterable<String> emitGlobal(
 
 Iterable<String> _emitImport(LibraryImport import, bool mustBeComment) sync* {
   final prefix = mustBeComment ? '// ' : '';
-  final sortedTypes = [...import.showingTypes]..sort();
-  if (sortedTypes.isEmpty) {
+  if (import.shouldEmitSimpleImports) {
     yield "${prefix}import '${import.library}';";
-  } else {
+  } else if (import.showingTypes.isNotEmpty) {
+    final sortedTypes = [...import.showingTypes]..sort();
     yield "${prefix}import '${import.library}' show ${sortedTypes.join(', ')};";
   }
 

@@ -17,6 +17,9 @@ import 'dart:ui'
         TextDirection,
         VoidCallback;
 
+import 'package:easy_localization/easy_localization.dart'
+    show StringTranslateExtension;
+
 import 'package:flutter/foundation.dart' show ValueChanged;
 
 import 'package:flutter/gestures.dart' show GestureTapCallback;
@@ -59,12 +62,15 @@ import 'package:flutter/widgets.dart'
         Localizations,
         ScrollController,
         ScrollPhysics,
+        Text,
         TextEditingController,
         TextSelectionControls,
         ToolbarOptions,
         Widget;
 
 import 'package:form_companion_presenter/form_companion_presenter.dart';
+
+import 'l10n/locale_keys.g.dart' show LocaleKeys;
 
 import 'manual_validation_vanilla_form.dart';
 
@@ -161,8 +167,8 @@ class $ManualValidationVanillaFormAccountPresenterFieldFactory {
       focusNode: focusNode,
       decoration: decoration ??
           const InputDecoration().copyWith(
-            labelText: property.name,
-          ),
+              labelText: LocaleKeys.id_label.tr(),
+              hintText: LocaleKeys.id_hint.tr()),
       keyboardType: keyboardType,
       textCapitalization: textCapitalization,
       textInputAction: textInputAction,
@@ -186,7 +192,7 @@ class $ManualValidationVanillaFormAccountPresenterFieldFactory {
       minLines: minLines,
       expands: expands,
       maxLength: maxLength,
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+      onChanged: onChanged,
       onTap: onTap,
       onEditingComplete: onEditingComplete,
       onFieldSubmitted: onFieldSubmitted,
@@ -275,8 +281,8 @@ class $ManualValidationVanillaFormAccountPresenterFieldFactory {
       focusNode: focusNode,
       decoration: decoration ??
           const InputDecoration().copyWith(
-            labelText: property.name,
-          ),
+              labelText: LocaleKeys.name_label.tr(),
+              hintText: LocaleKeys.name_hint.tr()),
       keyboardType: keyboardType,
       textCapitalization: textCapitalization,
       textInputAction: textInputAction,
@@ -300,7 +306,7 @@ class $ManualValidationVanillaFormAccountPresenterFieldFactory {
       minLines: minLines,
       expands: expands,
       maxLength: maxLength,
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+      onChanged: onChanged,
       onTap: onTap,
       onEditingComplete: onEditingComplete,
       onFieldSubmitted: onFieldSubmitted,
@@ -331,7 +337,7 @@ class $ManualValidationVanillaFormAccountPresenterFieldFactory {
   /// Gets a [FormField] for `gender` property.
   DropdownButtonFormField<Gender> gender(
     BuildContext context, {
-    required List<DropdownMenuItem<Gender>>? items,
+    List<DropdownMenuItem<Gender>>? items,
     DropdownButtonBuilder? selectedItemBuilder,
     Widget? hint,
     Widget? disabledHint,
@@ -360,13 +366,16 @@ class $ManualValidationVanillaFormAccountPresenterFieldFactory {
     final property = _presenter.gender;
     return DropdownButtonFormField<Gender>(
       key: _presenter.getKey(property.name, context),
-      items: items,
+      items: [Gender.notKnown, Gender.male, Gender.female, Gender.notApplicable]
+          .map((x) => DropdownMenuItem<Gender>(
+              value: x, child: Text('gender_${x.name}'.tr())))
+          .toList(),
       selectedItemBuilder: selectedItemBuilder,
       value: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       hint: hint,
       disabledHint: disabledHint,
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+      onChanged: onChanged ?? (_) {},
       onTap: onTap,
       elevation: elevation,
       style: style,
@@ -383,8 +392,8 @@ class $ManualValidationVanillaFormAccountPresenterFieldFactory {
       dropdownColor: dropdownColor,
       decoration: decoration ??
           InputDecoration(
-            labelText: property.name,
-          ),
+              labelText: LocaleKeys.gender_label.tr(),
+              hintText: LocaleKeys.gender_hint.tr()),
       onSaved: (v) => property.setFieldValue(
           v, Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       validator: property.getValidator(context),
@@ -457,8 +466,8 @@ class $ManualValidationVanillaFormAccountPresenterFieldFactory {
       focusNode: focusNode,
       decoration: decoration ??
           const InputDecoration().copyWith(
-            labelText: property.name,
-          ),
+              labelText: LocaleKeys.age_label.tr(),
+              hintText: LocaleKeys.age_hint.tr()),
       keyboardType: keyboardType,
       textCapitalization: textCapitalization,
       textInputAction: textInputAction,
@@ -482,7 +491,7 @@ class $ManualValidationVanillaFormAccountPresenterFieldFactory {
       minLines: minLines,
       expands: expands,
       maxLength: maxLength,
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+      onChanged: onChanged,
       onTap: onTap,
       onEditingComplete: onEditingComplete,
       onFieldSubmitted: onFieldSubmitted,

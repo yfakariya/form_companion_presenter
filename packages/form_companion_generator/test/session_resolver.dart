@@ -23,8 +23,10 @@ class SessionResolver implements Resolver {
     _assetPathes[_inputId] = input.source.fullName;
   }
 
-  Future<void> _resolveIfNecessary(AssetId id,
-      {required bool transitive}) async {
+  Future<void> _resolveIfNecessary(
+    AssetId id, {
+    required bool transitive,
+  }) async {
     if (!_entryPoints.contains(id)) {
       // We only want transitively resolved ids in `_entrypoints`.
       if (transitive) {
@@ -37,7 +39,8 @@ class SessionResolver implements Resolver {
     final source = element.source;
     if (source == null) {
       throw UnresolvableAssetException(
-          '${element.name} does not have a source');
+        '${element.name} does not have a source',
+      );
     }
 
     final uri = source.uri;

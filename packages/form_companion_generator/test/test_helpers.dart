@@ -7,6 +7,8 @@ import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
 import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
+import 'package:build_config/build_config.dart';
+import 'package:form_companion_generator/src/config.dart';
 import 'package:form_companion_generator/src/model.dart';
 import 'package:path/path.dart' as path;
 import 'package:test/expect.dart';
@@ -104,6 +106,52 @@ FutureOr<InterfaceType> getDateTimeRangeType() async =>
 FutureOr<InterfaceType> getRangeValuesType() async =>
     (await getFormFieldsLibrary()).lookupType('RangeValues');
 
+LibraryElement? _nullablesLibrary;
+
+FutureOr<LibraryElement> _getNullablesLibrary() async {
+  if (_nullablesLibrary != null) {
+    return _nullablesLibrary!;
+  }
+
+  return _nullablesLibrary =
+      (await getResolvedLibraryResult('nullables.dart')).element;
+}
+
+FutureOr<InterfaceType> getNullableBoolType() async =>
+    (await _getNullablesLibrary())
+        .topLevelElements
+        .whereType<TopLevelVariableElement>()
+        .singleWhere((e) => e.name == 'nullableBool')
+        .type as InterfaceType;
+
+FutureOr<InterfaceType> getNullableMyEnumType() async =>
+    (await _getNullablesLibrary())
+        .topLevelElements
+        .whereType<TopLevelVariableElement>()
+        .singleWhere((e) => e.name == 'nullableMyEnum')
+        .type as InterfaceType;
+
+FutureOr<InterfaceType> getNullableStringType() async =>
+    (await _getNullablesLibrary())
+        .topLevelElements
+        .whereType<TopLevelVariableElement>()
+        .singleWhere((e) => e.name == 'nullableString')
+        .type as InterfaceType;
+
+FutureOr<InterfaceType> getNullableListOfStringType() async =>
+    (await _getNullablesLibrary())
+        .topLevelElements
+        .whereType<TopLevelVariableElement>()
+        .singleWhere((e) => e.name == 'nullableListOfString')
+        .type as InterfaceType;
+
+FutureOr<InterfaceType> getNullableListOfNullableStringType() async =>
+    (await _getNullablesLibrary())
+        .topLevelElements
+        .whereType<TopLevelVariableElement>()
+        .singleWhere((e) => e.name == 'nullableListOfNullableString')
+        .type as InterfaceType;
+
 ClassElement lookupExportedClass(LibraryElement library, String name) {
   {
     final result = library.getType(name);
@@ -166,4 +214,27 @@ GenericType toGenericType(DartType type) {
   }
 
   return GenericType.fromDartType(type, element);
+}
+
+Map<String, dynamic>? _defaultOptions;
+
+FutureOr<Config> readDefaultOptions([
+  Map<String, dynamic> override = const <String, dynamic>{},
+]) async {
+  if (_defaultOptions == null) {
+    final buildConfig = await BuildConfig.fromPackageDir('.');
+    _defaultOptions = buildConfig
+            .builderDefinitions[
+                'form_companion_generator:form_companion_generator']
+            ?.defaults
+            .options ??
+        <String, dynamic>{};
+  }
+
+  final defaultOptions = <String, dynamic>{..._defaultOptions!};
+  for (final entry in override.entries) {
+    defaultOptions[entry.key] = entry.value;
+  }
+
+  return Config(defaultOptions);
 }

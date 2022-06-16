@@ -14,6 +14,7 @@ import 'arguments_handler.dart';
 import 'config.dart';
 import 'dependency.dart';
 import 'form_field_locator.dart';
+import 'macro.dart';
 import 'model.dart';
 import 'node_provider.dart';
 import 'parser/parser_data.dart';
@@ -52,6 +53,8 @@ FutureOr<PresenterDefinition> parseElementAsync(
   final isFormBuilder = mixinType == MixinType.formBuilderCompanionMixin;
   final warnings = <String>[];
   final properties = await getPropertiesAsync(
+    config,
+    element.library.languageVersion,
     nodeProvider,
     formFieldLocator,
     constructor,
@@ -70,6 +73,7 @@ FutureOr<PresenterDefinition> parseElementAsync(
         ? []
         : await collectDependenciesAsync(
             element.library,
+            config,
             properties,
             nodeProvider,
             logger,
@@ -163,6 +167,8 @@ ConstructorElement findConstructor(
 /// If any global warnings is issued, the message will be added to [globalWarnings].
 @visibleForTesting
 FutureOr<List<PropertyAndFormFieldDefinition>> getPropertiesAsync(
+  Config config,
+  LibraryLanguageVersion languageVersion,
   NodeProvider nodeProvider,
   FormFieldLocator formFieldLocator,
   ConstructorElement constructor,
@@ -171,6 +177,8 @@ FutureOr<List<PropertyAndFormFieldDefinition>> getPropertiesAsync(
   required bool isFormBuilder,
 }) async {
   final context = ParseContext(
+    languageVersion,
+    config,
     logger,
     nodeProvider,
     formFieldLocator,
@@ -225,11 +233,13 @@ FutureOr<List<PropertyAndFormFieldDefinition>> getPropertiesAsync(
     constructor,
     isFormBuilder: isFormBuilder,
   )
-      .map((m) async => await resolveFormFieldAsync(
-            context,
-            m,
-            isFormBuilder: isFormBuilder,
-          ))
+      .map(
+        (m) async => await resolveFormFieldAsync(
+          context,
+          m,
+          isFormBuilder: isFormBuilder,
+        ),
+      )
       .toListAsync();
 }
 
@@ -286,11 +296,28 @@ Element _getDeclaringElement(MethodInvocation expression) {
 /// dependency for [presenterLibrary] will be ignored.
 FutureOr<List<LibraryImport>> collectDependenciesAsync(
   LibraryElement presenterLibrary,
+  Config config,
   Iterable<PropertyAndFormFieldDefinition> properties,
   NodeProvider nodeProvider,
   Logger logger, {
   required bool isFormBuilder,
 }) async {
+  Iterable<TemplateImports> getImports(
+    PropertyAndFormFieldDefinition property,
+    ParameterInfo parameter,
+  ) {
+    final argumentTemplate = config.argumentTemplates
+        .get(property.formFieldTypeName, parameter.name);
+    final usedMacros = extractMacroKeys(
+      argumentTemplate.itemTemplate ?? argumentTemplate.value ?? '',
+    );
+
+    return [
+      ...argumentTemplate.imports,
+      ...usedMacros.expand((m) => config.namedTemplates.get(m)?.imports ?? [])
+    ];
+  }
+
   final collector = DependentLibraryCollector(
     nodeProvider,
     await nodeProvider.libraries.toList(),
@@ -331,6 +358,32 @@ FutureOr<List<LibraryImport>> collectDependenciesAsync(
           'package:flutter/widgets.dart',
           'Localizations',
         );
+
+      for (final import in argumentsHandler.allParameters.expand(
+        (p) => getImports(property, p),
+      )) {
+        if (import.prefix.isEmpty) {
+          if (import.types.isEmpty) {
+            collector.recordLibraryImport(import.uri);
+          } else {
+            for (final type in import.types) {
+              collector.recordTypeIdDirect(import.uri, type);
+            }
+          }
+        } else {
+          if (import.types.isEmpty) {
+            collector.recordLibraryImportWithPrefix(import.uri, import.prefix);
+          } else {
+            for (final type in import.types) {
+              collector.recordTypeIdDirectWithLibraryPrefix(
+                import.uri,
+                import.prefix,
+                type,
+              );
+            }
+          }
+        }
+      }
 
       await collector.endAsync();
     }

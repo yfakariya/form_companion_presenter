@@ -8,6 +8,7 @@ import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
 import 'package:source_gen/source_gen.dart';
 
+import '../config.dart';
 import '../form_field_locator.dart';
 import '../model.dart';
 import '../node_provider.dart';
@@ -16,6 +17,12 @@ import '../utilities.dart';
 /// Represents a context information of parsing.
 @sealed
 class ParseContext {
+  /// Language version of the target library.
+  final LibraryLanguageVersion languageVersion;
+
+  /// A [Config].
+  final Config config;
+
   /// A [Logger] to record trace log for debugging.
   final Logger logger;
 
@@ -68,6 +75,8 @@ class ParseContext {
 
   /// Initialize a new [ParseContext] instance.
   ParseContext(
+    this.languageVersion,
+    this.config,
     this.logger,
     this.nodeProvider,
     this.formFieldLocator,
@@ -129,9 +138,10 @@ class _Scope {
   final Map<String, FunctionDeclaration> localFunctions;
   bool isReturned = false;
 
-  _Scope(Map<String, PropertyDescriptorsBuilding> outerBuildings,
-      Map<String, FunctionDeclaration> outerLocalFunctions)
-      : buildings = Map.from(outerBuildings),
+  _Scope(
+    Map<String, PropertyDescriptorsBuilding> outerBuildings,
+    Map<String, FunctionDeclaration> outerLocalFunctions,
+  )   : buildings = Map.from(outerBuildings),
         localFunctions = Map.from(outerLocalFunctions);
 }
 
@@ -153,7 +163,10 @@ class PropertyDescriptorsBuilding {
   bool _isMutable = false;
 
   PropertyDescriptorsBuilding._(
-      this.variableName, this._buildings, this._isMutable);
+    this.variableName,
+    this._buildings,
+    this._isMutable,
+  );
 
   /// Creates new [PropertyDescriptorsBuilding] for `PropertyDescriptorsBuilder`
   /// instantiation.
@@ -163,7 +176,10 @@ class PropertyDescriptorsBuilding {
   /// which name is [newVariableName].
   PropertyDescriptorsBuilding chain(String newVariableName) {
     return PropertyDescriptorsBuilding._(
-        newVariableName, _buildings, _isMutable);
+      newVariableName,
+      _buildings,
+      _isMutable,
+    );
   }
 
   /// Adds a detected property building operation,

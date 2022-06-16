@@ -198,7 +198,6 @@ That's it!
 
 See [repository](https://github.com/yfakariya/form_companion_presenter/examples/). `*_vanilla_form_*.dart` files use `form_companion_presenter`. Note that `*_form_builder_*.dart` files use [form_builder_companion_presenter](https://pub.dev/packages/form_builder_companion_presenter) instead.
 
-
 ## Components
 
 This package includes two main constructs:

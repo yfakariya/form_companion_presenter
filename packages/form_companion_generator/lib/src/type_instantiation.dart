@@ -82,7 +82,7 @@ class TypeInstantiationContext {
     if (parameter is TypeParameterType) {
       // Map `Foo` to `T` here.
       mapping[parameter.getDisplayString(withNullability: false)] =
-          argument.getDisplayString(withNullability: false);
+          argument.getDisplayString(withNullability: true);
       return;
     }
 
@@ -115,8 +115,10 @@ class TypeInstantiationContext {
 
     if (parameterType is FunctionType) {
       assert(argument is GenericFunctionType);
-      assert(parameterType.parameters.length ==
-          (argument as GenericFunctionType).functionType.parameters.length);
+      assert(
+        parameterType.parameters.length ==
+            (argument as GenericFunctionType).functionType.parameters.length,
+      );
 
       _buildTypeArgumentMappings(
         parameterType.returnType,

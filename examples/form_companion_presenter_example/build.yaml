@@ -21,3 +21,21 @@ targets:
           include:
             - lib/*.dart
             - lib/components/*.dart
+        options:
+          named_templates:
+            label_template:
+              template: 'LocaleKeys.#PROPERTY_NAME#_label.tr()'
+              imports:
+                LocaleKeys: 'package:form_companion_presenter_examples/l10n/locale_keys.g.dart'
+                StringTranslateExtension: 'package:easy_localization/easy_localization.dart'
+            hint_template:
+              template: 'LocaleKeys.#PROPERTY_NAME#_hint.tr()'
+              imports:
+                LocaleKeys: 'package:form_companion_presenter_examples/l10n/locale_keys.g.dart'
+                StringTranslateExtension: 'package:easy_localization/easy_localization.dart'
+            item_widget_template:
+              template: "Text('#PROPERTY_NAME#_${#ITEM_VALUE_STRING#}'.tr())"
+              imports:
+                LocaleKeys: 'package:form_companion_presenter_examples/l10n/locale_keys.g.dart'
+                StringTranslateExtension: 'package:easy_localization/easy_localization.dart'
+                Text: 'package:flutter/widgets.dart'

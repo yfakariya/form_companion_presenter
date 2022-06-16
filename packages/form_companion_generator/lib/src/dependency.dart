@@ -22,18 +22,35 @@ class LibraryImport {
   /// rather than `lib/src/`.
   final String library;
 
-  final Set<String> _types = {};
+  final _types = <String>{};
+
+  var _importsAllTypes = false;
+
+  /// `true` if non-prefixed `import` directive without `show` namespace
+  /// combinator should be emitted.
+  bool get shouldEmitSimpleImports =>
+      _importsAllTypes || (_types.isEmpty && _prefixes.isEmpty);
+
+  final _allTypesImportedPrefixes = <String>{};
 
   /// A collection of type names which should be specified in `show`
   /// namespace combinator of a non-prefixed `import` directive.
-  Iterable<String> get showingTypes => _types.toList()..sort();
+  ///
+  /// Note that this value will be empty if the `import` directive should not
+  /// have `show` namespace combinator.
+  Iterable<String> get showingTypes => _importsAllTypes ? [] : _types.toList()
+    ..sort();
 
   final Map<String, Set<String>> _prefixes = {};
 
   /// A collection of prefixes to emit prefixed `import` directives.
   Iterable<MapEntry<String, Iterable<String>>> get prefixes sync* {
     for (final key in [..._prefixes.keys]..sort()) {
-      yield MapEntry(key, _prefixes[key]!.toList()..sort());
+      if (_allTypesImportedPrefixes.contains(key)) {
+        yield MapEntry(key, []);
+      } else {
+        yield MapEntry(key, _prefixes[key]!.toList()..sort());
+      }
     }
   }
 
@@ -43,12 +60,7 @@ class LibraryImport {
   /// Adds a specified [Identifier] as imported from this [library].
   void addType(Identifier identifier) {
     if (identifier is PrefixedIdentifier) {
-      final prefixed = _prefixes[identifier.prefix.name];
-      if (prefixed == null) {
-        _prefixes[identifier.prefix.name] = {identifier.identifier.name};
-      } else {
-        prefixed.add(identifier.identifier.name);
-      }
+      addTypeNameToPrefixed(identifier.prefix.name, identifier.identifier.name);
     } else {
       assert(identifier is SimpleIdentifier);
       addTypeName(identifier.name);
@@ -56,7 +68,30 @@ class LibraryImport {
   }
 
   /// Adds a specified named type as imported from this [library].
-  void addTypeName(String typeName) => _types.add(typeName);
+  void addTypeName(String typeName) {
+    _types.add(typeName);
+  }
+
+  /// Adds a specified named type as imported from this [library] with specified [prefix].
+  void addTypeNameToPrefixed(String prefix, String typeName) {
+    final prefixed = _prefixes[prefix];
+    if (prefixed == null) {
+      _prefixes[prefix] = {typeName};
+    } else {
+      prefixed.add(typeName);
+    }
+  }
+
+  /// Marks this library should not have `show` namespace combinator.
+  void markImport() {
+    _importsAllTypes = true;
+  }
+
+  /// Marks this library should not have `show` namespace combinator
+  /// for specified [prefix].
+  void markImportAsPrefixed(String prefix) {
+    _allTypesImportedPrefixes.add(prefix);
+  }
 }
 
 /// A visitor for [AstNode] tree to collect dependent libraries.
@@ -216,14 +251,17 @@ class DependentLibraryCollector extends RecursiveAstVisitor<void> {
         .toList();
 
     final candidates = libraries
-        .where((l) =>
-            l.exportedLibraries.any((e) => e.identifier == sourceLibraryId))
+        .where(
+          (l) =>
+              l.exportedLibraries.any((e) => e.identifier == sourceLibraryId),
+        )
         .toList();
 
     if (candidates.isEmpty) {
       throw AnalysisException(
-          "Failed to resolve logical library for source library '$sourceLibraryId'"
-          " for '$targetElement' in the directory '$libraryDirectory'. ");
+        "Failed to resolve logical library for source library '$sourceLibraryId'"
+        " for '$targetElement' in the directory '$libraryDirectory'. ",
+      );
     }
 
     final result = candidates.first.identifier;
@@ -253,21 +291,44 @@ class DependentLibraryCollector extends RecursiveAstVisitor<void> {
     }
   }
 
-  /// Record import for specified [Identifier] which is imported from
+  /// Records import for specified [Identifier] which is imported from
   /// the library which declares [holderElement].
   void recordTypeId(Element holderElement, Identifier id) =>
       _getLibraryImportEntry(holderElement)?.addType(id);
 
-  /// Record import for specified non-qualified [typeName] which is imported from
+  /// Records import for specified non-qualified [typeName] which is imported from
   /// the library which declares [holderElement].
   void _recordTypeName(Element holderElement, String typeName) =>
       _getLibraryImportEntry(holderElement)?.addTypeName(typeName);
 
-  /// Record import for specified [Identifier] which is imported from
+  /// Records import for specified [Identifier] which is imported from
   /// the library specified as [libraryIdentifier].
   void recordTypeIdDirect(String libraryIdentifier, String typeName) =>
       _getLibraryImportEntryDirect(libraryIdentifier, null)
           ?.addTypeName(typeName);
+
+  /// Records import for specified [Identifier] which is imported from
+  /// the library specified as [libraryIdentifier] with [libraryPrefix].
+  void recordTypeIdDirectWithLibraryPrefix(
+    String libraryIdentifier,
+    String libraryPrefix,
+    String typeName,
+  ) =>
+      _getLibraryImportEntryDirect(libraryIdentifier, null)
+          ?.addTypeNameToPrefixed(libraryPrefix, typeName);
+
+  /// Records non resitricted import for the library specified as [libraryIdentifier].
+  void recordLibraryImport(String libraryIdentifier) =>
+      _getLibraryImportEntryDirect(libraryIdentifier, null)?.markImport();
+
+  /// Records non resitricted import for
+  /// the library specified as [libraryIdentifier] with [libraryPrefix].
+  void recordLibraryImportWithPrefix(
+    String libraryIdentifier,
+    String libraryPrefix,
+  ) =>
+      _getLibraryImportEntryDirect(libraryIdentifier, null)
+          ?.markImportAsPrefixed(libraryPrefix);
 
   Future<AstNode> _beginGetElementDeclaration(String fieldName) async =>
       _nodeProvider
