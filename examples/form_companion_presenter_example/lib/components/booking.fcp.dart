@@ -13,12 +13,16 @@ import 'dart:ui'
         Clip,
         Color,
         Locale,
+        Offset,
         Radius,
         TextAlign,
         TextDirection,
         VoidCallback;
 
 import 'dart:ui' as ui show BoxHeightStyle, BoxWidthStyle, TextDirection;
+
+import 'package:easy_localization/easy_localization.dart'
+    show StringTranslateExtension;
 
 import 'package:flutter/foundation.dart' show Key, ValueChanged;
 
@@ -30,6 +34,7 @@ import 'package:flutter/material.dart'
         DatePickerEntryMode,
         DatePickerMode,
         DateTimeRange,
+        EntryModeChangeCallback,
         Icons,
         InputCounterWidgetBuilder,
         InputDecoration,
@@ -45,10 +50,12 @@ import 'package:flutter/material.dart'
 import 'package:flutter/painting.dart'
     show
         Axis,
+        CircleBorder,
         EdgeInsets,
         EdgeInsetsGeometry,
         ImageProvider,
         OutlinedBorder,
+        ShapeBorder,
         StrutStyle,
         TextAlignVertical,
         TextStyle,
@@ -77,6 +84,7 @@ import 'package:flutter/widgets.dart'
         RouteSettings,
         ScrollController,
         ScrollPhysics,
+        Text,
         TextEditingController,
         ToolbarOptions,
         TransitionBuilder,
@@ -86,6 +94,7 @@ import 'package:flutter_form_builder/flutter_form_builder.dart'
     show
         ControlAffinity,
         DisplayValues,
+        FormBuilderChipOption,
         FormBuilderDateRangePicker,
         FormBuilderDateTimePicker,
         FormBuilderFieldOption,
@@ -105,6 +114,8 @@ import 'package:form_companion_presenter/form_companion_presenter.dart';
 import 'package:intl/intl.dart' show DateFormat, NumberFormat;
 
 import 'package:intl/intl.dart' as intl show DateFormat;
+
+import '../l10n/locale_keys.g.dart' show LocaleKeys;
 
 import '../models.dart' show MealType, RoomType;
 
@@ -235,9 +246,9 @@ class $BookingPresenterTemplateFieldFactory {
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       decoration: decoration ??
           const InputDecoration().copyWith(
-            labelText: property.name,
-          ),
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+              labelText: LocaleKeys.stay_label.tr(),
+              hintText: LocaleKeys.stay_hint.tr()),
+      onChanged: onChanged,
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.onUserInteraction,
@@ -308,7 +319,7 @@ class $BookingPresenterTemplateFieldFactory {
     EdgeInsets scrollPadding = const EdgeInsets.all(20.0),
     double cursorWidth = 2.0,
     bool enableInteractiveSelection = true,
-    Icon resetIcon = const Icon(Icons.close),
+    Widget? resetIcon = const Icon(Icons.close),
     TimeOfDay initialTime = const TimeOfDay(hour: 12, minute: 0),
     TextInputType keyboardType = TextInputType.text,
     TextAlign textAlign = TextAlign.start,
@@ -355,6 +366,8 @@ class $BookingPresenterTemplateFieldFactory {
     RouteSettings? routeSettings,
     StrutStyle? strutStyle,
     SelectableDayPredicate? selectableDayPredicate,
+    Offset? anchorPoint,
+    EntryModeChangeCallback? onEntryModeChanged,
   }) {
     final property = _presenter.specialOfferDate;
     return FormBuilderDateTimePicker(
@@ -365,9 +378,9 @@ class $BookingPresenterTemplateFieldFactory {
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       decoration: decoration ??
           const InputDecoration().copyWith(
-            labelText: property.name,
-          ),
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+              labelText: LocaleKeys.specialOfferDate_label.tr(),
+              hintText: LocaleKeys.specialOfferDate_hint.tr()),
+      onChanged: onChanged,
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.onUserInteraction,
@@ -424,6 +437,8 @@ class $BookingPresenterTemplateFieldFactory {
       routeSettings: routeSettings,
       strutStyle: strutStyle,
       selectableDayPredicate: selectableDayPredicate,
+      anchorPoint: anchorPoint,
+      onEntryModeChanged: onEntryModeChanged,
     );
   }
 
@@ -435,7 +450,7 @@ class $BookingPresenterTemplateFieldFactory {
     FocusNode? focusNode,
     InputDecoration? decoration,
     Key? key,
-    required List<FormBuilderFieldOption<RoomType>> options,
+    List<FormBuilderFieldOption<RoomType>>? options,
     bool shouldRadioRequestFocus = false,
     Color? activeColor,
     ControlAffinity controlAffinity = ControlAffinity.leading,
@@ -465,11 +480,14 @@ class $BookingPresenterTemplateFieldFactory {
       validator: property.getValidator(context),
       decoration: decoration ??
           const InputDecoration().copyWith(
-            labelText: property.name,
-          ),
+              labelText: LocaleKeys.roomType_label.tr(),
+              hintText: LocaleKeys.roomType_hint.tr()),
       key: key,
       name: property.name,
-      options: options,
+      options: [RoomType.standard, RoomType.delux, RoomType.suite]
+          .map((x) => FormBuilderFieldOption<RoomType>(
+              value: x, child: Text('roomType_${x.name}'.tr())))
+          .toList(),
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       shouldRadioRequestFocus: shouldRadioRequestFocus,
@@ -489,7 +507,7 @@ class $BookingPresenterTemplateFieldFactory {
       wrapSpacing: wrapSpacing,
       wrapTextDirection: wrapTextDirection,
       wrapVerticalDirection: wrapVerticalDirection,
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+      onChanged: onChanged,
       valueTransformer: valueTransformer,
       onReset: onReset,
     );
@@ -503,8 +521,9 @@ class $BookingPresenterTemplateFieldFactory {
     FocusNode? focusNode,
     InputDecoration? decoration,
     Key? key,
-    required List<FormBuilderFieldOption<MealType>> options,
+    List<FormBuilderChipOption<MealType>>? options,
     WrapAlignment alignment = WrapAlignment.start,
+    ShapeBorder avatarBorder = const CircleBorder(),
     Color? backgroundColor,
     Color? checkmarkColor,
     Clip clipBehavior = Clip.none,
@@ -541,14 +560,21 @@ class $BookingPresenterTemplateFieldFactory {
       validator: property.getValidator(context),
       decoration: decoration ??
           const InputDecoration().copyWith(
-            labelText: property.name,
-          ),
+              labelText: LocaleKeys.mealOffers_label.tr(),
+              hintText: LocaleKeys.mealOffers_hint.tr()),
       key: key,
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))!,
       name: property.name,
-      options: options,
+      options: property
+              .getFieldValue(Localizations.maybeLocaleOf(context) ??
+                  const Locale('en', 'US'))
+              ?.map((x) => FormBuilderChipOption<MealType>(
+                  value: x, child: Text('mealOffers_${x.name}'.tr())))
+              .toList() ??
+          [],
       alignment: alignment,
+      avatarBorder: avatarBorder,
       backgroundColor: backgroundColor,
       checkmarkColor: checkmarkColor,
       clipBehavior: clipBehavior,
@@ -573,7 +599,7 @@ class $BookingPresenterTemplateFieldFactory {
       spacing: spacing,
       textDirection: textDirection,
       verticalDirection: verticalDirection,
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+      onChanged: onChanged,
       valueTransformer: valueTransformer,
       onReset: onReset,
     );
@@ -614,9 +640,9 @@ class $BookingPresenterTemplateFieldFactory {
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       decoration: decoration ??
           const InputDecoration().copyWith(
-            labelText: property.name,
-          ),
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+              labelText: LocaleKeys.smoking_label.tr(),
+              hintText: LocaleKeys.smoking_hint.tr()),
+      onChanged: onChanged,
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.onUserInteraction,
@@ -677,9 +703,9 @@ class $BookingPresenterTemplateFieldFactory {
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))!,
       decoration: decoration ??
           const InputDecoration().copyWith(
-            labelText: property.name,
-          ),
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+              labelText: LocaleKeys.persons_label.tr(),
+              hintText: LocaleKeys.persons_hint.tr()),
+      onChanged: onChanged,
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.onUserInteraction,
@@ -733,9 +759,9 @@ class $BookingPresenterTemplateFieldFactory {
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       decoration: decoration ??
           const InputDecoration().copyWith(
-            labelText: property.name,
-          ),
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+              labelText: LocaleKeys.babyBeds_label.tr(),
+              hintText: LocaleKeys.babyBeds_hint.tr()),
+      onChanged: onChanged,
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.onUserInteraction,
@@ -787,9 +813,9 @@ class $BookingPresenterTemplateFieldFactory {
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))!,
       decoration: decoration ??
           const InputDecoration().copyWith(
-            labelText: property.name,
-          ),
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+              labelText: LocaleKeys.preferredPrice_label.tr(),
+              hintText: LocaleKeys.preferredPrice_hint.tr()),
+      onChanged: onChanged,
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.onUserInteraction,
@@ -877,9 +903,9 @@ class $BookingPresenterTemplateFieldFactory {
       readOnly: readOnly,
       decoration: decoration ??
           const InputDecoration().copyWith(
-            labelText: property.name,
-          ),
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+              labelText: LocaleKeys.note_label.tr(),
+              hintText: LocaleKeys.note_hint.tr()),
+      onChanged: onChanged,
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.onUserInteraction,

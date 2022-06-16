@@ -64,8 +64,6 @@ class _BulkAutoValidationVanillaFormAccountPane extends ConsumerWidget {
           presenter.fields.id(
             context,
             decoration: InputDecoration(
-              labelText: LocaleKeys.id_label.tr(),
-              hintText: LocaleKeys.id_hint.tr(),
               suffix: AsyncValidationIndicator(
                 presenter: presenter,
                 propertyName: 'id',
@@ -74,42 +72,12 @@ class _BulkAutoValidationVanillaFormAccountPane extends ConsumerWidget {
           ),
           presenter.fields.name(
             context,
-            decoration: InputDecoration(
-              labelText: LocaleKeys.name_label.tr(),
-              hintText: LocaleKeys.name_hint.tr(),
-            ),
           ),
           presenter.fields.gender(
             context,
-            decoration: InputDecoration(
-              labelText: LocaleKeys.gender_label.tr(),
-              hintText: LocaleKeys.gender_hint.tr(),
-            ),
-            items: [
-              DropdownMenuItem(
-                value: Gender.notKnown,
-                child: Text(LocaleKeys.gender_enumNotKnown.tr()),
-              ),
-              DropdownMenuItem(
-                value: Gender.male,
-                child: Text(LocaleKeys.gender_enumMale.tr()),
-              ),
-              DropdownMenuItem(
-                value: Gender.female,
-                child: Text(LocaleKeys.gender_enumFemale.tr()),
-              ),
-              DropdownMenuItem(
-                value: Gender.notApplicable,
-                child: Text(LocaleKeys.gender_enumNotApplicable.tr()),
-              ),
-            ],
           ),
           presenter.fields.age(
             context,
-            decoration: InputDecoration(
-              labelText: LocaleKeys.age_label.tr(),
-              hintText: LocaleKeys.age_hint.tr(),
-            ),
           ),
           ElevatedButton(
             onPressed: presenter.submit(context),

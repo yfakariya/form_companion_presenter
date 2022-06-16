@@ -80,7 +80,7 @@
         "label": "Stay *",
         "hint": "Specify stay period."
     },
-    "specialOffer": {
+    "specialOfferDate": {
         "description": "You can get special offer! When do you want to receive?",
         "label": "When will you receive special offer? *",
         "hint": "Specify the day in your stay."

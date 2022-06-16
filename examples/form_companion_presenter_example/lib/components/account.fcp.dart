@@ -20,6 +20,9 @@ import 'dart:ui'
 
 import 'dart:ui' as ui show BoxHeightStyle, BoxWidthStyle;
 
+import 'package:easy_localization/easy_localization.dart'
+    show StringTranslateExtension;
+
 import 'package:flutter/foundation.dart' show Key, ValueChanged;
 
 import 'package:flutter/gestures.dart'
@@ -32,14 +35,18 @@ import 'package:flutter/material.dart'
         Icons,
         InputCounterWidgetBuilder,
         InputDecoration,
-        MaterialTapTargetSize,
-        kMinInteractiveDimension;
+        MaterialTapTargetSize;
 
 import 'package:flutter/painting.dart'
     show
+        AlignmentDirectional,
+        AlignmentGeometry,
         Axis,
+        BorderRadius,
+        CircleBorder,
         EdgeInsets,
         OutlinedBorder,
+        ShapeBorder,
         StrutStyle,
         TextAlignVertical,
         TextStyle,
@@ -67,19 +74,22 @@ import 'package:flutter/widgets.dart'
         Localizations,
         ScrollController,
         ScrollPhysics,
+        Text,
         TextEditingController,
         ToolbarOptions,
         Widget;
 
 import 'package:flutter_form_builder/flutter_form_builder.dart'
     show
+        FormBuilderChipOption,
         FormBuilderDropdown,
-        FormBuilderFieldOption,
         FormBuilderFilterChip,
         FormBuilderTextField,
         ValueTransformer;
 
 import 'package:form_companion_presenter/form_companion_presenter.dart';
+
+import '../l10n/locale_keys.g.dart' show LocaleKeys;
 
 import '../models.dart' show Gender, Region;
 
@@ -185,9 +195,9 @@ class $AccountPresenterTemplateFieldFactory {
       readOnly: readOnly,
       decoration: decoration ??
           const InputDecoration().copyWith(
-            labelText: property.name,
-          ),
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+              labelText: LocaleKeys.id_label.tr(),
+              hintText: LocaleKeys.id_hint.tr()),
+      onChanged: onChanged,
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.onUserInteraction,
@@ -301,9 +311,9 @@ class $AccountPresenterTemplateFieldFactory {
       readOnly: readOnly,
       decoration: decoration ??
           const InputDecoration().copyWith(
-            labelText: property.name,
-          ),
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+              labelText: LocaleKeys.name_label.tr(),
+              hintText: LocaleKeys.name_hint.tr()),
+      onChanged: onChanged,
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.onUserInteraction,
@@ -364,7 +374,7 @@ class $AccountPresenterTemplateFieldFactory {
     AutovalidateMode? autovalidateMode,
     VoidCallback? onReset,
     FocusNode? focusNode,
-    required List<DropdownMenuItem<Gender>> items,
+    List<DropdownMenuItem<Gender>>? items,
     bool isExpanded = true,
     bool isDense = true,
     int elevation = 8,
@@ -382,9 +392,12 @@ class $AccountPresenterTemplateFieldFactory {
     bool shouldRequestFocus = false,
     Color? dropdownColor,
     Color? focusColor,
-    double itemHeight = kMinInteractiveDimension,
+    double? itemHeight,
     DropdownButtonBuilder? selectedItemBuilder,
     double? menuMaxHeight,
+    bool? enableFeedback,
+    BorderRadius? borderRadius,
+    AlignmentGeometry alignment = AlignmentDirectional.centerStart,
   }) {
     final property = _presenter.gender;
     return FormBuilderDropdown<Gender>(
@@ -395,15 +408,18 @@ class $AccountPresenterTemplateFieldFactory {
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       decoration: decoration ??
           const InputDecoration().copyWith(
-            labelText: property.name,
-          ),
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+              labelText: LocaleKeys.gender_label.tr(),
+              hintText: LocaleKeys.gender_hint.tr()),
+      onChanged: onChanged ?? (_) {},
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.onUserInteraction,
       onReset: onReset,
       focusNode: focusNode,
-      items: items,
+      items: [Gender.notKnown, Gender.male, Gender.female, Gender.notApplicable]
+          .map((x) => DropdownMenuItem<Gender>(
+              value: x, child: Text('gender_${x.name}'.tr())))
+          .toList(),
       isExpanded: isExpanded,
       isDense: isDense,
       elevation: elevation,
@@ -424,6 +440,9 @@ class $AccountPresenterTemplateFieldFactory {
       itemHeight: itemHeight,
       selectedItemBuilder: selectedItemBuilder,
       menuMaxHeight: menuMaxHeight,
+      enableFeedback: enableFeedback,
+      borderRadius: borderRadius,
+      alignment: alignment,
     );
   }
 
@@ -491,9 +510,9 @@ class $AccountPresenterTemplateFieldFactory {
       readOnly: readOnly,
       decoration: decoration ??
           const InputDecoration().copyWith(
-            labelText: property.name,
-          ),
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+              labelText: LocaleKeys.age_label.tr(),
+              hintText: LocaleKeys.age_hint.tr()),
+      onChanged: onChanged,
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.onUserInteraction,
@@ -551,8 +570,9 @@ class $AccountPresenterTemplateFieldFactory {
     FocusNode? focusNode,
     InputDecoration? decoration,
     Key? key,
-    required List<FormBuilderFieldOption<Region>> options,
+    List<FormBuilderChipOption<Region>>? options,
     WrapAlignment alignment = WrapAlignment.start,
+    ShapeBorder avatarBorder = const CircleBorder(),
     Color? backgroundColor,
     Color? checkmarkColor,
     Clip clipBehavior = Clip.none,
@@ -589,14 +609,21 @@ class $AccountPresenterTemplateFieldFactory {
       validator: property.getValidator(context),
       decoration: decoration ??
           const InputDecoration().copyWith(
-            labelText: property.name,
-          ),
+              labelText: LocaleKeys.preferredRegions_label.tr(),
+              hintText: LocaleKeys.preferredRegions_hint.tr()),
       key: key,
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))!,
       name: property.name,
-      options: options,
+      options: property
+              .getFieldValue(Localizations.maybeLocaleOf(context) ??
+                  const Locale('en', 'US'))
+              ?.map((x) => FormBuilderChipOption<Region>(
+                  value: x, child: Text('preferredRegions_${x.name}'.tr())))
+              .toList() ??
+          [],
       alignment: alignment,
+      avatarBorder: avatarBorder,
       backgroundColor: backgroundColor,
       checkmarkColor: checkmarkColor,
       clipBehavior: clipBehavior,
@@ -621,7 +648,7 @@ class $AccountPresenterTemplateFieldFactory {
       spacing: spacing,
       textDirection: textDirection,
       verticalDirection: verticalDirection,
-      onChanged: onChanged ?? (_) {}, // Tip: required to work correctly
+      onChanged: onChanged,
       valueTransformer: valueTransformer,
       onReset: onReset,
     );

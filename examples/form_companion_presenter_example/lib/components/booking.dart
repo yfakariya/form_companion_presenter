@@ -73,75 +73,22 @@ class _BookingPaneTemplate extends ConsumerWidget {
             firstDate: presenter.stay.value?.start ?? today,
             lastDate: presenter.stay.value?.end ??
                 today.add(const Duration(days: 90)),
-            decoration: InputDecoration(
-              labelText: LocaleKeys.stay_label.tr(),
-              hintText: LocaleKeys.stay_hint.tr(),
-            ),
           ),
-          Text(LocaleKeys.specialOffer_description.tr()),
+          Text(LocaleKeys.specialOfferDate_description.tr()),
           presenter.fields.specialOfferDate(
             context,
             inputType: InputType.date,
-            decoration: InputDecoration(
-              labelText: LocaleKeys.specialOffer_label.tr(),
-              hintText: LocaleKeys.specialOffer_hint.tr(),
-            ),
           ),
           presenter.fields.roomType(
             context,
-            options: [
-              FormBuilderFieldOption(
-                value: RoomType.standard,
-                child: Text(
-                  LocaleKeys.roomType_standard.tr(),
-                ),
-              ),
-              FormBuilderFieldOption(
-                value: RoomType.delux,
-                child: Text(
-                  LocaleKeys.roomType_delux.tr(),
-                ),
-              ),
-              FormBuilderFieldOption(
-                value: RoomType.suite,
-                child: Text(
-                  LocaleKeys.roomType_suite.tr(),
-                ),
-              ),
-            ],
-            decoration: InputDecoration(
-              labelText: LocaleKeys.roomType_label.tr(),
-              hintText: LocaleKeys.roomType_hint.tr(),
-            ),
           ),
           presenter.fields.mealOffers(
             context,
-            options: [
-              FormBuilderFieldOption(
-                value: MealType.halal,
-                child: Text(
-                  LocaleKeys.mealType_halal.tr(),
-                ),
-              ),
-              FormBuilderFieldOption(
-                value: MealType.vegan,
-                child: Text(
-                  LocaleKeys.mealType_vegan.tr(),
-                ),
-              ),
-            ],
-            decoration: InputDecoration(
-              labelText: LocaleKeys.mealOffers_label.tr(),
-              hintText: LocaleKeys.mealOffers_hint.tr(),
-            ),
           ),
           presenter.fields.smoking(
             context,
             title: Text(
               LocaleKeys.smoking_title.tr(),
-            ),
-            decoration: InputDecoration(
-              labelText: LocaleKeys.smoking_label.tr(),
             ),
           ),
           presenter.fields.persons(
@@ -150,9 +97,6 @@ class _BookingPaneTemplate extends ConsumerWidget {
             max: 4,
             divisions: 3,
             label: LocaleKeys.persons_hint.tr(),
-            decoration: InputDecoration(
-              labelText: LocaleKeys.persons_label.tr(),
-            ),
           ),
           presenter.fields.babyBeds(
             context,
@@ -170,29 +114,17 @@ class _BookingPaneTemplate extends ConsumerWidget {
                 child: Text('2'),
               ),
             ],
-            decoration: InputDecoration(
-              labelText: LocaleKeys.babyBeds_label.tr(),
-              hintText: LocaleKeys.babyBeds_hint.tr(),
-            ),
           ),
           presenter.fields.preferredPrice(
             context,
             min: 0,
             max: 1000,
-            decoration: InputDecoration(
-              labelText: LocaleKeys.preferredPrice_label.tr(),
-              hintText: LocaleKeys.preferredPrice_hint.tr(),
-            ),
           ),
           presenter.fields.note(
             context,
             maxLines: null,
             textInputAction: TextInputAction.newline,
             keyboardType: TextInputType.multiline,
-            decoration: InputDecoration(
-              labelText: LocaleKeys.note_label.tr(),
-              hintText: LocaleKeys.note_hint.tr(),
-            ),
           ),
           // Inline validation example
           FormBuilderCheckbox(
