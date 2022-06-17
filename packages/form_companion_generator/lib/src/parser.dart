@@ -68,17 +68,14 @@ FutureOr<PresenterDefinition> parseElementAsync(
     isFormBuilder: isFormBuilder,
     doAutovalidate: annotation.autovalidate ?? config.autovalidateByDefault,
     warnings: warnings,
-    imports: config.asPart
-        // import directives cannot be appeared in part files.
-        ? []
-        : await collectDependenciesAsync(
-            element.library,
-            config,
-            properties,
-            nodeProvider,
-            logger,
-            isFormBuilder: isFormBuilder,
-          ),
+    imports: await collectDependenciesAsync(
+      element.library,
+      config,
+      properties,
+      nodeProvider,
+      logger,
+      isFormBuilder: isFormBuilder,
+    ),
     properties: properties,
   );
 }
