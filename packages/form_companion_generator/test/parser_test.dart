@@ -2301,8 +2301,10 @@ final _expectedImports = {
       'package:flutter/painting.dart',
       shows: [
         'Axis',
+        'CircleBorder',
         'EdgeInsets',
         'OutlinedBorder',
+        'ShapeBorder',
         'TextStyle',
         'VerticalDirection'
       ],
@@ -2319,7 +2321,7 @@ final _expectedImports = {
     ),
     ExpectedImport(
       'package:flutter_form_builder/flutter_form_builder.dart',
-      shows: ['FormBuilderChoiceChip', 'FormBuilderFieldOption'],
+      shows: ['FormBuilderChipOption', 'FormBuilderChoiceChip'],
     ),
   ]),
   'FormBuilderDateRangePicker': _merge([
@@ -2369,7 +2371,7 @@ final _expectedImports = {
     ..._builderCommonImports,
     ExpectedImport(
       'dart:ui',
-      shows: ['Brightness', 'Locale', 'Radius', 'TextAlign'],
+      shows: ['Brightness', 'Locale', 'Offset', 'Radius', 'TextAlign'],
       prefixes: [
         MapEntry('ui', ['TextDirection']),
       ],
@@ -2379,6 +2381,7 @@ final _expectedImports = {
       shows: [
         'DatePickerEntryMode',
         'DatePickerMode',
+        'EntryModeChangeCallback',
         'Icons',
         'InputCounterWidgetBuilder',
         'SelectableDayPredicate',
@@ -2406,7 +2409,8 @@ final _expectedImports = {
         'Icon',
         'RouteSettings',
         'TextEditingController',
-        'TransitionBuilder'
+        'TransitionBuilder',
+        'Widget'
       ],
     ),
     ExpectedImport(
@@ -2422,16 +2426,16 @@ final _expectedImports = {
     ..._builderCommonImports,
     ExpectedImport(
       'package:flutter/material.dart',
-      shows: [
-        'DropdownButtonBuilder',
-        'DropdownMenuItem',
-        'Icons',
-        'kMinInteractiveDimension'
-      ],
+      shows: ['DropdownButtonBuilder', 'DropdownMenuItem', 'Icons'],
     ),
     ExpectedImport(
       'package:flutter/painting.dart',
-      shows: ['TextStyle'],
+      shows: [
+        'AlignmentDirectional',
+        'AlignmentGeometry',
+        'BorderRadius',
+        'TextStyle'
+      ],
     ),
     ExpectedImport(
       'package:flutter/widgets.dart',
@@ -2460,8 +2464,10 @@ final _expectedImports = {
       'package:flutter/painting.dart',
       shows: [
         'Axis',
+        'CircleBorder',
         'EdgeInsets',
         'OutlinedBorder',
+        'ShapeBorder',
         'TextStyle',
         'VerticalDirection'
       ],
@@ -2478,7 +2484,7 @@ final _expectedImports = {
     ),
     ExpectedImport(
       'package:flutter_form_builder/flutter_form_builder.dart',
-      shows: ['FormBuilderFieldOption', 'FormBuilderFilterChip'],
+      shows: ['FormBuilderChipOption', 'FormBuilderFilterChip'],
     ),
   ]),
   'FormBuilderRadioGroup': _merge([
