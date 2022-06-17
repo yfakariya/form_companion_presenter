@@ -10,6 +10,7 @@ import 'package:meta/meta.dart';
 
 import 'config.dart';
 import 'macro.dart';
+import 'macro_keys.dart';
 import 'model.dart';
 import 'node_provider.dart';
 import 'utilities.dart';
@@ -219,7 +220,7 @@ class ArgumentsHandler {
         }
       }
 
-      yield* '${context.parameter}: ${context.resolve(resolveContext, template.value ?? '#ARGUMENT#')},'
+      yield* '${context.parameter}: ${context.resolve(resolveContext, template.value ?? '#${ContextValueKeys.argument}#')},'
           .split(r'\r?\n');
     }
 
