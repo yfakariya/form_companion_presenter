@@ -57,8 +57,9 @@ class Config {
   /// requires them to describe many imports with avoiding name conflicts.
   bool get asPart => _underlying[asPartKey] == true;
 
-  /// Whether the `#ITEM_VALUE_STRING#` macro uses `Enum.name` extension property
-  /// instead of `Enum.toString()` method for enum items.
+  /// Whether the [ContextValueKeys.itemValueString] macro uses
+  /// [EnumName.name] extension property instead of [Enum.toString()] method
+  /// for enum items.
   ///
   /// [version] must be version of target library to be processed.
   bool getUsesEnumName(LibraryLanguageVersion version) {
@@ -107,16 +108,7 @@ class Config {
   ///
   /// Note that each templates can contain any context macros.
   ///
-  /// Built-in named templates are:
-  /// * `label_template`. It is for `labelText` of `InputDecoration`,
-  ///   and be intended to provide L10N extension point for labels.
-  ///   Default is `#PROPERTY#.name`.
-  /// * `hint_template`. It is for `hintText` of `InputDecoration`,
-  ///   and be intended to provide L10N extension point for labels.
-  ///   Default is `null`.
-  /// * `item_widget_template`. It is for `child` of element of `items` or
-  ///   `options, and be intended to provide L10N extension point.
-  ///   Default is `Text(#ITEM_VALUE#)`.
+  /// See build.yaml in package root directory for built-in named templates.
   NamedTemplates get namedTemplates {
     if (_materializedNamedTemplates == null) {
       final dynamic rawNamedTemplates = _underlying[_namedTemplatesKey];
@@ -147,27 +139,7 @@ class Config {
   ///
   /// Note that each templates can contain any context macros and named templates.
   ///
-  /// Built-in argument templates are:
-  /// * For defaults (all form fields even if the parameter is specified in `argument_templates`):
-  ///   * `autovalidateMode`:
-  ///     * `#AUTO_VALIDATE_MODE#`
-  ///     * It is configured `AutovalidateMode`.
-  ///   * `decoration`:
-  ///     * `#ARGUMENT# ?? #DEFAULT_VALUE_COPY_OR_NEW#(labelText: #LABEL_TEMPLATE#, hintText: #HINT_TEMPLATE#)`
-  ///     * It enables specifying custom `InputDecoration` respecting the default
-  ///       value which is defined in form field's constructor parameter.
-  /// * For `DropdownButtonFormField` and `FormBuilderDropdown`:
-  ///   * `items_item_template` (item template for `items`):
-  ///     * 'DropdownMenuItem<#FIELD_VALUE_ITEM_TYPE#>(value: #ITEM_VALUE#, child: #ITEM_WIDGET_TEMPLATE#)`
-  ///     * It enables customize `DropdownMenuItem` fully, but you can customize
-  ///       partially for its widget with `item_widget_template` named template.
-  ///   * `onChanged`: `#ARGUMENT# ?? (_) {}`
-  /// * For `FormBuilderCheckboxGroup`, `FormBuilderFilterChip`,
-  ///   `FormBuilderRadioGroup`, and `FormBuilderSegmentedControl`:
-  ///   * `options_item_template` (item template for `options`):
-  ///     * `FormBuilderFieldOption<#FIELD_VALUE_ITEM_TYPE#>(value: #ITEM_VALUE#, child: #ITEM_WIDGET_TEMPLATE#)`
-  ///     * It enables customize `FormBuilderFieldOption` fully, but you can customize
-  ///       partially for its widget with `item_widget_template` named template.
+  /// See build.yaml in package root directory for built-in argument templates.
   ArgumentTemplates get argumentTemplates {
     if (_materializedItemTemplates == null) {
       final dynamic rawItemTemplates = _underlying[_argumentTemplatesKey];

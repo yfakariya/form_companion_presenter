@@ -11,3 +11,5 @@ targets:
           include:
             - test/src/*
             - test/src/**/*
+        options:
+          as_part: true

@@ -64,7 +64,12 @@ Iterable<String> emitGlobal(
     yield '';
   }
 
-  final sortedImports = [...data.imports, _formCompanionPresenterImport]
+  // For as_part mode, importing 'form_companion_presenter' is not required
+  // because source file should have @FormCompanion,
+  // which is declared in 'form_companion_presenter' itself.
+  final sortedImports = (config.asPart
+      ? data.imports
+      : [...data.imports, _formCompanionPresenterImport])
     ..sort((l, r) => l.library.compareTo(r.library));
 
   final dartImports =
@@ -101,6 +106,11 @@ Iterable<String> emitGlobal(
   }
 
   for (final import in relativeImports) {
+    if (config.asPart && import.library == sourceLibrary.source.shortName) {
+      // For as_part mode, importing parent file is not required obviously.
+      continue;
+    }
+
     yield* _emitImport(import, config.asPart);
   }
 }

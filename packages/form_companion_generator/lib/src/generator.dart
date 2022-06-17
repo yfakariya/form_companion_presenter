@@ -15,10 +15,6 @@ import 'model.dart';
 import 'node_provider.dart';
 import 'parser.dart';
 
-// TODO(yfakariya): Integration testing of generator.
-// TODO(yfakariya): Integration testing via build_runner.
-// TODO(yfakariya): Integration testing which runs generated codes.
-
 /// [Generator] for `@formCompanion`.
 @sealed
 class CompanionGenerator extends Generator {
