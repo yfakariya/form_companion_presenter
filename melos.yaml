@@ -19,7 +19,7 @@ scripts:
       ignore: dev_env
 
   test:
-    run: melos run test:flutter --no-select && melos run test:dart --no-select
+    run: melos run test:flutter --no-select && melos run test:dart --no-select && melos run test:grind --no-select
     description: Run Flutter tests for a specific package in this project.
 
   test:flutter:
@@ -30,6 +30,15 @@ scripts:
       dir-exists: test
       ignore:
         - 'form_companion_generator_test_targets'
+
+  test:grind:
+    run: melos exec -c 1 --fail-fast -- grind 
+    description: Run grind tests for a specific package in this project.
+    select-package:
+      flutter: true
+      dir-exists: tool
+      ignore:
+        - 'form_companion_presenter_examples'
 
   test:dart:
     run: melos exec -c 1 --fail-fast -- fvm dart test --reporter=expanded --coverage=coverage

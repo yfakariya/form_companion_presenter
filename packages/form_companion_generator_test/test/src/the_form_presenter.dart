@@ -3,9 +3,13 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+/* #PRE_IMPORT# */
 import 'package:form_companion_generator_test_targets/enum.dart';
 import 'package:form_companion_presenter/form_companion_annotation.dart';
 import 'package:form_companion_presenter/form_companion_presenter.dart';
+/* #POST_IMPORT# */
+
+/* #PART# */
 
 @formCompanion
 class TheFormPresenter with CompanionPresenterMixin, FormCompanionMixin {

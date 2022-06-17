@@ -27,3 +27,6 @@
 .dart_tool/
 .packages
 build/
+
+test/src/as_part/
+test/src/not_as_part/
