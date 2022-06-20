@@ -649,10 +649,8 @@ Future<void> main() async {
             "// import 'package:flutter/services.dart' show MaxLengthEnforcement, TextCapitalization, TextInputAction, TextInputFormatter, TextInputType;",
             "// import 'package:flutter/widgets.dart' show AutovalidateMode, BuildContext, FocusNode, Icon, Localizations, RouteSettings, TextEditingController, TransitionBuilder, Widget;",
             "// import 'package:flutter_form_builder/flutter_form_builder.dart' show FormBuilderDateTimePicker, InputType, ValueTransformer;",
-            "// import 'package:form_companion_presenter/form_companion_presenter.dart';",
             "// import 'package:intl/intl.dart' show DateFormat;",
             '',
-            "// import 'form_fields.dart';"
           ],
         );
       });
