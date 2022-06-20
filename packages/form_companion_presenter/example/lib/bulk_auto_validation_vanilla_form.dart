@@ -64,6 +64,8 @@ class _BulkAutoValidationVanillaFormAccountPane extends ConsumerWidget {
           presenter.fields.id(
             context,
             decoration: InputDecoration(
+              labelText: LocaleKeys.id_label.tr(),
+              hintText: LocaleKeys.id_hint.tr(),
               suffix: AsyncValidationIndicator(
                 presenter: presenter,
                 propertyName: 'id',

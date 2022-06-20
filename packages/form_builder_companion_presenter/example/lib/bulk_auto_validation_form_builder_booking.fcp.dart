@@ -236,6 +236,8 @@ class $BulkAutoValidationFormBuilderBookingPresenterFieldFactory {
     RouteSettings? routeSettings,
     String? saveText,
     bool useRootNavigator = true,
+    bool allowClear = false,
+    Widget? clearIcon,
   }) {
     final property = _presenter.stay;
     return FormBuilderDateRangePicker(
@@ -301,6 +303,8 @@ class $BulkAutoValidationFormBuilderBookingPresenterFieldFactory {
       routeSettings: routeSettings,
       saveText: saveText,
       useRootNavigator: useRootNavigator,
+      allowClear: allowClear,
+      clearIcon: clearIcon,
     );
   }
 
@@ -566,13 +570,10 @@ class $BulkAutoValidationFormBuilderBookingPresenterFieldFactory {
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))!,
       name: property.name,
-      options: property
-              .getFieldValue(Localizations.maybeLocaleOf(context) ??
-                  const Locale('en', 'US'))
-              ?.map((x) => FormBuilderChipOption<MealType>(
-                  value: x, child: Text('mealOffers.${x.name}'.tr())))
-              .toList() ??
-          [],
+      options: [MealType.vegan, MealType.halal]
+          .map((x) => FormBuilderChipOption<MealType>(
+              value: x, child: Text('mealOffers.${x.name}'.tr())))
+          .toList(),
       alignment: alignment,
       avatarBorder: avatarBorder,
       backgroundColor: backgroundColor,
@@ -810,7 +811,7 @@ class $BulkAutoValidationFormBuilderBookingPresenterFieldFactory {
       name: property.name,
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(
-          Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))!,
+          Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       decoration: decoration ??
           const InputDecoration().copyWith(
               labelText: LocaleKeys.preferredPrice_label.tr(),
