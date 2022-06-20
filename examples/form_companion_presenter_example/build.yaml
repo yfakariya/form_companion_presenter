@@ -34,7 +34,7 @@ targets:
                 LocaleKeys: 'package:form_companion_presenter_examples/l10n/locale_keys.g.dart'
                 StringTranslateExtension: 'package:easy_localization/easy_localization.dart'
             item_widget_template:
-              template: "Text('#PROPERTY_NAME#_${#ITEM_VALUE_STRING#}'.tr())"
+              template: "Text('#PROPERTY_NAME#.${#ITEM_VALUE_STRING#}'.tr())"
               imports:
                 LocaleKeys: 'package:form_companion_presenter_examples/l10n/locale_keys.g.dart'
                 StringTranslateExtension: 'package:easy_localization/easy_localization.dart'

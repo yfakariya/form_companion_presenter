@@ -49,10 +49,10 @@
     "gender": {
         "label": "性別 *",
         "hint": "性別を選択してください。",
-        "enumNotKnown": "不明",
-        "enumMale": "男性",
-        "enumFemale": "女性",
-        "enumNotApplicable": "N/A"
+        "notKnown": "不明",
+        "male": "男性",
+        "female": "女性",
+        "notApplicable": "N/A"
     },
     "age": {
         "label": "年齢 *",

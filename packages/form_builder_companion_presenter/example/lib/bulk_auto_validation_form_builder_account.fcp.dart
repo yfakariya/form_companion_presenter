@@ -418,7 +418,7 @@ class $BulkAutoValidationFormBuilderAccountPresenterFieldFactory {
       focusNode: focusNode,
       items: [Gender.notKnown, Gender.male, Gender.female, Gender.notApplicable]
           .map((x) => DropdownMenuItem<Gender>(
-              value: x, child: Text('gender_${x.name}'.tr())))
+              value: x, child: Text('gender.${x.name}'.tr())))
           .toList(),
       isExpanded: isExpanded,
       isDense: isDense,
@@ -619,7 +619,7 @@ class $BulkAutoValidationFormBuilderAccountPresenterFieldFactory {
               .getFieldValue(Localizations.maybeLocaleOf(context) ??
                   const Locale('en', 'US'))
               ?.map((x) => FormBuilderChipOption<Region>(
-                  value: x, child: Text('preferredRegions_${x.name}'.tr())))
+                  value: x, child: Text('preferredRegions.${x.name}'.tr())))
               .toList() ??
           [],
       alignment: alignment,
