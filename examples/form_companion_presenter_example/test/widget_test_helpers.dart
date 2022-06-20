@@ -150,7 +150,7 @@ void setAsyncValidationFutureFactory(
   Future<String?> Function(Duration, String? Function()) factory,
 ) {
   readStateControllerFromProvider(tester, asyncValidationFutureFactory).state =
-      factory;
+      Waiter(factory);
 }
 
 void verifyNoValidationErrors(WidgetTester tester) => expect(
