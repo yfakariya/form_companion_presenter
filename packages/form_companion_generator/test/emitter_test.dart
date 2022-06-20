@@ -2421,6 +2421,8 @@ String formBuilderDateRangePickerFactory(
     RouteSettings? routeSettings,
     String? saveText,
     bool useRootNavigator = true,
+    bool allowClear = false,
+    Widget? clearIcon,
   }) {
     final property = _presenter.$propertyName;
     return FormBuilderDateRangePicker(
@@ -2482,6 +2484,8 @@ String formBuilderDateRangePickerFactory(
       routeSettings: routeSettings,
       saveText: saveText,
       useRootNavigator: useRootNavigator,
+      allowClear: allowClear,
+      clearIcon: clearIcon,
     );
   }''';
 
@@ -2917,7 +2921,7 @@ String formBuilderRangeSliderFactory(
       key: key,
       name: property.name,
       validator: property.getValidator(context),
-      initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))!,
+      initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       decoration: decoration ?? const InputDecoration().copyWith(labelText: property.name, hintText: null),
       onChanged: onChanged,
       valueTransformer: valueTransformer,
