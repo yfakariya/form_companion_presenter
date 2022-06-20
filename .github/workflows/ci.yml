@@ -69,3 +69,12 @@ jobs:
 
       - run: fvm flutter test --reporter=expanded --coverage
         working-directory: packages/form_companion_presenter
+
+      - run: fvm dart test --reporter=expanded --coverage=coverage
+        working-directory: packages/form_companion_generator
+
+      - run: grind
+        working-directory: packages/form_companion_generator_test
+
+      - run: fvm flutter test --reporter=expanded --coverage
+        working-directory: examples/form_companion_presenter_example
