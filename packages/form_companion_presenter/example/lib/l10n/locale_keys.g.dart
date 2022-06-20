@@ -35,10 +35,8 @@ abstract class  LocaleKeys {
   static const name = 'name';
   static const gender_label = 'gender.label';
   static const gender_hint = 'gender.hint';
-  static const gender_enumNotKnown = 'gender.enumNotKnown';
-  static const gender_enumMale = 'gender.enumMale';
-  static const gender_enumFemale = 'gender.enumFemale';
-  static const gender_enumNotApplicable = 'gender.enumNotApplicable';
+  static const gender_notKnown = 'gender.notKnown';
+  static const gender_notApplicable = 'gender.notApplicable';
   static const gender = 'gender';
   static const age_label = 'age.label';
   static const age_hint = 'age.hint';

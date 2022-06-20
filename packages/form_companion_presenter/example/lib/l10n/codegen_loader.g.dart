@@ -65,10 +65,10 @@ class CodegenLoader extends AssetLoader{
   "gender": {
     "label": "Sex *",
     "hint": "Select your sex.",
-    "enumNotKnown": "Not known",
-    "enumMale": "Male",
-    "enumFemale": "Female",
-    "enumNotApplicable": "N/A"
+    "notKnown": "Not known",
+    "male": "Male",
+    "female": "Female",
+    "notApplicable": "N/A"
   },
   "age": {
     "label": "Age *",
@@ -194,10 +194,10 @@ static const Map<String,dynamic> ja = {
   "gender": {
     "label": "性別 *",
     "hint": "性別を選択してください。",
-    "enumNotKnown": "不明",
-    "enumMale": "男性",
-    "enumFemale": "女性",
-    "enumNotApplicable": "N/A"
+    "notKnown": "不明",
+    "male": "男性",
+    "female": "女性",
+    "notApplicable": "N/A"
   },
   "age": {
     "label": "年齢 *",

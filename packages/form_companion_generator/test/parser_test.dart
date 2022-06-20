@@ -1997,19 +1997,15 @@ Future<void> main() async {
         expect(result.fieldAutovalidateMode, isNull);
       }
 
-      if (asPart) {
-        expect(result.imports, isEmpty);
-      } else {
-        assertImports(
-          result.imports,
-          _merge([
-            ...isFormBuilder
-                ? _expectedImports['FormBuilderTextField']!
-                : _expectedImports['TextFormField']!,
-            ExpectedImport('presenter.dart'),
-          ]),
-        );
-      }
+      assertImports(
+        result.imports,
+        _merge([
+          ...isFormBuilder
+              ? _expectedImports['FormBuilderTextField']!
+              : _expectedImports['TextFormField']!,
+          ExpectedImport('presenter.dart'),
+        ]),
+      );
     }
 
     test(

@@ -486,7 +486,7 @@ class $BookingPresenterTemplateFieldFactory {
       name: property.name,
       options: [RoomType.standard, RoomType.delux, RoomType.suite]
           .map((x) => FormBuilderFieldOption<RoomType>(
-              value: x, child: Text('roomType_${x.name}'.tr())))
+              value: x, child: Text('roomType.${x.name}'.tr())))
           .toList(),
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
@@ -570,7 +570,7 @@ class $BookingPresenterTemplateFieldFactory {
               .getFieldValue(Localizations.maybeLocaleOf(context) ??
                   const Locale('en', 'US'))
               ?.map((x) => FormBuilderChipOption<MealType>(
-                  value: x, child: Text('mealOffers_${x.name}'.tr())))
+                  value: x, child: Text('mealOffers.${x.name}'.tr())))
               .toList() ??
           [],
       alignment: alignment,

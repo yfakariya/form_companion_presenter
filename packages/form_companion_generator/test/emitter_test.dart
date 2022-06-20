@@ -649,10 +649,8 @@ Future<void> main() async {
             "// import 'package:flutter/services.dart' show MaxLengthEnforcement, TextCapitalization, TextInputAction, TextInputFormatter, TextInputType;",
             "// import 'package:flutter/widgets.dart' show AutovalidateMode, BuildContext, FocusNode, Icon, Localizations, RouteSettings, TextEditingController, TransitionBuilder, Widget;",
             "// import 'package:flutter_form_builder/flutter_form_builder.dart' show FormBuilderDateTimePicker, InputType, ValueTransformer;",
-            "// import 'package:form_companion_presenter/form_companion_presenter.dart';",
             "// import 'package:intl/intl.dart' show DateFormat;",
             '',
-            "// import 'form_fields.dart';"
           ],
         );
       });
@@ -1719,6 +1717,12 @@ extension \$TestFieldFactoryExtension on Test {
         library.typeProvider.listType(
           nullableStringType,
         ),
+        library.typeProvider.listType(
+          myEnumType,
+        ),
+        library.typeProvider.listType(
+          nullableMyEnumType,
+        ),
       ]) {
         test(
           'options of $type',
@@ -1931,12 +1935,15 @@ String itemsExpression(
       return "property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))?.map((x) => $itemWidgetType<$fieldValueType>(value: x, child: Text(x ?? ''))).toList() ?? []";
     case 'String':
       return "property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))?.map((x) => $itemWidgetType<$fieldValueType>(value: x, child: Text(x))).toList() ?? []";
+    case 'MyEnum':
+      return '[MyEnum.one, MyEnum.two].map((x) => $itemWidgetType<$fieldValueType>(value: x, child: Text(x.$enumToString))).toList()';
+    case 'MyEnum?':
+      return "[MyEnum.one, MyEnum.two, null].map((x) => $itemWidgetType<$fieldValueType>(value: x, child: Text(x?.$enumToString ?? ''))).toList()";
     default:
-      final toString = fieldValueType == 'MyEnum' ? enumToString : 'toString()';
       if (fieldValueType.endsWith('?')) {
-        return "property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))?.map((x) => $itemWidgetType<$fieldValueType>(value: x, child: Text(x?.$toString ?? ''))).toList() ?? []";
+        return "property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))?.map((x) => $itemWidgetType<$fieldValueType>(value: x, child: Text(x?.toString() ?? ''))).toList() ?? []";
       } else {
-        return "property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))?.map((x) => $itemWidgetType<$fieldValueType>(value: x, child: Text(x.$toString))).toList() ?? []";
+        return "property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))?.map((x) => $itemWidgetType<$fieldValueType>(value: x, child: Text(x.toString()))).toList() ?? []";
       }
   }
 }
@@ -2414,6 +2421,8 @@ String formBuilderDateRangePickerFactory(
     RouteSettings? routeSettings,
     String? saveText,
     bool useRootNavigator = true,
+    bool allowClear = false,
+    Widget? clearIcon,
   }) {
     final property = _presenter.$propertyName;
     return FormBuilderDateRangePicker(
@@ -2475,6 +2484,8 @@ String formBuilderDateRangePickerFactory(
       routeSettings: routeSettings,
       saveText: saveText,
       useRootNavigator: useRootNavigator,
+      allowClear: allowClear,
+      clearIcon: clearIcon,
     );
   }''';
 
@@ -2910,7 +2921,7 @@ String formBuilderRangeSliderFactory(
       key: key,
       name: property.name,
       validator: property.getValidator(context),
-      initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))!,
+      initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       decoration: decoration ?? const InputDecoration().copyWith(labelText: property.name, hintText: null),
       onChanged: onChanged,
       valueTransformer: valueTransformer,

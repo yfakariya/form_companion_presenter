@@ -368,7 +368,7 @@ class $BulkAutoValidationVanillaFormAccountPresenterFieldFactory {
       key: _presenter.getKey(property.name, context),
       items: [Gender.notKnown, Gender.male, Gender.female, Gender.notApplicable]
           .map((x) => DropdownMenuItem<Gender>(
-              value: x, child: Text('gender_${x.name}'.tr())))
+              value: x, child: Text('gender.${x.name}'.tr())))
           .toList(),
       selectedItemBuilder: selectedItemBuilder,
       value: property.getFieldValue(

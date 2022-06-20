@@ -49,10 +49,10 @@
     "gender": {
         "label": "Sex *",
         "hint": "Select your sex.",
-        "enumNotKnown": "Not known",
-        "enumMale": "Male",
-        "enumFemale": "Female",
-        "enumNotApplicable": "N/A"
+        "notKnown": "Not known",
+        "male": "Male",
+        "female": "Female",
+        "notApplicable": "N/A"
     },
     "age": {
         "label": "Age *",

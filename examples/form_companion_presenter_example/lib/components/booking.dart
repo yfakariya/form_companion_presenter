@@ -118,7 +118,7 @@ class _BookingPaneTemplate extends ConsumerWidget {
           presenter.fields.preferredPrice(
             context,
             min: 0,
-            max: 1000,
+            max: 1000000,
           ),
           presenter.fields.note(
             context,
