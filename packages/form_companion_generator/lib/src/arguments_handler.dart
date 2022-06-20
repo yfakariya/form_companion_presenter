@@ -76,17 +76,23 @@ class ArgumentsHandler {
   }
 
   static String? _tryGetConstantItemValues(PropertyDefinition property) {
-    final type = property.fieldType;
-    if (type.isEnumType) {
-      final members = (type.rawType.element! as ClassElement)
+    String? getEnumConstantItemValues(GenericType itemType) {
+      final members = (itemType.rawType.element! as ClassElement)
           .fields
-          .where((f) => f.type == type.rawType && f.isConst && f.isStatic)
+          .where((f) => f.type == itemType.rawType && f.isConst && f.isStatic)
           .map(
             (f) =>
                 '${f.type.getDisplayString(withNullability: false)}.${f.name}',
           )
           .join(', ');
-      return type.isNullable ? '[$members, null]' : '[$members]';
+      return itemType.isNullable ? '[$members, null]' : '[$members]';
+    }
+
+    final type = property.fieldType;
+    if (type.isEnumType) {
+      return getEnumConstantItemValues(type);
+    } else if (type.collectionItemType?.isEnumType ?? false) {
+      return getEnumConstantItemValues(type.collectionItemType!);
     } else if (type.isBoolType) {
       return type.isNullable ? '[true, false, null]' : '[true, false]';
     } else {

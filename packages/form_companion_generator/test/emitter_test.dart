@@ -1719,6 +1719,12 @@ extension \$TestFieldFactoryExtension on Test {
         library.typeProvider.listType(
           nullableStringType,
         ),
+        library.typeProvider.listType(
+          myEnumType,
+        ),
+        library.typeProvider.listType(
+          nullableMyEnumType,
+        ),
       ]) {
         test(
           'options of $type',
@@ -1931,12 +1937,15 @@ String itemsExpression(
       return "property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))?.map((x) => $itemWidgetType<$fieldValueType>(value: x, child: Text(x ?? ''))).toList() ?? []";
     case 'String':
       return "property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))?.map((x) => $itemWidgetType<$fieldValueType>(value: x, child: Text(x))).toList() ?? []";
+    case 'MyEnum':
+      return '[MyEnum.one, MyEnum.two].map((x) => $itemWidgetType<$fieldValueType>(value: x, child: Text(x.$enumToString))).toList()';
+    case 'MyEnum?':
+      return "[MyEnum.one, MyEnum.two, null].map((x) => $itemWidgetType<$fieldValueType>(value: x, child: Text(x?.$enumToString ?? ''))).toList()";
     default:
-      final toString = fieldValueType == 'MyEnum' ? enumToString : 'toString()';
       if (fieldValueType.endsWith('?')) {
-        return "property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))?.map((x) => $itemWidgetType<$fieldValueType>(value: x, child: Text(x?.$toString ?? ''))).toList() ?? []";
+        return "property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))?.map((x) => $itemWidgetType<$fieldValueType>(value: x, child: Text(x?.toString() ?? ''))).toList() ?? []";
       } else {
-        return "property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))?.map((x) => $itemWidgetType<$fieldValueType>(value: x, child: Text(x.$toString))).toList() ?? []";
+        return "property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))?.map((x) => $itemWidgetType<$fieldValueType>(value: x, child: Text(x.toString()))).toList() ?? []";
       }
   }
 }
