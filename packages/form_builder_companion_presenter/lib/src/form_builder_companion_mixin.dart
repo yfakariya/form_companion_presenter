@@ -17,13 +17,27 @@ class _FormBuilderStateAdapter implements FormStateAdapter {
   @override
   Locale get locale => _locale;
 
+  @override
+  bool get mounted => _state.mounted;
+
   _FormBuilderStateAdapter(this._state, this._locale);
 
   @override
-  bool validate() => _state.validate();
+  bool validate() {
+    if (!mounted) {
+      // There are not widgets to show the validation error anyway.
+      return true;
+    }
+
+    return _state.validate();
+  }
 
   @override
-  void save() => _state.save();
+  void save() {
+    if (mounted) {
+      _state.save();
+    }
+  }
 }
 
 /// Extends [CompanionPresenterFeatures] for [FormBuilder] instead of [Form].
@@ -48,10 +62,18 @@ class FormBuilderCompanionFeatures
       // Only re-evaluate target field.
       final fieldState =
           _presenter._maybeFormStateOf(context)?._state.fields[name];
-      return (result, error) => fieldState?.validate();
+      return (result, error) {
+        if (fieldState?.mounted ?? false) {
+          fieldState?.validate();
+        }
+      };
     } else {
       // Re-evaluate all fields including submit button availability.
-      return (result, error) => formState.validate();
+      return (result, error) {
+        if (formState.mounted) {
+          formState.validate();
+        }
+      };
     }
   }
 

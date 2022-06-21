@@ -13,13 +13,27 @@ class _FormStateAdapter implements FormStateAdapter {
   @override
   Locale get locale => _locale;
 
+  @override
+  bool get mounted => _state.mounted;
+
   _FormStateAdapter(this._state, this._locale);
 
   @override
-  bool validate() => _state.validate();
+  bool validate() {
+    if (!mounted) {
+      // There are not widgets to show the validation error anyway.
+      return true;
+    }
+
+    return _state.validate();
+  }
 
   @override
-  void save() => _state.save();
+  void save() {
+    if (mounted) {
+      _state.save();
+    }
+  }
 }
 
 /// Extended mixin of [CompanionPresenterFeatures] for vanilla [Form].
@@ -48,7 +62,11 @@ class FormCompanionFeatures
           _presenter._fieldKeys[name]?.currentState?.validate();
     } else {
       // Re-evaluate all fields including submit button availability.
-      return (result, error) => state.validate();
+      return (result, error) {
+        if (state.mounted) {
+          state.validate();
+        }
+      };
     }
   }
 }
