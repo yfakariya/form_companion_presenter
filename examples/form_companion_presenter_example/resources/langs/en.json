@@ -121,5 +121,10 @@
         "title": "I read terms of use (*) and accept it.",
         "message": "Accepting the terms of use is required."
     },
+    "donation": {
+        "label": "Donation",
+        "hint": "Donate some money.",
+        "validationError": "Value is not valid currency format."
+    },
     "submit": "Submit"
 }

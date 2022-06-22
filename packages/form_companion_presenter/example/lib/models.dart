@@ -101,6 +101,7 @@ class Booking with _$Booking {
     required int babyBeds,
     required bool smoking,
     required double price,
+    required double donation,
     required String note,
   }) = BookingRegistered;
 
@@ -149,6 +150,11 @@ class Booking with _$Booking {
 
   double? get price => maybeMap(
         registered: (x) => x.price,
+        orElse: () => null,
+      );
+
+  double? get donation => maybeMap(
+        registered: (x) => x.donation,
         orElse: () => null,
       );
 

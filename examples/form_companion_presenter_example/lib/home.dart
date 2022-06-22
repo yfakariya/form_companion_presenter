@@ -58,6 +58,13 @@ class HomePage extends Screen {
               _cell('Persons', '${bookingState.persons}'),
               _cell('Baby beds', '${bookingState.babyBeds}'),
               _cell('Price', '${bookingState.price}'),
+              _cell(
+                'Donation',
+                bookingState.donation == null
+                    ? 'null'
+                    : NumberFormat.decimalPattern()
+                        .format(bookingState.donation),
+              ),
               _cell('Note', '${bookingState.note}'),
             ],
           ),

@@ -137,6 +137,11 @@ class CodegenLoader extends AssetLoader{
     "title": "I read terms of use (*) and accept it.",
     "message": "Accepting the terms of use is required."
   },
+  "donation": {
+    "label": "Donation",
+    "hint": "Donate some money.",
+    "validationError": "Value is not valid currency format."
+  },
   "submit": "Submit"
 };
 static const Map<String,dynamic> ja = {
@@ -261,6 +266,11 @@ static const Map<String,dynamic> ja = {
   "acceptsTermsOfUse": {
     "title": "ご利用に関する注意事項(*)を読んだ上で同意します。",
     "message": "ご利用に関する注意事項に同意していただく必要があります。"
+  },
+  "donation": {
+    "label": "寄付",
+    "hint": "お気持ちだけでも結構です。お願いいたします。",
+    "validationError": "金額として正しくありません。"
   },
   "submit": "送信"
 };

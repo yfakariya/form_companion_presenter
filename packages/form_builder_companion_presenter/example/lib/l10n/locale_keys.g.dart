@@ -91,6 +91,10 @@ abstract class  LocaleKeys {
   static const acceptsTermsOfUse_title = 'acceptsTermsOfUse.title';
   static const acceptsTermsOfUse_message = 'acceptsTermsOfUse.message';
   static const acceptsTermsOfUse = 'acceptsTermsOfUse';
+  static const donation_label = 'donation.label';
+  static const donation_hint = 'donation.hint';
+  static const donation_validationError = 'donation.validationError';
+  static const donation = 'donation';
   static const submit = 'submit';
 
 }
