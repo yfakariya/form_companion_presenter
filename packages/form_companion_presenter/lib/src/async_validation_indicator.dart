@@ -43,6 +43,7 @@ class AsyncValidationIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final indicatorSize =
+        // We use material2 theme to support flutter 2.x
         height ?? Theme.of(context).textTheme.subtitle1?.height ?? 16;
     return ValueListenableBuilder<bool>(
       valueListenable: _hasPendingAsyncValidationListener,
