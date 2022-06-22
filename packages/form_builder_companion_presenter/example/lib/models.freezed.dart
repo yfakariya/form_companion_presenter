@@ -408,6 +408,7 @@ mixin _$Booking {
             int babyBeds,
             bool smoking,
             double price,
+            double donation,
             String note)
         registered,
   }) =>
@@ -426,6 +427,7 @@ mixin _$Booking {
             int babyBeds,
             bool smoking,
             double price,
+            double donation,
             String note)?
         registered,
   }) =>
@@ -444,6 +446,7 @@ mixin _$Booking {
             int babyBeds,
             bool smoking,
             double price,
+            double donation,
             String note)?
         registered,
     required TResult orElse(),
@@ -537,6 +540,7 @@ class _$BookingEmpty extends BookingEmpty {
             int babyBeds,
             bool smoking,
             double price,
+            double donation,
             String note)
         registered,
   }) {
@@ -558,6 +562,7 @@ class _$BookingEmpty extends BookingEmpty {
             int babyBeds,
             bool smoking,
             double price,
+            double donation,
             String note)?
         registered,
   }) {
@@ -579,6 +584,7 @@ class _$BookingEmpty extends BookingEmpty {
             int babyBeds,
             bool smoking,
             double price,
+            double donation,
             String note)?
         registered,
     required TResult orElse(),
@@ -642,6 +648,7 @@ abstract class _$$BookingRegisteredCopyWith<$Res> {
       int babyBeds,
       bool smoking,
       double price,
+      double donation,
       String note});
 }
 
@@ -668,6 +675,7 @@ class __$$BookingRegisteredCopyWithImpl<$Res>
     Object? babyBeds = freezed,
     Object? smoking = freezed,
     Object? price = freezed,
+    Object? donation = freezed,
     Object? note = freezed,
   }) {
     return _then(_$BookingRegistered(
@@ -711,6 +719,10 @@ class __$$BookingRegisteredCopyWithImpl<$Res>
           ? _value.price
           : price // ignore: cast_nullable_to_non_nullable
               as double,
+      donation: donation == freezed
+          ? _value.donation
+          : donation // ignore: cast_nullable_to_non_nullable
+              as double,
       note: note == freezed
           ? _value.note
           : note // ignore: cast_nullable_to_non_nullable
@@ -733,6 +745,7 @@ class _$BookingRegistered extends BookingRegistered {
       required this.babyBeds,
       required this.smoking,
       required this.price,
+      required this.donation,
       required this.note})
       : _mealOffers = mealOffers,
         super._();
@@ -763,11 +776,13 @@ class _$BookingRegistered extends BookingRegistered {
   @override
   final double price;
   @override
+  final double donation;
+  @override
   final String note;
 
   @override
   String toString() {
-    return 'Booking.registered(bookingId: $bookingId, userId: $userId, stay: $stay, specialOfferDate: $specialOfferDate, roomType: $roomType, mealOffers: $mealOffers, persons: $persons, babyBeds: $babyBeds, smoking: $smoking, price: $price, note: $note)';
+    return 'Booking.registered(bookingId: $bookingId, userId: $userId, stay: $stay, specialOfferDate: $specialOfferDate, roomType: $roomType, mealOffers: $mealOffers, persons: $persons, babyBeds: $babyBeds, smoking: $smoking, price: $price, donation: $donation, note: $note)';
   }
 
   @override
@@ -787,6 +802,7 @@ class _$BookingRegistered extends BookingRegistered {
             const DeepCollectionEquality().equals(other.babyBeds, babyBeds) &&
             const DeepCollectionEquality().equals(other.smoking, smoking) &&
             const DeepCollectionEquality().equals(other.price, price) &&
+            const DeepCollectionEquality().equals(other.donation, donation) &&
             const DeepCollectionEquality().equals(other.note, note));
   }
 
@@ -803,6 +819,7 @@ class _$BookingRegistered extends BookingRegistered {
       const DeepCollectionEquality().hash(babyBeds),
       const DeepCollectionEquality().hash(smoking),
       const DeepCollectionEquality().hash(price),
+      const DeepCollectionEquality().hash(donation),
       const DeepCollectionEquality().hash(note));
 
   @JsonKey(ignore: true)
@@ -825,11 +842,12 @@ class _$BookingRegistered extends BookingRegistered {
             int babyBeds,
             bool smoking,
             double price,
+            double donation,
             String note)
         registered,
   }) {
     return registered(bookingId, userId, stay, specialOfferDate, roomType,
-        mealOffers, persons, babyBeds, smoking, price, note);
+        mealOffers, persons, babyBeds, smoking, price, donation, note);
   }
 
   @override
@@ -847,11 +865,12 @@ class _$BookingRegistered extends BookingRegistered {
             int babyBeds,
             bool smoking,
             double price,
+            double donation,
             String note)?
         registered,
   }) {
     return registered?.call(bookingId, userId, stay, specialOfferDate, roomType,
-        mealOffers, persons, babyBeds, smoking, price, note);
+        mealOffers, persons, babyBeds, smoking, price, donation, note);
   }
 
   @override
@@ -869,13 +888,14 @@ class _$BookingRegistered extends BookingRegistered {
             int babyBeds,
             bool smoking,
             double price,
+            double donation,
             String note)?
         registered,
     required TResult orElse(),
   }) {
     if (registered != null) {
       return registered(bookingId, userId, stay, specialOfferDate, roomType,
-          mealOffers, persons, babyBeds, smoking, price, note);
+          mealOffers, persons, babyBeds, smoking, price, donation, note);
     }
     return orElse();
   }
@@ -924,6 +944,7 @@ abstract class BookingRegistered extends Booking {
       required final int babyBeds,
       required final bool smoking,
       required final double price,
+      required final double donation,
       required final String note}) = _$BookingRegistered;
   BookingRegistered._() : super._();
 
@@ -937,6 +958,7 @@ abstract class BookingRegistered extends Booking {
   int get babyBeds => throw _privateConstructorUsedError;
   bool get smoking => throw _privateConstructorUsedError;
   double get price => throw _privateConstructorUsedError;
+  double get donation => throw _privateConstructorUsedError;
   String get note => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
   _$$BookingRegisteredCopyWith<_$BookingRegistered> get copyWith =>

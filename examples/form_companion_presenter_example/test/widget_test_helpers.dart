@@ -5,16 +5,6 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:form_companion_presenter/async_validation_indicator.dart';
-import 'package:form_companion_presenter_examples/auto_validation_form_builder_account.dart';
-import 'package:form_companion_presenter_examples/auto_validation_form_builder_booking.dart';
-import 'package:form_companion_presenter_examples/auto_validation_vanilla_form.dart';
-import 'package:form_companion_presenter_examples/bulk_auto_validation_form_builder_account.dart';
-import 'package:form_companion_presenter_examples/bulk_auto_validation_form_builder_booking.dart';
-import 'package:form_companion_presenter_examples/bulk_auto_validation_vanilla_form.dart';
-import 'package:form_companion_presenter_examples/home.dart';
-import 'package:form_companion_presenter_examples/manual_validation_form_builder_account.dart';
-import 'package:form_companion_presenter_examples/manual_validation_form_builder_booking.dart';
-import 'package:form_companion_presenter_examples/manual_validation_vanilla_form.dart';
 import 'package:form_companion_presenter_examples/models.dart';
 import 'package:form_companion_presenter_examples/routes.dart';
 import 'package:form_companion_presenter_examples/validators.dart';
@@ -27,16 +17,20 @@ const causingErrorEmail = 'john@example.com';
 // helpers
 
 enum PageId {
-  home,
-  autoVanilla,
-  bulkAutoVanilla,
-  manualVanilla,
-  autoAccount,
-  bulkAutoAccount,
-  manualAccount,
-  autoBooking,
-  bulkAutoBooking,
-  manualBooking,
+  home('/'),
+  autoVanilla('/vanilla/auto/account'),
+  bulkAutoVanilla('/vanilla/bulk-auto/account'),
+  manualVanilla('/vanilla/manual/account'),
+  autoAccount('/form-builder/auto/account'),
+  bulkAutoAccount('/form-builder/bulk-auto/account'),
+  manualAccount('/form-builder/manual/account'),
+  autoBooking('/form-builder/auto/booking'),
+  bulkAutoBooking('/form-builder/bulk-auto/booking'),
+  manualBooking('/form-builder/manual/booking');
+
+  const PageId(this.path);
+
+  final String path;
 }
 
 class InputPatternDescription {
@@ -56,10 +50,7 @@ class InputPatternDescription {
   ) async {
     if (shouldSuccess) {
       // check transition
-      final pageStack =
-          readStateControllerFromProvider(tester, pagesProvider).state;
-      expect(pageStack.length, equals(1));
-      expect(pageStack[0].child, isA<HomePage>());
+      expect(router.location, '/');
     } else {
       // check validation error
       expect(
@@ -74,48 +65,8 @@ final Map<String, PageId> pageIds = {
   for (final e in PageId.values.map((e) => MapEntry(e.name, e))) e.key: e.value
 };
 
-final Map<PageId, List<MaterialPage<dynamic>>> _routeMap = {
-  PageId.home: [const MaterialPage<dynamic>(child: HomePage())],
-  PageId.autoAccount: [
-    const MaterialPage<dynamic>(child: AutoValidationFormBuilderAccountPage())
-  ],
-  PageId.autoBooking: [
-    const MaterialPage<dynamic>(child: AutoValidationFormBuilderBookingPage())
-  ],
-  PageId.autoVanilla: [
-    const MaterialPage<dynamic>(child: AutoValidationVanillaFormAccountPage())
-  ],
-  PageId.bulkAutoAccount: [
-    const MaterialPage<dynamic>(
-      child: BulkAutoValidationFormBuilderAccountPage(),
-    )
-  ],
-  PageId.bulkAutoBooking: [
-    const MaterialPage<dynamic>(
-      child: BulkAutoValidationFormBuilderBookingPage(),
-    )
-  ],
-  PageId.bulkAutoVanilla: [
-    const MaterialPage<dynamic>(
-      child: BulkAutoValidationVanillaFormAccountPage(),
-    )
-  ],
-  PageId.manualAccount: [
-    const MaterialPage<dynamic>(child: ManualValidationFormBuilderAccountPage())
-  ],
-  PageId.manualBooking: [
-    const MaterialPage<dynamic>(child: ManualValidationFormBuilderBookingPage())
-  ],
-  PageId.manualVanilla: [
-    const MaterialPage<dynamic>(child: ManualValidationVanillaFormAccountPage())
-  ],
-};
-
 /// Transits to specified screen.
-void transitToScreen(WidgetTester tester, PageId page) {
-  readStateControllerFromProvider(tester, pagesProvider).state =
-      _routeMap[page]!;
-}
+void transitToScreen(PageId page) => router.go(page.path);
 
 BuildContext getBuildContext(WidgetTester tester) => tester.element(
       find.byWidgetPredicate(
@@ -150,7 +101,7 @@ void setAsyncValidationFutureFactory(
   Future<String?> Function(Duration, String? Function()) factory,
 ) {
   readStateControllerFromProvider(tester, asyncValidationFutureFactory).state =
-      factory;
+      Waiter(factory);
 }
 
 void verifyNoValidationErrors(WidgetTester tester) => expect(

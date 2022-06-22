@@ -60,9 +60,7 @@
     },
     "preferredRegions": {
         "label": "Preferred regions",
-        "hint": "Select your preferred regions."
-    },
-    "region": {
+        "hint": "Select your preferred regions.",
         "afurika": "Afurika",
         "asia": "Asia",
         "australia": "Australia",
@@ -94,9 +92,7 @@
     },
     "mealOffers": {
         "label": "Special meal offers",
-        "hint": "For other offers, tell us with note on end of this input form."
-    },
-    "mealType": {
+        "hint": "For other offers, tell us with note on end of this input form.",
         "halal": "Halal",
         "vegan": "Vegan"
     },
@@ -124,6 +120,11 @@
     "acceptsTermsOfUse": {
         "title": "I read terms of use (*) and accept it.",
         "message": "Accepting the terms of use is required."
+    },
+    "donation": {
+        "label": "Donation",
+        "hint": "Donate some money.",
+        "validationError": "Value is not valid currency format."
     },
     "submit": "Submit"
 }

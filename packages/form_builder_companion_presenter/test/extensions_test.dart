@@ -40,6 +40,9 @@ class FixedFormStateAdapter implements FormStateAdapter {
   Locale get locale => defaultLocale;
 
   @override
+  bool get mounted => true;
+
+  @override
   void save() => _onSave();
 
   @override

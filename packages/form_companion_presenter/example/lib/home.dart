@@ -26,7 +26,7 @@ class HomePage extends Screen {
         children: [
           Text(
             LocaleKeys.home_accountHeader.tr(),
-            style: Theme.of(context).textTheme.headline6,
+            style: Theme.of(context).textTheme.titleLarge,
           ),
           const SizedBox(height: 4),
           Table(
@@ -43,7 +43,7 @@ class HomePage extends Screen {
           const SizedBox(height: 8),
           Text(
             LocaleKeys.home_bookingHeader.tr(),
-            style: Theme.of(context).textTheme.headline6,
+            style: Theme.of(context).textTheme.titleLarge,
           ),
           const SizedBox(height: 4),
           Table(
@@ -58,6 +58,13 @@ class HomePage extends Screen {
               _cell('Persons', '${bookingState.persons}'),
               _cell('Baby beds', '${bookingState.babyBeds}'),
               _cell('Price', '${bookingState.price}'),
+              _cell(
+                'Donation',
+                bookingState.donation == null
+                    ? 'null'
+                    : NumberFormat.decimalPattern()
+                        .format(bookingState.donation),
+              ),
               _cell('Note', '${bookingState.note}'),
             ],
           ),

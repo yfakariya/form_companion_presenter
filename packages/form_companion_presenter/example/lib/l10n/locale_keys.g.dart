@@ -43,14 +43,13 @@ abstract class  LocaleKeys {
   static const age = 'age';
   static const preferredRegions_label = 'preferredRegions.label';
   static const preferredRegions_hint = 'preferredRegions.hint';
+  static const preferredRegions_afurika = 'preferredRegions.afurika';
+  static const preferredRegions_asia = 'preferredRegions.asia';
+  static const preferredRegions_australia = 'preferredRegions.australia';
+  static const preferredRegions_europe = 'preferredRegions.europe';
+  static const preferredRegions_northAmelica = 'preferredRegions.northAmelica';
+  static const preferredRegions_southAmelica = 'preferredRegions.southAmelica';
   static const preferredRegions = 'preferredRegions';
-  static const region_afurika = 'region.afurika';
-  static const region_asia = 'region.asia';
-  static const region_australia = 'region.australia';
-  static const region_europe = 'region.europe';
-  static const region_northAmelica = 'region.northAmelica';
-  static const region_southAmelica = 'region.southAmelica';
-  static const region = 'region';
   static const booking_captionTemplate_existing = 'booking.captionTemplate.existing';
   static const booking_captionTemplate_new = 'booking.captionTemplate.new';
   static const booking_captionTemplate = 'booking.captionTemplate';
@@ -70,10 +69,9 @@ abstract class  LocaleKeys {
   static const roomType = 'roomType';
   static const mealOffers_label = 'mealOffers.label';
   static const mealOffers_hint = 'mealOffers.hint';
+  static const mealOffers_halal = 'mealOffers.halal';
+  static const mealOffers_vegan = 'mealOffers.vegan';
   static const mealOffers = 'mealOffers';
-  static const mealType_halal = 'mealType.halal';
-  static const mealType_vegan = 'mealType.vegan';
-  static const mealType = 'mealType';
   static const smoking_title = 'smoking.title';
   static const smoking_label = 'smoking.label';
   static const smoking_hint = 'smoking.hint';
@@ -93,6 +91,10 @@ abstract class  LocaleKeys {
   static const acceptsTermsOfUse_title = 'acceptsTermsOfUse.title';
   static const acceptsTermsOfUse_message = 'acceptsTermsOfUse.message';
   static const acceptsTermsOfUse = 'acceptsTermsOfUse';
+  static const donation_label = 'donation.label';
+  static const donation_hint = 'donation.hint';
+  static const donation_validationError = 'donation.validationError';
+  static const donation = 'donation';
   static const submit = 'submit';
 
 }

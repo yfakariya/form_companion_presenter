@@ -87,6 +87,9 @@ class FixedFormStateAdapter implements FormStateAdapter {
   Locale get locale => defaultLocale;
 
   @override
+  bool get mounted => true;
+
+  @override
   void save() => _onSave();
 
   @override
@@ -605,6 +608,88 @@ void main() {
       // But if the preceding validation is canceled correctly,
       // validation calls record should not be changed here.
       expect(values, equals([0, 1]));
+    });
+
+    test('validation failure on head is ignored', () async {
+      final context = DummyBuildContext();
+      final asyncOperationCompletion = Completer<void>();
+      FormFieldValidator<int?>? validator;
+
+      final values = <int?>[];
+      final target = TestPresenter(
+        properties: PropertyDescriptorsBuilder()
+          ..add<int, int>(
+            name: 'prop',
+            asyncValidatorFactories: [
+              (context) => (value, options) {
+                    values.add(value);
+
+                    try {
+                      throw Exception('DUMMY');
+                    } finally {
+                      if (!asyncOperationCompletion.isCompleted) {
+                        asyncOperationCompletion.complete();
+                      }
+                    }
+                  },
+            ],
+          ),
+        maybeFormStateOfCalled: (x) => FixedFormStateAdapter(
+          onValidate: () {
+            // Simulate validator call on callback.
+            validator!(0);
+            return true;
+          },
+        ),
+      );
+
+      validator = target.getProperty<int, int>('prop').getValidator(context);
+      expect(validator(0), isNull);
+      await asyncOperationCompletion.future;
+      // Try call following validation again
+      expect(validator(0), isNull);
+    });
+
+    test('validation failure on second is ignored', () async {
+      final context = DummyBuildContext();
+      final asyncOperationCompletion = Completer<void>();
+      FormFieldValidator<int?>? validator;
+
+      final values = <int?>[];
+      final target = TestPresenter(
+        properties: PropertyDescriptorsBuilder()
+          ..add<int, int>(
+            name: 'prop',
+            asyncValidatorFactories: [
+              (context) => (value, options) {
+                    values.add(value);
+                    return null;
+                  },
+              (context) => (value, options) {
+                    try {
+                      throw Exception('DUMMY');
+                    } finally {
+                      if (!asyncOperationCompletion.isCompleted) {
+                        asyncOperationCompletion.complete();
+                      }
+                    }
+                  }
+            ],
+          ),
+        maybeFormStateOfCalled: (x) => FixedFormStateAdapter(
+          onValidate: () {
+            // Simulate validator call on callback.
+            validator!(0);
+            return true;
+          },
+        ),
+      );
+
+      validator = target.getProperty<int, int>('prop').getValidator(context);
+      expect(validator(0), isNull);
+      await asyncOperationCompletion.future;
+      // Try call following validation again
+      expect(validator(0), isNull);
     });
 
     group('handleCanceledAsyncValidationError()', () {

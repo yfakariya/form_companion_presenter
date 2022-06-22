@@ -131,6 +131,7 @@ class _AutoValidationFormBuilderBookingPane extends ConsumerWidget {
             min: 0,
             max: 1000000,
           ),
+          presenter.fields.donation(context),
           presenter.fields.note(
             context,
             maxLines: null,
@@ -211,6 +212,38 @@ class AutoValidationFormBuilderBookingPresenter extends StateNotifier<Booking>
               ? const RangeValues(1000, 100000)
               : RangeValues(initialState.price!, initialState.price!),
         )
+        ..add<double, String>(
+          name: 'donation',
+          initialValue: state.donation,
+          // Localized converter example
+          valueConverter: StringConverter.fromCallbacks(
+            parse: (v, l, e) {
+              if (v == null) {
+                return ConversionResult(0);
+              }
+
+              late final num number;
+              try {
+                number =
+                    NumberFormat.decimalPattern(l.toLanguageTag()).parse(v);
+              } on FormatException catch (ex) {
+                return FailureResult(
+                  LocaleKeys.donation_validationError.tr(),
+                  e(v, ex, l),
+                );
+              }
+
+              return ConversionResult(number as double);
+            },
+            stringify: (v, l) {
+              if (v == 0) {
+                return '';
+              }
+
+              return NumberFormat.decimalPattern(l.toLanguageTag()).format(v);
+            },
+          ),
+        )
         ..string(
           name: 'note',
           initialValue: initialState.note,
@@ -229,6 +262,7 @@ class AutoValidationFormBuilderBookingPresenter extends StateNotifier<Booking>
     final smoking = this.smoking.value!;
     final persons = this.persons.value!;
     final babyBeds = this.babyBeds.value!;
+    final donation = this.donation.value;
     final preferredPrice = this.preferredPrice.value!;
     final note = this.note.value!;
 
@@ -243,6 +277,7 @@ class AutoValidationFormBuilderBookingPresenter extends StateNotifier<Booking>
       persons,
       babyBeds,
       preferredPrice,
+      donation,
       note,
     );
     if (result == null) {
@@ -261,12 +296,13 @@ class AutoValidationFormBuilderBookingPresenter extends StateNotifier<Booking>
       persons: persons,
       babyBeds: babyBeds,
       price: result.price,
+      donation: donation ?? 0,
       note: note,
     );
 
     // Propagate to global state.
     _read(booking.state).state = state;
-    transitToHome(_read);
+    router.go('/');
   }
 
   /// Example of business logic of submit.
@@ -287,6 +323,7 @@ class AutoValidationFormBuilderBookingPresenter extends StateNotifier<Booking>
     int persons,
     int babyBeds,
     RangeValues preferredPrice,
+    double? donation,
     String note,
   ) async {
     // Write actual registration logic via API here.

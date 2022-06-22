@@ -105,6 +105,8 @@ class _AsyncValidatorChain<T extends Object> {
 
   late final FormFieldValidator<T> _first;
 
+  var _isAsyncStarted = false;
+
   _ValidationContext get _validationContext =>
       _propertyValidationContextProvider();
   set _validationContext(_ValidationContext value) =>
@@ -236,7 +238,7 @@ class _AsyncValidatorChain<T extends Object> {
       validator: validator,
       value: value,
       locale: _locale,
-      onCompleted: (r, e) => callNext(value, r, e, isSync: false),
+      onCompleted: (r, e) => callNext(value, r, e, isSync: !_isAsyncStarted),
       failureHandler: _handleFailure,
     );
 
@@ -254,6 +256,7 @@ class _AsyncValidatorChain<T extends Object> {
 
     assert(executor.validating);
     _onAsyncValidationStarted();
+    _isAsyncStarted = true;
     // Return default 'null', which means that async invocation is in-progress.
     // The async invocation should call "onCompleted" callback in future.
     return null;

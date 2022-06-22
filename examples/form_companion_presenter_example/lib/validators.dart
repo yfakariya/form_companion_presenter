@@ -2,6 +2,7 @@
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:form_companion_presenter/form_companion_presenter.dart';
+import 'package:meta/meta.dart';
 
 // ignore: avoid_classes_with_only_static_members
 class Validator {
@@ -57,15 +58,26 @@ class Validator {
           // Injects hooks for widget testing.
           // Default factory just wait 5 seconds and call validation to show
           // behavior of async validation.
-          return container.read(asyncValidationFutureFactory)(
-            const Duration(seconds: 5),
-            validation,
-          );
+          return container.read(asyncValidationFutureFactory).run(
+                const Duration(seconds: 5),
+                validation,
+              );
         };
       };
 }
 
+// To avoid type error when we use closure.
+@visibleForTesting
+class Waiter {
+  final Future<String?> Function(Duration, String? Function()) _function;
+
+  Waiter(this._function);
+
+  Future<String?> run(Duration wait, String? Function() validator) =>
+      _function(wait, validator);
+
+  static final Waiter defaultLogic = Waiter(Future<String?>.delayed);
+}
+
 final asyncValidationFutureFactory =
-    StateProvider<Future<String?> Function(Duration, String? Function())>(
-  (_) => Future<String?>.delayed,
-);
+    StateProvider<Waiter>((_) => Waiter.defaultLogic);

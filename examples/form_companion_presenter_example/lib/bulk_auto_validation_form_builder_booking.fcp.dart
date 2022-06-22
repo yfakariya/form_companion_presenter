@@ -166,6 +166,11 @@ extension $BulkAutoValidationFormBuilderBookingPresenterPropertyExtension
       properties['preferredPrice']!
           as PropertyDescriptor<RangeValues, RangeValues>;
 
+  /// Gets a [PropertyDescriptor] of `donation` property.
+  PropertyDescriptor<double, String> get donation =>
+      // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
+      properties['donation']! as PropertyDescriptor<double, String>;
+
   /// Gets a [PropertyDescriptor] of `note` property.
   PropertyDescriptor<String, String> get note =>
       // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
@@ -236,6 +241,8 @@ class $BulkAutoValidationFormBuilderBookingPresenterFieldFactory {
     RouteSettings? routeSettings,
     String? saveText,
     bool useRootNavigator = true,
+    bool allowClear = false,
+    Widget? clearIcon,
   }) {
     final property = _presenter.stay;
     return FormBuilderDateRangePicker(
@@ -301,6 +308,8 @@ class $BulkAutoValidationFormBuilderBookingPresenterFieldFactory {
       routeSettings: routeSettings,
       saveText: saveText,
       useRootNavigator: useRootNavigator,
+      allowClear: allowClear,
+      clearIcon: clearIcon,
     );
   }
 
@@ -566,13 +575,10 @@ class $BulkAutoValidationFormBuilderBookingPresenterFieldFactory {
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))!,
       name: property.name,
-      options: property
-              .getFieldValue(Localizations.maybeLocaleOf(context) ??
-                  const Locale('en', 'US'))
-              ?.map((x) => FormBuilderChipOption<MealType>(
-                  value: x, child: Text('mealOffers.${x.name}'.tr())))
-              .toList() ??
-          [],
+      options: [MealType.vegan, MealType.halal]
+          .map((x) => FormBuilderChipOption<MealType>(
+              value: x, child: Text('mealOffers.${x.name}'.tr())))
+          .toList(),
       alignment: alignment,
       avatarBorder: avatarBorder,
       backgroundColor: backgroundColor,
@@ -810,7 +816,7 @@ class $BulkAutoValidationFormBuilderBookingPresenterFieldFactory {
       name: property.name,
       validator: property.getValidator(context),
       initialValue: property.getFieldValue(
-          Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))!,
+          Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       decoration: decoration ??
           const InputDecoration().copyWith(
               labelText: LocaleKeys.preferredPrice_label.tr(),
@@ -836,6 +842,122 @@ class $BulkAutoValidationFormBuilderBookingPresenterFieldFactory {
       maxTextStyle: maxTextStyle,
       numberFormat: numberFormat,
       shouldRequestFocus: shouldRequestFocus,
+    );
+  }
+
+  /// Gets a [FormField] for `donation` property.
+  FormBuilderTextField donation(
+    BuildContext context, {
+    Key? key,
+    bool readOnly = false,
+    InputDecoration? decoration,
+    ValueChanged<String?>? onChanged,
+    ValueTransformer<String?>? valueTransformer,
+    bool enabled = true,
+    AutovalidateMode? autovalidateMode,
+    VoidCallback? onReset,
+    FocusNode? focusNode,
+    int? maxLines = 1,
+    bool obscureText = false,
+    TextCapitalization textCapitalization = TextCapitalization.none,
+    EdgeInsets scrollPadding = const EdgeInsets.all(20.0),
+    bool enableInteractiveSelection = true,
+    MaxLengthEnforcement? maxLengthEnforcement,
+    TextAlign textAlign = TextAlign.start,
+    bool autofocus = false,
+    bool autocorrect = true,
+    double cursorWidth = 2.0,
+    TextInputType? keyboardType,
+    TextStyle? style,
+    TextEditingController? controller,
+    TextInputAction? textInputAction,
+    StrutStyle? strutStyle,
+    TextDirection? textDirection,
+    int? maxLength,
+    VoidCallback? onEditingComplete,
+    ValueChanged<String?>? onSubmitted,
+    List<TextInputFormatter>? inputFormatters,
+    Radius? cursorRadius,
+    Color? cursorColor,
+    Brightness? keyboardAppearance,
+    InputCounterWidgetBuilder? buildCounter,
+    bool expands = false,
+    int? minLines,
+    bool? showCursor,
+    GestureTapCallback? onTap,
+    bool enableSuggestions = false,
+    TextAlignVertical? textAlignVertical,
+    DragStartBehavior dragStartBehavior = DragStartBehavior.start,
+    ScrollController? scrollController,
+    ScrollPhysics? scrollPhysics,
+    ui.BoxWidthStyle selectionWidthStyle = ui.BoxWidthStyle.tight,
+    SmartDashesType? smartDashesType,
+    SmartQuotesType? smartQuotesType,
+    ToolbarOptions? toolbarOptions,
+    ui.BoxHeightStyle selectionHeightStyle = ui.BoxHeightStyle.tight,
+    Iterable<String>? autofillHints,
+    String obscuringCharacter = '•',
+    MouseCursor? mouseCursor,
+  }) {
+    final property = _presenter.donation;
+    return FormBuilderTextField(
+      key: key,
+      name: property.name,
+      validator: property.getValidator(context),
+      initialValue: property.getFieldValue(
+          Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
+      readOnly: readOnly,
+      decoration: decoration ??
+          const InputDecoration().copyWith(
+              labelText: LocaleKeys.donation_label.tr(),
+              hintText: LocaleKeys.donation_hint.tr()),
+      onChanged: onChanged,
+      valueTransformer: valueTransformer,
+      enabled: enabled,
+      autovalidateMode: autovalidateMode ?? AutovalidateMode.onUserInteraction,
+      onReset: onReset,
+      focusNode: focusNode,
+      maxLines: maxLines,
+      obscureText: obscureText,
+      textCapitalization: textCapitalization,
+      scrollPadding: scrollPadding,
+      enableInteractiveSelection: enableInteractiveSelection,
+      maxLengthEnforcement: maxLengthEnforcement,
+      textAlign: textAlign,
+      autofocus: autofocus,
+      autocorrect: autocorrect,
+      cursorWidth: cursorWidth,
+      keyboardType: keyboardType,
+      style: style,
+      controller: controller,
+      textInputAction: textInputAction,
+      strutStyle: strutStyle,
+      textDirection: textDirection,
+      maxLength: maxLength,
+      onEditingComplete: onEditingComplete,
+      onSubmitted: onSubmitted,
+      inputFormatters: inputFormatters,
+      cursorRadius: cursorRadius,
+      cursorColor: cursorColor,
+      keyboardAppearance: keyboardAppearance,
+      buildCounter: buildCounter,
+      expands: expands,
+      minLines: minLines,
+      showCursor: showCursor,
+      onTap: onTap,
+      enableSuggestions: enableSuggestions,
+      textAlignVertical: textAlignVertical,
+      dragStartBehavior: dragStartBehavior,
+      scrollController: scrollController,
+      scrollPhysics: scrollPhysics,
+      selectionWidthStyle: selectionWidthStyle,
+      smartDashesType: smartDashesType,
+      smartQuotesType: smartQuotesType,
+      toolbarOptions: toolbarOptions,
+      selectionHeightStyle: selectionHeightStyle,
+      autofillHints: autofillHints,
+      obscuringCharacter: obscuringCharacter,
+      mouseCursor: mouseCursor,
     );
   }
 

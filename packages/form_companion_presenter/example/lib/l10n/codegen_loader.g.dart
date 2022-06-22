@@ -76,9 +76,7 @@ class CodegenLoader extends AssetLoader{
   },
   "preferredRegions": {
     "label": "Preferred regions",
-    "hint": "Select your preferred regions."
-  },
-  "region": {
+    "hint": "Select your preferred regions.",
     "afurika": "Afurika",
     "asia": "Asia",
     "australia": "Australia",
@@ -110,9 +108,7 @@ class CodegenLoader extends AssetLoader{
   },
   "mealOffers": {
     "label": "Special meal offers",
-    "hint": "For other offers, tell us with note on end of this input form."
-  },
-  "mealType": {
+    "hint": "For other offers, tell us with note on end of this input form.",
     "halal": "Halal",
     "vegan": "Vegan"
   },
@@ -140,6 +136,11 @@ class CodegenLoader extends AssetLoader{
   "acceptsTermsOfUse": {
     "title": "I read terms of use (*) and accept it.",
     "message": "Accepting the terms of use is required."
+  },
+  "donation": {
+    "label": "Donation",
+    "hint": "Donate some money.",
+    "validationError": "Value is not valid currency format."
   },
   "submit": "Submit"
 };
@@ -205,9 +206,7 @@ static const Map<String,dynamic> ja = {
   },
   "preferredRegions": {
     "label": "お好みの地域",
-    "hint": "お好みの地域を選択してください。"
-  },
-  "region": {
+    "hint": "お好みの地域を選択してください。",
     "afurika": "アフリカ",
     "asia": "アジア",
     "australia": "オーストラリア",
@@ -239,9 +238,7 @@ static const Map<String,dynamic> ja = {
   },
   "mealOffers": {
     "label": "特別なお食事のご注文",
-    "hint": "ここにないご注文については、メモにご記入ください。"
-  },
-  "mealType": {
+    "hint": "ここにないご注文については、メモにご記入ください。",
     "halal": "ハラール",
     "vegan": "ビーガン"
   },
@@ -269,6 +266,11 @@ static const Map<String,dynamic> ja = {
   "acceptsTermsOfUse": {
     "title": "ご利用に関する注意事項(*)を読んだ上で同意します。",
     "message": "ご利用に関する注意事項に同意していただく必要があります。"
+  },
+  "donation": {
+    "label": "寄付",
+    "hint": "お気持ちだけでも結構です。お願いいたします。",
+    "validationError": "金額として正しくありません。"
   },
   "submit": "送信"
 };

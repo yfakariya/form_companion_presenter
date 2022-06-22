@@ -12,6 +12,9 @@ abstract class FormStateAdapter {
   /// Current [Locale] of the `Form`.
   Locale get locale;
 
+  /// Whether the underlying state of the `Form` is mounted to the element tree.
+  bool get mounted;
+
   /// Do validation of all form's fields and then returns the value whether
   /// all fields are valid or not.
   bool validate();

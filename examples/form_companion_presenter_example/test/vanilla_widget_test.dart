@@ -31,7 +31,7 @@ Future<void> main() async {
             'gender': false
           };
           await tester.pumpWidget(const App());
-          transitToScreen(tester, page);
+          transitToScreen(page);
           await tester.pump();
 
           for (final fieldName in fieldValidationErrors.keys) {
@@ -49,7 +49,7 @@ Future<void> main() async {
         'Input invalid -- validation error',
         (tester) async {
           await tester.pumpWidget(const App());
-          transitToScreen(tester, page);
+          transitToScreen(page);
           await tester.pump();
 
           final fieldState =
@@ -73,7 +73,7 @@ Future<void> main() async {
             'gender': false
           };
           await tester.pumpWidget(const App());
-          transitToScreen(tester, page);
+          transitToScreen(page);
           await tester.pump();
 
           await tester.enterText(
@@ -101,7 +101,7 @@ Future<void> main() async {
             : 'Validation error disables submit button',
         (tester) async {
           await tester.pumpWidget(const App());
-          transitToScreen(tester, page);
+          transitToScreen(page);
           await tester.pump();
 
           await tester.enterText(
@@ -124,7 +124,7 @@ Future<void> main() async {
         (tester) async {
           final completer = Completer<String?>();
           await tester.pumpWidget(const App());
-          transitToScreen(tester, page);
+          transitToScreen(page);
           await tester.pump();
 
           setAsyncValidationFutureFactory(
@@ -157,7 +157,7 @@ Future<void> main() async {
         (tester) async {
           final completer = Completer<String?>();
           await tester.pumpWidget(const App());
-          transitToScreen(tester, page);
+          transitToScreen(page);
           await tester.pump();
 
           setAsyncValidationFutureFactory(
@@ -191,7 +191,7 @@ Future<void> main() async {
         (tester) async {
           final completer = Completer<String?>();
           await tester.pumpWidget(const App());
-          transitToScreen(tester, page);
+          transitToScreen(page);
           await tester.pump();
 
           setAsyncValidationFutureFactory(
@@ -234,7 +234,7 @@ Future<void> main() async {
           (tester) async {
             final completer = Completer<String?>();
             await tester.pumpWidget(const App());
-            transitToScreen(tester, page);
+            transitToScreen(page);
             await tester.pump();
 
             setAsyncValidationFutureFactory(
@@ -298,7 +298,7 @@ Future<void> main() async {
             (tester) async {
               final completer = Completer<String?>();
               await tester.pumpWidget(const App());
-              transitToScreen(tester, page);
+              transitToScreen(page);
               await tester.pump();
 
               setAsyncValidationFutureFactory(
@@ -378,7 +378,7 @@ Future<void> main() async {
           (tester) async {
             var completer = Completer<String?>();
             await tester.pumpWidget(const App());
-            transitToScreen(tester, page);
+            transitToScreen(page);
             await tester.pump();
 
             setAsyncValidationFutureFactory(
@@ -467,7 +467,7 @@ Future<void> main() async {
             (tester) async {
               final completer = Completer<String?>();
               await tester.pumpWidget(const App());
-              transitToScreen(tester, page);
+              transitToScreen(page);
               await tester.pump();
 
               setAsyncValidationFutureFactory(

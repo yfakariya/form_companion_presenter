@@ -68,6 +68,8 @@ class _BulkAutoValidationFormBuilderAccountPane extends ConsumerWidget {
           presenter.fields.id(
             context,
             decoration: InputDecoration(
+              labelText: LocaleKeys.id_label.tr(),
+              hintText: LocaleKeys.id_hint.tr(),
               suffix: AsyncValidationIndicator(
                 presenter: presenter,
                 propertyName: 'id',
@@ -180,7 +182,7 @@ class BulkAutoValidationFormBuilderAccountPresenter
 
     // Propagate to global state.
     _read(account.state).state = state;
-    transitToHome(_read);
+    router.go('/');
   }
 
   /// Example of business logic of submit.

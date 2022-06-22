@@ -14,24 +14,14 @@ class _App extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final pages = ref.watch(pagesProvider.state);
-    return MaterialApp(
+    return MaterialApp.router(
+      routeInformationParser: router.routeInformationParser,
+      routeInformationProvider: router.routeInformationProvider,
+      routerDelegate: router.routerDelegate,
       localizationsDelegates: [
         ...context.localizationDelegates,
       ],
       supportedLocales: context.supportedLocales,
-      home: Navigator(
-        pages: pages.state,
-        onPopPage: (route, dynamic result) {
-          if (!route.didPop(result)) {
-            return false;
-          }
-
-          pages.state.clear();
-          pages.state.add(homePage);
-          return true;
-        },
-      ),
     );
   }
 }

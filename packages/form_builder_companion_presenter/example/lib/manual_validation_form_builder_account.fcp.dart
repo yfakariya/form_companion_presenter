@@ -615,13 +615,17 @@ class $ManualValidationFormBuilderAccountPresenterFieldFactory {
       initialValue: property.getFieldValue(
           Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))!,
       name: property.name,
-      options: property
-              .getFieldValue(Localizations.maybeLocaleOf(context) ??
-                  const Locale('en', 'US'))
-              ?.map((x) => FormBuilderChipOption<Region>(
-                  value: x, child: Text('preferredRegions.${x.name}'.tr())))
-              .toList() ??
-          [],
+      options: [
+        Region.afurika,
+        Region.asia,
+        Region.australia,
+        Region.europe,
+        Region.northAmelica,
+        Region.southAmelica
+      ]
+          .map((x) => FormBuilderChipOption<Region>(
+              value: x, child: Text('preferredRegions.${x.name}'.tr())))
+          .toList(),
       alignment: alignment,
       avatarBorder: avatarBorder,
       backgroundColor: backgroundColor,
