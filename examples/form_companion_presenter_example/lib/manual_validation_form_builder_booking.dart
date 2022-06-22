@@ -299,7 +299,7 @@ class ManualValidationFormBuilderBookingPresenter extends StateNotifier<Booking>
 
     // Propagate to global state.
     _read(booking.state).state = state;
-    transitToHome(_read);
+    router.go('/');
   }
 
   /// Example of business logic of submit.

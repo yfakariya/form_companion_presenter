@@ -1,17 +1,32 @@
 // See LICENCE file in the root.
 
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'auto_validation_vanilla_form.dart';
+import 'bulk_auto_validation_vanilla_form.dart';
 import 'home.dart';
+import 'manual_validation_vanilla_form.dart';
 
-const homePage = MaterialPage<dynamic>(child: HomePage());
-const home = [homePage];
+final routes = [
+  GoRoute(
+    path: '/',
+    name: 'home',
+    builder: (context, state) => HomePage(),
+  ),
+  GoRoute(
+    path: '/vanilla/manual/account',
+    name: 'manual.vanilla',
+    builder: (context, state) => ManualValidationVanillaFormAccountPage(),
+  ),
+  GoRoute(
+    path: '/vanilla/bulk-auto/account',
+    name: 'bulk_auto.vanilla',
+    builder: (context, state) => BulkAutoValidationVanillaFormAccountPage(),
+  ),
+  GoRoute(
+    path: '/vanilla/auto/account',
+    name: 'auto.vanilla',
+    builder: (context, state) => AutoValidationVanillaFormAccountPage(),
+  ),
+];
 
-/// Provider to control page stack of navigator.
-final pagesProvider = StateProvider((_) => home);
-
-/// Transit to home page even if there are any StateProvider's changes.
-void transitToHome(Reader read) =>
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      read(pagesProvider.state).state = home;
-    });
+final router = GoRouter(routes: routes);

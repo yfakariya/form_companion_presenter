@@ -4,10 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'auto_validation_vanilla_form.dart';
-import 'home.dart';
 import 'l10n/locale_keys.g.dart';
-import 'manual_validation_vanilla_form.dart';
 import 'routes.dart';
 
 /// Base class of all example widgets.
@@ -25,8 +22,6 @@ abstract class Screen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final pages = ref.watch(pagesProvider.state);
-
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -40,38 +35,16 @@ abstract class Screen extends ConsumerWidget {
       drawer: SafeArea(
         child: Drawer(
           child: ListView(
-            children: [
-              ListTile(
+            children: routes.map((r) {
+              final name = r.name;
+              final path = r.path;
+              return ListTile(
                 title: Text(
-                  LocaleKeys.home_title.tr(),
+                  '${name}.title'.tr(),
                 ),
-                onTap: () => pages.state = [
-                  const MaterialPage<dynamic>(
-                    child: HomePage(),
-                  )
-                ],
-              ),
-              ListTile(
-                title: Text(
-                  LocaleKeys.manual_vanilla_title.tr(),
-                ),
-                onTap: () => pages.state = [
-                  const MaterialPage<dynamic>(
-                    child: ManualValidationVanillaFormAccountPage(),
-                  )
-                ],
-              ),
-              ListTile(
-                title: Text(
-                  LocaleKeys.auto_vanilla_title.tr(),
-                ),
-                onTap: () => pages.state = [
-                  const MaterialPage<dynamic>(
-                    child: AutoValidationVanillaFormAccountPage(),
-                  )
-                ],
-              ),
-            ],
+                onTap: () => router.go(path),
+              );
+            }).toList(),
           ),
         ),
       ),
