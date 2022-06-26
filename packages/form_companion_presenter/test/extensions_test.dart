@@ -399,6 +399,49 @@ void main() {
       expect(validator.passedToValidator, value);
       expect(validator.passedToAsyncValidator, value);
     });
+
+    test('uriText default', () {
+      final target = PropertyDescriptorsBuilder()
+        ..uriText(
+          name: 'prop',
+        );
+      verifyPropertyDescriptor<Uri, String>(
+        target,
+        name: 'prop',
+        initialPropertyValue: null,
+        initialFieldValue: '',
+        converterType: '_CallbackStringConverter<Uri>',
+        value: '',
+      );
+    });
+
+    test('uriText fully specified', () async {
+      final validator = ValidatorTester<String>();
+      final target = PropertyDescriptorsBuilder()
+        ..uriText(
+          name: 'prop',
+          asyncValidatorFactories: [validator.asyncValidator],
+          validatorFactories: [validator.validator],
+          initialValue: Uri.parse('https://example.com/path?query#hash'),
+        );
+
+      final value = 'http://example.org/another?q=r#title';
+
+      final validationResult = verifyPropertyDescriptor<Uri, String>(
+        target,
+        name: 'prop',
+        initialPropertyValue: Uri.parse('https://example.com/path?query#hash'),
+        initialFieldValue: 'https://example.com/path?query#hash',
+        converterType: '_CallbackStringConverter<Uri>',
+        value: value,
+      );
+
+      await validator.waitForPendingValidation();
+
+      expect(validationResult, isNull);
+      expect(validator.passedToValidator, value);
+      expect(validator.passedToAsyncValidator, value);
+    });
   });
 
   group('FormCompanionPropertyDescriptorBuilderExtensions', () {

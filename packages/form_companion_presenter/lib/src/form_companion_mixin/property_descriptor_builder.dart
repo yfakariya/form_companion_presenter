@@ -164,6 +164,25 @@ extension FormCompanionPropertyDescriptorsBuilderExtension
         initialValue: initialValue,
         valueConverter: bigIntStringConverter,
       );
+
+  /// Defines a new property with property value type [Uri] and
+  /// form field value type [String].
+  ///
+  /// {@macro pdb_add_remarks}
+  void uriText({
+    required String name,
+    List<FormFieldValidatorFactory<String>>? validatorFactories,
+    List<AsyncValidatorFactory<String>>? asyncValidatorFactories,
+    Uri? initialValue,
+    // TODO(yfakariya): capability l10n
+  }) =>
+      add<Uri, String>(
+        name: name,
+        validatorFactories: validatorFactories,
+        asyncValidatorFactories: asyncValidatorFactories,
+        initialValue: initialValue,
+        valueConverter: uriStringConverter,
+      );
 }
 
 /// Object which holds required values to create [PropertyDescriptor].
