@@ -120,11 +120,9 @@ class PropertyDescriptor<P extends Object, F extends Object> {
             )
             .toList(),
         _pendingAsyncValidations = _PendingAsyncValidations() {
-    if (valueConverter != null) {
-      _validatorFactories.add(
-        createValidatorFactoryFromConverter<P, F>(valueConverter),
-      );
-    }
+    _validatorFactories.add(
+      createValidatorFactoryFromConverter<P, F>(_valueConverter),
+    );
   }
 
   /// Returns a composite validator which contains synchronous (normal)
