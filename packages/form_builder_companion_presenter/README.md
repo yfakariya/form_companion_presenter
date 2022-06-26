@@ -447,6 +447,7 @@ See API docs of `FormCompanionPropertyDescriptorsBuilderExtension` and `FormBuil
 There are some `WithField` variations for above extension methods. There methods accept additional type parameter `TField`, which asks for `form_companion_generator` to use the specified `FormField` class for the property. So, notice that `TField` does no effect when you do not use `form_companion_generator`.
 
 > **Question** Why some extension methods rack of `xxxWithField` companion?
+>
 > A: Because there are no out-of-box alternative form fields for them, and you can use `addWithField<P, F, TField>` anyway. If you find that there is a new out-of-box or popular alternative form fields, please file the issue.
 
 #### `PropertyDescriptor`
