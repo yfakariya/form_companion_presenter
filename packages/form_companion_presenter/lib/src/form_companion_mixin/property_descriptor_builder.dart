@@ -120,13 +120,14 @@ extension FormCompanionPropertyDescriptorsBuilderExtension
     List<FormFieldValidatorFactory<String>>? validatorFactories,
     List<AsyncValidatorFactory<String>>? asyncValidatorFactories,
     int? initialValue,
+    StringConverter<int>? stringConverter,
   }) =>
       add<int, String>(
         name: name,
         validatorFactories: validatorFactories,
         asyncValidatorFactories: asyncValidatorFactories,
         initialValue: initialValue,
-        valueConverter: intStringConverter,
+        valueConverter: stringConverter ?? intStringConverter,
       );
 
   /// Defines a new property with property value type [double] and
@@ -138,13 +139,14 @@ extension FormCompanionPropertyDescriptorsBuilderExtension
     List<FormFieldValidatorFactory<String>>? validatorFactories,
     List<AsyncValidatorFactory<String>>? asyncValidatorFactories,
     double? initialValue,
+    StringConverter<double>? stringConverter,
   }) =>
       add<double, String>(
         name: name,
         validatorFactories: validatorFactories,
         asyncValidatorFactories: asyncValidatorFactories,
         initialValue: initialValue,
-        valueConverter: doubleStringConverter,
+        valueConverter: stringConverter ?? doubleStringConverter,
       );
 
   /// Defines a new property with property value type [BigInt] and
@@ -156,13 +158,33 @@ extension FormCompanionPropertyDescriptorsBuilderExtension
     List<FormFieldValidatorFactory<String>>? validatorFactories,
     List<AsyncValidatorFactory<String>>? asyncValidatorFactories,
     BigInt? initialValue,
+    StringConverter<BigInt>? stringConverter,
   }) =>
       add<BigInt, String>(
         name: name,
         validatorFactories: validatorFactories,
         asyncValidatorFactories: asyncValidatorFactories,
         initialValue: initialValue,
-        valueConverter: bigIntStringConverter,
+        valueConverter: stringConverter ?? bigIntStringConverter,
+      );
+
+  /// Defines a new property with property value type [Uri] and
+  /// form field value type [String].
+  ///
+  /// {@macro pdb_add_remarks}
+  void uriText({
+    required String name,
+    List<FormFieldValidatorFactory<String>>? validatorFactories,
+    List<AsyncValidatorFactory<String>>? asyncValidatorFactories,
+    Uri? initialValue,
+    StringConverter<Uri>? stringConverter,
+  }) =>
+      add<Uri, String>(
+        name: name,
+        validatorFactories: validatorFactories,
+        asyncValidatorFactories: asyncValidatorFactories,
+        initialValue: initialValue,
+        valueConverter: stringConverter ?? uriStringConverter,
       );
 }
 

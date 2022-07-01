@@ -294,6 +294,7 @@ void main() {
           asyncValidatorFactories: [validator.asyncValidator],
           validatorFactories: [validator.validator],
           initialValue: 123,
+          stringConverter: _CustomStringConverter(intStringConverter),
         );
 
       final value = DateTime.now().microsecondsSinceEpoch.toString();
@@ -303,7 +304,7 @@ void main() {
         name: 'prop',
         initialPropertyValue: 123,
         initialFieldValue: '123',
-        converterType: '_CallbackStringConverter<int>',
+        converterType: '_CustomStringConverter<int>',
         value: value,
       );
 
@@ -337,6 +338,7 @@ void main() {
           asyncValidatorFactories: [validator.asyncValidator],
           validatorFactories: [validator.validator],
           initialValue: 123.45,
+          stringConverter: _CustomStringConverter(doubleStringConverter),
         );
 
       final value = (DateTime.now().microsecondsSinceEpoch / 1000.0).toString();
@@ -346,7 +348,7 @@ void main() {
         name: 'prop',
         initialPropertyValue: 123.45,
         initialFieldValue: '123.45',
-        converterType: '_CallbackStringConverter<double>',
+        converterType: '_CustomStringConverter<double>',
         value: value,
       );
 
@@ -380,6 +382,7 @@ void main() {
           asyncValidatorFactories: [validator.asyncValidator],
           validatorFactories: [validator.validator],
           initialValue: BigInt.from(123),
+          stringConverter: _CustomStringConverter(bigIntStringConverter),
         );
 
       final value = DateTime.now().microsecondsSinceEpoch.toString();
@@ -389,7 +392,51 @@ void main() {
         name: 'prop',
         initialPropertyValue: BigInt.from(123),
         initialFieldValue: '123',
-        converterType: '_CallbackStringConverter<BigInt>',
+        converterType: '_CustomStringConverter<BigInt>',
+        value: value,
+      );
+
+      await validator.waitForPendingValidation();
+
+      expect(validationResult, isNull);
+      expect(validator.passedToValidator, value);
+      expect(validator.passedToAsyncValidator, value);
+    });
+
+    test('uriText default', () {
+      final target = PropertyDescriptorsBuilder()
+        ..uriText(
+          name: 'prop',
+        );
+      verifyPropertyDescriptor<Uri, String>(
+        target,
+        name: 'prop',
+        initialPropertyValue: null,
+        initialFieldValue: '',
+        converterType: '_CallbackStringConverter<Uri>',
+        value: '',
+      );
+    });
+
+    test('uriText fully specified', () async {
+      final validator = ValidatorTester<String>();
+      final target = PropertyDescriptorsBuilder()
+        ..uriText(
+          name: 'prop',
+          asyncValidatorFactories: [validator.asyncValidator],
+          validatorFactories: [validator.validator],
+          initialValue: Uri.parse('https://example.com/path?query#hash'),
+          stringConverter: _CustomStringConverter(uriStringConverter),
+        );
+
+      final value = 'http://example.org/another?q=r#title';
+
+      final validationResult = verifyPropertyDescriptor<Uri, String>(
+        target,
+        name: 'prop',
+        initialPropertyValue: Uri.parse('https://example.com/path?query#hash'),
+        initialFieldValue: 'https://example.com/path?query#hash',
+        converterType: '_CustomStringConverter<Uri>',
         value: value,
       );
 
@@ -633,4 +680,32 @@ void main() {
       expect(validator.passedToAsyncValidator, value);
     });
   });
+}
+
+class _CustomStringConverter<P extends Object> extends StringConverter<P> {
+  final StringConverter<P> _underlying;
+
+  _CustomStringConverter(this._underlying);
+
+  @override
+  StringConverter<P> copyWith({
+    ParseFailureMessageProvider? parseFailureMessageProvider,
+    SomeConversionResult<P>? defaultValue,
+    String? defaultString,
+  }) =>
+      _CustomStringConverter(
+        _underlying.copyWith(
+          parseFailureMessageProvider: parseFailureMessageProvider,
+          defaultValue: defaultValue,
+          defaultString: defaultString,
+        ),
+      );
+
+  @override
+  String? toFieldValue(P? value, Locale locale) =>
+      _underlying.toFieldValue(value, locale);
+
+  @override
+  SomeConversionResult<P> toPropertyValue(String? value, Locale locale) =>
+      _underlying.toPropertyValue(value, locale);
 }

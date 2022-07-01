@@ -153,8 +153,6 @@ SomeConversionResult<P> _fromTryParseResult<P extends Object>(
                 : 'Null value cannot be parsed to $P.',
           );
 
-// TODO(yfakariya): Built-in L10N mechanism
-
 /// [StringConverter] which uses [int.tryParse].
 final StringConverter<int> intStringConverter = _CallbackStringConverter<int>(
   parse: (v, x, f) =>
