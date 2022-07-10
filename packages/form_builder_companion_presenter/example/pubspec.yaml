@@ -2,7 +2,7 @@ name: form_builder_companion_presenter_example
 description: An example project.
 
 publish_to: 'none'
-version: 1.0.0+1
+version: 0.1.0
 
 environment:
   sdk: ">=2.17.0 <3.0.0"

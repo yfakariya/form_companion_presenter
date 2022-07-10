@@ -1,8 +1,8 @@
 name: form_companion_generator_test_targets
 description: >
   This is a dummy package to host sources for testing of form_companion_generator package.
-version: 0.0.1
-# Does not publish anywhere!
+version: 0.1.0
+# Do not publish anywhere!
 publish_to: none
 
 environment:

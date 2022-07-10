@@ -1,8 +1,7 @@
 name: form_companion_generator
 description: >
-  Code generator for `form_companion_presenter` and `form_builder_companion_presenter`.
+  Code generator for [form_companion_presenter](https://pub.dev/packages/form_companion_presenter) and [form_builder_companion_presenter](https://pub.dev/packages/form_builder_companion_presenter).
 version: 0.1.0
-homepage: https://github.com/yfakariya/form_companion_presenter
 repository: https://github.com/yfakariya/form_companion_presenter
 
 environment:

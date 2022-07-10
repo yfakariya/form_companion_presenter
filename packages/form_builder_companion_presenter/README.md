@@ -2,10 +2,13 @@
 
 Ease and simplify your `FormBuilder` related work with fine application structure.
 
-If you don't use [Flutter FormBuilder](https://pub.dev/packages/flutter_form_builder)? Check [form_companion_presenter](https://pub.dev/packages/form_companion_presenter), which is a brother of this package.
+With [form_companion_generator](https://pub.dev/packages/form_companion_generator), your boilerplate code will be gone!
+
+If you don't use [Flutter FormBuilder](https://pub.dev/packages/flutter_form_builder), check out [form_companion_presenter](https://pub.dev/packages/form_companion_presenter), which is a brother of this package for flutter's built-in `Form`.
 
 ## Features
 
+* With [form_companion_generator](https://pub.dev/packages/form_companion_generator), your boilerplate code will be gone!
 * Separete "presentation logic" from your `Widget` and make them testable.
   * Easily and simply bind properties and event-handlers to form fields.
 * Remove boring works from your form usage code.
@@ -423,6 +426,8 @@ Note that tail of normal validators chain (described above) is always implicit v
 
 As described above, there are some extension methods for `PropertyDescriptorsBuilder` to provide convinient way to define property with commonly used parameters.
 
+(from `form_companion_presenter`)
+
 name | summary | parameters | package | defined in | note
 --|--|--|--|--|--
 `string` | Short hand for `add<String, String>`. | Mostly same as `add` but no `valueConverter`. | `form_companion_presenter/form_companion_presenter.dart` | `FormCompanionPropertyDescriptorsBuilderExtension` | For text field based form fields and `String` property.
@@ -434,13 +439,17 @@ name | summary | parameters | package | defined in | note
 `uriText` | Short hand for `add<Uri, String>`. | Mostly same as `add` but there is a `stringConverter` instead of `valueConverter` (default is `uriStringConverter`). | `form_companion_presenter/form_companion_presenter.dart` | `FormCompanionPropertyDescriptorsBuilderExtension` |
 `stringConvertible<P>` | Short hand for `add<P, String>`. | Mostly same as `add` but `stringConverter` (instead of `valueConverter`) is required. | `form_companion_presenter/form_companion_presenter.dart` | `FormCompanionPropertyDescriptorsBuilderExtension` | Use other extension (`xxxText`) if you can.
 
-`booleanList` | Short hand for `add<List<bool>, List<bool>>`. | Only `name` and `initialValue`. | `form_builder_companion_presenter/form_builder_companion_presenter.dart` | `FormCompanionPropertyDescriptorsBuilderExtension` | For check box list like form fields and list of `bool` property. Typically, each labels correspond to options' indexes.
-`enumeratedList<T>` | Short hand for `add<List<T>, List<T>>` and `T` is `enum`. | Only `name` and `initialValue`. | `form_builder_companion_presenter/form_builder_companion_presenter.dart` | `FormCompanionPropertyDescriptorsBuilderExtension` | For multiple selection form fields for `enum` value. Typically, each labels correspond to enum members (that is, option names).
-`dateTime` | Short hand for `add<DateTime, DateTime>`. | Mostly same as `add` but no `valueConverter`. | `form_builder_companion_presenter/form_builder_companion_presenter.dart` | `FormCompanionPropertyDescriptorsBuilderExtension` |
-`dateTimeRange` | Short hand for `add<DateTimeRange, DateTimeRange>`. | Mostly same as `add` but no `valueConverter`. | `form_builder_companion_presenter/form_builder_companion_presenter.dart` | `FormCompanionPropertyDescriptorsBuilderExtension` |
-`rangeValues` | Short hand for `add<RangeValues, RangeValues>`. | Mostly same as `add` but no `valueConverter`. | `form_builder_companion_presenter/form_builder_companion_presenter.dart` | `FormCompanionPropertyDescriptorsBuilderExtension` |
+(from this `form_builder_companion_presenter`)
 
-See API docs of `FormCompanionPropertyDescriptorsBuilderExtension` and `FormBuilderCompanionPropertyDescriptorsBuilderExtension` for details.
+name | summary | parameters | package | defined in | note
+--|--|--|--|--|--
+`booleanList` | Short hand for `add<List<bool>, List<bool>>`. | Only `name` and `initialValue`. | `form_builder_companion_presenter/form_builder_companion_presenter.dart` | `FormBuilderCompanionPropertyDescriptorsBuilderExtension` | For check box list like form fields and list of `bool` property. Typically, each labels correspond to options' indexes.
+`enumeratedList<T>` | Short hand for `add<List<T>, List<T>>` and `T` is `enum`. | Only `name` and `initialValue`. | `form_builder_companion_presenter/form_builder_companion_presenter.dart` | `FormBuilderCompanionPropertyDescriptorsBuilderExtension` | For multiple selection form fields for `enum` value. Typically, each labels correspond to enum members (that is, option names).
+`dateTime` | Short hand for `add<DateTime, DateTime>`. | Mostly same as `add` but no `valueConverter`. | `form_builder_companion_presenter/form_builder_companion_presenter.dart` | `FormBuilderCompanionPropertyDescriptorsBuilderExtension` |
+`dateTimeRange` | Short hand for `add<DateTimeRange, DateTimeRange>`. | Mostly same as `add` but no `valueConverter`. | `form_builder_companion_presenter/form_builder_companion_presenter.dart` | `FormBuilderCompanionPropertyDescriptorsBuilderExtension` |
+`rangeValues` | Short hand for `add<RangeValues, RangeValues>`. | Mostly same as `add` but no `valueConverter`. | `form_builder_companion_presenter/form_builder_companion_presenter.dart` | `FormBuilderCompanionPropertyDescriptorsBuilderExtension` |
+
+See [API doc](https://pub.dev/documentation/form_companion_presener/latest/form_companion_presener/FormCompanionPropertyDescriptorsBuilderExtension.html) of `FormCompanionPropertyDescriptorsBuilderExtension` and  [API doc](https://pub.dev/documentation/form_builder_companion_presener/latest/form_builder_companion_presener/FormBuilderCompanionPropertyDescriptorsBuilderExtension.html) of `FormBuilderCompanionPropertyDescriptorsBuilderExtension` for details.
 
 ##### `WithField` extension methods
 

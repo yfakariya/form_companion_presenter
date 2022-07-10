@@ -1,5 +1,5 @@
 name: form_companion_presenter_examples
-description: Examples of form_companion_presenter.
+description: Examples of `form_companion_presenter` and `form_builder_companion_presenter`.
 publish_to: 'none' 
 version: 0.1.0
 
