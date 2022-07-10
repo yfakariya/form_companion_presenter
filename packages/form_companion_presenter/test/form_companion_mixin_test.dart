@@ -508,6 +508,7 @@ void main() {
 
       final result = adapter!.validate();
       expect(validatorCalled, isTrue);
+      // TextFormField passes empty for validation of default value (null)
       expect(validatorArgument, isEmpty);
       return result;
     }
@@ -547,6 +548,7 @@ void main() {
 
       adapter!.save();
       expect(onSavedCalled, isTrue);
+      // TextFormField passes empty for validation of default value (null)
       expect(savingArgument, isEmpty);
     });
 
