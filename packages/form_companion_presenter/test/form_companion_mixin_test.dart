@@ -508,6 +508,7 @@ void main() {
 
       final result = adapter!.validate();
       expect(validatorCalled, isTrue);
+      // TextFormField passes empty for validation of default value (null)
       expect(validatorArgument, isEmpty);
       return result;
     }
@@ -547,6 +548,7 @@ void main() {
 
       adapter!.save();
       expect(onSavedCalled, isTrue);
+      // TextFormField passes empty for validation of default value (null)
       expect(savingArgument, isEmpty);
     });
 
@@ -570,7 +572,7 @@ void main() {
       expect(adapter!.autovalidateMode, autovalidateMode);
     }
 
-    testWidgets("adapter.autovalidateMode reflects Form's autoValidateMode.",
+    testWidgets("adapter.autovalidateMode reflects Form's autovalidateMode.",
         (tester) async {
       await testAutoValidateMode(tester, AutovalidateMode.always);
       await testAutoValidateMode(tester, AutovalidateMode.disabled);
@@ -752,19 +754,19 @@ void main() {
     }
 
     testWidgets(
-      'all fields are re-validated when Form.autiValidateMode is always.',
+      'all fields are re-validated when Form.autovalidateMode is always.',
       (widgetTester) =>
           testRebuildBehavior(widgetTester, AutovalidateMode.always),
     );
 
     testWidgets(
-      'all fields are re-validated when Form.autiValidateMode is onUserInteraction.',
+      'all fields are re-validated when Form.autovalidateMode is onUserInteraction.',
       (widgetTester) =>
           testRebuildBehavior(widgetTester, AutovalidateMode.onUserInteraction),
     );
 
     testWidgets(
-      'only the field is re-validated when Form.autiValidateMode is disable.',
+      'only the field is re-validated when Form.autovalidateMode is disable.',
       (widgetTester) =>
           testRebuildBehavior(widgetTester, AutovalidateMode.disabled),
     );
