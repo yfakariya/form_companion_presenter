@@ -8,6 +8,7 @@ Code generator for `form_companion_presenter` and `form_builder_companion_preset
 
 ```yaml
   dev_dependencies:
+    form_companion_generator: ^x.y.z
 ```
 
 (2) Add `build.yaml` in your package, next to `pubspec.yaml`:
@@ -230,7 +231,7 @@ builders:
 ### Available Options
 
 **key** | **type** | **default** | **description**
---|--|--
+--|--|--|--
 `autovalidate_by_default`| bool | `true` | If `true`, default value of `autovalidateMode` of form fields will be `AutovalidateMode.onUserInteraction`. Otherwise, the value will be `AutovalidateMode.disabled`.
 `as_part` | bool | `false` | If `true`, generated `*.fcp.dart` file will be part of original files (files without `.fcp` suffix), shares namespaces and imports. This is convinient if you use many 3rd party imports in your properties, but it leads member name conflicts and might lead poor code completion (intellisense) experience.
 `extra_libraries` | String, or list of string | empty | Specify package uri with `package:...` format which adds hint for generator to find importing libraries. Note that if the library is not referenced actually, the import entry will not be emitted.

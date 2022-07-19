@@ -59,7 +59,6 @@ class MyPresenter extends StateNotifier<MyViewState>
 
 3. Add `initializeCompanionMixin()` call with property declaration in the constructor of the presenter. Properties represents values of states which will be input via form fields. They have names and validators, and their type must be same as `FormBuilderField`'s type rather than type of state object property:
 
-TODO:
 ```dart
   MyPresenter(MyViewState initialState)
     : super(initialState) {
@@ -87,7 +86,7 @@ TODO:
 TODO:
 ```dart
   @override
-  FutureOr<void> doSutmit(BuildContext context) async {
+  FutureOr<void> doSubmit(BuildContext context) async {
     // Gets a validated input values
     String name = getSavedPropertyValue('name');
     int age = int.parse(getSavedPropertyValue('age'));
@@ -118,7 +117,7 @@ class MyForm extends StatelessWidget {
 
 class MyFormFields extends ConsumerWidget {
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Column(
       children: [
         FormBuilderTextField(
