@@ -18,6 +18,26 @@ scripts:
       scope: '*'
       ignore: dev_env
 
+  pubget:
+    run: melos run pubget:flutter --no-select && melos run pubget:dart --no-select
+    description: Run `flutter pub get` in all packages.
+
+  pubget:flutter:
+    run: melos exec -c 1 -- fvm flutter pub get
+    description: Run `flutter pub get` in all packages.
+    select-package:
+      flutter: true
+      scope: '*'
+      ignore: dev_env
+
+  pubget:dart:
+    run: melos exec -c 1 -- fvm dart pub get
+    description: Run `dart pub get` in all packages.
+    select-package:
+      flutter: false
+      scope: '*'
+      ignore: dev_env
+
   test:
     run: melos run test:flutter --no-select && melos run test:dart --no-select && melos run test:grind --no-select
     description: Run Flutter tests for a specific package in this project.
