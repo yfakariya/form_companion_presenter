@@ -38,12 +38,12 @@ void main() {
   });
 
   group('asPart', () {
-    test('true -> true', () {
+    test('true - true', () {
       final target = Config(<String, dynamic>{'as_part': true});
       expect(target.asPart, isTrue);
     });
 
-    test('false -> false', () {
+    test('false - false', () {
       final target = Config(<String, dynamic>{'as_part': false});
       expect(target.asPart, isFalse);
     });
@@ -60,12 +60,12 @@ void main() {
   });
 
   group('autovalidateByDefault', () {
-    test('true -> true', () {
+    test('true - true', () {
       final target = Config(<String, dynamic>{'autovalidate_by_default': true});
       expect(target.autovalidateByDefault, isTrue);
     });
 
-    test('false -> false', () {
+    test('false - false', () {
       final target =
           Config(<String, dynamic>{'autovalidate_by_default': false});
       expect(target.autovalidateByDefault, isFalse);
@@ -84,12 +84,12 @@ void main() {
   });
 
   group('usesEnumName', () {
-    test('true -> true', () {
+    test('true - true', () {
       final target = Config(const <String, dynamic>{'uses_enum_name': true});
       expect(target.getUsesEnumName(ver2_15), isTrue);
     });
 
-    test('false -> false', () {
+    test('false - false', () {
       final target = Config(const <String, dynamic>{'uses_enum_name': false});
       expect(target.getUsesEnumName(ver2_15), isFalse);
     });
@@ -131,13 +131,13 @@ void main() {
   });
 
   group('extraLibraries', () {
-    test('1 extra_libraries -> recognized', () {
+    test('1 extra_libraries - recognized', () {
       final target =
           Config(<String, dynamic>{'extra_libraries': 'package:foo/foo.dart'});
       expect(target.extraLibraries, ['package:foo/foo.dart']);
     });
 
-    test('2 extra_libraries -> recognized', () {
+    test('2 extra_libraries - recognized', () {
       final target = Config(<String, dynamic>{
         'extra_libraries': ['package:foo/foo.dart', 'package:bar/bar.dart']
       });
@@ -147,7 +147,7 @@ void main() {
       );
     });
 
-    test('0 extra_libraries -> empty', () {
+    test('0 extra_libraries - empty', () {
       final target = Config(<String, dynamic>{'extra_libraries': <String>[]});
       expect(target.extraLibraries, isEmpty);
     });

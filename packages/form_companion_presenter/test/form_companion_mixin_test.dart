@@ -1375,7 +1375,7 @@ void main() {
       '2 async validators in a single proprety (auto field validation)',
       () {
         testWidgets(
-          'sync success -> sync success',
+          'sync success - sync success',
           (widgetTester) => testMultipleAsyncValidators(
             widgetTester,
             () => null,
@@ -1391,7 +1391,7 @@ void main() {
         );
 
         testWidgets(
-          'sync success -> async success',
+          'sync success - async success',
           (widgetTester) async {
             final onSecondExecuted = Completer<void>();
             await testMultipleAsyncValidators(
@@ -1416,7 +1416,7 @@ void main() {
         );
 
         testWidgets(
-          'sync success -> sync error',
+          'sync success - sync error',
           (widgetTester) => testMultipleAsyncValidators(
             widgetTester,
             () => null,
@@ -1432,7 +1432,7 @@ void main() {
         );
 
         testWidgets(
-          'sync success -> async error',
+          'sync success - async error',
           (widgetTester) async {
             final onSecondExecuted = Completer<void>();
             await testMultipleAsyncValidators(
@@ -1457,7 +1457,7 @@ void main() {
         );
 
         testWidgets(
-          'async success -> sync success',
+          'async success - sync success',
           (widgetTester) async {
             final onFirstExecuted = Completer<void>();
             await testMultipleAsyncValidators(
@@ -1482,7 +1482,7 @@ void main() {
         );
 
         testWidgets(
-          'async success -> async success',
+          'async success - async success',
           (widgetTester) async {
             final onFirstExecuted = Completer<void>();
             final onSecondExecuted = Completer<void>();
@@ -1514,7 +1514,7 @@ void main() {
         );
 
         testWidgets(
-          'async success -> sync error',
+          'async success - sync error',
           (widgetTester) async {
             final onFirstExecuted = Completer<void>();
             await testMultipleAsyncValidators(
@@ -1539,7 +1539,7 @@ void main() {
         );
 
         testWidgets(
-          'async success -> async error',
+          'async success - async error',
           (widgetTester) async {
             final onFirstExecuted = Completer<void>();
             final onSecondExecuted = Completer<void>();
@@ -1571,7 +1571,7 @@ void main() {
         );
 
         testWidgets(
-          'sync error -> n/a',
+          'sync error - n/a',
           (widgetTester) async {
             await testMultipleAsyncValidators(
               widgetTester,
@@ -1589,7 +1589,7 @@ void main() {
         );
 
         testWidgets(
-          'async error -> n/a',
+          'async error - n/a',
           (widgetTester) async {
             final onFirstExecuted = Completer<void>();
             await testMultipleAsyncValidators(
@@ -1617,7 +1617,7 @@ void main() {
 
     group('2 async validators in a single proprety', () {
       testWidgets(
-        'sync success -> sync success',
+        'sync success - sync success',
         (widgetTester) => testMultipleAsyncValidators(
           widgetTester,
           () => null,
@@ -1633,7 +1633,7 @@ void main() {
       );
 
       testWidgets(
-        'sync success -> async success',
+        'sync success - async success',
         (widgetTester) async {
           final onSecondExecuted = Completer<void>();
           await testMultipleAsyncValidators(
@@ -1658,7 +1658,7 @@ void main() {
       );
 
       testWidgets(
-        'sync success -> sync error',
+        'sync success - sync error',
         (widgetTester) async {
           await testMultipleAsyncValidators(
             widgetTester,
@@ -1676,7 +1676,7 @@ void main() {
       );
 
       testWidgets(
-        'sync success -> async error',
+        'sync success - async error',
         (widgetTester) async {
           final onSecondExecuted = Completer<void>();
           await testMultipleAsyncValidators(
@@ -1701,7 +1701,7 @@ void main() {
       );
 
       testWidgets(
-        'async success -> sync success',
+        'async success - sync success',
         (widgetTester) async {
           final onFirstExecuted = Completer<void>();
           await testMultipleAsyncValidators(
@@ -1726,7 +1726,7 @@ void main() {
       );
 
       testWidgets(
-        'async success -> async success',
+        'async success - async success',
         (widgetTester) async {
           final onFirstExecuted = Completer<void>();
           final onSecondExecuted = Completer<void>();
@@ -1758,7 +1758,7 @@ void main() {
       );
 
       testWidgets(
-        'async success -> sync error',
+        'async success - sync error',
         (widgetTester) async {
           final onFirstExecuted = Completer<void>();
           await testMultipleAsyncValidators(
@@ -1783,7 +1783,7 @@ void main() {
       );
 
       testWidgets(
-        'async success -> async error',
+        'async success - async error',
         (widgetTester) async {
           final onFirstExecuted = Completer<void>();
           final onSecondExecuted = Completer<void>();
@@ -1815,7 +1815,7 @@ void main() {
       );
 
       testWidgets(
-        'sync error -> n/a',
+        'sync error - n/a',
         (widgetTester) async {
           await testMultipleAsyncValidators(
             widgetTester,
@@ -1833,7 +1833,7 @@ void main() {
       );
 
       testWidgets(
-        'async error -> n/a',
+        'async error - n/a',
         (widgetTester) async {
           final onFirstExecuted = Completer<void>();
           await testMultipleAsyncValidators(

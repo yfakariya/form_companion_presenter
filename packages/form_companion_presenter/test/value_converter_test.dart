@@ -71,7 +71,7 @@ void main() {
   }
 
   group('DefaultValueConverter', () {
-    test('non-null -> non-null, compatible', () {
+    test('non-null - non-null, compatible', () {
       final value = DateTime.now().microsecond;
       testPropertyToFieldSuccess<int, num>(
         () => DefaultValueConverter<int, num>(),
@@ -91,7 +91,7 @@ void main() {
       );
     });
 
-    test('non-null -> non-null, incompatible', () {
+    test('non-null - non-null, incompatible', () {
       final value = DateTime.now().microsecond;
       testPropertyToFieldFailure<int, bool, StateError>(
         () => DefaultValueConverter<int, bool>(),
@@ -117,7 +117,7 @@ void main() {
     );
 
     test(
-      'null -> null, compatible',
+      'null - null, compatible',
       () => testPropertyToFieldSuccess<int, num>(
         () => DefaultValueConverter<int, num>(),
         null,
@@ -137,7 +137,7 @@ void main() {
     );
 
     test(
-      'null -> null, incompatible',
+      'null - null, incompatible',
       () => testPropertyToFieldSuccess<int, bool>(
         () => DefaultValueConverter<int, bool>(),
         null,
@@ -212,12 +212,12 @@ void main() {
     }
 
     test(
-      'P -> F, non-null',
+      'P - F, non-null',
       () => testToField<int, String>(123, frenchLocale, '123'),
     );
 
     test(
-      'F -> P, non-null',
+      'F - P, non-null',
       () => testToProperty<int, String>(
         '123',
         frenchLocale,
@@ -230,12 +230,12 @@ void main() {
     );
 
     test(
-      'P -> F, null',
+      'P - F, null',
       () => testToField<int, String>(null, frenchLocale, null),
     );
 
     test(
-      'F -> P, null',
+      'F - P, null',
       () => testToProperty<int, String>(
         null,
         frenchLocale,
@@ -320,12 +320,12 @@ void main() {
     }
 
     test(
-      'P -> String, non-null',
+      'P - String, non-null',
       () => testToField<int>(123, frenchLocale, '123'),
     );
 
     test(
-      'String -> P, non-null',
+      'String - P, non-null',
       () => testToProperty<int>(
         '123',
         frenchLocale,
@@ -338,12 +338,12 @@ void main() {
     );
 
     test(
-      'P -> String, null (default: empty string)',
+      'P - String, null (default: empty string)',
       () => testToField<int>(null, frenchLocale, ''),
     );
 
     test(
-      'String -> P, null (default: null)',
+      'String - P, null (default: null)',
       () => testToProperty<int>(
         null,
         frenchLocale,
@@ -356,7 +356,7 @@ void main() {
     );
 
     test(
-      'String -> P, empty (default: null)',
+      'String - P, empty (default: null)',
       () => testToProperty<int>(
         '',
         frenchLocale,
@@ -369,7 +369,7 @@ void main() {
     );
 
     test(
-      'P -> String, default stringify is toString())',
+      'P - String, default stringify is toString())',
       () {
         final target = StringConverter<Object>.fromCallbacks(
           parse: (v, l, p) {
@@ -382,7 +382,7 @@ void main() {
     );
 
     test(
-      'P -> String, null should be defaultString)',
+      'P - String, null should be defaultString)',
       () {
         final target = StringConverter<int>.fromCallbacks(
           parse: (v, l, p) {
@@ -396,7 +396,7 @@ void main() {
     );
 
     test(
-      'String -> P, null should be defaultValue',
+      'String - P, null should be defaultValue',
       () {
         final target = StringConverter<int>.fromCallbacks(
           parse: (v, l, p) {
@@ -417,7 +417,7 @@ void main() {
     );
 
     test(
-      'String -> P, empty should be defaultValue',
+      'String - P, empty should be defaultValue',
       () {
         final target = StringConverter<int>.fromCallbacks(
           parse: (v, l, p) {
@@ -438,7 +438,7 @@ void main() {
     );
 
     test(
-      'String -> P, default parseFailureMessageProvider',
+      'String - P, default parseFailureMessageProvider',
       () {
         const formatException = FormatException('TEST');
         const debugInfo = 'DEBUG INFO';
@@ -464,7 +464,7 @@ void main() {
     );
 
     test(
-      'String -> P, custom parseFailureMessageProvider',
+      'String - P, custom parseFailureMessageProvider',
       () {
         const message = 'MESSAGE';
         late final String? actualOriginalValue;
@@ -588,7 +588,7 @@ void main() {
 
   group('IntStringConverter', () {
     test(
-      'int -> String',
+      'int - String',
       () => testPropertyToFieldSuccess<int, String>(
         () => intStringConverter,
         1234,
@@ -608,7 +608,7 @@ void main() {
     );
 
     test(
-      'null -> empty',
+      'null - empty',
       () => testPropertyToFieldSuccess<int, String>(
         () => intStringConverter,
         null,
@@ -651,7 +651,7 @@ void main() {
 
   group('DoubleStringConverter', () {
     test(
-      'double -> String',
+      'double - String',
       () => testPropertyToFieldSuccess<double, String>(
         () => doubleStringConverter,
         1234.5,
@@ -671,7 +671,7 @@ void main() {
     );
 
     test(
-      'null -> empty',
+      'null - empty',
       () => testPropertyToFieldSuccess<double, String>(
         () => doubleStringConverter,
         null,
@@ -714,7 +714,7 @@ void main() {
 
   group('BigIntStringConverter', () {
     test(
-      'BigInt -> String',
+      'BigInt - String',
       () => testPropertyToFieldSuccess<BigInt, String>(
         () => bigIntStringConverter,
         BigInt.from(123),
@@ -734,7 +734,7 @@ void main() {
     );
 
     test(
-      'null -> empty',
+      'null - empty',
       () => testPropertyToFieldSuccess<BigInt, String>(
         () => bigIntStringConverter,
         null,
@@ -777,7 +777,7 @@ void main() {
 
   group('UriStringConverter', () {
     test(
-      'Uri -> String',
+      'Uri - String',
       () => testPropertyToFieldSuccess<Uri, String>(
         () => uriStringConverter,
         Uri.parse('http://example.com'),
@@ -797,7 +797,7 @@ void main() {
     );
 
     test(
-      'null -> empty',
+      'null - empty',
       () => testPropertyToFieldSuccess<Uri, String>(
         () => uriStringConverter,
         null,
@@ -840,7 +840,7 @@ void main() {
 
   group('DateTimeStringConverter', () {
     test(
-      'DateTime -> String',
+      'DateTime - String',
       () => testPropertyToFieldSuccess<DateTime, String>(
         () => dateTimeStringConverter,
         DateTime(2012, 12, 30, 12, 34, 56, 789),
@@ -860,7 +860,7 @@ void main() {
     );
 
     test(
-      'null -> empty',
+      'null - empty',
       () => testPropertyToFieldSuccess<DateTime, String>(
         () => dateTimeStringConverter,
         null,
@@ -903,7 +903,7 @@ void main() {
 
   group('IntDoubleConverter', () {
     test(
-      'int -> double',
+      'int - double',
       () => testPropertyToFieldSuccess<int, double>(
         () => intDoubleConverter,
         1234,
@@ -923,7 +923,7 @@ void main() {
     );
 
     test(
-      'null -> null',
+      'null - null',
       () => testPropertyToFieldSuccess<int, double>(
         () => intDoubleConverter,
         null,
@@ -953,7 +953,7 @@ void main() {
     );
 
     test(
-      'int.max -> double',
+      'int.max - double',
       () => testPropertyToFieldSuccess<int, double>(
         () => intDoubleConverter,
         0x7FFFFFFFFFFFFFFF,
@@ -963,7 +963,7 @@ void main() {
     );
 
     test(
-      'int.min -> double',
+      'int.min - double',
       () => testPropertyToFieldSuccess<int, double>(
         () => intDoubleConverter,
         0x8000000000000000,
@@ -1019,7 +1019,7 @@ void main() {
 
   group('BigIntDoubleConverter', () {
     test(
-      'int -> double',
+      'int - double',
       () => testPropertyToFieldSuccess<BigInt, double>(
         () => bigIntDoubleConverter,
         BigInt.from(1234),
@@ -1039,7 +1039,7 @@ void main() {
     );
 
     test(
-      'null -> null',
+      'null - null',
       () => testPropertyToFieldSuccess<BigInt, double>(
         () => bigIntDoubleConverter,
         null,
@@ -1069,7 +1069,7 @@ void main() {
     );
 
     test(
-      'double.max -> double',
+      'double.max - double',
       () => testPropertyToFieldSuccess<BigInt, double>(
         () => bigIntDoubleConverter,
         BigInt.from(double.maxFinite),
@@ -1080,7 +1080,7 @@ void main() {
     );
 
     test(
-      'double.min -> double',
+      'double.min - double',
       () => testPropertyToFieldSuccess<BigInt, double>(
         () => bigIntDoubleConverter,
         BigInt.from(double.maxFinite * -1),
@@ -1091,7 +1091,7 @@ void main() {
     );
 
     test(
-      'double.max + 1 -> double',
+      'double.max + 1 - double',
       () => testPropertyToFieldFailure<BigInt, double, ArgumentError>(
         () => bigIntDoubleConverter,
         BigInt.from(double.maxFinite) + BigInt.one,
@@ -1112,7 +1112,7 @@ void main() {
     );
 
     test(
-      'double.min - 1 -> double',
+      'double.min - 1 - double',
       () => testPropertyToFieldFailure<BigInt, double, ArgumentError>(
         () => bigIntDoubleConverter,
         BigInt.from(double.maxFinite * -1) - BigInt.one,
