@@ -2778,7 +2778,7 @@ String formBuilderFilterChipFactory(
       validator: property.getValidator(context),
       decoration: decoration ?? const InputDecoration().copyWith(labelText: property.name, hintText: null),
       key: key,
-      initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))!,
+      initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       name: property.name,
       options: ${itemsExpression('FormBuilderChipOption', propertyElementType, isCollection: true, usesEnumName: usesEnumName)},
       alignment: alignment,
