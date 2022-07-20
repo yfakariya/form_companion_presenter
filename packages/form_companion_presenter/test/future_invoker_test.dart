@@ -1067,12 +1067,12 @@ void main() {
             expect(target.status, equals(AsyncOperationStatus.completed));
           }
 
-          test('initial -> ', () async {
+          test('initial - ', () async {
             await doTest((target, _) async {
               expect(target.status, equals(AsyncOperationStatus.initial));
             });
           });
-          test('completed -> ', () async {
+          test('completed - ', () async {
             await doTest((target, defaultResult) async {
               final parameter = Parameter<String, void>(value: 'PREVIOUS');
               parameter.waiter.complete();
@@ -1082,7 +1082,7 @@ void main() {
               expect(target.status, equals(AsyncOperationStatus.completed));
             });
           });
-          test('failed -> ', () async {
+          test('failed - ', () async {
             await doTest((target, defaultResult) async {
               final parameter = Parameter<String, void>(value: 'ERROR');
               final error = Exception('DUMMY');
@@ -1099,7 +1099,7 @@ void main() {
             });
           });
 
-          test('inProgress (same parameter) -> defaultResult', () async {
+          test('inProgress (same parameter) - defaultResult', () async {
             // Do prologue
             String? result1;
             String? result2;
@@ -1162,7 +1162,7 @@ void main() {
       });
 
       group('cancel', () {
-        group('initial -(cancel)-> initial', () {
+        group('initial -(cancel)- initial', () {
           Future<void> doTest(
             TestEpilogue doAfter,
             Parameter<String, void> afterParameter,
@@ -1205,11 +1205,11 @@ void main() {
             );
           }
 
-          test('-> success', () async => doThenSucceedTest(doTest));
-          test('-> failure', () async => doThenFailTest(doTest));
+          test('- success', () async => doThenSucceedTest(doTest));
+          test('- failure', () async => doThenFailTest(doTest));
         });
 
-        group('initial -> inprogress -(cancel)-> initial', () {
+        group('initial - inprogress -(cancel)- initial', () {
           Future<void> doTest(
             TestEpilogue doAfter,
             Parameter<String, void> afterParameter,
@@ -1263,11 +1263,11 @@ void main() {
             );
           }
 
-          test('-> success', () async => doThenSucceedTest(doTest));
-          test('-> failure', () async => doThenFailTest(doTest));
+          test('- success', () async => doThenSucceedTest(doTest));
+          test('- failure', () async => doThenFailTest(doTest));
         });
 
-        group('completed -(cancel)-> completed', () {
+        group('completed -(cancel)- completed', () {
           Future<void> doTest(
             TestEpilogue doAfter,
             Parameter<String, void> afterParameter,
@@ -1318,11 +1318,11 @@ void main() {
             );
           }
 
-          test('-> success', () async => doThenSucceedTest(doTest));
-          test('-> failure', () async => doThenFailTest(doTest));
+          test('- success', () async => doThenSucceedTest(doTest));
+          test('- failure', () async => doThenFailTest(doTest));
         });
 
-        group('completed -> inProgress -(cancel)-> completed', () {
+        group('completed - inProgress -(cancel)- completed', () {
           Future<void> doTest(
             TestEpilogue doAfter,
             Parameter<String, void> afterParameter,
@@ -1389,11 +1389,11 @@ void main() {
             );
           }
 
-          test('-> success', () async => doThenSucceedTest(doTest));
-          test('-> failure', () async => doThenFailTest(doTest));
+          test('- success', () async => doThenSucceedTest(doTest));
+          test('- failure', () async => doThenFailTest(doTest));
         });
 
-        group('failed -(cancel)-> failed', () {
+        group('failed -(cancel)- failed', () {
           Future<void> doTest(
             TestEpilogue doAfter,
             Parameter<String, void> afterParameter,
@@ -1459,11 +1459,11 @@ void main() {
             );
           }
 
-          test('-> success', () async => doThenSucceedTest(doTest));
-          test('-> failure', () async => doThenFailTest(doTest));
+          test('- success', () async => doThenSucceedTest(doTest));
+          test('- failure', () async => doThenFailTest(doTest));
         });
 
-        group('failed -> inProgress -(cancel)-> failed', () {
+        group('failed - inProgress -(cancel)- failed', () {
           Future<void> doTest(
             TestEpilogue doAfter,
             Parameter<String, void> afterParameter,
@@ -1552,13 +1552,13 @@ void main() {
             );
           }
 
-          test('-> success', () async => doThenSucceedTest(doTest));
-          test('-> failure', () async => doThenFailTest(doTest));
+          test('- success', () async => doThenSucceedTest(doTest));
+          test('- failure', () async => doThenFailTest(doTest));
         });
       });
 
       group('reset', () {
-        group('initial -(reset)-> initial', () {
+        group('initial -(reset)- initial', () {
           Future<void> doTest(
             TestEpilogue doAfter,
             Parameter<String, void> afterParameter,
@@ -1602,11 +1602,11 @@ void main() {
             );
           }
 
-          test('-> success', () async => doThenSucceedTest(doTest));
-          test('-> failure', () async => doThenFailTest(doTest));
+          test('- success', () async => doThenSucceedTest(doTest));
+          test('- failure', () async => doThenFailTest(doTest));
         });
 
-        group('initial -> inprogress -(reset)-> initial', () {
+        group('initial - inprogress -(reset)- initial', () {
           Future<void> doTest(
             TestEpilogue doAfter,
             Parameter<String, void> afterParameter,
@@ -1661,11 +1661,11 @@ void main() {
             );
           }
 
-          test('-> success', () async => doThenSucceedTest(doTest));
-          test('-> failure', () async => doThenFailTest(doTest));
+          test('- success', () async => doThenSucceedTest(doTest));
+          test('- failure', () async => doThenFailTest(doTest));
         });
 
-        group('completed -(reset)-> initial', () {
+        group('completed -(reset)- initial', () {
           Future<void> doTest(
             TestEpilogue doAfter,
             Parameter<String, void> afterParameter,
@@ -1715,11 +1715,11 @@ void main() {
             );
           }
 
-          test('-> success', () async => doThenSucceedTest(doTest));
-          test('-> failure', () async => doThenFailTest(doTest));
+          test('- success', () async => doThenSucceedTest(doTest));
+          test('- failure', () async => doThenFailTest(doTest));
         });
 
-        group('completed -> inProgress -(reset)-> initial', () {
+        group('completed - inProgress -(reset)- initial', () {
           Future<void> doTest(
             TestEpilogue doAfter,
             Parameter<String, void> afterParameter,
@@ -1787,11 +1787,11 @@ void main() {
             );
           }
 
-          test('-> success', () async => doThenSucceedTest(doTest));
-          test('-> failure', () async => doThenFailTest(doTest));
+          test('- success', () async => doThenSucceedTest(doTest));
+          test('- failure', () async => doThenFailTest(doTest));
         });
 
-        group('failed -(reset)-> initial', () {
+        group('failed -(reset)- initial', () {
           Future<void> doTest(
             TestEpilogue doAfter,
             Parameter<String, void> afterParameter,
@@ -1848,11 +1848,11 @@ void main() {
             );
           }
 
-          test('-> success', () async => doThenSucceedTest(doTest));
-          test('-> failure', () async => doThenFailTest(doTest));
+          test('- success', () async => doThenSucceedTest(doTest));
+          test('- failure', () async => doThenFailTest(doTest));
         });
 
-        group('failed -> inProgress -(reset)-> initial', () {
+        group('failed - inProgress -(reset)- initial', () {
           Future<void> doTest(
             TestEpilogue doAfter,
             Parameter<String, void> afterParameter,
@@ -1943,8 +1943,8 @@ void main() {
             );
           }
 
-          test('-> success', () async => doThenSucceedTest(doTest));
-          test('-> failure', () async => doThenFailTest(doTest));
+          test('- success', () async => doThenSucceedTest(doTest));
+          test('- failure', () async => doThenFailTest(doTest));
         });
       });
 

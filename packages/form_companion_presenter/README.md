@@ -87,8 +87,8 @@ class MyPresenter extends StateNotifier<MyViewState>
   @override
   FutureOr<void> doSubmit(BuildContext context) async {
     // Gets a validated input values
-    String name = getProperty('name').value! as String;
-    int age = getProperty('age').value! as int;
+    String name = getSavedPropertyValue('name');
+    int age = getSavedPropertyValue('age');
     // Calls your business logic here. You can use await here.
     ...
     // Set state to expose for other components of your app.

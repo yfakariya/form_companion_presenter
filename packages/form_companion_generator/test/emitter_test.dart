@@ -259,7 +259,7 @@ Future<void> main() async {
       );
     });
 
-    test('1 property of List<Enum>', () async {
+    test('1 property of List of Enum', () async {
       final properties = await makeProperty(
         'prop',
         library.typeProvider.listType(myEnumType),
@@ -1725,7 +1725,7 @@ extension \$TestFieldFactoryExtension on Test {
         ),
       ]) {
         test(
-          'options of $type',
+          'options of ${type.toString().replaceAll('<', ' of ').replaceAll('>', '')}',
           () => testEmitFieldFactory(
             isFormBuilder: true,
             propertyValueType: type,
@@ -2778,7 +2778,7 @@ String formBuilderFilterChipFactory(
       validator: property.getValidator(context),
       decoration: decoration ?? const InputDecoration().copyWith(labelText: property.name, hintText: null),
       key: key,
-      initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))!,
+      initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       name: property.name,
       options: ${itemsExpression('FormBuilderChipOption', propertyElementType, isCollection: true, usesEnumName: usesEnumName)},
       alignment: alignment,

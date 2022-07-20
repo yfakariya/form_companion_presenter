@@ -20,9 +20,6 @@ Widget _buildChilren(
 }) =>
     FormBuilderTextField(
       name: fieldName,
-      // TODO(yfakariya): This work around should be removed
-      // Work around to avoid double invocation of validation in first entry.
-      initialValue: '',
       onSaved: onSaved,
       validator: validatorFactory?.call(context),
     );
@@ -500,7 +497,8 @@ void main() {
 
       final result = adapter!.validate();
       expect(validatorCalled, isTrue);
-      expect(validatorArgument, isEmpty);
+      // FormBuilderTextField passes null for validation of default value (null)
+      expect(validatorArgument, isNull);
       return result;
     }
 
@@ -540,7 +538,8 @@ void main() {
 
       adapter!.save();
       expect(onSavedCalled, isTrue);
-      expect(savingArgument, isEmpty);
+      // FormBuilderTextField passes null for validation of default value (null)
+      expect(savingArgument, isNull);
     });
 
     FutureOr<void> testAutoValidateMode(
@@ -586,6 +585,7 @@ void main() {
             name: 'target',
             validatorFactories: [
               (_) => (value) {
+                    print('Validate TARGET: $value (${value.runtimeType})');
                     targetValidatorCalled++;
                     return null;
                   },
@@ -601,6 +601,7 @@ void main() {
             name: 'another',
             validatorFactories: [
               (_) => (value) {
+                    print('Validate ANOTHER: $value (${value.runtimeType})');
                     anotherValidatorCalled++;
                     return null;
                   },
@@ -623,17 +624,11 @@ void main() {
                 name: 'target',
                 validator: presenter.getPropertyValidator('target', context),
                 autovalidateMode: AutovalidateMode.onUserInteraction,
-                // TODO(yfakariya): This work around should be removed
-                // Work around to avoid double invocation of validation in first entry.
-                initialValue: '',
               ),
               FormBuilderTextField(
                 name: 'another',
                 validator: presenter.getPropertyValidator('another', context),
                 autovalidateMode: AutovalidateMode.onUserInteraction,
-                // TODO(yfakariya): This work around should be removed
-                // Work around to avoid double invocation of validation in first entry.
-                initialValue: '',
               ),
             ],
           ),

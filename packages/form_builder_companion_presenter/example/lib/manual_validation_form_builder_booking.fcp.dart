@@ -573,7 +573,7 @@ class $ManualValidationFormBuilderBookingPresenterFieldFactory {
               hintText: LocaleKeys.mealOffers_hint.tr()),
       key: key,
       initialValue: property.getFieldValue(
-          Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))!,
+          Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       name: property.name,
       options: [MealType.vegan, MealType.halal]
           .map((x) => FormBuilderChipOption<MealType>(

@@ -140,11 +140,11 @@ class FormBuilderCheckBoxGroup<T> extends FormField<List<T>> {}
 
   group('non generic function', () {
     for (final spec in [
-      Tuple3('aliased -> non-aliased', 'Callback', 'void Function()'),
-      Tuple3('non-aliased -> aliased', 'void Function()', 'Callback'),
-      Tuple3('aliased -> aliased', 'Callback', 'Callback'),
+      Tuple3('aliased - non-aliased', 'Callback', 'void Function()'),
+      Tuple3('non-aliased - aliased', 'void Function()', 'Callback'),
+      Tuple3('aliased - aliased', 'Callback', 'Callback'),
       Tuple3(
-        'non-aliased -> non-aliased',
+        'non-aliased - non-aliased',
         'void Function()',
         'void Function()',
       ),
@@ -175,22 +175,22 @@ final ${spec.item2} callback = () {};
   group('simple generic function', () {
     for (final spec in [
       Tuple3(
-        'aliased -> non-aliased',
+        'aliased - non-aliased',
         'Callback<String>',
         'T Function<T>(T)',
       ),
       Tuple3(
-        'non-aliased -> aliased',
+        'non-aliased - aliased',
         'String Function(String)',
         'Callback<T>',
       ),
       Tuple3(
-        'aliased -> aliased',
+        'aliased - aliased',
         'Callback<String>',
         'Callback<T>',
       ),
       Tuple3(
-        'non-aliased -> non-aliased',
+        'non-aliased - non-aliased',
         'String Function(String)',
         'T Function<T>(T)',
       ),
@@ -223,22 +223,22 @@ final ${spec.item2} callback = (_) => '';
   group('nested generic function', () {
     for (final spec in [
       Tuple3(
-        'aliased -> non-aliased',
+        'aliased - non-aliased',
         'Callback<String>',
         'T Function<T>(T)',
       ),
       Tuple3(
-        'non-aliased -> aliased',
+        'non-aliased - aliased',
         'String Function(String)',
         'Callback<T>',
       ),
       Tuple3(
-        'aliased -> aliased',
+        'aliased - aliased',
         'Callback<String>',
         'Callback<T>',
       ),
       Tuple3(
-        'non-aliased -> non-aliased',
+        'non-aliased - non-aliased',
         'String Function(String)',
         'T Function<T>(T)',
       ),
@@ -269,22 +269,22 @@ final List<${spec.item2}> callback = [];
   group('generic function mapped with return type', () {
     for (final spec in [
       Tuple3(
-        'aliased -> non-aliased',
+        'aliased - non-aliased',
         'Callback<String>',
         'T Function<T>()',
       ),
       Tuple3(
-        'non-aliased -> aliased',
+        'non-aliased - aliased',
         'String Function()',
         'Callback<T>',
       ),
       Tuple3(
-        'aliased -> aliased',
+        'aliased - aliased',
         'Callback<String>',
         'Callback<T>',
       ),
       Tuple3(
-        'non-aliased -> non-aliased',
+        'non-aliased - non-aliased',
         'String Function()',
         'T Function<T>()',
       ),
@@ -317,22 +317,22 @@ final ${spec.item2} callback = () => '';
   group('generic function mapped with parameter type', () {
     for (final spec in [
       Tuple3(
-        'aliased -> non-aliased',
+        'aliased - non-aliased',
         'Callback<String>',
         'void Function<T>(T)',
       ),
       Tuple3(
-        'non-aliased -> aliased',
+        'non-aliased - aliased',
         'void Function(String)',
         'Callback<T>',
       ),
       Tuple3(
-        'aliased -> aliased',
+        'aliased - aliased',
         'Callback<String>',
         'Callback<T>',
       ),
       Tuple3(
-        'non-aliased -> non-aliased',
+        'non-aliased - non-aliased',
         'void Function(String)',
         'void Function<T>(T)',
       ),

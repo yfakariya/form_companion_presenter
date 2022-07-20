@@ -1,6 +1,6 @@
 name: form_companion_generator
 description: >
-  Code generator for `form_companion_presenter` and `form_builder_companion_presenter`.
+  Code generator for form_companion_presenter and form_builder_companion_presenter to reduce boilerplate of forms.
 version: 0.1.0
 repository: https://github.com/yfakariya/form_companion_presenter
 
