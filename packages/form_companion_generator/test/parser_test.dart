@@ -2422,7 +2422,7 @@ final _expectedImports = {
     ..._builderCommonImports,
     ExpectedImport(
       'package:flutter/material.dart',
-      shows: ['DropdownButtonBuilder', 'DropdownMenuItem', 'Icons'],
+      shows: ['DropdownButtonBuilder', 'DropdownMenuItem'],
     ),
     ExpectedImport(
       'package:flutter/painting.dart',
@@ -2436,7 +2436,6 @@ final _expectedImports = {
     ExpectedImport(
       'package:flutter/widgets.dart',
       shows: [
-        'Icon',
         'Text', // From default items.item_template
         'Widget',
       ],

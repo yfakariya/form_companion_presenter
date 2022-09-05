@@ -412,7 +412,6 @@ class $BulkAutoValidationFormBuilderBookingPresenterFieldFactory {
       transitionBuilder: transitionBuilder,
       textCapitalization: textCapitalization,
       useRootNavigator: useRootNavigator,
-      alwaysUse24HourFormat: alwaysUse24HourFormat,
       initialEntryMode: initialEntryMode,
       timePickerInitialEntryMode: timePickerInitialEntryMode,
       format: format,
