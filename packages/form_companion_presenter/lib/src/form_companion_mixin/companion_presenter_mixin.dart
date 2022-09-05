@@ -201,13 +201,20 @@ abstract class CompanionPresenterFeatures<A extends FormStateAdapter> {
   /// You can handles the error by overriding this method. For example, you
   /// record the error with your logger or APM library.
   ///
-  /// Default implementation just calls [print] to log the error.
+  /// Default implementation just calls [FlutterError.presentError] to log the error.
   @protected
   @visibleForOverriding
-  void handleCanceledAsyncValidationError(AsyncError error) {
-    // ignore: avoid_print
-    print(error);
-  }
+  void handleCanceledAsyncValidationError(AsyncError error) =>
+      FlutterError.presentError(
+        FlutterErrorDetails(
+          exception: error,
+          stack: error.stackTrace,
+          library: 'Form Companion Presenter',
+          context: ErrorSummary(
+            'Asynchronous error was ocurred when the operation had been canceled.',
+          ),
+        ),
+      );
 
   /// Gets the ancestor [FormState] like state from specified [BuildContext],
   /// and wraps it to [FormStateAdapter].
