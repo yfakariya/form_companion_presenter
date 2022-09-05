@@ -55,7 +55,7 @@ class _VariableNode extends VariableNode {
   final Element _element;
 
   @override
-  String get name => _declaration.name.name;
+  String get name => _declaration.name2.lexeme;
 
   @override
   Expression? get initializer => _declaration.initializer;
@@ -70,14 +70,14 @@ class _GetterMethodNode extends VariableNode {
   final MethodDeclaration _declaration;
 
   @override
-  String get name => _declaration.name.name;
+  String get name => _declaration.name2.lexeme;
 
   @override
   Expression? get initializer =>
       (_declaration.body as ExpressionFunctionBody).expression;
 
   @override
-  Element get element => _declaration.declaredElement!;
+  Element get element => _declaration.declaredElement2!;
 
   _GetterMethodNode(this._declaration) : super._();
 }
@@ -86,7 +86,7 @@ class _GetterFunctionNode extends VariableNode {
   final FunctionDeclaration _declaration;
 
   @override
-  String get name => _declaration.name.name;
+  String get name => _declaration.name2.lexeme;
 
   @override
   Expression? get initializer =>
@@ -94,7 +94,7 @@ class _GetterFunctionNode extends VariableNode {
           .expression;
 
   @override
-  Element get element => _declaration.declaredElement!;
+  Element get element => _declaration.declaredElement2!;
 
   _GetterFunctionNode(this._declaration) : super._();
 }
@@ -165,7 +165,7 @@ class _FunctionNode extends ExecutableNode {
   final FunctionDeclaration _declaration;
 
   @override
-  String get name => _declaration.name.name;
+  String get name => _declaration.name2.lexeme;
 
   @override
   FunctionBody get body => _declaration.functionExpression.body;
@@ -178,7 +178,7 @@ class _FunctionNode extends ExecutableNode {
   DartType get returnType => _declaration.returnType!.type!;
 
   @override
-  ExecutableElement get element => _declaration.declaredElement!;
+  ExecutableElement get element => _declaration.declaredElement2!;
 
   _FunctionNode(NodeProvider nodeProvider, this._declaration)
       : super._(nodeProvider);
@@ -188,7 +188,7 @@ class _MethodNode extends ExecutableNode {
   final MethodDeclaration _declaration;
 
   @override
-  String get name => _declaration.name.name;
+  String get name => _declaration.name2.lexeme;
 
   @override
   FunctionBody get body => _declaration.body;
@@ -201,7 +201,7 @@ class _MethodNode extends ExecutableNode {
   DartType get returnType => _declaration.returnType!.type!;
 
   @override
-  ExecutableElement get element => _declaration.declaredElement!;
+  ExecutableElement get element => _declaration.declaredElement2!;
 
   _MethodNode(NodeProvider nodeProvider, this._declaration)
       : super._(nodeProvider);

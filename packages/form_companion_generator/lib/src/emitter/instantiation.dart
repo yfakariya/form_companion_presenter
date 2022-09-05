@@ -86,7 +86,7 @@ void _processTypeParameter(
   TypeParameter parameter,
   StringSink sink,
 ) {
-  sink.write(context.getMappedType(parameter.name.name));
+  sink.write(context.getMappedType(parameter.name2.lexeme));
 }
 
 void _processTypeArguments(
@@ -125,7 +125,7 @@ void _processGenericFunctionType(
   sink.write(' Function');
 
   if (type.typeParameters?.typeParameters
-          .any((t) => !context.isMapped(t.name.name)) ??
+          .any((t) => !context.isMapped(t.name2.lexeme)) ??
       false) {
     _processTypeParameters(context, type.typeParameters?.typeParameters, sink);
   }
@@ -155,7 +155,7 @@ void processFunctionTypeFormalParameter(
     ..write(' ')
     ..write(
       emitParameterContext == EmitParameterContext.methodOrFunctionParameter
-          ? parameter.identifier.name
+          ? parameter.name.lexeme
           : 'Function',
     );
   _processTypeParameters(
@@ -263,7 +263,7 @@ void processTypeAnnotation(
   if (annotationType is TypeParameterType) {
     _processTypeArgumentElement(
       context,
-      annotationType.element,
+      annotationType.element2,
       sink,
     );
 
@@ -301,7 +301,7 @@ void processTypeWithValueType(
   StringSink sink,
 ) {
   if (parameterType is ParameterizedType) {
-    sink.write(parameterType.element!.name);
+    sink.write(parameterType.element2!.name);
 
     if (parameterType.typeArguments.isNotEmpty) {
       _processTypeArguments(context, parameterType.typeArguments, sink);
@@ -452,7 +452,7 @@ void _processGenericFunctionTypeNormalFormalParameter(
         sink,
       );
 
-      if (parameter.identifier == null) {
+      if (parameter.name == null) {
         // Parameter of function type may not have identifier
         // such as 'Function(int, String)'.
         return;
@@ -461,6 +461,6 @@ void _processGenericFunctionTypeNormalFormalParameter(
       sink.write(' ');
     }
 
-    sink.write(parameter.identifier!.name);
+    sink.write(parameter.name!.lexeme);
   }
 }

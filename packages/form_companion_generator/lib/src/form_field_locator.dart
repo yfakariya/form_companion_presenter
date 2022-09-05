@@ -89,7 +89,7 @@ class FormFieldLocator {
     LibraryElement library,
     String typeName,
   ) {
-    final directCandidate = library.getType(typeName);
+    final directCandidate = library.getClass(typeName);
     if (directCandidate != null) {
       return directCandidate;
     }

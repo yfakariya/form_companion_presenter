@@ -195,7 +195,7 @@ FutureOr<List<PropertyAndFormFieldDefinition>> getPropertiesAsync(
   );
 
   logger.fine(
-    'Detects $pdbTypeName argument in ${constructor.enclosingElement.name} class: ${pdbArgument.runtimeType}',
+    'Detects $pdbTypeName argument in ${constructor.enclosingElement3.name} class: ${pdbArgument.runtimeType}',
   );
 
   // constructor always has block.
@@ -220,7 +220,7 @@ FutureOr<List<PropertyAndFormFieldDefinition>> getPropertiesAsync(
   if (building.isEmpty) {
     // Constructor without inline initialization means empty
     context.addGlobalWarning(
-      "initializeCompanionMixin($pdbTypeName) is called with empty $pdbTypeName in class '${constructor.enclosingElement.name}'.",
+      "initializeCompanionMixin($pdbTypeName) is called with empty $pdbTypeName in class '${constructor.enclosingElement3.name}'.",
     );
   }
 
@@ -273,10 +273,10 @@ Element _getDeclaringElement(MethodInvocation expression) {
             .declaredElement!
             .library
             .scope
-            .lookup(node.variables.variables.first.name.name)
+            .lookup(node.variables.variables.first.name2.lexeme)
             .getter!;
       } else {
-        return node.declaredElement!;
+        return node.declaredElement2!;
       }
     }
   }
@@ -327,7 +327,7 @@ FutureOr<List<LibraryImport>> collectDependenciesAsync(
       final argumentsHandler = formFieldConstructor.argumentsHandler;
 
       collector.reset(
-        formFieldConstructor.constructor.declaredElement!.enclosingElement,
+        formFieldConstructor.constructor.declaredElement2!.enclosingElement3,
         property.warnings,
       );
       // Visit only parameters instead of constructor to avoid collecting
@@ -341,9 +341,9 @@ FutureOr<List<LibraryImport>> collectDependenciesAsync(
       final classDeclaration =
           formFieldConstructor.constructor.parent! as ClassDeclaration;
       collector
-        ..recordTypeId(
-          classDeclaration.declaredElement!,
-          classDeclaration.name,
+        ..recordTypeName(
+          classDeclaration.declaredElement2!,
+          classDeclaration.name2.lexeme,
         )
         // Add property value
         ..processGenericType(property.propertyValueType)

@@ -132,7 +132,7 @@ DartType? getCollectionElementType(DartType type, Element element) {
   }
 
   final library = element.library!;
-  if (type.element == library.typeProvider.iterableElement) {
+  if (type.element2 == library.typeProvider.iterableElement) {
     return type.typeArguments.single;
   }
 

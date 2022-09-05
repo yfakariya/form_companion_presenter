@@ -166,8 +166,8 @@ Future<void> main() async {
             isFormBuilder: spec.item1,
             shouldBeContructorFound: true,
             constructorAssertion: (c) {
-              expect(c.declaredElement, isNotNull);
-              expect(c.declaredElement!.name, isEmpty);
+              expect(c.declaredElement2, isNotNull);
+              expect(c.declaredElement2!.name, isEmpty);
             },
           ),
         );
@@ -272,27 +272,27 @@ Future<void> main() async {
         shouldBeContructorFound: true,
         constructorsAssertion: (c) {
           expect(
-            c.every((e) => e.constructor.declaredElement!.isPublic),
+            c.every((e) => e.constructor.declaredElement2!.isPublic),
             isTrue,
             reason: c
                 .map(
-                  (e) => '${e.constructor.name} -> '
-                      'isPublic: ${e.constructor.declaredElement?.isPublic}',
+                  (e) => '${e.constructor.name2} -> '
+                      'isPublic: ${e.constructor.declaredElement2?.isPublic}',
                 )
                 .join('\n'),
           );
           expect(
-            c.map((e) => e.constructor.name?.toString()),
+            c.map((e) => e.constructor.name2?.toString()),
             constructorSpecs.map((e) => e.item1),
-            reason: c.map((e) => e.constructor.name).join('\n'),
+            reason: c.map((e) => e.constructor.name2).join('\n'),
           );
           expect(
-            c.map((e) => e.constructor.declaredElement!.isFactory),
+            c.map((e) => e.constructor.declaredElement2!.isFactory),
             constructorSpecs.map((e) => e.item2),
             reason: c
                 .map(
-                  (e) => '${e.constructor.name} -> '
-                      'isFactory: ${e.constructor.declaredElement?.isFactory}',
+                  (e) => '${e.constructor.name2} -> '
+                      'isFactory: ${e.constructor.declaredElement2?.isFactory}',
                 )
                 .join('\n'),
           );

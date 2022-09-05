@@ -80,7 +80,7 @@ $code
 class FormField<T> {}
 class TextFormField extends FormField<String> {}
 ''',
-      classFinder: (l) => l.getType('TextFormField')!,
+      classFinder: (l) => l.getClass('TextFormField')!,
       valueTypeProvider: (l) => toGenericType(l.typeProvider.stringType),
       assertion: (x) {
         expect(x.getMappedType('T'), 'T');
@@ -95,7 +95,7 @@ class TextFormField extends FormField<String> {}
 class FormField<T> {}
 class DropdownButtonFormField<T> extends FormField<T> {}
 ''',
-      classFinder: (l) => l.getType('DropdownButtonFormField')!,
+      classFinder: (l) => l.getClass('DropdownButtonFormField')!,
       valueTypeProvider: (l) => toGenericType(l.typeProvider.stringType),
       formFieldGenericArgumentsProvider: (t) => [toGenericType(t.stringType)],
       assertion: (x) {
@@ -111,7 +111,7 @@ class DropdownButtonFormField<T> extends FormField<T> {}
 class FormField<T> {}
 class DropdownButtonFormField<T> extends FormField<T> {}
 ''',
-      classFinder: (l) => l.getType('DropdownButtonFormField')!,
+      classFinder: (l) => l.getClass('DropdownButtonFormField')!,
       valueTypeProvider: (l) => toGenericType(nullableStringType),
       formFieldGenericArgumentsProvider: (_) =>
           [toGenericType(nullableStringType)],
@@ -128,7 +128,7 @@ class DropdownButtonFormField<T> extends FormField<T> {}
 class FormField<T> {}
 class FormBuilderCheckBoxGroup<T> extends FormField<List<T>> {}
 ''',
-      classFinder: (l) => l.getType('FormBuilderCheckBoxGroup')!,
+      classFinder: (l) => l.getClass('FormBuilderCheckBoxGroup')!,
       valueTypeProvider: (l) =>
           toGenericType(l.typeProvider.listType(l.typeProvider.stringType)),
       formFieldGenericArgumentsProvider: (t) => [toGenericType(t.stringType)],
@@ -158,7 +158,7 @@ class FormField<T> {}
 class FunctionFormField extends FormField<${spec.item3}> {}
 final ${spec.item2} callback = () {};
 ''',
-          classFinder: (l) => l.getType('FunctionFormField')!,
+          classFinder: (l) => l.getClass('FunctionFormField')!,
           valueTypeProvider: (l) {
             final variable =
                 l.topLevelElements.whereType<TopLevelVariableElement>().single;
@@ -204,7 +204,7 @@ class FormField<T> {}
 class FunctionFormField<T> extends FormField<${spec.item3}> {}
 final ${spec.item2} callback = (_) => '';
 ''',
-          classFinder: (l) => l.getType('FunctionFormField')!,
+          classFinder: (l) => l.getClass('FunctionFormField')!,
           valueTypeProvider: (l) {
             final variable =
                 l.topLevelElements.whereType<TopLevelVariableElement>().single;
@@ -252,7 +252,7 @@ class FormField<T> {}
 class FunctionFormField<T> extends FormField<List<${spec.item3}>> {}
 final List<${spec.item2}> callback = [];
 ''',
-          classFinder: (l) => l.getType('FunctionFormField')!,
+          classFinder: (l) => l.getClass('FunctionFormField')!,
           valueTypeProvider: (l) => toGenericType(
             l.topLevelElements.whereType<TopLevelVariableElement>().single.type,
           ),
@@ -298,7 +298,7 @@ class FormField<T> {}
 class FunctionFormField<T> extends FormField<${spec.item3}> {}
 final ${spec.item2} callback = () => '';
 ''',
-          classFinder: (l) => l.getType('FunctionFormField')!,
+          classFinder: (l) => l.getClass('FunctionFormField')!,
           valueTypeProvider: (l) {
             final variable =
                 l.topLevelElements.whereType<TopLevelVariableElement>().single;
@@ -346,7 +346,7 @@ class FormField<T> {}
 class FunctionFormField<T> extends FormField<${spec.item3}> {}
 final ${spec.item2} callback = (_) {};
 ''',
-          classFinder: (l) => l.getType('FunctionFormField')!,
+          classFinder: (l) => l.getClass('FunctionFormField')!,
           valueTypeProvider: (l) {
             final variable =
                 l.topLevelElements.whereType<TopLevelVariableElement>().single;

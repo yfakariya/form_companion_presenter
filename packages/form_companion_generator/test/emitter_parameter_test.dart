@@ -22,7 +22,7 @@ Future<void> main() async {
 
   final library = await getParametersLibrary();
   final nodeProvider = NodeProvider(SessionResolver(library));
-  final holder = library.getType('ParameterHolder')!;
+  final holder = library.getClass('ParameterHolder')!;
   final holderNode =
       await nodeProvider.getElementDeclarationAsync<ClassDeclaration>(holder);
   final constructorParameters = {
@@ -37,18 +37,18 @@ Future<void> main() async {
   final constructorParameterNodes = {
     for (final c
         in holderNode.childEntities.whereType<ConstructorDeclaration>())
-      c.name!.name: {
-        for (final p in c.parameters.parameters) p.identifier!.name: p
+      c.name2!.lexeme: {
+        for (final p in c.parameters.parameters) p.name!.lexeme: p
       }
   };
   final methodParameterNodes = {
     for (final m in holderNode.childEntities.whereType<MethodDeclaration>())
-      m.name.name: {
-        for (final p in m.parameters!.parameters) p.identifier!.name: p
+      m.name2.lexeme: {
+        for (final p in m.parameters!.parameters) p.name!.lexeme: p
       }
   };
 
-  final listHolder = library.getType('ParameterListHolder')!;
+  final listHolder = library.getClass('ParameterListHolder')!;
   final listHolderNode = await nodeProvider
       .getElementDeclarationAsync<ClassDeclaration>(listHolder);
   final listConstructorParameters = {
@@ -63,7 +63,7 @@ Future<void> main() async {
         .single
         .parameters
         .parameters)
-      p.identifier!.name: p
+      p.name!.lexeme: p
   };
   final listMethodParameterNodes = {
     for (final p in listHolderNode.childEntities
@@ -71,10 +71,10 @@ Future<void> main() async {
         .single
         .parameters!
         .parameters)
-      p.identifier!.name: p
+      p.name!.lexeme: p
   };
 
-  final functionHolder = library.getType('ParameterFunctionHolder')!;
+  final functionHolder = library.getClass('ParameterFunctionHolder')!;
   final functionHolderNode = await nodeProvider
       .getElementDeclarationAsync<ClassDeclaration>(functionHolder);
   final functionConstructorParameters = {
@@ -86,7 +86,7 @@ Future<void> main() async {
         .single
         .parameters
         .parameters)
-      p.identifier!.name: p
+      p.name!.lexeme: p
   };
   final stringComparisonType =
       (await getResolvedLibraryResult('form_fields.dart'))

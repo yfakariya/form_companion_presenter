@@ -82,7 +82,7 @@ Future<void> main() async {
   final formBuilderTextField =
       await lookupFormBuilderClass('FormBuilderTextField');
   final formFieldWithPropertyParameter =
-      library.getType('FormFieldWithPropertyParameter')!;
+      library.getClass('FormFieldWithPropertyParameter')!;
 
   final parametersLibrary = await getParametersLibrary();
 
