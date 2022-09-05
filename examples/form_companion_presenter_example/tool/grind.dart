@@ -24,7 +24,7 @@ Future<dynamic> test() => runAsync(
 void buildAll() {}
 
 @Task()
-void build() => runAsync(
+Future<void> build() async => runAsync(
       'fvm',
       arguments: [
         'flutter',

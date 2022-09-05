@@ -31,7 +31,7 @@ class Validator {
 
   static AsyncValidatorFactory<String> get id => (options) {
         final container = ProviderScope.containerOf(options.context);
-        return (value, options) {
+        return (value, options) async {
           if (value == null || value.isEmpty) {
             return 'ID is required.';
           }

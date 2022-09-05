@@ -18,7 +18,7 @@ Future<void> runFormats({
 }) async {
   // Do manual execution rather than melos
   // to avoid format genrated sources...
-  Future<void> _runFormat(String directory) async {
+  Future<void> runFormat(String directory) async {
     final sources = await getDir(directory)
         .list(recursive: true, followLinks: false)
         .where(
@@ -47,10 +47,10 @@ Future<void> runFormats({
   }
 
   for (final example in examples) {
-    await _runFormat('../../examples/$example/');
+    await runFormat('../../examples/$example/');
   }
 
   for (final package in packages) {
-    await _runFormat('../../packages/$package/');
+    await runFormat('../../packages/$package/');
   }
 }
