@@ -108,7 +108,7 @@ class ParameterInfo {
 
     if (node is FieldFormalParameter) {
       final parameterElement = node.declaredElement!;
-      final fieldType = await _getFieldTypeAnnotationAsync(
+      final fieldType = await _getThisFieldTypeAnnotationAsync(
         nodeProvider,
         node,
         parameterElement,
@@ -148,6 +148,31 @@ class ParameterInfo {
       );
     }
 
+    if (node is SuperFormalParameter) {
+      final parameterElement = node.declaredElement!;
+      final fieldType = await _getSuperFieldTypeAnnotationAsync(
+        nodeProvider,
+        node,
+        parameterElement,
+      );
+      return ParameterInfo._(
+        node,
+        node.name.lexeme,
+        parameterElement.type,
+        fieldType,
+        null,
+        node.keyword?.stringValue,
+        parameterElement.defaultValueCode,
+        parameterElement.isRequiredNamed
+            ? ParameterRequirability.required
+            : ParameterRequirability.optional,
+        isCollectionType: u.isCollectionType(
+          parameterElement.type,
+          parameterElement,
+        ),
+      );
+    }
+
     throwError(
       message:
           "Failed to parse complex parameter '$node' (${node.runtimeType}) at ${getNodeLocation(node, node.declaredElement!)} ",
@@ -169,7 +194,7 @@ class ParameterInfo {
         isCollectionType: isCollectionType,
       );
 
-  static FutureOr<TypeAnnotation?> _getFieldTypeAnnotationAsync(
+  static FutureOr<TypeAnnotation?> _getThisFieldTypeAnnotationAsync(
     NodeProvider nodeProvider,
     FieldFormalParameter node,
     ParameterElement parameterElement,
@@ -179,7 +204,52 @@ class ParameterInfo {
       node.name.lexeme,
       parameterElement.library!,
     )!;
+    return _getFieldTypeAnnotationCoreAsync(
+      nodeProvider,
+      parameterElement.thisOrAncestorOfType<ClassElement>()!,
+      node,
+      parameterElement,
+      fieldElement,
+    );
+  }
 
+  static FutureOr<TypeAnnotation?> _getSuperFieldTypeAnnotationAsync(
+    NodeProvider nodeProvider,
+    SuperFormalParameter node,
+    ParameterElement parameterElement,
+  ) async {
+    InterfaceElement? targetClass =
+        parameterElement.thisOrAncestorOfType<ClassElement>();
+    while (targetClass != null) {
+      final fieldElement = targetClass.lookUpGetter(
+        node.name.lexeme,
+        parameterElement.library!,
+      );
+      if (fieldElement != null) {
+        return _getFieldTypeAnnotationCoreAsync(
+          nodeProvider,
+          targetClass,
+          node,
+          parameterElement,
+          fieldElement,
+        );
+      }
+
+      targetClass = targetClass.supertype?.element2;
+    }
+
+    throw Exception(
+      "Failed to get correspond field of super parameter '$parameterElement'.",
+    );
+  }
+
+  static FutureOr<TypeAnnotation?> _getFieldTypeAnnotationCoreAsync(
+    NodeProvider nodeProvider,
+    InterfaceElement classElement,
+    FormalParameter node,
+    ParameterElement parameterElement,
+    Element fieldElement,
+  ) async {
     final fieldNode = await nodeProvider
         .getElementDeclarationAsync(fieldElement.nonSynthetic);
     // Always become VariableDeclaration which is retrieved from FieldFormalParameter.

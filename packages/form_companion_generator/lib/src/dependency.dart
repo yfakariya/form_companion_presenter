@@ -3,6 +3,7 @@
 import 'dart:async';
 
 import 'package:analyzer/dart/ast/ast.dart';
+import 'package:analyzer/dart/ast/token.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
@@ -336,25 +337,51 @@ class DependentLibraryCollector extends RecursiveAstVisitor<void> {
       _getLibraryImportEntryDirect(libraryIdentifier, null)
           ?.markImportAsPrefixed(libraryPrefix);
 
-  Future<AstNode> _beginGetElementDeclaration(String fieldName) async =>
-      _nodeProvider
-          .getElementDeclarationAsync(_contextClass.getField(fieldName)!);
+  Future<AstNode> _beginGetElementDeclaration(String fieldName) async {
+    InterfaceElement? targetClass = _contextClass;
+    while (targetClass != null) {
+      final field = targetClass.getField(fieldName);
+      if (field != null) {
+        return _nodeProvider.getElementDeclarationAsync(field);
+      }
+
+      targetClass = targetClass.supertype?.element2;
+    }
+
+    throw Exception("Failed to get correspond field '$fieldName' for parameter "
+        'in $_contextClass class hierarchy.');
+  }
 
   @override
   void visitFieldFormalParameter(FieldFormalParameter node) {
     super.visitFieldFormalParameter(node);
+    _visitFormalParameter(node.declaredElement, node.name, node.type);
+  }
 
-    if (node.type == null) {
+  @override
+  void visitSuperFormalParameter(SuperFormalParameter node) {
+    super.visitSuperFormalParameter(node);
+    _visitFormalParameter(node.declaredElement, node.name, node.type);
+  }
+
+  void _visitFormalParameter(
+    ParameterElement? element,
+    Token name,
+    TypeAnnotation? type,
+  ) {
+    if (type == null) {
       // Process field here.
-      final element = node.declaredElement;
-      assert(element is FieldFormalParameterElement);
+      assert(
+        element is FieldFormalParameterElement ||
+            element is SuperFormalParameterElement,
+      );
 
       // We must get field declaration to get declared type
       // instead of resolved type here.
       // For example, we want to get alias of function type.
       final completer = _beginAsync();
       unawaited(
-        _beginGetElementDeclaration(node.name.lexeme).then((field) {
+        _beginGetElementDeclaration(name.lexeme).then((field) {
           try {
             // Because we get node from FieldFormalParameterElement,
             // so the node should be VariableDeclaration

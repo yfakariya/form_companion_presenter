@@ -182,11 +182,16 @@ Future<void> main() async {
           '''
 library _lib;
 
-class B {
+class A {
   final int v;
-  B(this.v);
+  A(this.v);
 }
-class C {
+
+class B extends A {
+  B(super.v);
+}
+
+class C extends B {
   C(super.v);
 }
 ''',
@@ -196,33 +201,23 @@ class C {
         final library = await resolver.findLibraryByName('_lib');
         final element = library!.getClass('C')!.constructors.single;
         final target = await resolver.astNodeFor(element, resolve: true);
-        await expectLater(
-          ParameterInfo.fromNodeAsync(
-            NodeProvider(resolver),
-            target!.childEntities
-                .whereType<FormalParameterList>()
-                .single
-                .childEntities
-                .whereType<FormalParameter>()
-                .single,
-          ),
-          throwsA(
-            isA<InvalidGenerationSourceError>()
-                .having(
-                  (e) => e.message,
-                  'message',
-                  startsWith(
-                    "Failed to parse complex parameter 'super.v' "
-                    '(SuperFormalParameterImpl) at ',
-                  ),
-                )
-                .having(
-                  (e) => e.element,
-                  'element',
-                  isA<SuperFormalParameterElement>(),
-                ),
-          ),
+        final result = await ParameterInfo.fromNodeAsync(
+          NodeProvider(resolver),
+          target!.childEntities
+              .whereType<FormalParameterList>()
+              .single
+              .childEntities
+              .whereType<FormalParameter>()
+              .single,
         );
+        expect(result.name, 'v');
+        expect(result.type.isDartCoreInt, isTrue);
+        expect(result.typeAnnotation, isNotNull);
+        expect(result.typeAnnotation?.type?.isDartCoreInt, isTrue);
+        expect(result.functionTypedParameter, isNull);
+        expect(result.keyword, isNull);
+        expect(result.node, isA<SuperFormalParameter>());
+        expect(result.requirability, ParameterRequirability.optional);
       } finally {
         dispose.complete();
       }
