@@ -1,3 +1,8 @@
+## 0.2.0
+
+ - **FIX**: update Form Builder.
+ - **FEAT**: update form builder dependency.
+
 ## 0.1.0
 
 * Initial release
