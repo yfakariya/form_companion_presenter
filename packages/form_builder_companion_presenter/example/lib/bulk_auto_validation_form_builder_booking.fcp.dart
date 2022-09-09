@@ -341,7 +341,6 @@ class $BulkAutoValidationFormBuilderBookingPresenterFieldFactory {
     TransitionBuilder? transitionBuilder,
     TextCapitalization textCapitalization = TextCapitalization.none,
     bool useRootNavigator = true,
-    bool alwaysUse24HourFormat = false,
     DatePickerEntryMode initialEntryMode = DatePickerEntryMode.calendar,
     TimePickerEntryMode timePickerInitialEntryMode = TimePickerEntryMode.dial,
     DateFormat? format,
