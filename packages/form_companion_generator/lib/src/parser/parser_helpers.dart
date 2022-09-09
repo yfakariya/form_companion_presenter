@@ -15,11 +15,11 @@ bool isPropertyDescriptorsBuilder(DartType? type) =>
 ///
 /// [callerElement] is the [Element] which contains [method], which has scope
 /// to resolve extension method.
-ClassElement? lookupTargetClass(
+InterfaceElement? lookupTargetClass(
   Element callerElement,
   MethodInvocation method,
 ) {
-  final target = method.realTarget?.staticType?.element as ClassElement?;
+  final target = method.realTarget?.staticType?.element2 as ClassElement?;
   if (target != null) {
     return target;
   }
@@ -28,7 +28,7 @@ ClassElement? lookupTargetClass(
   final callerType =
       callerElement.thisOrAncestorOfType<ExtensionElement>()?.extendedType;
   if (callerType is InterfaceType) {
-    return callerType.element;
+    return callerType.element2;
   } else {
     return null;
   }
@@ -41,7 +41,7 @@ ClassElement? lookupTargetClass(
 /// This function also resolves extension method.
 ExecutableElement lookupMethod(
   Element contextElement,
-  ClassElement? targetClass,
+  InterfaceElement? targetClass,
   String methodName,
   AstNode invocation,
 ) {

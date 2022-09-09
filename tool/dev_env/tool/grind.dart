@@ -14,7 +14,7 @@ Future<dynamic> checkEnv() => checkDevEnv();
 
 @DefaultTask('Setup development environment.')
 @Depends(checkEnv)
-void setupEnv() => enablePubGetCore(runPubGet: true);
+Future<void> setupEnv() async => enablePubGetCore(runPubGet: true);
 
 @Task(
   'Enable `pub get` for melos enabled projects. Pass --run to run `pub get` immediately.',

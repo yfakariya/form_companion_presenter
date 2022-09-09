@@ -8,8 +8,8 @@ import 'test_helpers.dart';
 
 Future<void> main() async {
   final collectionsLibrary = await getResolvedLibraryResult('collections.dart');
-  final myCollection = collectionsLibrary.element.getType('MyCollection')!;
-  final myList = collectionsLibrary.element.getType('MyList')!;
+  final myCollection = collectionsLibrary.element.getClass('MyCollection')!;
+  final myList = collectionsLibrary.element.getClass('MyList')!;
   final nullableIterable = collectionsLibrary.element.topLevelElements
       .whereType<TopLevelVariableElement>()
       .singleWhere((e) => e.name == 'nullableIterable')
@@ -35,7 +35,7 @@ Future<void> main() async {
       () => expect(
         isCollectionType(
           typeProvider.iterableDynamicType,
-          typeProvider.iterableDynamicType.element,
+          typeProvider.iterableDynamicType.element2,
         ),
         isTrue,
       ),
@@ -46,7 +46,7 @@ Future<void> main() async {
       () => expect(
         isCollectionType(
           typeProvider.listType(typeProvider.dynamicType),
-          typeProvider.listType(typeProvider.dynamicType).element,
+          typeProvider.listType(typeProvider.dynamicType).element2,
         ),
         isTrue,
       ),
@@ -65,7 +65,7 @@ Future<void> main() async {
                 typeProvider.dynamicType,
                 typeProvider.dynamicType,
               )
-              .element,
+              .element2,
         ),
         isFalse,
       ),
@@ -76,7 +76,7 @@ Future<void> main() async {
       () => expect(
         isCollectionType(
           typeProvider.stringType,
-          typeProvider.stringType.element,
+          typeProvider.stringType.element2,
         ),
         isFalse,
       ),
@@ -103,7 +103,7 @@ Future<void> main() async {
       () => expect(
         isCollectionType(
           nullableIterable,
-          nullableIterable.element!,
+          nullableIterable.element2!,
         ),
         isTrue,
       ),
@@ -114,7 +114,7 @@ Future<void> main() async {
       () => expect(
         isCollectionType(
           nullableList,
-          nullableList.element!,
+          nullableList.element2!,
         ),
         isTrue,
       ),
@@ -123,7 +123,7 @@ Future<void> main() async {
     test(
       'Custom Iterable?: true',
       () => expect(
-        isCollectionType(nullableMyCollection, nullableMyCollection.element!),
+        isCollectionType(nullableMyCollection, nullableMyCollection.element2!),
         isTrue,
       ),
     );
@@ -131,7 +131,7 @@ Future<void> main() async {
     test(
       'Custom List?: true',
       () => expect(
-        isCollectionType(nullableMyList, nullableMyList.element!),
+        isCollectionType(nullableMyList, nullableMyList.element2!),
         isTrue,
       ),
     );

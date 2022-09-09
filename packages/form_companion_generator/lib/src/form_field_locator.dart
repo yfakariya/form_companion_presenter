@@ -76,7 +76,7 @@ class FormFieldLocator {
   ) {
     for (final package in _packages) {
       final library = _libraries[package]!;
-      final candidate = _getTypeFromLibrary(library, typeName);
+      final candidate = _getTypeFromLibrary(library, typeName, {});
       if (candidate != null) {
         return candidate.thisType;
       }
@@ -88,14 +88,18 @@ class FormFieldLocator {
   ClassElement? _getTypeFromLibrary(
     LibraryElement library,
     String typeName,
+    Set<String> checked,
   ) {
-    final directCandidate = library.getType(typeName);
+    checked.add(library.identifier);
+
+    final directCandidate = library.getClass(typeName);
     if (directCandidate != null) {
       return directCandidate;
     }
 
-    for (final exported in library.exportedLibraries) {
-      final exportedCandiate = _getTypeFromLibrary(exported, typeName);
+    for (final exported in library.exportedLibraries
+        .where((l) => !checked.contains(l.identifier))) {
+      final exportedCandiate = _getTypeFromLibrary(exported, typeName, checked);
       if (exportedCandiate != null) {
         return exportedCandiate;
       }

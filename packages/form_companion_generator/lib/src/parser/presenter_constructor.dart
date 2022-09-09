@@ -14,7 +14,7 @@ FutureOr<Object> _detectArgumentOfLastInitializeCompanionMixinInvocationAsync(
   if (finder.invocations.isEmpty) {
     throwError(
       message:
-          "No $initializeCompanionMixinMethodName($pdbTypeName) invocation in constructor body of '${element.enclosingElement.name}' class.",
+          "No $initializeCompanionMixinMethodName($pdbTypeName) invocation in constructor body of '${element.enclosingElement3.name}' class.",
       todo:
           'Call $initializeCompanionMixinMethodName($pdbTypeName) in constructor body.',
       element: element,
@@ -23,7 +23,7 @@ FutureOr<Object> _detectArgumentOfLastInitializeCompanionMixinInvocationAsync(
 
   if (finder.invocations.length > 1) {
     final multipleInvocationsWarning =
-        "initializeCompanionMixin($pdbTypeName) is called multiply in constructor of class '${element.enclosingElement.name}', so last one is used.";
+        "initializeCompanionMixin($pdbTypeName) is called multiply in constructor of class '${element.enclosingElement3.name}', so last one is used.";
     context.addGlobalWarning(multipleInvocationsWarning);
     context.logger.warning(multipleInvocationsWarning);
   }

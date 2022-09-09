@@ -193,11 +193,12 @@ Iterable<String> _emitFieldFactoryCore(
     constructorName = formFieldType;
   } else {
     yield '  /// Gets a [FormField] for `${property.name}` property '
-        'with [$formFieldType.${constructor.constructor.name ?? 'new'}] constructor.';
-    methodName = constructor.constructor.name?.name ?? 'withDefaultConstructor';
-    constructorName = constructor.constructor.name == null
+        'with [$formFieldType.${constructor.constructor.name2?.lexeme ?? 'new'}] constructor.';
+    methodName =
+        constructor.constructor.name2?.lexeme ?? 'withDefaultConstructor';
+    constructorName = constructor.constructor.name2 == null
         ? formFieldType
-        : '$formFieldType.${constructor.constructor.name?.name}';
+        : '$formFieldType.${constructor.constructor.name2?.lexeme}';
   }
 
   yield '  $formFieldType $methodName(';
@@ -247,6 +248,9 @@ Iterable<String> _emitPropertyWarnings(
 }
 
 /// Emits specified parameter information with type argument.
+///
+/// Note that this function assumes that the parameter is in context of named
+/// parameters list rather than positional parameters list.
 @visibleForTesting
 String emitParameter(
   TypeInstantiationContext context,

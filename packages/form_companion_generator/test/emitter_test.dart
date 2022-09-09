@@ -82,7 +82,7 @@ Future<void> main() async {
   final formBuilderTextField =
       await lookupFormBuilderClass('FormBuilderTextField');
   final formFieldWithPropertyParameter =
-      library.getType('FormFieldWithPropertyParameter')!;
+      library.getClass('FormFieldWithPropertyParameter')!;
 
   final parametersLibrary = await getParametersLibrary();
 
@@ -2522,7 +2522,6 @@ String formBuilderDateTimePickerFactory(
     TransitionBuilder? transitionBuilder,
     TextCapitalization textCapitalization = TextCapitalization.none,
     bool useRootNavigator = true,
-    bool alwaysUse24HourFormat = false,
     DatePickerEntryMode initialEntryMode = DatePickerEntryMode.calendar,
     TimePickerEntryMode timePickerInitialEntryMode = TimePickerEntryMode.dial,
     DateFormat? format,
@@ -2589,7 +2588,6 @@ String formBuilderDateTimePickerFactory(
       transitionBuilder: transitionBuilder,
       textCapitalization: textCapitalization,
       useRootNavigator: useRootNavigator,
-      alwaysUse24HourFormat: alwaysUse24HourFormat,
       initialEntryMode: initialEntryMode,
       timePickerInitialEntryMode: timePickerInitialEntryMode,
       format: format,
@@ -2658,14 +2656,11 @@ String formBuilderDropdownFactory(
     bool isDense = true,
     int elevation = 8,
     double iconSize = 24.0,
-    Widget? hint,
     TextStyle? style,
     Widget? disabledHint,
     Widget? icon,
     Color? iconDisabledColor,
     Color? iconEnabledColor,
-    bool allowClear = false,
-    Widget clearIcon = const Icon(Icons.close),
     VoidCallback? onTap,
     bool autofocus = false,
     bool shouldRequestFocus = false,
@@ -2702,14 +2697,11 @@ String formBuilderDropdownFactory(
       isDense: isDense,
       elevation: elevation,
       iconSize: iconSize,
-      hint: hint,
       style: style,
       disabledHint: disabledHint,
       icon: icon,
       iconDisabledColor: iconDisabledColor,
       iconEnabledColor: iconEnabledColor,
-      allowClear: allowClear,
-      clearIcon: clearIcon,
       onTap: onTap,
       autofocus: autofocus,
       shouldRequestFocus: shouldRequestFocus,

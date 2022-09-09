@@ -75,7 +75,7 @@ class ParameterInfo {
       // Parse left side with recursive call.
       final base =
           await ParameterInfo.fromNodeAsync(nodeProvider, node.parameter);
-      // But, use original DefaultFormatlParameter for node for DependencyCollector.
+      // But, use original DefaultFormalParameter for node for DependencyCollector.
       return ParameterInfo._(
         node,
         base.name,
@@ -84,6 +84,9 @@ class ParameterInfo {
         base.functionTypedParameter,
         base.keyword,
         base.defaultValue,
+        // Existence of the default value is not considered here
+        // because the requirability always be considered in named parameters
+        // context.
         base.requirability,
         isCollectionType: base.isCollectionType,
       );
@@ -93,7 +96,7 @@ class ParameterInfo {
       final element = node.declaredElement!;
       return ParameterInfo._(
         node,
-        node.identifier!.name,
+        node.name!.lexeme,
         element.type,
         node.type,
         null,
@@ -101,21 +104,21 @@ class ParameterInfo {
         element.defaultValueCode,
         element.isRequiredNamed
             ? ParameterRequirability.required
-            : ParameterRequirability.optional,
+            : ParameterRequirability.notRequired,
         isCollectionType: u.isCollectionType(element.type, element),
       );
     }
 
     if (node is FieldFormalParameter) {
       final parameterElement = node.declaredElement!;
-      final fieldType = await _getFieldTypeAnnotationAsync(
+      final fieldType = await _getThisFieldTypeAnnotationAsync(
         nodeProvider,
         node,
         parameterElement,
       );
       return ParameterInfo._(
         node,
-        node.identifier.name,
+        node.name.lexeme,
         parameterElement.type,
         fieldType,
         null,
@@ -123,7 +126,7 @@ class ParameterInfo {
         parameterElement.defaultValueCode,
         parameterElement.isRequiredNamed
             ? ParameterRequirability.required
-            : ParameterRequirability.optional,
+            : ParameterRequirability.notRequired,
         isCollectionType: u.isCollectionType(
           parameterElement.type,
           parameterElement,
@@ -135,7 +138,7 @@ class ParameterInfo {
       final element = node.declaredElement!;
       return ParameterInfo._(
         node,
-        node.identifier.name,
+        node.name.lexeme,
         element.type,
         null,
         node,
@@ -143,8 +146,33 @@ class ParameterInfo {
         element.defaultValueCode,
         element.isRequiredNamed
             ? ParameterRequirability.required
-            : ParameterRequirability.optional,
+            : ParameterRequirability.notRequired,
         isCollectionType: u.isCollectionType(element.type, element),
+      );
+    }
+
+    if (node is SuperFormalParameter) {
+      final parameterElement = node.declaredElement!;
+      final fieldType = await _getSuperFieldTypeAnnotationAsync(
+        nodeProvider,
+        node,
+        parameterElement,
+      );
+      return ParameterInfo._(
+        node,
+        node.name.lexeme,
+        parameterElement.type,
+        fieldType,
+        null,
+        node.keyword?.stringValue,
+        parameterElement.defaultValueCode,
+        parameterElement.isRequiredNamed
+            ? ParameterRequirability.required
+            : ParameterRequirability.notRequired,
+        isCollectionType: u.isCollectionType(
+          parameterElement.type,
+          parameterElement,
+        ),
       );
     }
 
@@ -169,17 +197,62 @@ class ParameterInfo {
         isCollectionType: isCollectionType,
       );
 
-  static FutureOr<TypeAnnotation?> _getFieldTypeAnnotationAsync(
+  static FutureOr<TypeAnnotation?> _getThisFieldTypeAnnotationAsync(
     NodeProvider nodeProvider,
     FieldFormalParameter node,
     ParameterElement parameterElement,
   ) async {
     final classElement = parameterElement.thisOrAncestorOfType<ClassElement>()!;
     final fieldElement = classElement.lookUpGetter(
-      node.identifier.name,
+      node.name.lexeme,
       parameterElement.library!,
     )!;
+    return _getFieldTypeAnnotationCoreAsync(
+      nodeProvider,
+      parameterElement.thisOrAncestorOfType<ClassElement>()!,
+      node,
+      parameterElement,
+      fieldElement,
+    );
+  }
 
+  static FutureOr<TypeAnnotation?> _getSuperFieldTypeAnnotationAsync(
+    NodeProvider nodeProvider,
+    SuperFormalParameter node,
+    ParameterElement parameterElement,
+  ) async {
+    InterfaceElement? targetClass =
+        parameterElement.thisOrAncestorOfType<ClassElement>();
+    while (targetClass != null) {
+      final fieldElement = targetClass.lookUpGetter(
+        node.name.lexeme,
+        parameterElement.library!,
+      );
+      if (fieldElement != null) {
+        return _getFieldTypeAnnotationCoreAsync(
+          nodeProvider,
+          targetClass,
+          node,
+          parameterElement,
+          fieldElement,
+        );
+      }
+
+      targetClass = targetClass.supertype?.element2;
+    }
+
+    throw Exception(
+      "Failed to get correspond field of super parameter '$parameterElement'.",
+    );
+  }
+
+  static FutureOr<TypeAnnotation?> _getFieldTypeAnnotationCoreAsync(
+    NodeProvider nodeProvider,
+    InterfaceElement classElement,
+    FormalParameter node,
+    ParameterElement parameterElement,
+    Element fieldElement,
+  ) async {
     final fieldNode = await nodeProvider
         .getElementDeclarationAsync(fieldElement.nonSynthetic);
     // Always become VariableDeclaration which is retrieved from FieldFormalParameter.
@@ -193,8 +266,11 @@ enum ParameterRequirability {
   /// Parameter is required in its declaration.
   required,
 
-  /// Parameter is optional in its declaration.
-  optional,
+  /// Parameter is not required in its declaration.
+  ///
+  /// Note that positional parameters requirability should be determined with
+  /// their type, so all positional parameters should be [notRequired].
+  notRequired,
 
   /// Paramter should be treated as nullable and optional regardless its declaration.
   forciblyOptional,
@@ -260,7 +336,7 @@ bool isFormCompanionAnnotation(ElementAnnotation annotation) {
         element.name == 'formCompanion';
   } else if (element is ConstructorElement) {
     return element.library.identifier == _annotationLibrary &&
-        element.enclosingElement.name == 'FormCompanion';
+        element.enclosingElement3.name == 'FormCompanion';
   }
 
   return false;
@@ -419,10 +495,10 @@ abstract class GenericType {
   GenericType._();
 
   static InterfaceType _toRawInterfaceType(InterfaceType type) =>
-      type.element.thisType;
+      type.element2.thisType;
 
   static FunctionType _toRawFunctionType(FunctionType type) =>
-      (type.element?.nonSynthetic as FunctionTypedElement?)?.type ?? type;
+      (type.element2?.nonSynthetic as FunctionTypedElement?)?.type ?? type;
 
   @override
   @nonVirtual
@@ -457,7 +533,7 @@ class _NonGenericType extends GenericType {
 
   @override
   DartType get rawType {
-    final element = type.element;
+    final element = type.element2;
     if (element is ClassElement) {
       return element.thisType;
     }
@@ -564,7 +640,7 @@ void _writeAliasTo(
       }
 
       if (t is TypeParameterType) {
-        final actual = typeParameterMap[t.element.name];
+        final actual = typeParameterMap[t.element2.name];
         if (actual != null) {
           actual.writeTo(sink, withNullability: withNullability);
           continue;
@@ -598,8 +674,8 @@ class _InstantiatedGenericInterfaceType extends GenericType {
 
   @override
   GenericType? get collectionItemType {
-    final typeSystem = _interfaceType.element.library.typeSystem;
-    final typeProvider = _interfaceType.element.library.typeProvider;
+    final typeSystem = _interfaceType.element2.library.typeSystem;
+    final typeProvider = _interfaceType.element2.library.typeProvider;
     if (!typeSystem.isAssignableTo(
       typeSystem.promoteToNonNull(_interfaceType),
       typeProvider.iterableDynamicType,
@@ -631,7 +707,7 @@ class _InstantiatedGenericInterfaceType extends GenericType {
   }) {
     final alias = _interfaceType.alias;
     if (alias == null) {
-      sink.write(_interfaceType.element.name);
+      sink.write(_interfaceType.element2.name);
     } else {
       sink.write(alias.element.name);
     }
@@ -964,7 +1040,7 @@ class PropertyAndFormFieldDefinition {
   /// or factory constructor, and there are some private constructors.
   bool get isSimpleFormField =>
       formFieldConstructors.length == 1 &&
-      formFieldConstructors[0].constructor.name == null;
+      formFieldConstructors[0].constructor.name2 == null;
 
   /// Initializes a new [PropertyAndFormFieldDefinition] instance.
   PropertyAndFormFieldDefinition({

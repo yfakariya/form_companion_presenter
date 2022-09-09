@@ -35,7 +35,7 @@ FutureOr<PropertyAndFormFieldDefinition> resolveFormFieldAsync(
   TypeInstantiationContext? instantiationContext;
   if (formFieldType != null) {
     fieldConstructors =
-        await formFieldType.element.constructors.where((c) => c.isPublic).map(
+        await formFieldType.element2.constructors.where((c) => c.isPublic).map(
       (e) async {
         final declaration = await context.nodeProvider
             .getElementDeclarationAsync<ConstructorDeclaration>(
@@ -78,7 +78,7 @@ String _determineFormFieldTypeName(
   required bool isFormBuilder,
 }) {
   if (preferredFormFieldType != null) {
-    return preferredFormFieldType.rawType.element!.name!;
+    return preferredFormFieldType.rawType.element2!.name!;
   } else {
     if (context.typeSystem.isAssignableTo(
       fieldValueType.rawType,
@@ -90,7 +90,7 @@ String _determineFormFieldTypeName(
     }
 
     // Use element name to ignore type arguments here.
-    final fieldValueTypeName = fieldValueType.rawType.element?.name;
+    final fieldValueTypeName = fieldValueType.rawType.element2?.name;
     if (isFormBuilder) {
       return _predefinedFormBuilderFieldTypes[fieldValueTypeName] ??
           _defaultFormBuilderFieldType;

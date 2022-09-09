@@ -811,7 +811,7 @@ void main() {
     });
 
     group('validateAll()', () {
-      test('calls validate() when no asyncs', () {
+      test('calls validate() when no asyncs', () async {
         final target = TestPresenter(
           properties: PropertyDescriptorsBuilder(),
         );
@@ -823,7 +823,7 @@ void main() {
             return true;
           },
         );
-        target.validateAll(state);
+        await target.validateAll(state);
         expect(isStateValidateCalled, isTrue);
       });
 

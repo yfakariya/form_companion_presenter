@@ -27,7 +27,7 @@ class TypeInstantiationContext {
     // We cannot use supertype.element here because it may lose generic argument
     // information in inheritance hierarchy, but origin should be
     // element.thisType to erase instantiated information.
-    var currentType = formFieldType.element.thisType;
+    var currentType = formFieldType.element2.thisType;
     while (!currentType
         .getDisplayString(withNullability: false)
         .startsWith(_formFieldPattern)) {
@@ -44,7 +44,7 @@ class TypeInstantiationContext {
 
     // We use element here to erase generic argument information, which may be
     // specified via generic type argument of addWithField.
-    if (formFieldType.element.typeParameters.isEmpty) {
+    if (formFieldType.element2.typeParameters.isEmpty) {
       assert(
         formFieldTypeArgument.getDisplayString(withNullability: true) ==
             (property.fieldType.maybeAsInterfaceType ??
@@ -92,7 +92,7 @@ class TypeInstantiationContext {
 
     if (parameterType is ParameterizedType) {
       assert(argument.maybeAsInterfaceType != null);
-      assert(parameterType.element!.name == argument.rawType.element!.name);
+      assert(parameterType.element2!.name == argument.rawType.element2!.name);
       assert(
         parameterType.typeArguments.length == argument.typeArguments.length,
       );

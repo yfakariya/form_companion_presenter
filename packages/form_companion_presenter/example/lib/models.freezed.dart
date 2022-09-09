@@ -382,11 +382,11 @@ abstract class AccountRegistered extends Account {
       required final List<Region> preferredRegions}) = _$AccountRegistered;
   AccountRegistered._() : super._();
 
-  String get id => throw _privateConstructorUsedError;
-  String get name => throw _privateConstructorUsedError;
-  Gender get gender => throw _privateConstructorUsedError;
-  int get age => throw _privateConstructorUsedError;
-  List<Region> get preferredRegions => throw _privateConstructorUsedError;
+  String get id;
+  String get name;
+  Gender get gender;
+  int get age;
+  List<Region> get preferredRegions;
   @JsonKey(ignore: true)
   _$$AccountRegisteredCopyWith<_$AccountRegistered> get copyWith =>
       throw _privateConstructorUsedError;
@@ -948,18 +948,18 @@ abstract class BookingRegistered extends Booking {
       required final String note}) = _$BookingRegistered;
   BookingRegistered._() : super._();
 
-  String get bookingId => throw _privateConstructorUsedError;
-  String get userId => throw _privateConstructorUsedError;
-  DateTimeRange get stay => throw _privateConstructorUsedError;
-  DateTime get specialOfferDate => throw _privateConstructorUsedError;
-  RoomType get roomType => throw _privateConstructorUsedError;
-  List<MealType> get mealOffers => throw _privateConstructorUsedError;
-  int get persons => throw _privateConstructorUsedError;
-  int get babyBeds => throw _privateConstructorUsedError;
-  bool get smoking => throw _privateConstructorUsedError;
-  double get price => throw _privateConstructorUsedError;
-  double get donation => throw _privateConstructorUsedError;
-  String get note => throw _privateConstructorUsedError;
+  String get bookingId;
+  String get userId;
+  DateTimeRange get stay;
+  DateTime get specialOfferDate;
+  RoomType get roomType;
+  List<MealType> get mealOffers;
+  int get persons;
+  int get babyBeds;
+  bool get smoking;
+  double get price;
+  double get donation;
+  String get note;
   @JsonKey(ignore: true)
   _$$BookingRegisteredCopyWith<_$BookingRegistered> get copyWith =>
       throw _privateConstructorUsedError;

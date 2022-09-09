@@ -51,7 +51,7 @@ Future<void> main() async {
   );
 
   final parametersLibrary = await getParametersLibrary();
-  final parameterHolder = parametersLibrary.getType('ParameterHolder')!;
+  final parameterHolder = parametersLibrary.getClass('ParameterHolder')!;
   final interfaceTypeParameters = {
     'nullable': {
       for (final p in parameterHolder.methods
@@ -96,7 +96,7 @@ Future<void> main() async {
 
   final complexGenericTypeParameters = {
     for (final m in parametersLibrary
-        .getType('ComplexGenericTypeHolder')!
+        .getClass('ComplexGenericTypeHolder')!
         .methods
         .single
         .parameters)
@@ -182,11 +182,16 @@ Future<void> main() async {
           '''
 library _lib;
 
-class B {
+class A {
   final int v;
-  B(this.v);
+  A(this.v);
 }
-class C {
+
+class B extends A {
+  B(super.v);
+}
+
+class C extends B {
   C(super.v);
 }
 ''',
@@ -194,35 +199,25 @@ class C {
           tearDown: dispose.future,
         );
         final library = await resolver.findLibraryByName('_lib');
-        final element = library!.getType('C')!.constructors.single;
+        final element = library!.getClass('C')!.constructors.single;
         final target = await resolver.astNodeFor(element, resolve: true);
-        await expectLater(
-          ParameterInfo.fromNodeAsync(
-            NodeProvider(resolver),
-            target!.childEntities
-                .whereType<FormalParameterList>()
-                .single
-                .childEntities
-                .whereType<FormalParameter>()
-                .single,
-          ),
-          throwsA(
-            isA<InvalidGenerationSourceError>()
-                .having(
-                  (e) => e.message,
-                  'message',
-                  startsWith(
-                    "Failed to parse complex parameter 'super.v' "
-                    '(SuperFormalParameterImpl) at ',
-                  ),
-                )
-                .having(
-                  (e) => e.element,
-                  'element',
-                  isA<SuperFormalParameterElement>(),
-                ),
-          ),
+        final result = await ParameterInfo.fromNodeAsync(
+          NodeProvider(resolver),
+          target!.childEntities
+              .whereType<FormalParameterList>()
+              .single
+              .childEntities
+              .whereType<FormalParameter>()
+              .single,
         );
+        expect(result.name, 'v');
+        expect(result.type.isDartCoreInt, isTrue);
+        expect(result.typeAnnotation, isNotNull);
+        expect(result.typeAnnotation?.type?.isDartCoreInt, isTrue);
+        expect(result.functionTypedParameter, isNull);
+        expect(result.keyword, isNull);
+        expect(result.node, isA<SuperFormalParameter>());
+        expect(result.requirability, ParameterRequirability.notRequired);
       } finally {
         dispose.complete();
       }
@@ -610,7 +605,7 @@ class C {
           final type = typeProvider.stringType;
           await assertGenericType(
             sourceType: type,
-            target: GenericType.generic(type, [], type.element),
+            target: GenericType.generic(type, [], type.element2),
             expectedTypeArguments: [],
             rawTypeName: 'String',
             displayStringWithNullability: 'String',
@@ -647,7 +642,7 @@ class C {
         () async {
           final type = typeProvider
               .mapType(typeProvider.stringType, typeProvider.intType)
-              .element
+              .element2
               .thisType;
           final typeArguments = [
             toGenericType(typeProvider.stringType),
@@ -656,9 +651,9 @@ class C {
           await assertGenericType(
             sourceType: type,
             target: GenericType.generic(
-              type.element.thisType,
+              type.element2.thisType,
               typeArguments,
-              type.element,
+              type.element2,
             ),
             expectedTypeArguments: ['String', 'int'],
             rawTypeName: 'Map<K, V>',
@@ -704,7 +699,7 @@ class C {
             target: GenericType.generic(
               typeProvider.neverType,
               [],
-              typeProvider.neverType.element!,
+              typeProvider.neverType.element2!,
             ),
             expectedTypeArguments: [],
             rawTypeName: 'Never',

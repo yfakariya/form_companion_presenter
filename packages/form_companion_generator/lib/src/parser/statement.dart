@@ -41,7 +41,7 @@ FutureOr<void> _parseBlockAsync(
   context.beginBlock({
     for (final fds
         in block.statements.whereType<FunctionDeclarationStatement>())
-      fds.functionDeclaration.name.name: fds.functionDeclaration
+      fds.functionDeclaration.name2.lexeme: fds.functionDeclaration
   });
   try {
     for (final statement in block.statements) {
@@ -77,7 +77,7 @@ FutureOr<void> _parseBlockAsync(
         if (isPropertyDescriptorsBuilder(variableType)) {
           final pdbVariableDeclarations = statement.variables.variables;
           for (final pdbVariableDeclaration in pdbVariableDeclarations) {
-            final variableName = pdbVariableDeclaration.name.name;
+            final variableName = pdbVariableDeclaration.name2.lexeme;
             final initializer = pdbVariableDeclaration.initializer;
             if (initializer != null) {
               context.buildings[variableName] = await _processAssignmentAsync(

@@ -722,19 +722,19 @@ void main() {
 
     testWidgets(
       'all fields are re-validated when Form.autovalidateMode is always.',
-      (widgetTester) =>
+      (widgetTester) async =>
           testRebuildBehavior(widgetTester, AutovalidateMode.always),
     );
 
     testWidgets(
       'all fields are re-validated when Form.autovalidateMode is onUserInteraction.',
-      (widgetTester) =>
+      (widgetTester) async =>
           testRebuildBehavior(widgetTester, AutovalidateMode.onUserInteraction),
     );
 
     testWidgets(
       'only the field is re-validated when Form.autovalidateMode is disable.',
-      (widgetTester) =>
+      (widgetTester) async =>
           testRebuildBehavior(widgetTester, AutovalidateMode.disabled),
     );
   });
@@ -777,7 +777,7 @@ void main() {
 
     testWidgets(
       'saves each field values without onSaved handler.',
-      (widgetTester) => testSaveFields(
+      (widgetTester) async => testSaveFields(
         widgetTester,
         PropertyDescriptorsBuilder()..add<String, String>(name: 'target'),
         (context) => [
@@ -800,7 +800,7 @@ void main() {
 
     testWidgets(
       'extra properties are ignored and harmless.',
-      (widgetTester) => testSaveFields(
+      (widgetTester) async => testSaveFields(
         widgetTester,
         PropertyDescriptorsBuilder()
           ..add<String, String>(name: 'target')

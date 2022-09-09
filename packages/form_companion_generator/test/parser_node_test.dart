@@ -512,7 +512,7 @@ void foo() => C.f();
           final node = result.getElementDeclaration(x)!.node;
           final finder = _LocalFunctionFinder();
           node.visitChildren(finder);
-          return finder.founds.single.declaredElement!;
+          return finder.founds.single.declaredElement2!;
         },
         code: '''
 void foo() {

@@ -3,6 +3,7 @@
 import 'dart:async';
 
 import 'package:analyzer/dart/ast/ast.dart';
+import 'package:analyzer/dart/ast/token.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
@@ -112,7 +113,7 @@ class DependentLibraryCollector extends RecursiveAstVisitor<void> {
   final Map<String, String> _relativeImportIdentityMap = {};
 
   /// Context class of current traversal.
-  late ClassElement _contextClass;
+  late InterfaceElement _contextClass;
 
   late List<String> _warnings;
 
@@ -131,13 +132,19 @@ class DependentLibraryCollector extends RecursiveAstVisitor<void> {
     this._logger,
     LibraryElement presenterLibrary,
   ) : _presenterLibraryId = presenterLibrary.identifier {
-    for (final import in presenterLibrary.imports) {
-      final importUri = import.uri;
+    for (final import in presenterLibrary.libraryImports) {
       final importedLibraryIdentifier = import.importedLibrary?.identifier;
-      if (importUri != null &&
-          importedLibraryIdentifier != null &&
-          importUri != importedLibraryIdentifier) {
-        _relativeImportIdentityMap[importedLibraryIdentifier] = importUri;
+      final importUri = import.uri;
+      if (importUri is! DirectiveUriWithSource) {
+        throw Exception(
+          'Unexpected import directive : ${importUri.runtimeType}',
+        );
+      }
+
+      if (importedLibraryIdentifier != null &&
+          importUri.source.shortName != importedLibraryIdentifier) {
+        _relativeImportIdentityMap[importedLibraryIdentifier] =
+            importUri.relativeUriString;
       }
     }
 
@@ -149,10 +156,10 @@ class DependentLibraryCollector extends RecursiveAstVisitor<void> {
 
   /// Resets internal state with specified information for new session.
   ///
-  /// [contextClass] is [ClassElement] for class which declares the target
+  /// [contextClass] is [InterfaceElement] for class which declares the target
   /// which will be traversed by this visitor.
   /// [warnings] are list to record warnings found in new session.
-  void reset(ClassElement contextClass, List<String> warnings) {
+  void reset(InterfaceElement contextClass, List<String> warnings) {
     // check endAsync() has been called.
     assert(_pendingAsyncOperations.isEmpty);
     _contextClass = contextClass;
@@ -298,7 +305,7 @@ class DependentLibraryCollector extends RecursiveAstVisitor<void> {
 
   /// Records import for specified non-qualified [typeName] which is imported from
   /// the library which declares [holderElement].
-  void _recordTypeName(Element holderElement, String typeName) =>
+  void recordTypeName(Element holderElement, String typeName) =>
       _getLibraryImportEntry(holderElement)?.addTypeName(typeName);
 
   /// Records import for specified [Identifier] which is imported from
@@ -330,53 +337,81 @@ class DependentLibraryCollector extends RecursiveAstVisitor<void> {
       _getLibraryImportEntryDirect(libraryIdentifier, null)
           ?.markImportAsPrefixed(libraryPrefix);
 
-  Future<AstNode> _beginGetElementDeclaration(String fieldName) async =>
-      _nodeProvider
-          .getElementDeclarationAsync(_contextClass.getField(fieldName)!);
+  Future<AstNode> _beginGetElementDeclaration(String fieldName) async {
+    InterfaceElement? targetClass = _contextClass;
+    while (targetClass != null) {
+      final field = targetClass.getField(fieldName);
+      if (field != null) {
+        return _nodeProvider.getElementDeclarationAsync(field);
+      }
+
+      targetClass = targetClass.supertype?.element2;
+    }
+
+    throw Exception("Failed to get correspond field '$fieldName' for parameter "
+        'in $_contextClass class hierarchy.');
+  }
 
   @override
   void visitFieldFormalParameter(FieldFormalParameter node) {
     super.visitFieldFormalParameter(node);
+    _visitFormalParameter(node.declaredElement, node.name, node.type);
+  }
 
-    if (node.type == null) {
+  @override
+  void visitSuperFormalParameter(SuperFormalParameter node) {
+    super.visitSuperFormalParameter(node);
+    _visitFormalParameter(node.declaredElement, node.name, node.type);
+  }
+
+  void _visitFormalParameter(
+    ParameterElement? element,
+    Token name,
+    TypeAnnotation? type,
+  ) {
+    if (type == null) {
       // Process field here.
-      final element = node.declaredElement;
-      assert(element is FieldFormalParameterElement);
+      assert(
+        element is FieldFormalParameterElement ||
+            element is SuperFormalParameterElement,
+      );
 
       // We must get field declaration to get declared type
       // instead of resolved type here.
       // For example, we want to get alias of function type.
       final completer = _beginAsync();
-      _beginGetElementDeclaration(node.identifier.name).then((field) {
-        try {
-          // Because we get node from FieldFormalParameterElement,
-          // so the node should be VariableDeclaration
-          // rather than FieldDeclaration which may contain multiple declarations.
-          assert(field is VariableDeclaration);
-          final declaration = field.parent! as VariableDeclarationList;
-          final fieldType = declaration.type;
-          if (fieldType != null) {
-            _processTypeAnnotation(fieldType);
-          } else {
-            // Like `var i = 0;` case, we use element here.
-            _processType(element!.type);
+      unawaited(
+        _beginGetElementDeclaration(name.lexeme).then((field) {
+          try {
+            // Because we get node from FieldFormalParameterElement,
+            // so the node should be VariableDeclaration
+            // rather than FieldDeclaration which may contain multiple declarations.
+            assert(field is VariableDeclaration);
+            final declaration = field.parent! as VariableDeclarationList;
+            final fieldType = declaration.type;
+            if (fieldType != null) {
+              _processTypeAnnotation(fieldType);
+            } else {
+              // Like `var i = 0;` case, we use element here.
+              _processType(element!.type);
+            }
           }
-        }
-        // ignore: avoid_catches_without_on_clauses
-        catch (e, s) {
-          completer.completeError(e, s);
-        } finally {
-          if (!completer.isCompleted) {
-            completer.complete();
-          }
-        }
-      }).catchError(
-        // ignore: avoid_types_on_closure_parameters
-        (Object e, StackTrace s) async {
-          if (!completer.isCompleted) {
+          // ignore: avoid_catches_without_on_clauses
+          catch (e, s) {
             completer.completeError(e, s);
+          } finally {
+            if (!completer.isCompleted) {
+              completer.complete();
+            }
           }
-        },
+        }).catchError(
+          // ignore: avoid_types_on_closure_parameters
+          (Object e, StackTrace s) async {
+            if (!completer.isCompleted) {
+              completer.completeError(e, s);
+            }
+          },
+        ),
       );
     }
   }
@@ -452,7 +487,7 @@ class DependentLibraryCollector extends RecursiveAstVisitor<void> {
 
     final type = node.type!;
 
-    final element = type.element ?? type.alias?.element;
+    final element = type.element2 ?? type.alias?.element;
     if (type is NeverType ||
         type is VoidType ||
         type is DynamicType ||
@@ -471,12 +506,12 @@ class DependentLibraryCollector extends RecursiveAstVisitor<void> {
   /// Process specified [DartType] and records its and its type arguments imports.
   void _processType(DartType type) {
     if (type is InterfaceType) {
-      if (type.element.isPrivate) {
+      if (type.element2.isPrivate) {
         return;
       }
 
-      _recordTypeName(
-        type.element,
+      recordTypeName(
+        type.element2,
         type.getDisplayString(withNullability: false),
       );
       type.typeArguments.forEach(_processType);

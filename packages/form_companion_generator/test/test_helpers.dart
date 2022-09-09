@@ -154,14 +154,14 @@ FutureOr<InterfaceType> getNullableListOfNullableStringType() async =>
 
 ClassElement lookupExportedClass(LibraryElement library, String name) {
   {
-    final result = library.getType(name);
+    final result = library.getClass(name);
     if (result != null) {
       return result;
     }
   }
 
   for (final exported in library.exportedLibraries) {
-    final result = exported.getType(name);
+    final result = exported.getClass(name);
     if (result != null) {
       return result;
     }
@@ -201,7 +201,7 @@ String pascalize(String value) {
 }
 
 GenericType toGenericType(DartType type) {
-  final element = type.element;
+  final element = type.element2;
   if (element == null) {
     if (type.alias != null) {
       return GenericType.fromDartType(

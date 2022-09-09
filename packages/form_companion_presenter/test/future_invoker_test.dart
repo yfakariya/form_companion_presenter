@@ -364,14 +364,14 @@ void main() {
 
             test(
               'async',
-              () => doTest(
+              () async => doTest(
                 (r) => Future.delayed(Duration.zero, () => r),
               ),
             );
 
             test(
               'sync',
-              () => doTest(
+              () async => doTest(
                 (v) => Future.value(v),
               ),
             );
@@ -450,7 +450,7 @@ void main() {
 
             test(
               'async',
-              () => doTest(
+              () async => doTest(
                 (r) => Future.delayed(
                   Duration.zero,
                   () => r,
@@ -459,7 +459,7 @@ void main() {
             );
             test(
               'sync',
-              () => doTest(
+              () async => doTest(
                 (v) => Future.value(v),
               ),
             );
@@ -575,7 +575,7 @@ void main() {
 
             test(
               'async',
-              () => doTest(
+              () async => doTest(
                 (r) => Future.delayed(
                   Duration.zero,
                   () => r,
@@ -584,7 +584,7 @@ void main() {
             );
             test(
               'sync',
-              () => doTest(
+              () async => doTest(
                 (v) => Future.value(v),
               ),
             );
@@ -629,7 +629,7 @@ void main() {
 
             test(
               'async',
-              () => doTest(
+              () async => doTest(
                 (e) async {
                   await Future<void>.delayed(Duration.zero, () => throw e);
                   return 'ERROR';
@@ -639,7 +639,7 @@ void main() {
 
             test(
               'sync',
-              () => doTest(
+              () async => doTest(
                 (e) {
                   throw e;
                 },
@@ -770,7 +770,7 @@ void main() {
 
             test(
               'async',
-              () => doTest(
+              () async => doTest(
                 (e) async {
                   await Future<void>.delayed(Duration.zero, () => throw e);
                   return 'ERROR';
@@ -780,7 +780,7 @@ void main() {
 
             test(
               'sync',
-              () => doTest(
+              () async => doTest(
                 (e) {
                   throw e;
                 },
@@ -839,7 +839,7 @@ void main() {
 
             test(
               'async',
-              () => doTest(
+              () async => doTest(
                 (e) async {
                   if (e is Exception) {
                     await Future<void>.delayed(Duration.zero, () => throw e);
@@ -854,7 +854,7 @@ void main() {
 
             test(
               'sync',
-              () => doTest(
+              () async => doTest(
                 (e) {
                   if (e is Exception) {
                     throw e;
@@ -920,7 +920,7 @@ void main() {
 
             test(
               'async',
-              () => doTest(
+              () async => doTest(
                 (e) async {
                   if (e is Exception) {
                     await Future<void>.delayed(Duration.zero, () => throw e);
@@ -935,7 +935,7 @@ void main() {
 
             test(
               'sync',
-              () => doTest(
+              () async => doTest(
                 (e) {
                   if (e is Exception) {
                     throw e;

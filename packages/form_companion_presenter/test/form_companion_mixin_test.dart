@@ -755,19 +755,19 @@ void main() {
 
     testWidgets(
       'all fields are re-validated when Form.autovalidateMode is always.',
-      (widgetTester) =>
+      (widgetTester) async =>
           testRebuildBehavior(widgetTester, AutovalidateMode.always),
     );
 
     testWidgets(
       'all fields are re-validated when Form.autovalidateMode is onUserInteraction.',
-      (widgetTester) =>
+      (widgetTester) async =>
           testRebuildBehavior(widgetTester, AutovalidateMode.onUserInteraction),
     );
 
     testWidgets(
       'only the field is re-validated when Form.autovalidateMode is disable.',
-      (widgetTester) =>
+      (widgetTester) async =>
           testRebuildBehavior(widgetTester, AutovalidateMode.disabled),
     );
   });
@@ -1376,7 +1376,7 @@ void main() {
       () {
         testWidgets(
           'sync success - sync success',
-          (widgetTester) => testMultipleAsyncValidators(
+          (widgetTester) async => testMultipleAsyncValidators(
             widgetTester,
             () => null,
             () => null,
@@ -1417,7 +1417,7 @@ void main() {
 
         testWidgets(
           'sync success - sync error',
-          (widgetTester) => testMultipleAsyncValidators(
+          (widgetTester) async => testMultipleAsyncValidators(
             widgetTester,
             () => null,
             () => 'DUMMY',
@@ -1618,7 +1618,7 @@ void main() {
     group('2 async validators in a single proprety', () {
       testWidgets(
         'sync success - sync success',
-        (widgetTester) => testMultipleAsyncValidators(
+        (widgetTester) async => testMultipleAsyncValidators(
           widgetTester,
           () => null,
           () => null,

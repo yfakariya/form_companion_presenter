@@ -77,7 +77,7 @@ class ArgumentsHandler {
 
   static String? _tryGetConstantItemValues(PropertyDefinition property) {
     String? getEnumConstantItemValues(GenericType itemType) {
-      final members = (itemType.rawType.element! as ClassElement)
+      final members = (itemType.rawType.element2! as ClassElement)
           .fields
           .where((f) => f.type == itemType.rawType && f.isConst && f.isStatic)
           .map(
