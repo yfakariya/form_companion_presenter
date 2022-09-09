@@ -217,7 +217,7 @@ class C extends B {
         expect(result.functionTypedParameter, isNull);
         expect(result.keyword, isNull);
         expect(result.node, isA<SuperFormalParameter>());
-        expect(result.requirability, ParameterRequirability.optional);
+        expect(result.requirability, ParameterRequirability.notRequired);
       } finally {
         dispose.complete();
       }

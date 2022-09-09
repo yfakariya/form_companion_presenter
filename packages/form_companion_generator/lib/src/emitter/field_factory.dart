@@ -248,6 +248,9 @@ Iterable<String> _emitPropertyWarnings(
 }
 
 /// Emits specified parameter information with type argument.
+///
+/// Note that this function assumes that the parameter is in context of named
+/// parameters list rather than positional parameters list.
 @visibleForTesting
 String emitParameter(
   TypeInstantiationContext context,

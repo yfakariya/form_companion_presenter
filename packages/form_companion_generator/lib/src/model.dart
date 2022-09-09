@@ -75,7 +75,7 @@ class ParameterInfo {
       // Parse left side with recursive call.
       final base =
           await ParameterInfo.fromNodeAsync(nodeProvider, node.parameter);
-      // But, use original DefaultFormatlParameter for node for DependencyCollector.
+      // But, use original DefaultFormalParameter for node for DependencyCollector.
       return ParameterInfo._(
         node,
         base.name,
@@ -84,6 +84,9 @@ class ParameterInfo {
         base.functionTypedParameter,
         base.keyword,
         base.defaultValue,
+        // Existence of the default value is not considered here
+        // because the requirability always be considered in named parameters
+        // context.
         base.requirability,
         isCollectionType: base.isCollectionType,
       );
@@ -101,7 +104,7 @@ class ParameterInfo {
         element.defaultValueCode,
         element.isRequiredNamed
             ? ParameterRequirability.required
-            : ParameterRequirability.optional,
+            : ParameterRequirability.notRequired,
         isCollectionType: u.isCollectionType(element.type, element),
       );
     }
@@ -123,7 +126,7 @@ class ParameterInfo {
         parameterElement.defaultValueCode,
         parameterElement.isRequiredNamed
             ? ParameterRequirability.required
-            : ParameterRequirability.optional,
+            : ParameterRequirability.notRequired,
         isCollectionType: u.isCollectionType(
           parameterElement.type,
           parameterElement,
@@ -143,7 +146,7 @@ class ParameterInfo {
         element.defaultValueCode,
         element.isRequiredNamed
             ? ParameterRequirability.required
-            : ParameterRequirability.optional,
+            : ParameterRequirability.notRequired,
         isCollectionType: u.isCollectionType(element.type, element),
       );
     }
@@ -165,7 +168,7 @@ class ParameterInfo {
         parameterElement.defaultValueCode,
         parameterElement.isRequiredNamed
             ? ParameterRequirability.required
-            : ParameterRequirability.optional,
+            : ParameterRequirability.notRequired,
         isCollectionType: u.isCollectionType(
           parameterElement.type,
           parameterElement,
@@ -263,8 +266,11 @@ enum ParameterRequirability {
   /// Parameter is required in its declaration.
   required,
 
-  /// Parameter is optional in its declaration.
-  optional,
+  /// Parameter is not required in its declaration.
+  ///
+  /// Note that positional parameters requirability should be determined with
+  /// their type, so all positional parameters should be [notRequired].
+  notRequired,
 
   /// Paramter should be treated as nullable and optional regardless its declaration.
   forciblyOptional,
