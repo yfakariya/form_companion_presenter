@@ -98,7 +98,7 @@ class _BulkAutoValidationVanillaFormAccountPane extends ConsumerWidget {
 class BulkAutoValidationVanillaFormAccountPresenter
     extends StateNotifier<Account>
     with CompanionPresenterMixin, FormCompanionMixin {
-  final Reader _read;
+  final Ref _read;
 
   /// Creates new [BulkAutoValidationVanillaFormAccountPresenter].
   BulkAutoValidationVanillaFormAccountPresenter(
@@ -168,7 +168,7 @@ class BulkAutoValidationVanillaFormAccountPresenter
     );
 
     // Propagate to global state.
-    _read(account.state).state = state;
+    _read.read(account.state).state = state;
     router.go('/');
   }
 
@@ -194,6 +194,6 @@ final _presenter = StateNotifierProvider<
     BulkAutoValidationVanillaFormAccountPresenter, Account>(
   (ref) => BulkAutoValidationVanillaFormAccountPresenter(
     ref.watch(account),
-    ref.read,
+    ref,
   ),
 );

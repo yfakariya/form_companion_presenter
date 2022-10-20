@@ -102,7 +102,7 @@ class _AutoValidationFormBuilderAccountPane extends ConsumerWidget {
 @formCompanion
 class AutoValidationFormBuilderAccountPresenter extends StateNotifier<Account>
     with CompanionPresenterMixin, FormBuilderCompanionMixin {
-  final Reader _read;
+  final Ref _read;
 
   /// Creates new [AutoValidationFormBuilderAccountPresenter].
   AutoValidationFormBuilderAccountPresenter(
@@ -178,7 +178,7 @@ class AutoValidationFormBuilderAccountPresenter extends StateNotifier<Account>
     );
 
     // Propagate to global state.
-    _read(account.state).state = state;
+    _read.read(account.state).state = state;
     router.go('/');
   }
 
@@ -205,6 +205,6 @@ final _presenter =
     StateNotifierProvider<AutoValidationFormBuilderAccountPresenter, Account>(
   (ref) => AutoValidationFormBuilderAccountPresenter(
     ref.watch(account),
-    ref.read,
+    ref,
   ),
 );

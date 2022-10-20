@@ -158,13 +158,13 @@ class _BookingPaneTemplate extends ConsumerWidget {
 class BookingPresenterTemplate extends StateNotifier<Booking>
     with CompanionPresenterMixin, FormBuilderCompanionMixin {
   final Account _account;
-  final Reader _read;
+  final Ref _ref;
 
   /// Creates new [BookingPresenterTemplate].
   BookingPresenterTemplate(
     Booking initialState,
     this._account,
-    this._read,
+    this._ref,
   ) : super(initialState) {
     initializeCompanionMixin(
       PropertyDescriptorsBuilder()
@@ -292,7 +292,7 @@ class BookingPresenterTemplate extends StateNotifier<Booking>
     );
 
     // Propagate to global state.
-    _read(booking.state).state = state;
+    _ref.read(booking.state).state = state;
     router.go('/');
   }
 
@@ -337,6 +337,6 @@ final _presenter = StateNotifierProvider<BookingPresenterTemplate, Booking>(
   (ref) => BookingPresenterTemplate(
     ref.watch(booking),
     ref.watch(account),
-    ref.read,
+    ref,
   ),
 );

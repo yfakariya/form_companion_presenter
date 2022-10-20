@@ -162,18 +162,20 @@ class _AutoValidationFormBuilderBookingPane extends ConsumerWidget {
   }
 }
 
+// TODO(yfakariya): Use AsyncValue
+
 /// Presenter which holds form properties.
 @formCompanion
 class AutoValidationFormBuilderBookingPresenter extends StateNotifier<Booking>
     with CompanionPresenterMixin, FormBuilderCompanionMixin {
   final Account _account;
-  final Reader _read;
+  final Ref _ref;
 
   /// Creates new [AutoValidationFormBuilderBookingPresenter].
   AutoValidationFormBuilderBookingPresenter(
     Booking initialState,
     this._account,
-    this._read,
+    this._ref,
   ) : super(initialState) {
     initializeCompanionMixin(
       PropertyDescriptorsBuilder()
@@ -301,7 +303,7 @@ class AutoValidationFormBuilderBookingPresenter extends StateNotifier<Booking>
     );
 
     // Propagate to global state.
-    _read(booking.state).state = state;
+    _ref.read(booking.state).state = state;
     router.go('/');
   }
 
@@ -347,6 +349,6 @@ final _presenter =
   (ref) => AutoValidationFormBuilderBookingPresenter(
     ref.watch(booking),
     ref.watch(account),
-    ref.read,
+    ref,
   ),
 );

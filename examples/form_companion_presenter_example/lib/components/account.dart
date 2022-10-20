@@ -93,7 +93,7 @@ class _AccountPaneTemplate extends ConsumerWidget {
 @formCompanion
 class AccountPresenterTemplate extends StateNotifier<Account>
     with CompanionPresenterMixin, FormBuilderCompanionMixin {
-  final Reader _read;
+  final Ref _read;
 
   /// Creates new [AccountPresenterTemplate].
   AccountPresenterTemplate(
@@ -193,7 +193,7 @@ class AccountPresenterTemplate extends StateNotifier<Account>
     );
 
     // Propagate to global state.
-    _read(account.state).state = state;
+    _read.read(account.state).state = state;
     router.go('/');
   }
 
@@ -221,6 +221,6 @@ class AccountPresenterTemplate extends StateNotifier<Account>
 final _presenter = StateNotifierProvider<AccountPresenterTemplate, Account>(
   (ref) => AccountPresenterTemplate(
     ref.watch(account),
-    ref.read,
+    ref,
   ),
 );
