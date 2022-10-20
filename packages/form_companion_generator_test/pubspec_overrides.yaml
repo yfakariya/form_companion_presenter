@@ -1,0 +1,5 @@
+dependency_overrides:
+  form_builder_companion_presenter:
+    path: ../../packages/form_builder_companion_presenter
+  form_companion_presenter:
+    path: ../../packages/form_companion_presenter
