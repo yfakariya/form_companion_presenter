@@ -187,7 +187,11 @@ FutureOr<InterfaceType> lookupFormFieldTypeInstance(String name) async =>
 extension LibraryElementExtensions on LibraryElement {
   ClassElement lookupClass(String className) =>
       scope.lookup(className).getter!.thisOrAncestorOfType<ClassElement>()!;
-  InterfaceType lookupType(String className) => lookupClass(className).thisType;
+  InterfaceType lookupType(String typeName) => scope
+      .lookup(typeName)
+      .getter!
+      .thisOrAncestorOfType<InterfaceElement>()!
+      .thisType;
 }
 
 String pascalize(String value) {

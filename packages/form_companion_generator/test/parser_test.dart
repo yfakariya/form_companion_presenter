@@ -2351,7 +2351,7 @@ final _expectedImports = {
     ),
     ExpectedImport(
       'package:flutter/painting.dart',
-      shows: ['EdgeInsets', 'StrutStyle', 'TextStyle'],
+      shows: ['EdgeInsets', 'StrutStyle', 'TextAlignVertical', 'TextStyle'],
     ),
     ExpectedImport(
       'package:flutter/services.dart',
@@ -2402,7 +2402,7 @@ final _expectedImports = {
     ),
     ExpectedImport(
       'package:flutter/painting.dart',
-      shows: ['EdgeInsets', 'StrutStyle', 'TextStyle'],
+      shows: ['EdgeInsets', 'StrutStyle', 'TextAlignVertical', 'TextStyle'],
     ),
     ExpectedImport(
       'package:flutter/services.dart',
