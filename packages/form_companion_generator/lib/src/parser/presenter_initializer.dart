@@ -39,7 +39,7 @@ FutureOr<Expression?>
 
   if (finder.invocations.length > 1) {
     final multipleInvocationsWarning =
-        "initializeCompanionMixin($pdbTypeName) is called multiply in '${element.displayName}', so last one is used.";
+        "`initializeCompanionMixin($pdbTypeName)` is called multiply in '${element.displayName}'(${element.kind}), so last one is used.";
     context.addGlobalWarning(multipleInvocationsWarning);
     context.logger.warning(multipleInvocationsWarning);
   }

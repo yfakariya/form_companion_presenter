@@ -2141,9 +2141,9 @@ Future<void> main() async {
       on InvalidGenerationSourceError catch (e) {
         expect(
           e.message,
-          'A target of @formCompanion must be mix-ined with the either of '
-          'FormCompanionPresenterMixin or FormBuilderPresenterMixin. '
-          'Class name: BaseCompanion',
+          'A target of `@formCompanion` must be mix-ined with the either of '
+          '`FormCompanionPresenterMixin` or `FormBuilderPresenterMixin` in '
+          "'BaseCompanion' class.",
         );
         expect(e.element, isA<ClassElement>());
         expect(e.element?.name, 'BaseCompanion');
