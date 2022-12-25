@@ -28,7 +28,7 @@ part 'parser/assignment.dart';
 part 'parser/expression.dart';
 part 'parser/form_field.dart';
 part 'parser/identifier.dart';
-part 'parser/presenter_constructor.dart';
+part 'parser/presenter_initializer.dart';
 part 'parser/statement.dart';
 
 /// Parses specified [ClassElement] of the presenter.
@@ -40,8 +40,6 @@ FutureOr<PresenterDefinition> parseElementAsync(
   FormCompanionAnnotation annotation,
   Logger logger,
 ) async {
-  final constructor = findConstructor(element);
-
   final mixinType = detectMixinType(element);
   if (mixinType == null) {
     throw InvalidGenerationSourceError(
@@ -51,23 +49,34 @@ FutureOr<PresenterDefinition> parseElementAsync(
   }
 
   final isFormBuilder = mixinType == MixinType.formBuilderCompanionMixin;
-  final warnings = <String>[];
-  final properties = await getPropertiesAsync(
-    config,
+  final globalWarnings = <String>[];
+
+  final context = ParseContext(
     element.library.languageVersion,
+    config,
+    logger,
     nodeProvider,
     formFieldLocator,
-    constructor,
-    warnings,
-    logger,
+    element.library.typeProvider,
+    element.library.typeSystem,
+    globalWarnings,
     isFormBuilder: isFormBuilder,
   );
+
+  final initializer = await findInitializerAsync(context, element);
+
+  logger.fine(
+    'Detects $pdbTypeName argument in ${initializer.element.displayName} '
+    'class: ${initializer.propertyDescriptorBuilderTypedArgument.runtimeType}',
+  );
+
+  final properties = await getPropertiesAsync(context, initializer);
 
   return PresenterDefinition(
     name: element.name,
     isFormBuilder: isFormBuilder,
     doAutovalidate: annotation.autovalidate ?? config.autovalidateByDefault,
-    warnings: warnings,
+    warnings: globalWarnings,
     imports: await collectDependenciesAsync(
       element.library,
       config,
@@ -114,127 +123,143 @@ MixinType? detectMixinType(ClassElement classElement) {
   }
 }
 
-/// Find an appropriate [ConstructorElement] from specified [ClassElement] of
+/// Find an appropriate [Initializer] from specified [ClassElement] of
 /// the presenter.
-/// The returned constructor must be non factory, unique anonymous constructor,
-/// which should call `initializeCompanionMixin`.
+/// The returned initializer should calls `initializeCompanionMixin` only once.
 ///
-/// If such constructors are declared multiply, or are not declared at all,
+/// If such members are declared multiply, or are not declared at all,
 /// an [InvalidGenerationSourceError] will be thrown.
 @visibleForTesting
-ConstructorElement findConstructor(
+FutureOr<Initializer> findInitializerAsync(
+  ParseContext context,
   ClassElement classElement,
-) {
-  final nonRedirectedConstructors = classElement.constructors
-      .where(
-        (ctor) =>
-            !ctor.isFactory &&
-            // Not a implicit default constructor -- it never has initializeCompanionMixin call.
-            !ctor.isSynthetic &&
-            // Filter out constructors which only redirect to another one -- they never have initializeCompanionMixin call.
-            ctor.redirectedConstructor == null,
-      )
-      .toList();
+) async {
+  final candidates = <Initializer>[];
+  for (final constructor in classElement.constructors.where(
+    (ctor) =>
+        // Not a implicit default constructor -- they never have initializeCompanionMixin call.
+        !ctor.isSynthetic &&
+        // Filter out constructors which only redirect to another one -- they never have initializeCompanionMixin call.
+        ctor.redirectedConstructor == null,
+  )) {
+    final ast = await context.nodeProvider
+        .getElementDeclarationAsync<ConstructorDeclaration>(constructor);
+    final pdbArgument =
+        await _findArgumentOfLastInitializeCompanionMixinInvocationAsync(
+      context,
+      ast,
+      constructor,
+    );
+    if (pdbArgument != null) {
+      candidates.add(Initializer(constructor, ast.body, pdbArgument));
+    }
+  }
 
-  if (nonRedirectedConstructors.isEmpty) {
+  for (final method in classElement.methods.where(
+    (m) =>
+        // Not a implicit methods -- they should not have initializeCompanionMixin call.
+        !m.isSynthetic &&
+        // Filter static methods -- they never have initializeCompanionMixin call.
+        !m.isStatic,
+  )) {
+    final ast = await context.nodeProvider
+        .getElementDeclarationAsync<MethodDeclaration>(method);
+    final pdbArgument =
+        await _findArgumentOfLastInitializeCompanionMixinInvocationAsync(
+      context,
+      ast,
+      method,
+    );
+    if (pdbArgument != null) {
+      candidates.add(Initializer(method, ast.body, pdbArgument));
+    }
+  }
+
+  if (candidates.isEmpty) {
     throw InvalidGenerationSourceError(
-      'No constructors which have their body are found. Class name: ${classElement.name}',
+      'No constructors and methods which have their body with `initializeCompanionMixin()` call are found. '
+      'Class name: ${classElement.name}',
       todo:
-          'Modify to ensure only one constructor has body and others are redirected constructors or factories.',
+          'Modify to ensure only one constructor or instance method has body with and initializeCompanionMixin()` call.',
       element: classElement,
     );
   }
 
-  if (nonRedirectedConstructors.length > 1) {
+  if (candidates.length > 1) {
     throw InvalidGenerationSourceError(
-      'This generator only supports presenter class which has only one constructor which has body. '
-      'Class name: ${classElement.name}, found constructors: [${nonRedirectedConstructors.map((c) => c.name).join(', ')}]',
+      'This generator only supports presenter class which has only one member which has body with `initializeCompanionMixin()` call.'
+      'Class name: ${classElement.name}, found members: [${candidates.map((c) => c.element.displayName).join(', ')}]',
       todo:
-          'Modify to ensure only one constructor has body and others are redirected constructors or factories.',
+          'Modify to ensure only one member (constructor or instance method) has body with `initializeCompanionMixin()` call.',
       element: classElement,
     );
   }
 
-  return nonRedirectedConstructors.single;
+  return candidates.single;
 }
 
 /// Extracts unorderd map of [PropertyDefinition] where keys are names of the
 /// properties from specified presenter's [ConstructorElement].
 ///
-/// If any global warnings is issued, the message will be added to [globalWarnings].
+/// If any global warnings is issued, the message will be added to [context].
 @visibleForTesting
 FutureOr<List<PropertyAndFormFieldDefinition>> getPropertiesAsync(
-  Config config,
-  LibraryLanguageVersion languageVersion,
-  NodeProvider nodeProvider,
-  FormFieldLocator formFieldLocator,
-  ConstructorElement constructor,
-  List<String> globalWarnings,
-  Logger logger, {
-  required bool isFormBuilder,
-}) async {
-  final context = ParseContext(
-    languageVersion,
-    config,
-    logger,
-    nodeProvider,
-    formFieldLocator,
-    constructor.library.typeProvider,
-    constructor.library.typeSystem,
-    globalWarnings,
-    isFormBuilder: isFormBuilder,
-  );
-  final ast = await context.nodeProvider
-      .getElementDeclarationAsync<ConstructorDeclaration>(constructor);
+  ParseContext context,
+  Initializer initializer,
+) async {
+  final body = initializer.ast;
+  if (body is BlockFunctionBody) {
+    // Parse block to find real pdb argument.
+    await _parseBlockAsync(
+      context,
+      initializer.element,
+      body.block,
+    );
+  } else {
+    // EmptyFunctionBody ans NativeFunctionBody cannot be come here
+    // because they never have `initializeCompanionMixin()` call.
+    assert(body is ExpressionFunctionBody);
 
-  final pdbArgument =
-      await _detectArgumentOfLastInitializeCompanionMixinInvocationAsync(
-    context,
-    ast,
-    constructor,
-  );
+    await _parseExpressionAsync(
+      context,
+      initializer.element,
+      (body as ExpressionFunctionBody).expression,
+    );
+  }
 
-  logger.fine(
-    'Detects $pdbTypeName argument in ${constructor.enclosingElement3.name} class: ${pdbArgument.runtimeType}',
-  );
-
-  // constructor always has block.
-  await _parseBlockAsync(
-    context,
-    constructor,
-    (ast.body as BlockFunctionBody).block,
-  );
+  final pdbArgument = initializer.propertyDescriptorBuilderTypedArgument;
+  final parsedBuilding = context.initializeCompanionMixinArgument;
 
   late final PropertyDescriptorsBuilding building;
   if (pdbArgument is SimpleIdentifier) {
-    // Try to get building assuming that pdbArgument is local variable,
+    // First, try to get building assuming that pdbArgument is local variable,
     // then assuming that it is direct reference to top level variable or field.
-    building = context.buildings[pdbArgument.name] ??
-        context.initializeCompanionMixinArgument!;
-  } else if (context.initializeCompanionMixinArgument == null) {
-    throwNotSupportedYet(node: ast, contextElement: constructor);
+    building = context.buildings[pdbArgument.name] ?? parsedBuilding!;
+  } else if (parsedBuilding == null) {
+    // Unexpected complex body.
+    throwNotSupportedYet(node: body, contextElement: initializer.element);
   } else {
-    building = context.initializeCompanionMixinArgument!;
+    building = parsedBuilding;
   }
 
   if (building.isEmpty) {
     // Constructor without inline initialization means empty
     context.addGlobalWarning(
-      "initializeCompanionMixin($pdbTypeName) is called with empty $pdbTypeName in class '${constructor.enclosingElement3.name}'.",
+      "initializeCompanionMixin($pdbTypeName) is called with empty $pdbTypeName in class '${initializer.element.displayName}'.",
     );
   }
 
   return _toUniquePropertyDefinitions(
     context,
     building.buildings,
-    constructor,
-    isFormBuilder: isFormBuilder,
+    initializer.element,
+    isFormBuilder: context.isFormBuilder,
   )
       .map(
         (m) async => await resolveFormFieldAsync(
           context,
           m,
-          isFormBuilder: isFormBuilder,
+          isFormBuilder: context.isFormBuilder,
         ),
       )
       .toListAsync();

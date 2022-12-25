@@ -2,28 +2,44 @@
 
 part of '../parser.dart';
 
-// Defines presenter constructor anlysis related constructs.
+// Defines presenter member analysis related to constructs or initialization methods.
 
-FutureOr<Object> _detectArgumentOfLastInitializeCompanionMixinInvocationAsync(
+/// Represents an initializer member which calls `initializeCompanionMixin()`.
+class Initializer {
+  /// An [Element] of this initializer member.
+  final Element element;
+
+  /// A [FunctionBody] of this initializer member.
+  final FunctionBody ast;
+
+  /// A found [Expression] which is passed to `initializeCompanionMixin()` as
+  /// a first argument.
+  final Expression propertyDescriptorBuilderTypedArgument;
+
+  /// Initializes a new [Initializer].
+  Initializer(
+    this.element,
+    this.ast,
+    this.propertyDescriptorBuilderTypedArgument,
+  );
+}
+
+FutureOr<Expression?>
+    _findArgumentOfLastInitializeCompanionMixinInvocationAsync(
   ParseContext context,
-  ConstructorDeclaration ast,
-  ConstructorElement element,
+  AstNode ast,
+  Element element,
 ) async {
   final finder = _InitializeCompanionMixinFinder();
   ast.accept(finder);
+
   if (finder.invocations.isEmpty) {
-    throwError(
-      message:
-          "No $initializeCompanionMixinMethodName($pdbTypeName) invocation in constructor body of '${element.enclosingElement3.name}' class.",
-      todo:
-          'Call $initializeCompanionMixinMethodName($pdbTypeName) in constructor body.',
-      element: element,
-    );
+    return null;
   }
 
   if (finder.invocations.length > 1) {
     final multipleInvocationsWarning =
-        "initializeCompanionMixin($pdbTypeName) is called multiply in constructor of class '${element.enclosingElement3.name}', so last one is used.";
+        "initializeCompanionMixin($pdbTypeName) is called multiply in '${element.displayName}', so last one is used.";
     context.addGlobalWarning(multipleInvocationsWarning);
     context.logger.warning(multipleInvocationsWarning);
   }

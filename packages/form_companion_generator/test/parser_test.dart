@@ -12,6 +12,7 @@ import 'package:form_companion_generator/src/form_field_locator.dart';
 import 'package:form_companion_generator/src/model.dart';
 import 'package:form_companion_generator/src/node_provider.dart';
 import 'package:form_companion_generator/src/parser.dart';
+import 'package:form_companion_generator/src/parser/parser_data.dart';
 import 'package:logging/logging.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:test/test.dart';
@@ -151,49 +152,100 @@ Future<void> main() async {
   });
 
   group('findConstructor', () {
-    test('1 public constructor - found it', () {
-      final found = findConstructor(findType('FormPresenter'));
-      expect(found, isNotNull);
-      expect(found.isPublic, isTrue);
+    FutureOr<Initializer> callFindInitializerAsync(
+      ClassElement classElement,
+    ) async {
+      final library = classElement.library;
+      final context = ParseContext(
+        library.languageVersion,
+        _emptyConfig,
+        logger,
+        nodeProvider,
+        formFieldLocator,
+        typeProvider,
+        library.typeSystem,
+        [],
+        isFormBuilder: false,
+      );
+
+      return await findInitializerAsync(context, classElement);
+    }
+
+    test('1 public constructor - found it', () async {
+      final found = await callFindInitializerAsync(findType('FormPresenter'));
+      expect(found.element.isPublic, isTrue);
     });
 
-    test('1 private constructor - found it', () {
-      final found = findConstructor(findType('WithPrivateConstructor'));
-      expect(found, isNotNull);
-      expect(found.isPrivate, isTrue);
+    test('1 private constructor - found it', () async {
+      final found =
+          await callFindInitializerAsync(findType('WithPrivateConstructor'));
+      expect(found.element.isPrivate, isTrue);
     });
 
-    test('with delegating constructors - found non-delegated one', () {
-      final found = findConstructor(findType('WithDelegatingConstructors'));
-      expect(found, isNotNull);
-      expect(found.isDefaultConstructor, isFalse);
-      expect(found.isPrivate, isTrue);
-      expect(found.isFactory, isFalse);
+    test('with delegating constructors - found non-delegated one', () async {
+      final found = await callFindInitializerAsync(
+        findType('WithDelegatingConstructors'),
+      );
+      final constructor = found.element as ConstructorElement;
+      expect(constructor.isDefaultConstructor, isFalse);
+      expect(constructor.isPrivate, isTrue);
+      expect(constructor.isFactory, isFalse);
     });
 
     test(
-      'Multiple constructor bodies - error',
-      () => expect(
-        () => findConstructor(findType('MultipleConstructorBody')),
+      'Multiple constructors with `initializeCompanionMixin()` call - error',
+      () => expectLater(
+        () async =>
+            await callFindInitializerAsync(findType('MultipleConstructorBody')),
         throwsA(isA<InvalidGenerationSourceError>()),
       ),
     );
 
     test(
-      'No constructors - error',
-      () => expect(
-        () => findConstructor(findType('WithoutConstructor')),
+      'Multiple methods with `initializeCompanionMixin()` call - error',
+      () => expectLater(
+        () async => await callFindInitializerAsync(
+          findType('InitializedInMultipleNonConstructor'),
+        ),
         throwsA(isA<InvalidGenerationSourceError>()),
       ),
     );
 
-    test('No default constructors - found not delegated one', () {
-      final found = findConstructor(findType('NoDefaultConstructors'));
-      expect(found, isNotNull);
-      expect(found.isDefaultConstructor, isFalse);
-      expect(found.isPublic, isTrue);
-      expect(found.isFactory, isFalse);
-      expect(found.name, equals('toBeDetected'));
+    test(
+      'A constructor and a method with `initializeCompanionMixin()` call - error',
+      () => expectLater(
+        () async => await callFindInitializerAsync(
+          findType('InitializedInConstructorAndNonConstructor'),
+        ),
+        throwsA(isA<InvalidGenerationSourceError>()),
+      ),
+    );
+
+    test(
+      'No members with `initializeCompanionMixin()` call - error',
+      () => expectLater(
+        () async =>
+            await callFindInitializerAsync(findType('WithoutConstructor')),
+        throwsA(isA<InvalidGenerationSourceError>()),
+      ),
+    );
+
+    test('No default constructors - found not delegated one', () async {
+      final found =
+          await callFindInitializerAsync(findType('NoDefaultConstructors'));
+      final constructor = found.element as ConstructorElement;
+      expect(constructor.isDefaultConstructor, isFalse);
+      expect(constructor.isPublic, isTrue);
+      expect(constructor.isFactory, isFalse);
+      expect(constructor.name, equals('toBeDetected'));
+    });
+
+    test('1 method - found it', () async {
+      final found = await callFindInitializerAsync(
+        findType('InitializedInNonConstructor'),
+      );
+      final method = found.element as MethodElement;
+      expect(method.name, 'build');
     });
   });
 
@@ -206,15 +258,21 @@ Future<void> main() async {
     }) async {
       final targetClass = findType(name);
       final warnings = <String>[];
-      final result = await getPropertiesAsync(
-        _emptyConfig,
+      final context = ParseContext(
         presenterLibrary.element.languageVersion,
+        _emptyConfig,
+        logger,
         nodeProvider,
         formFieldLocator,
-        findConstructor(targetClass),
+        typeProvider,
+        presenterLibrary.element.typeSystem,
         warnings,
-        logger,
         isFormBuilder: isFormBuilder,
+      );
+
+      final result = await getPropertiesAsync(
+        context,
+        await findInitializerAsync(context, targetClass),
       );
 
       if (warningsAssertion != null) {
@@ -238,15 +296,21 @@ Future<void> main() async {
       final targetClass = findType(name);
       final warnings = <String>[];
       try {
-        final result = await getPropertiesAsync(
-          _emptyConfig,
+        final context = ParseContext(
           presenterLibrary.element.languageVersion,
+          _emptyConfig,
+          logger,
           nodeProvider,
           formFieldLocator,
-          findConstructor(targetClass),
+          typeProvider,
+          presenterLibrary.element.typeSystem,
           warnings,
-          logger,
           isFormBuilder: true,
+        );
+
+        final result = await getPropertiesAsync(
+          context,
+          await findInitializerAsync(context, targetClass),
         );
         fail(
           'No error occurred. Properties: {${result.map(
@@ -387,6 +451,13 @@ Future<void> main() async {
       test(
         'no addition - empty',
         () => testGetPropertiesNoProperties('InlineWithNoAddition'),
+      );
+    });
+
+    group('inline & expression', () {
+      test(
+        'with cascading in expression - detected',
+        () => testGetPropertiesSuccess('InlineWithCascadingExpression'),
       );
     });
 
@@ -962,12 +1033,12 @@ Future<void> main() async {
     group('error cases', () {
       test(
         'no initializeCompanionMixin invocation - error',
-        () => testGetPropertiesError<ConstructorElement>(
+        () => testGetPropertiesError<ClassElement>(
           'NoInitializeCompanionMixin',
           message:
-              "No initializeCompanionMixin(PropertyDescriptorsBuilder) invocation in constructor body of 'NoInitializeCompanionMixin' class.",
+              "No constructors and methods which call `initializeCompanionMixin(PropertyDescriptorsBuilder)` are found in 'NoInitializeCompanionMixin' class.",
           todo:
-              'Call initializeCompanionMixin(PropertyDescriptorsBuilder) in constructor body.',
+              'Modify to ensure only one constructor or instance method has body with and `initializeCompanionMixin(PropertyDescriptorsBuilder)` call.',
         ),
       );
 
@@ -983,7 +1054,7 @@ Future<void> main() async {
             expect(
               warnings,
               [
-                "initializeCompanionMixin(PropertyDescriptorsBuilder) is called multiply in constructor of class 'MultipleInitializeCompanionMixin', so last one is used.",
+                "`initializeCompanionMixin(PropertyDescriptorsBuilder)` is called multiply in 'MultipleInitializeCompanionMixin'(CONSTRUCTOR), so last one is used.",
               ],
             );
           },
