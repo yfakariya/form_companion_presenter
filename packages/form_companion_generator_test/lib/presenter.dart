@@ -100,7 +100,7 @@ class InvalidCompanionPresenter with CompanionPresenterMixin {
   FutureOr<void> doSubmit() {}
 }
 
-// for findConstructor() testing
+// for findInitializerAsync() testing
 
 @formCompanion
 class WithPrivateConstructor with CompanionPresenterMixin, FormCompanionMixin {
@@ -173,6 +173,50 @@ class MultipleConstructorBody with CompanionPresenterMixin, FormCompanionMixin {
   FutureOr<void> doSubmit() {}
 }
 
+// Like Riverpod2 Notifier/AsyncNotifier.
+@formCompanion
+class InitializedInNonConstructor
+    with CompanionPresenterMixin, FormCompanionMixin {
+  FutureOr<void> build() {
+    initializeCompanionMixin(PropertyDescriptorsBuilder());
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+// error
+@formCompanion
+class InitializedInMultipleNonConstructor
+    with CompanionPresenterMixin, FormCompanionMixin {
+  FutureOr<void> build() {
+    initializeCompanionMixin(PropertyDescriptorsBuilder());
+  }
+
+  void build2() {
+    initializeCompanionMixin(PropertyDescriptorsBuilder());
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+// error
+@formCompanion
+class InitializedInConstructorAndNonConstructor
+    with CompanionPresenterMixin, FormCompanionMixin {
+  InitializedInConstructorAndNonConstructor() {
+    initializeCompanionMixin(PropertyDescriptorsBuilder());
+  }
+
+  FutureOr<void> build() {
+    initializeCompanionMixin(PropertyDescriptorsBuilder());
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
 // for tryGetProperties testing
 
 @formCompanion
@@ -188,6 +232,23 @@ class InlineWithCascading
         ..add<List<MyEnum>, List<MyEnum>>(name: 'propEnumList'),
     );
   }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+@formCompanion
+class InlineWithCascadingExpression
+    with CompanionPresenterMixin, FormBuilderCompanionMixin {
+  void build() => initializeCompanionMixin(
+        PropertyDescriptorsBuilder()
+          ..add<int, String>(
+              name: 'propInt', valueConverter: intStringConverter)
+          ..add<String, String>(name: 'propString')
+          ..add<bool, bool>(name: 'propBool')
+          ..add<MyEnum, MyEnum>(name: 'propEnum')
+          ..add<List<MyEnum>, List<MyEnum>>(name: 'propEnumList'),
+      );
 
   @override
   FutureOr<void> doSubmit() {}
