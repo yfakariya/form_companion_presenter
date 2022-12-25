@@ -43,7 +43,9 @@ FutureOr<PresenterDefinition> parseElementAsync(
   final mixinType = detectMixinType(element);
   if (mixinType == null) {
     throw InvalidGenerationSourceError(
-      'A target of @formCompanion must be mix-ined with the either of FormCompanionPresenterMixin or FormBuilderPresenterMixin. Class name: ${element.name}',
+      'A target of `@formCompanion` must be mix-ined with the either of '
+      '`FormCompanionPresenterMixin` or `FormBuilderPresenterMixin` in '
+      "'${element.name}' class.",
       element: element,
     );
   }
@@ -106,8 +108,8 @@ MixinType? detectMixinType(ClassElement classElement) {
 
   if (isFormCompanion && isFormBuilderCompanion) {
     throwError(
-      message:
-          'Both of FormCompanionMixin and FormBuilderCompanionMixin cannot be specified together. Class: ${classElement.name}',
+      message: 'Both of `FormCompanionMixin` and `FormBuilderCompanionMixin` '
+          "cannot be specified together for '${classElement.name}' class.",
       todo:
           'Specify either of FormCompanionMixin or FormBuilderCompanionMixin.',
       element: classElement,
@@ -177,20 +179,21 @@ FutureOr<Initializer> findInitializerAsync(
 
   if (candidates.isEmpty) {
     throw InvalidGenerationSourceError(
-      'No constructors and methods which have their body with `initializeCompanionMixin()` call are found. '
-      'Class name: ${classElement.name}',
-      todo:
-          'Modify to ensure only one constructor or instance method has body with and initializeCompanionMixin()` call.',
+      'No constructors and methods which call `initializeCompanionMixin(PropertyDescriptorsBuilder)` '
+      "are found in '${classElement.name}' class.",
+      todo: 'Modify to ensure only one constructor or instance method has body '
+          'with and `initializeCompanionMixin(PropertyDescriptorsBuilder)` call.',
       element: classElement,
     );
   }
 
   if (candidates.length > 1) {
     throw InvalidGenerationSourceError(
-      'This generator only supports presenter class which has only one member which has body with `initializeCompanionMixin()` call.'
+      'This generator only supports presenter class which has only one member '
+      'which has body with `initializeCompanionMixin(PropertyDescriptorsBuilder)` call.'
       'Class name: ${classElement.name}, found members: [${candidates.map((c) => c.element.displayName).join(', ')}]',
       todo:
-          'Modify to ensure only one member (constructor or instance method) has body with `initializeCompanionMixin()` call.',
+          'Modify to ensure only one member (constructor or instance method) has body with `initializeCompanionMixin(PropertyDescriptorsBuilder)` call.',
       element: classElement,
     );
   }
