@@ -1,0 +1,39 @@
+targets:
+  $default:
+    builders:
+      freezed:
+        generate_for:
+          include:
+            - lib/models/*.dart
+      form_companion_generator:
+        enabled: true
+        generate_for:
+          exclude:
+            - lib/l10n/*
+            - lib/app.dart
+            - lib/home.dart
+            - lib/main.dart
+            - lib/routes.dart
+            - lib/components/*.dart
+            - lib/*.freezed.dart
+            - lib/**/*.freezed.dart
+          include:
+            - lib/screens/*.dart
+        options:
+          named_templates:
+            label_template:
+              template: 'LocaleKeys.formFields_#PROPERTY_NAME#_label.tr()'
+              imports:
+                LocaleKeys: 'package:github_issues/l10n/locale_keys.g.dart'
+                StringTranslateExtension: 'package:easy_localization/easy_localization.dart'
+            hint_template:
+              template: 'LocaleKeys.formFields_#PROPERTY_NAME#_hint.tr()'
+              imports:
+                LocaleKeys: 'package:github_issues/l10n/locale_keys.g.dart'
+                StringTranslateExtension: 'package:easy_localization/easy_localization.dart'
+            item_widget_template:
+              template: "Text('formFields.#PROPERTY_NAME#.${#ITEM_VALUE_STRING#}'.tr())"
+              imports:
+                LocaleKeys: 'package:github_issues/l10n/locale_keys.g.dart'
+                StringTranslateExtension: 'package:easy_localization/easy_localization.dart'
+                Text: 'package:flutter/widgets.dart'

@@ -153,6 +153,8 @@ class _BookingPaneTemplate extends ConsumerWidget {
   }
 }
 
+// TODO(yfakariya): Use AsyncValue
+
 /// Presenter which holds form properties.
 @formCompanion
 class BookingPresenterTemplate extends StateNotifier<Booking>

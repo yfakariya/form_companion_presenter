@@ -1,0 +1,57 @@
+{
+    "titleTemplate": "Example app of form_companion_presenter: {screenName}",
+    "home": {
+        "title": "Home"
+    },
+    "login": {
+        "title": "Login",
+        "loginButtonLabel": "Log in"
+    },
+    "issues": {
+        "title": "Issues",
+        "search": "Search",
+        "next": "Next",
+        "previous": "Previous"
+    },
+    "issue": {
+        "title": "Issue {issueNumber} - {issueTitle}"
+    },
+    "formFields": {
+        "clientId": {
+            "label": "Client ID",
+            "hint": "Client ID configured in your GitHub account setting for this app."
+        },
+        "clientSecret": {
+            "label": "Client Secret",
+            "hint": "Client Secret configured in your GitHub account setting for this app."
+        },
+        "doPersist": {
+            "label": "Persists these values",
+            "hint": "Check it if you want to persist these inputs."
+        },
+        "repository": {
+            "label": "Repository (optional)",
+            "hint": "Target repository name with 'user/repo' format to be searched."
+        },
+        "sortKey": {
+            "label": "Sort key",
+            "hint": "Select sort key of issues. Default is 'created'."
+        },
+        "direction": {
+            "label": "List direction",
+            "hint": "Select direction of issues list which ordered by sort key. Default is 'desc'."
+        },
+        "issueState": {
+            "label": "Issue state",
+            "hint": "Select issue state to be shown. Default is 'all'."
+        },
+        "since": {
+            "label": "Since (optional)",
+            "hint": "Specify oldest date and time of issues to be shown."
+        },
+        "issuesPerPages": {
+            "label": "Issues per pages",
+            "hint": "Maximum issues shown in a page. Default is 20."
+        }
+    }
+}
