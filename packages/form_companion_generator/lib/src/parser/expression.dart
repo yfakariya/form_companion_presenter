@@ -171,7 +171,7 @@ FutureOr<PropertyDescriptorsBuilding?> _parseExpressionAsync(
       method = ExecutableNode(
         context.nodeProvider,
         localFunction,
-        localFunction.declaredElement2!,
+        localFunction.declaredElement!,
       );
     } else {
       final methodElement = lookupMethod(

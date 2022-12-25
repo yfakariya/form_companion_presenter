@@ -1040,7 +1040,7 @@ class PropertyAndFormFieldDefinition {
   /// or factory constructor, and there are some private constructors.
   bool get isSimpleFormField =>
       formFieldConstructors.length == 1 &&
-      formFieldConstructors[0].constructor.name2 == null;
+      formFieldConstructors[0].constructor.name == null;
 
   /// Initializes a new [PropertyAndFormFieldDefinition] instance.
   PropertyAndFormFieldDefinition({

@@ -193,12 +193,12 @@ Iterable<String> _emitFieldFactoryCore(
     constructorName = formFieldType;
   } else {
     yield '  /// Gets a [FormField] for `${property.name}` property '
-        'with [$formFieldType.${constructor.constructor.name2?.lexeme ?? 'new'}] constructor.';
+        'with [$formFieldType.${constructor.constructor.name?.lexeme ?? 'new'}] constructor.';
     methodName =
-        constructor.constructor.name2?.lexeme ?? 'withDefaultConstructor';
-    constructorName = constructor.constructor.name2 == null
+        constructor.constructor.name?.lexeme ?? 'withDefaultConstructor';
+    constructorName = constructor.constructor.name == null
         ? formFieldType
-        : '$formFieldType.${constructor.constructor.name2?.lexeme}';
+        : '$formFieldType.${constructor.constructor.name?.lexeme}';
   }
 
   yield '  $formFieldType $methodName(';

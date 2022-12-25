@@ -281,7 +281,7 @@ Future<void> main() async {
       expect(props[0].propertyValueType.rawType, typeProvider.intType);
       expect(props[0].fieldValueType.rawType, typeProvider.stringType);
       expect(props[0].formFieldConstructors.length, 1);
-      expect(props[0].formFieldConstructors.first.constructor.name2, isNull);
+      expect(props[0].formFieldConstructors.first.constructor.name, isNull);
       expect(props[0].formFieldType, isNotNull);
       expect(props[0].formFieldType!.toString(), 'FormBuilderTextField');
       expect(props[0].formFieldTypeName, 'FormBuilderTextField');
@@ -293,7 +293,7 @@ Future<void> main() async {
       expect(props[1].propertyValueType.rawType, typeProvider.stringType);
       expect(props[1].fieldValueType.rawType, typeProvider.stringType);
       expect(props[1].formFieldConstructors.length, 1);
-      expect(props[1].formFieldConstructors.first.constructor.name2, isNull);
+      expect(props[1].formFieldConstructors.first.constructor.name, isNull);
       expect(props[1].formFieldType, isNotNull);
       expect(props[1].formFieldType!.toString(), 'FormBuilderTextField');
       expect(props[1].formFieldTypeName, 'FormBuilderTextField');
@@ -305,7 +305,7 @@ Future<void> main() async {
       expect(props[2].propertyValueType.rawType, typeProvider.boolType);
       expect(props[2].fieldValueType.rawType, typeProvider.boolType);
       expect(props[2].formFieldConstructors.length, 1);
-      expect(props[2].formFieldConstructors.first.constructor.name2, isNull);
+      expect(props[2].formFieldConstructors.first.constructor.name, isNull);
       expect(props[2].formFieldType, isNotNull);
       expect(props[2].formFieldType!.toString(), 'FormBuilderSwitch');
       expect(props[2].formFieldTypeName, 'FormBuilderSwitch');
@@ -317,7 +317,7 @@ Future<void> main() async {
       expect(props[3].propertyValueType.toString(), 'MyEnum');
       expect(props[3].fieldValueType.toString(), 'MyEnum');
       expect(props[3].formFieldConstructors.length, 1);
-      expect(props[3].formFieldConstructors.first.constructor.name2, isNull);
+      expect(props[3].formFieldConstructors.first.constructor.name, isNull);
       expect(props[3].formFieldType, isNotNull);
       expect(props[3].formFieldType!.toString(), 'FormBuilderDropdown<T>');
       expect(props[3].formFieldTypeName, 'FormBuilderDropdown');
@@ -329,7 +329,7 @@ Future<void> main() async {
       expect(props[4].propertyValueType.toString(), 'List<MyEnum>');
       expect(props[4].fieldValueType.toString(), 'List<MyEnum>');
       expect(props[4].formFieldConstructors.length, 1);
-      expect(props[4].formFieldConstructors.first.constructor.name2, isNull);
+      expect(props[4].formFieldConstructors.first.constructor.name, isNull);
       expect(props[4].formFieldType, isNotNull);
       expect(props[4].formFieldType!.toString(), 'FormBuilderFilterChip<T>');
       expect(props[4].formFieldTypeName, 'FormBuilderFilterChip');
@@ -345,7 +345,7 @@ Future<void> main() async {
       expect(props[5].propertyValueType.rawType, typeProvider.stringType);
       expect(props[5].fieldValueType.rawType, typeProvider.stringType);
       expect(props[5].formFieldConstructors.length, 1);
-      expect(props[5].formFieldConstructors.first.constructor.name2, isNull);
+      expect(props[5].formFieldConstructors.first.constructor.name, isNull);
       expect(props[5].formFieldType, isNotNull);
       expect(props[5].formFieldType!.toString(), 'FormBuilderTextField');
       expect(props[5].formFieldTypeName, 'FormBuilderTextField');
@@ -409,7 +409,7 @@ Future<void> main() async {
             );
             expect(props[0].formFieldConstructors.length, 1);
             expect(
-              props[0].formFieldConstructors.first.constructor.name2,
+              props[0].formFieldConstructors.first.constructor.name,
               isNull,
             );
             expect(props[0].formFieldType, isNotNull);
@@ -430,7 +430,7 @@ Future<void> main() async {
             );
             expect(props[1].formFieldConstructors.length, 1);
             expect(
-              props[1].formFieldConstructors.first.constructor.name2,
+              props[1].formFieldConstructors.first.constructor.name,
               isNull,
             );
             expect(props[1].formFieldType, isNotNull);
@@ -467,7 +467,7 @@ Future<void> main() async {
             );
             expect(props[0].formFieldConstructors.length, 1);
             expect(
-              props[0].formFieldConstructors.first.constructor.name2,
+              props[0].formFieldConstructors.first.constructor.name,
               isNull,
             );
             expect(props[0].formFieldType, isNotNull);
@@ -491,7 +491,7 @@ Future<void> main() async {
             );
             expect(props[1].formFieldConstructors.length, 1);
             expect(
-              props[1].formFieldConstructors.first.constructor.name2,
+              props[1].formFieldConstructors.first.constructor.name,
               isNull,
             );
             expect(props[1].formFieldType, isNotNull);
@@ -515,7 +515,7 @@ Future<void> main() async {
             );
             expect(props[2].formFieldConstructors.length, 1);
             expect(
-              props[2].formFieldConstructors.first.constructor.name2,
+              props[2].formFieldConstructors.first.constructor.name,
               isNull,
             );
             expect(props[2].formFieldType, isNotNull);
@@ -533,7 +533,7 @@ Future<void> main() async {
             expect(props[3].fieldValueType.maybeAsInterfaceType, myEnumType);
             expect(props[3].formFieldConstructors.length, 1);
             expect(
-              props[3].formFieldConstructors.first.constructor.name2,
+              props[3].formFieldConstructors.first.constructor.name,
               isNull,
             );
             expect(props[3].formFieldType, isNotNull);
@@ -563,7 +563,7 @@ Future<void> main() async {
             );
             expect(props[4].formFieldConstructors.length, 1);
             expect(
-              props[4].formFieldConstructors.first.constructor.name2,
+              props[4].formFieldConstructors.first.constructor.name,
               isNull,
             );
             expect(props[4].formFieldType, isNotNull);
@@ -587,7 +587,7 @@ Future<void> main() async {
             );
             expect(props[5].formFieldConstructors.length, 1);
             expect(
-              props[5].formFieldConstructors.first.constructor.name2,
+              props[5].formFieldConstructors.first.constructor.name,
               isNull,
             );
             expect(props[5].formFieldType, isNotNull);
@@ -617,7 +617,7 @@ Future<void> main() async {
             );
             expect(props[6].formFieldConstructors.length, 1);
             expect(
-              props[6].formFieldConstructors.first.constructor.name2,
+              props[6].formFieldConstructors.first.constructor.name,
               isNull,
             );
             expect(props[6].formFieldType, isNotNull);
@@ -1297,7 +1297,7 @@ Future<void> main() async {
             );
             expect(props.single.formFieldConstructors.length, 1);
             expect(
-              props.single.formFieldConstructors.first.constructor.name2,
+              props.single.formFieldConstructors.first.constructor.name,
               isNull,
             );
             expect(props.single.formFieldType, isNotNull);
@@ -1519,7 +1519,7 @@ Future<void> main() async {
           expect(props[0].fieldValueType.rawType, typeProvider.stringType);
           expect(props[0].formFieldConstructors.length, 1);
           expect(
-            props[0].formFieldConstructors.first.constructor.name2,
+            props[0].formFieldConstructors.first.constructor.name,
             isNull,
           );
           expect(props[0].formFieldType, isNotNull);
@@ -1537,7 +1537,7 @@ Future<void> main() async {
           expect(props[1].fieldValueType.rawType, typeProvider.stringType);
           expect(props[1].formFieldConstructors.length, 1);
           expect(
-            props[1].formFieldConstructors.first.constructor.name2,
+            props[1].formFieldConstructors.first.constructor.name,
             isNull,
           );
           expect(props[1].formFieldType, isNotNull);
@@ -1552,7 +1552,7 @@ Future<void> main() async {
           expect(props[2].fieldValueType.rawType, typeProvider.stringType);
           expect(props[2].formFieldConstructors.length, 1);
           expect(
-            props[2].formFieldConstructors.first.constructor.name2,
+            props[2].formFieldConstructors.first.constructor.name,
             isNull,
           );
           expect(props[2].formFieldType, isNotNull);
@@ -1567,7 +1567,7 @@ Future<void> main() async {
           expect(props[3].fieldValueType.rawType, myEnumType);
           expect(props[3].formFieldConstructors.length, 1);
           expect(
-            props[3].formFieldConstructors.first.constructor.name2,
+            props[3].formFieldConstructors.first.constructor.name,
             isNull,
           );
           expect(props[3].formFieldType, isNotNull);
@@ -1592,7 +1592,7 @@ Future<void> main() async {
           );
           expect(props[4].formFieldConstructors.length, 1);
           expect(
-            props[4].formFieldConstructors.first.constructor.name2,
+            props[4].formFieldConstructors.first.constructor.name,
             isNull,
           );
           expect(props[4].formFieldType, isNotNull);

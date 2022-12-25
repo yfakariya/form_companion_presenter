@@ -273,10 +273,10 @@ Element _getDeclaringElement(MethodInvocation expression) {
             .declaredElement!
             .library
             .scope
-            .lookup(node.variables.variables.first.name2.lexeme)
+            .lookup(node.variables.variables.first.name.lexeme)
             .getter!;
       } else {
-        return node.declaredElement2!;
+        return node.declaredElement!;
       }
     }
   }
@@ -327,7 +327,7 @@ FutureOr<List<LibraryImport>> collectDependenciesAsync(
       final argumentsHandler = formFieldConstructor.argumentsHandler;
 
       collector.reset(
-        formFieldConstructor.constructor.declaredElement2!.enclosingElement3,
+        formFieldConstructor.constructor.declaredElement!.enclosingElement3,
         property.warnings,
       );
       // Visit only parameters instead of constructor to avoid collecting
@@ -342,8 +342,8 @@ FutureOr<List<LibraryImport>> collectDependenciesAsync(
           formFieldConstructor.constructor.parent! as ClassDeclaration;
       collector
         ..recordTypeName(
-          classDeclaration.declaredElement2!,
-          classDeclaration.name2.lexeme,
+          classDeclaration.declaredElement!,
+          classDeclaration.name.lexeme,
         )
         // Add property value
         ..processGenericType(property.propertyValueType)

@@ -37,13 +37,13 @@ Future<void> main() async {
   final constructorParameterNodes = {
     for (final c
         in holderNode.childEntities.whereType<ConstructorDeclaration>())
-      c.name2!.lexeme: {
+      c.name!.lexeme: {
         for (final p in c.parameters.parameters) p.name!.lexeme: p
       }
   };
   final methodParameterNodes = {
     for (final m in holderNode.childEntities.whereType<MethodDeclaration>())
-      m.name2.lexeme: {
+      m.name.lexeme: {
         for (final p in m.parameters!.parameters) p.name!.lexeme: p
       }
   };
