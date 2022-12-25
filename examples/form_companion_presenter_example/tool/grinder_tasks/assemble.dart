@@ -2,7 +2,6 @@
 
 import 'dart:io';
 
-import 'package:format/format.dart';
 import 'package:grinder/grinder.dart';
 import 'package:path/path.dart';
 
@@ -48,6 +47,11 @@ extension _ModelExtension on _Model {
 
 final _macroRegexp = RegExp(
   '//!macro\\s*(?<Id>\\w+)(\\s+(?<Arg>\\S+))?\\s*',
+  unicode: true,
+);
+
+final _formatRegexp = RegExp(
+  r'\{(?<Name>[^\}]+)\}',
   unicode: true,
 );
 
@@ -262,6 +266,45 @@ typedef _Macro = void Function(
   _OutputController output,
 );
 
+String _format(String input, [Object? args]) {
+  if (args == null || input.isEmpty) {
+    return input;
+  }
+
+  late final Map<String, String> namedArgs;
+  if (args is Map<String, String>) {
+    namedArgs = args;
+  } else if (args is List<String>) {
+    namedArgs = {};
+    for (var i = 0; i < args.length; i++) {
+      namedArgs[i.toString()] = args[i];
+    }
+  } else {
+    namedArgs = {'0': args.toString()};
+  }
+
+  final result = StringBuffer();
+  var finalMatch = 0;
+  for (final match in _formatRegexp.allMatches(input)) {
+    result.write(input.substring(finalMatch, match.start));
+    finalMatch = match.end;
+
+    final name = match.namedGroup('Name')!;
+    final substitution = namedArgs[name];
+    if (substitution == null) {
+      result
+        ..write('{')
+        ..write(name)
+        ..write('}');
+    } else {
+      result.write(substitution);
+    }
+  }
+
+  result.write(input.substring(finalMatch));
+  return result.toString();
+}
+
 Map<String, _Macro> _setupMacro(
   _Mode mode,
   _Model model,
@@ -293,7 +336,7 @@ Map<String, _Macro> _setupMacro(
 
   final simpleMacros = {
     'headerNote': headerNote.toString(),
-    'pageDocument': format(
+    'pageDocument': _format(
       _pageDocumentTemplate,
       {
         'model': model.toTitleCase(),
@@ -321,7 +364,7 @@ Map<String, _Macro> _setupMacro(
           // without newline here.
           output.sink.write(value);
         } else {
-          output.sink.write(format(value, macroArg));
+          output.sink.write(_format(value, macroArg));
         }
       },
     ),

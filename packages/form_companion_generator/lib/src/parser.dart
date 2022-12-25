@@ -343,7 +343,7 @@ FutureOr<List<LibraryImport>> collectDependenciesAsync(
     ];
   }
 
-  final collector = DependentLibraryCollector(
+  final collector = DependentLibraryCollector2(
     nodeProvider,
     await nodeProvider.libraries.toList(),
     logger,
@@ -355,22 +355,21 @@ FutureOr<List<LibraryImport>> collectDependenciesAsync(
       final argumentsHandler = formFieldConstructor.argumentsHandler;
 
       collector.reset(
-        formFieldConstructor.constructor.declaredElement!.enclosingElement3,
+        formFieldConstructor.constructor.declaredElement!.enclosingElement,
         property.warnings,
       );
       // Visit only parameters instead of constructor to avoid collecting
       // types used in super invocation, initializers, and body.
       // Also, this loop filters verbose import for "intrinsic" parameters.
-      for (final parameter in argumentsHandler.callerSuppliableParameters) {
-        parameter.node.accept(collector);
-      }
+      argumentsHandler.callerSuppliableParameters
+          .forEach(collector.collectDependencyForParameter);
 
       // Add form field itself.
       final classDeclaration =
           formFieldConstructor.constructor.parent! as ClassDeclaration;
       collector
         ..recordTypeName(
-          classDeclaration.declaredElement!,
+          classDeclaration.declaredElement,
           classDeclaration.name.lexeme,
         )
         // Add property value
@@ -409,8 +408,6 @@ FutureOr<List<LibraryImport>> collectDependenciesAsync(
           }
         }
       }
-
-      await collector.endAsync();
     }
   }
 

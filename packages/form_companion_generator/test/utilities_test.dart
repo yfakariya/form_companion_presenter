@@ -35,7 +35,7 @@ Future<void> main() async {
       () => expect(
         isCollectionType(
           typeProvider.iterableDynamicType,
-          typeProvider.iterableDynamicType.element2,
+          typeProvider.iterableDynamicType.element,
         ),
         isTrue,
       ),
@@ -46,7 +46,7 @@ Future<void> main() async {
       () => expect(
         isCollectionType(
           typeProvider.listType(typeProvider.dynamicType),
-          typeProvider.listType(typeProvider.dynamicType).element2,
+          typeProvider.listType(typeProvider.dynamicType).element,
         ),
         isTrue,
       ),
@@ -65,7 +65,7 @@ Future<void> main() async {
                 typeProvider.dynamicType,
                 typeProvider.dynamicType,
               )
-              .element2,
+              .element,
         ),
         isFalse,
       ),
@@ -76,7 +76,7 @@ Future<void> main() async {
       () => expect(
         isCollectionType(
           typeProvider.stringType,
-          typeProvider.stringType.element2,
+          typeProvider.stringType.element,
         ),
         isFalse,
       ),
@@ -103,7 +103,7 @@ Future<void> main() async {
       () => expect(
         isCollectionType(
           nullableIterable,
-          nullableIterable.element2!,
+          nullableIterable.element!,
         ),
         isTrue,
       ),
@@ -114,7 +114,7 @@ Future<void> main() async {
       () => expect(
         isCollectionType(
           nullableList,
-          nullableList.element2!,
+          nullableList.element!,
         ),
         isTrue,
       ),
@@ -123,7 +123,7 @@ Future<void> main() async {
     test(
       'Custom Iterable?: true',
       () => expect(
-        isCollectionType(nullableMyCollection, nullableMyCollection.element2!),
+        isCollectionType(nullableMyCollection, nullableMyCollection.element!),
         isTrue,
       ),
     );
@@ -131,7 +131,7 @@ Future<void> main() async {
     test(
       'Custom List?: true',
       () => expect(
-        isCollectionType(nullableMyList, nullableMyList.element2!),
+        isCollectionType(nullableMyList, nullableMyList.element!),
         isTrue,
       ),
     );

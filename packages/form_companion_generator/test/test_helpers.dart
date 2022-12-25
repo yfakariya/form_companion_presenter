@@ -205,7 +205,7 @@ String pascalize(String value) {
 }
 
 GenericType toGenericType(DartType type) {
-  final element = type.element2;
+  final element = type.element;
   if (element == null) {
     if (type.alias != null) {
       return GenericType.fromDartType(

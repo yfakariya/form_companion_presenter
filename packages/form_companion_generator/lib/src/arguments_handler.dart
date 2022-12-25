@@ -78,12 +78,12 @@ class ArgumentsHandler {
   static String? _tryGetConstantItemValues(PropertyDefinition property) {
     String? getEnumConstantItemValues(GenericType itemType) {
       // Use InterfaceElement here because Enum is ClassElement with isEnum == true.
-      final members = (itemType.rawType.element2! as InterfaceElement)
+      final members = (itemType.rawType.element! as InterfaceElement)
           .fields
           .where(
             (f) =>
-                // Use element2 instead of type to handle nullable type correctly here.
-                f.type.element2 == itemType.rawType.element2 &&
+                // Use element instead of type to handle nullable type correctly here.
+                f.type.element == itemType.rawType.element &&
                 f.isConst &&
                 f.isStatic,
           )

@@ -238,7 +238,7 @@ class ParameterInfo {
         );
       }
 
-      targetClass = targetClass.supertype?.element2;
+      targetClass = targetClass.supertype?.element;
     }
 
     throw Exception(
@@ -336,7 +336,7 @@ bool isFormCompanionAnnotation(ElementAnnotation annotation) {
         element.name == 'formCompanion';
   } else if (element is ConstructorElement) {
     return element.library.identifier == _annotationLibrary &&
-        element.enclosingElement3.name == 'FormCompanion';
+        element.enclosingElement.name == 'FormCompanion';
   }
 
   return false;
@@ -495,10 +495,10 @@ abstract class GenericType {
   GenericType._();
 
   static InterfaceType _toRawInterfaceType(InterfaceType type) =>
-      type.element2.thisType;
+      type.element.thisType;
 
   static FunctionType _toRawFunctionType(FunctionType type) =>
-      (type.element2?.nonSynthetic as FunctionTypedElement?)?.type ?? type;
+      (type.element?.nonSynthetic as FunctionTypedElement?)?.type ?? type;
 
   @override
   @nonVirtual
@@ -533,7 +533,7 @@ class _NonGenericType extends GenericType {
 
   @override
   DartType get rawType {
-    final element = type.element2;
+    final element = type.element;
     if (element is ClassElement) {
       return element.thisType;
     }
@@ -640,7 +640,7 @@ void _writeAliasTo(
       }
 
       if (t is TypeParameterType) {
-        final actual = typeParameterMap[t.element2.name];
+        final actual = typeParameterMap[t.element.name];
         if (actual != null) {
           actual.writeTo(sink, withNullability: withNullability);
           continue;
@@ -674,8 +674,8 @@ class _InstantiatedGenericInterfaceType extends GenericType {
 
   @override
   GenericType? get collectionItemType {
-    final typeSystem = _interfaceType.element2.library.typeSystem;
-    final typeProvider = _interfaceType.element2.library.typeProvider;
+    final typeSystem = _interfaceType.element.library.typeSystem;
+    final typeProvider = _interfaceType.element.library.typeProvider;
     if (!typeSystem.isAssignableTo(
       typeSystem.promoteToNonNull(_interfaceType),
       typeProvider.iterableDynamicType,
@@ -707,7 +707,7 @@ class _InstantiatedGenericInterfaceType extends GenericType {
   }) {
     final alias = _interfaceType.alias;
     if (alias == null) {
-      sink.write(_interfaceType.element2.name);
+      sink.write(_interfaceType.element.name);
     } else {
       sink.write(alias.element.name);
     }
@@ -1055,7 +1055,7 @@ class PropertyAndFormFieldDefinition {
 /// `FormField` constructor and related objects.
 @sealed
 class FormFieldConstructorDefinition {
-  /// A [ConstructorElement] of this constructor to be called.
+  /// A [ConstructorDeclaration] of this constructor to be called.
   final ConstructorDeclaration constructor;
 
   /// [ArgumentsHandler] to handle arguments for this constructor

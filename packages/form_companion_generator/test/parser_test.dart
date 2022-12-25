@@ -1701,14 +1701,14 @@ Future<void> main() async {
           formFieldType.typeArguments.any((t) => t is TypeParameterType)
               ? [GenericType.fromDartType(valueType, valueTypeContextElement)]
               : [],
-          formFieldType.element2,
+          formFieldType.element,
         ),
         warnings: [],
       );
 
       final formFieldConstructor =
           await nodeProvider.getElementDeclarationAsync<ConstructorDeclaration>(
-        formFieldType.element2.unnamedConstructor!,
+        formFieldType.element.unnamedConstructor!,
       );
 
       return PropertyAndFormFieldDefinition(
@@ -1838,7 +1838,7 @@ Future<void> main() async {
           await makeProperty(
             fieldName,
             valueType,
-            valueType.element2,
+            valueType.element,
             isFormBuilder: isFormBuilder,
           ),
         ],
@@ -1993,7 +1993,7 @@ Future<void> main() async {
           await makeProperty(
             'DropdownButtonFormField',
             myEnumType,
-            myEnumType.element2,
+            myEnumType.element,
             isFormBuilder: false,
           ),
         ],

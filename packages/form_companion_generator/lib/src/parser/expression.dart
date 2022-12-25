@@ -51,7 +51,7 @@ FutureOr<PropertyDescriptorsBuilding?> _parseExpressionAsync(
     }
   } else if (unparenthesized is CascadeExpression) {
     final target = unparenthesized.target;
-    final targetClass = target.staticType?.element2 as ClassElement?;
+    final targetClass = target.staticType?.element as ClassElement?;
     if (targetClass?.name == pdbTypeName) {
       late final PropertyDescriptorsBuilding building;
       if (target is Identifier) {

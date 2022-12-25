@@ -12,13 +12,14 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_form_builder: ^7.6.0
+  flutter_form_builder: ^7.7.0
   form_builder_companion_presenter:
   form_companion_presenter:
+  # Align with flutter_form_builder
   intl: ^0.17.0
 
 dev_dependencies:
-  build_runner: ^2.2.0
+  build_runner: ^2.3.3
   flutter_lints:  ^2.0.1
   form_companion_generator:
     path: ../../packages/form_companion_generator

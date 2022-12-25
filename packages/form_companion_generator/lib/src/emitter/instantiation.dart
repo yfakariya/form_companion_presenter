@@ -263,7 +263,7 @@ void processTypeAnnotation(
   if (annotationType is TypeParameterType) {
     _processTypeArgumentElement(
       context,
-      annotationType.element2,
+      annotationType.element,
       sink,
     );
 
@@ -301,7 +301,7 @@ void processTypeWithValueType(
   StringSink sink,
 ) {
   if (parameterType is ParameterizedType) {
-    sink.write(parameterType.element2!.name);
+    sink.write(parameterType.element!.name);
 
     if (parameterType.typeArguments.isNotEmpty) {
       _processTypeArguments(context, parameterType.typeArguments, sink);
