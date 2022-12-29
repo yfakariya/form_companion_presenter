@@ -1,10 +1,11 @@
 // See LICENCE file in the root.
 
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'models.freezed.dart';
+part 'models.g.dart';
 
 /// Gender based on ISO 5218.
 enum Gender {
@@ -61,7 +62,7 @@ class Account with _$Account {
         orElse: () => 18,
       );
 
-  List<Region> get preferredRegsions => maybeMap(
+  List<Region> get preferredRegions => maybeMap(
         registered: (x) => x.preferredRegions,
         orElse: () => [],
       );
@@ -165,9 +166,32 @@ class Booking with _$Booking {
 }
 
 /// Application wide state of [Account].
-final account = StateProvider((_) => Account.empty());
+@Riverpod(keepAlive: true)
+class AccountState extends AsyncNotifier<Account> {
+  // In real app, this should be restored from local cache asynchronously.
+  @override
+  FutureOr<Account> build() => Account.empty();
+
+  /// Updates application wide state of [Account].
+  FutureOr<void> save(Account newAccount) async {
+    // In real app, this method do something like calling server API,
+    // updating local cache, etc.
+    this.state = AsyncData(newAccount);
+  }
+}
 
 /// Application wide state of [Booking].
-final booking = StateProvider((_) => Booking.empty());
+@Riverpod(keepAlive: true)
+class BookingState extends AsyncNotifier<Booking> {
+  // In real app, this should be restored from server API asynchronously.
+  @override
+  FutureOr<Booking> build() => Booking.empty();
+
+  /// Updates application wide state of [Booking].
+  FutureOr<void> submit(Booking newBooking) async {
+    // In real app, this method do something like calling server API.
+    this.state = AsyncData(newBooking);
+  }
+}
 
 // TODO(yfakariya): validators, dummy async submits

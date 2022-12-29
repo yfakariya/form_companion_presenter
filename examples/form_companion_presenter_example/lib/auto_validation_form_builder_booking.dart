@@ -1,7 +1,5 @@
 // See LICENCE file in the root.
 
-import 'dart:async';
-
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
@@ -9,13 +7,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:form_builder_companion_presenter/form_builder_companion_presenter.dart';
 import 'package:form_companion_presenter/form_companion_annotation.dart';
 import 'package:form_companion_presenter/form_companion_presenter.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'auto_validation_form_builder_booking.fcp.dart';
 import 'l10n/locale_keys.g.dart';
 import 'models.dart';
 import 'routes.dart';
 import 'screen.dart';
-
+part 'auto_validation_form_builder_booking.g.dart';
 //------------------------------------------------------------------------------
 // In this example, [AutovalidateMode] of the form is disabled (default value)
 // and [AutovalidateMode] of fields are set to [AutovalidateMode.onUserInteraction].
@@ -55,10 +54,14 @@ class AutoValidationFormBuilderBookingPage extends Screen {
 class _AutoValidationFormBuilderBookingPane extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final today = DateTime.now();
-    final userState = ref.watch(account);
-    final bookingState = ref.watch(booking);
-    final presenter = ref.watch(_presenter.notifier);
+    final userState = ref.watch(accountStateProvider).asData?.value;
+    final bookingState = ref.watch(bookingStateProvider).asData?.value;
+    final state = ref.watch(autoValidationFormBuilderBookingPresenterProvider);
+
+    if (state is! AsyncData<
+        $AutoValidationFormBuilderBookingPresenterFormProperties>) {
+      return Text('loading...');
+    }
 
     return SingleChildScrollView(
       child: Column(
@@ -68,48 +71,47 @@ class _AutoValidationFormBuilderBookingPane extends ConsumerWidget {
                 ? LocaleKeys.booking_captionTemplate_existing.tr(
                     namedArgs: {
                       // In real apps, AccountEmpty should be avoided in navigation guard.
-                      'userName': userState.name ?? 'Dummy User',
+                      'userName': userState?.name ?? 'Dummy User',
                       'bookingId': bookingState.bookingId,
                     },
                   )
                 : LocaleKeys.booking_captionTemplate_new.tr(
                     namedArgs: {
-                      'userName': userState.name ?? 'Dummy User',
+                      'userName': userState?.name ?? 'Dummy User',
                     },
                   ),
             style: Theme.of(context).textTheme.bodyText1,
           ),
-          presenter.fields.stay(
+          state.value.fields.stay(
             context,
-            firstDate: presenter.stay.value?.start ?? today,
-            lastDate: presenter.stay.value?.end ??
-                today.add(const Duration(days: 90)),
+            firstDate: state.value.values.stay.start,
+            lastDate: state.value.values.stay.end,
           ),
           Text(LocaleKeys.specialOfferDate_description.tr()),
-          presenter.fields.specialOfferDate(
+          state.value.fields.specialOfferDate(
             context,
             inputType: InputType.date,
           ),
-          presenter.fields.roomType(
+          state.value.fields.roomType(
             context,
           ),
-          presenter.fields.mealOffers(
+          state.value.fields.mealOffers(
             context,
           ),
-          presenter.fields.smoking(
+          state.value.fields.smoking(
             context,
             title: Text(
               LocaleKeys.smoking_title.tr(),
             ),
           ),
-          presenter.fields.persons(
+          state.value.fields.persons(
             context,
             min: 1,
             max: 4,
             divisions: 3,
             label: LocaleKeys.persons_hint.tr(),
           ),
-          presenter.fields.babyBeds(
+          state.value.fields.babyBeds(
             context,
             options: const [
               FormBuilderFieldOption(
@@ -126,13 +128,13 @@ class _AutoValidationFormBuilderBookingPane extends ConsumerWidget {
               ),
             ],
           ),
-          presenter.fields.preferredPrice(
+          state.value.fields.preferredPrice(
             context,
             min: 0,
             max: 1000000,
           ),
-          presenter.fields.donation(context),
-          presenter.fields.note(
+          state.value.fields.donation(context),
+          state.value.fields.note(
             context,
             maxLines: null,
             textInputAction: TextInputAction.newline,
@@ -151,7 +153,7 @@ class _AutoValidationFormBuilderBookingPane extends ConsumerWidget {
             ),
           ),
           ElevatedButton(
-            onPressed: presenter.submit(context),
+            onPressed: state.value.submit(context),
             child: Text(
               LocaleKeys.submit.tr(),
             ),
@@ -162,61 +164,45 @@ class _AutoValidationFormBuilderBookingPane extends ConsumerWidget {
   }
 }
 
-// TODO(yfakariya): Use AsyncValue
-
 /// Presenter which holds form properties.
 @formCompanion
-class AutoValidationFormBuilderBookingPresenter extends StateNotifier<Booking>
+@riverpod
+class AutoValidationFormBuilderBookingPresenter
+    extends AutoDisposeAsyncNotifier<
+        $AutoValidationFormBuilderBookingPresenterFormProperties>
     with CompanionPresenterMixin, FormBuilderCompanionMixin {
-  final Account _account;
-  final Ref _ref;
+  late Account _account;
 
-  /// Creates new [AutoValidationFormBuilderBookingPresenter].
-  AutoValidationFormBuilderBookingPresenter(
-    Booking initialState,
-    this._account,
-    this._ref,
-  ) : super(initialState) {
+  AutoValidationFormBuilderBookingPresenter() {
     initializeCompanionMixin(
       PropertyDescriptorsBuilder()
         ..dateTimeRange(
           name: 'stay',
-          initialValue: initialState.stay,
         )
         ..dateTime(
           name: 'specialOfferDate',
-          initialValue: initialState.specialOfferDate,
         )
         ..enumeratedWithField<RoomType, FormBuilderRadioGroup<RoomType>>(
           name: 'roomType',
-          initialValue: initialState.roomType,
         )
         ..enumeratedList<MealType>(
           name: 'mealOffers',
-          initialValues: initialState.mealOffers,
         )
         ..boolean(
           name: 'smoking',
-          initialValue: initialState.smoking ?? false,
         )
         ..addWithField<int, double, FormBuilderSlider>(
           name: 'persons',
-          initialValue: initialState.persons,
           valueConverter: intDoubleConverter,
         )
         ..integerWithField<FormBuilderSegmentedControl<int>>(
           name: 'babyBeds',
-          initialValue: initialState.babyBeds,
         )
         ..rangeValues(
           name: 'preferredPrice',
-          initialValue: initialState.price == null
-              ? const RangeValues(1000, 100000)
-              : RangeValues(initialState.price!, initialState.price!),
         )
         ..add<double, String>(
           name: 'donation',
-          initialValue: state.donation,
           // Localized converter example
           valueConverter: StringConverter.fromCallbacks(
             parse: (v, l, e) {
@@ -248,25 +234,57 @@ class AutoValidationFormBuilderBookingPresenter extends StateNotifier<Booking>
         )
         ..string(
           name: 'note',
-          initialValue: initialState.note,
         ),
     );
+  }
+
+  @override
+  FutureOr<$AutoValidationFormBuilderBookingPresenterFormProperties>
+      build() async {
+    _account = await ref.watch(accountStateProvider.future);
+    final initialState = await ref.watch(bookingStateProvider.future);
+
+    // Restore or set default for optional properties using cascading syntax.
+    final builder = properties.copyWith()
+      ..stay(initialState.stay)
+      ..specialOfferDate(initialState.specialOfferDate)
+      ..roomType(initialState.roomType)
+      ..mealOffers(initialState.mealOffers)
+      ..smoking(initialState.smoking ?? false)
+      ..persons(initialState.persons)
+      ..babyBeds(initialState.babyBeds)
+      ..mealOffers(initialState.mealOffers)
+      ..preferredPrice(
+        initialState.price == null
+            ? const RangeValues(1000, 100000)
+            : RangeValues(initialState.price!, initialState.price!),
+      );
+
+    // Try to restore required fields only if stored.
+    if (initialState.donation != null) {
+      builder.donation(initialState.donation!);
+    }
+    if (initialState.note != null) {
+      builder.note(initialState.note!);
+    }
+
+    return resetProperties(builder.build());
   }
 
   @override
   FutureOr<void> doSubmit() async {
     // Get saved values here to call business logic.
     final userId = _account.id ?? 'Dummy User';
-    final stay = this.stay.value!;
-    final specialOfferDate = this.specialOfferDate.value!;
-    final roomType = this.roomType.value!;
-    final mealOffers = this.mealOffers.value!;
-    final smoking = this.smoking.value!;
-    final persons = this.persons.value!;
-    final babyBeds = this.babyBeds.value!;
-    final donation = this.donation.value;
-    final preferredPrice = this.preferredPrice.value!;
-    final note = this.note.value!;
+    final stay = properties.values.stay;
+    final specialOfferDate = properties.values.specialOfferDate;
+    final roomType = properties.values.roomType;
+    final mealOffers = properties.values.mealOffers;
+    final smoking = properties.values.smoking;
+    final persons = properties.values.persons;
+    final babyBeds = properties.values.babyBeds;
+    final donation = properties.values.donation;
+    final preferredPrice = properties.values.preferredPrice;
+    final note = properties.values.note;
 
     // Call business logic.
     final result = await doSubmitLogic(
@@ -286,8 +304,7 @@ class AutoValidationFormBuilderBookingPresenter extends StateNotifier<Booking>
       return;
     }
 
-    // Set local state.
-    state = Booking.registered(
+    final booking = Booking.registered(
       bookingId: result.bookingId,
       userId: userId,
       stay: stay,
@@ -298,12 +315,12 @@ class AutoValidationFormBuilderBookingPresenter extends StateNotifier<Booking>
       persons: persons,
       babyBeds: babyBeds,
       price: result.price,
-      donation: donation ?? 0,
+      donation: donation,
       note: note,
     );
 
     // Propagate to global state.
-    _ref.read(booking.state).state = state;
+    await ref.read(bookingStateProvider.notifier).submit(booking);
     router.go('/');
   }
 
@@ -343,12 +360,3 @@ class _BookingResult {
     this.price,
   );
 }
-
-final _presenter =
-    StateNotifierProvider<AutoValidationFormBuilderBookingPresenter, Booking>(
-  (ref) => AutoValidationFormBuilderBookingPresenter(
-    ref.watch(booking),
-    ref.watch(account),
-    ref,
-  ),
-);

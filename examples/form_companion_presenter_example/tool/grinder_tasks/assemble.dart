@@ -19,7 +19,7 @@ extension _ModeExtension on _Mode {
     }
   }
 
-  String toLowerCase() {
+  String toLowerSnakeCase() {
     switch (this) {
       case _Mode.auto:
         return 'auto';
@@ -27,6 +27,17 @@ extension _ModeExtension on _Mode {
         return 'manual';
       case _Mode.bulkAuto:
         return 'bulk_auto';
+    }
+  }
+
+  String toLowerCamelCase() {
+    switch (this) {
+      case _Mode.auto:
+        return 'auto';
+      case _Mode.manual:
+        return 'manual';
+      case _Mode.bulkAuto:
+        return 'bulkAuto';
     }
   }
 }
@@ -166,7 +177,7 @@ Future<void> assembleCore(
           continue;
         }
 
-        final destinationFileName = '${mode.toLowerCase()}_validation_'
+        final destinationFileName = '${mode.toLowerSnakeCase()}_validation_'
             '${flavor == _Flavor.vanillaForm ? 'vanilla_form' : 'form_builder_${model.toLowerCase()}'}';
 
         final replacementMap = {
@@ -176,7 +187,9 @@ Future<void> assembleCore(
               '_${mode.toTitleCase()}Validation${flavor.toTitleCase()}${model.toTitleCase()}Pane',
           '${model.toTitleCase()}PresenterTemplate':
               '${mode.toTitleCase()}Validation${flavor.toTitleCase()}${model.toTitleCase()}Presenter',
-          "'TITLE_TEMPLATE'": 'LocaleKeys.${mode.toLowerCase()}_'
+          '${model.toLowerCase()}PresenterTemplateProvider':
+              '${mode.toLowerCamelCase()}Validation${flavor.toTitleCase()}${model.toTitleCase()}PresenterProvider',
+          "'TITLE_TEMPLATE'": 'LocaleKeys.${mode.toLowerSnakeCase()}_'
               '${flavor == _Flavor.vanillaForm ? 'vanilla' : 'flutterFormBuilder${model.toTitleCase()}'}_title.tr()',
           r"import '\.\./": "import '",
         };
@@ -354,6 +367,7 @@ Map<String, _Macro> _setupMacro(
         ? _preferredRegionsAssignmentVanilla
         : _preferredRegionsAssignmentBuilder,
     'importFcp': "import '$destinationFileName.fcp.dart';",
+    'partG': "part '$destinationFileName.g.dart';",
   };
 
   return simpleMacros.map(

@@ -14,8 +14,8 @@ class HomePage extends Screen {
 
   @override
   Widget buildPage(BuildContext context, WidgetRef ref) {
-    final accountState = ref.watch(account);
-    final bookingState = ref.watch(booking);
+    final accountState = ref.watch(accountStateProvider);
+    final bookingState = ref.watch(bookingStateProvider);
     return SingleChildScrollView(
       padding: const EdgeInsets.all(8),
       child: Column(
@@ -33,11 +33,14 @@ class HomePage extends Screen {
             border: TableBorder.all(),
             columnWidths: const {0: IntrinsicColumnWidth()},
             children: [
-              _cell('ID', '${accountState.id}'),
-              _cell('Age', '${accountState.age}'),
-              _cell('Name', '${accountState.name}'),
-              _cell('Gender', '${accountState.gender}'),
-              _cell('Preferred regions', '${accountState.preferredRegsions}'),
+              _cell('ID', '${accountState.asData?.value.id}'),
+              _cell('Age', '${accountState.asData?.value.age}'),
+              _cell('Name', '${accountState.asData?.value.name}'),
+              _cell('Gender', '${accountState.asData?.value.gender}'),
+              _cell(
+                'Preferred regions',
+                '${accountState.asData?.value.preferredRegions}',
+              ),
             ],
           ),
           const SizedBox(height: 8),
@@ -50,22 +53,25 @@ class HomePage extends Screen {
             border: TableBorder.all(),
             columnWidths: const {0: IntrinsicColumnWidth()},
             children: [
-              _cell('Stay', '${bookingState.stay}'),
-              _cell('Special offer date', '${bookingState.specialOfferDate}'),
-              _cell('Room type', '${bookingState.roomType}'),
-              _cell('Meal offers', '${bookingState.mealOffers}'),
-              _cell('Smoking', '${bookingState.smoking}'),
-              _cell('Persons', '${bookingState.persons}'),
-              _cell('Baby beds', '${bookingState.babyBeds}'),
-              _cell('Price', '${bookingState.price}'),
+              _cell('Stay', '${bookingState.asData?.value.stay}'),
+              _cell(
+                'Special offer date',
+                '${bookingState.asData?.value.specialOfferDate}',
+              ),
+              _cell('Room type', '${bookingState.asData?.value.roomType}'),
+              _cell('Meal offers', '${bookingState.asData?.value.mealOffers}'),
+              _cell('Smoking', '${bookingState.asData?.value.smoking}'),
+              _cell('Persons', '${bookingState.asData?.value.persons}'),
+              _cell('Baby beds', '${bookingState.asData?.value.babyBeds}'),
+              _cell('Price', '${bookingState.asData?.value.price}'),
               _cell(
                 'Donation',
-                bookingState.donation == null
+                bookingState.asData?.value.donation == null
                     ? 'null'
                     : NumberFormat.decimalPattern()
-                        .format(bookingState.donation),
+                        .format(bookingState.asData?.value.donation),
               ),
-              _cell('Note', '${bookingState.note}'),
+              _cell('Note', '${bookingState.asData?.value.note}'),
             ],
           ),
         ],

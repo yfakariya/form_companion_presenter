@@ -1,5 +1,7 @@
 // See LICENCE file in the root.
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -75,17 +77,17 @@ BuildContext getBuildContext(WidgetTester tester) => tester.element(
       ),
     );
 
-T readStateFromProvider<T>(
+Future<T> readAsyncStateFromProvider<TNotifier extends AsyncNotifier<T>, T>(
   WidgetTester tester,
-  StateProvider<T> provider,
+  AsyncNotifierProvider<TNotifier, T> provider,
 ) =>
-    ProviderScope.containerOf(getBuildContext(tester)).read(provider);
+    ProviderScope.containerOf(getBuildContext(tester)).read(provider.future);
 
-StateController<T> readStateControllerFromProvider<T>(
+TNotifier readAsyncNotifierFromProvider<TNotifier extends AsyncNotifier<T>, T>(
   WidgetTester tester,
-  StateProvider<T> provider,
+  AsyncNotifierProvider<TNotifier, T> provider,
 ) =>
-    ProviderScope.containerOf(getBuildContext(tester)).read(provider.state);
+    ProviderScope.containerOf(getBuildContext(tester)).read(provider.notifier);
 
 FormFieldState<T> findField<T>(
   WidgetTester tester,
@@ -97,13 +99,31 @@ FormFieldState<T> findField<T>(
       ),
     );
 
-void setAsyncValidationFutureFactory(
-  WidgetTester tester,
+Widget withDeterministicAsyncValidationFutureFactory(
+  Completer<void> completer,
+  Widget app,
+) =>
+    withAsyncValidationFutureFactory(
+      completer,
+      app,
+      (duration, validation) async {
+        await completer.future;
+        final result = validation();
+        return result;
+      },
+    );
+
+Widget withAsyncValidationFutureFactory(
+  Completer<void> completer,
+  Widget app,
   Future<String?> Function(Duration, String? Function()) factory,
-) {
-  readStateControllerFromProvider(tester, asyncValidationFutureFactory).state =
-      Waiter(factory);
-}
+) =>
+    ProviderScope(
+      overrides: [
+        asyncValidationFutureFactoryProvider.overrideWithValue(Waiter(factory))
+      ],
+      child: app,
+    );
 
 void verifyNoValidationErrors(WidgetTester tester) {
   final vanillaFieldStates = tester
@@ -154,15 +174,16 @@ void verifyAsyncIndicatorIsShown(
   );
 }
 
-void verifyPersistedAccount(
+FutureOr<void> verifyPersistedAccountAsync(
   WidgetTester tester, {
   required String id,
   required String name,
   required int age,
   required Gender gender,
   List<Region>? preferredRegsions,
-}) {
-  final accountState = readStateFromProvider(tester, account);
+}) async {
+  final accountState =
+      await readAsyncStateFromProvider(tester, accountStateProvider);
 
   expect(accountState, isA<AccountRegistered>());
   if (accountState is! AccountRegistered) {
@@ -174,11 +195,11 @@ void verifyPersistedAccount(
   expect(accountState.age, equals(age));
   expect(accountState.gender, equals(gender));
   if (preferredRegsions != null) {
-    expect(accountState.preferredRegsions, equals(preferredRegsions));
+    expect(accountState.preferredRegions, equals(preferredRegsions));
   }
 }
 
-void verifyPersistedBooking(
+FutureOr<void> verifyPersistedBookingAsync(
   WidgetTester tester, {
   required String bookingId,
   required DateTimeRange stay,
@@ -190,8 +211,9 @@ void verifyPersistedBooking(
   required int babyBeds,
   required double price,
   required String note,
-}) {
-  final bookingState = readStateFromProvider(tester, booking);
+}) async {
+  final bookingState =
+      await readAsyncStateFromProvider(tester, bookingStateProvider);
 
   expect(bookingState, isA<BookingRegistered>());
   if (bookingState is! BookingRegistered) {
