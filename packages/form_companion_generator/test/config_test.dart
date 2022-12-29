@@ -888,4 +888,222 @@ void main() {
       });
     });
   });
+
+  group('custom_namings', () {
+    test('single items string maps can be parsed', () {
+      final target = Config(<String, dynamic>{
+        'custom_namings': {
+          'Test01': {
+            'form_properties_builder': {'build': 'build1'}
+          }
+        },
+      });
+      final result = target.customNamings['Test01'];
+      expect(result, isNotNull);
+      expect(result!.formPropertiesBuilder, isNotNull);
+      expect(result.formPropertiesBuilder!.build, 'build1');
+    });
+
+    test('mutiple items string maps can be parsed', () {
+      final target = Config(<String, dynamic>{
+        'custom_namings': {
+          'Test01': {
+            'form_properties_builder': {'build': 'build1'}
+          },
+          'Test02': {
+            'form_properties_builder': {'build': 'build2'}
+          }
+        },
+      });
+      final result1 = target.customNamings['Test01'];
+      expect(result1, isNotNull);
+      expect(result1!.formPropertiesBuilder, isNotNull);
+      expect(result1.formPropertiesBuilder!.build, 'build1');
+
+      final result2 = target.customNamings['Test02'];
+      expect(result2, isNotNull);
+      expect(result2!.formPropertiesBuilder, isNotNull);
+      expect(result2.formPropertiesBuilder!.build, 'build2');
+    });
+
+    test('empty maps is harmless', () {
+      final target = Config(<String, dynamic>{
+        'custom_namings': <String, String>{},
+      });
+      expect(target.customNamings, isNotNull);
+    });
+
+    test('can access undefined type and name', () {
+      final target = Config(<String, dynamic>{
+        'custom_namings': {
+          'Test01': {
+            'form_properties_builder': {'build': 'build1'}
+          }
+        },
+      });
+      final result = target.customNamings['Test02'];
+      expect(result, isNull);
+      expect(result?.formPropertiesBuilder, isNull);
+      expect(result?.formPropertiesBuilder?.build, isNull);
+    });
+
+    test('non string keys cause error', () {
+      final target = Config(<String, dynamic>{
+        'custom_namings': {
+          0: '0',
+        },
+      });
+      expect(
+        () => target.customNamings,
+        throwsA(
+          isA<AnalysisException>().having(
+            (e) => e.message,
+            'message',
+            "Unexpected key type of '0' property of 'custom_namings'. Keys must be string, but int.",
+          ),
+        ),
+      );
+    });
+
+    test('non string values cause error', () {
+      final target = Config(<String, dynamic>{
+        'custom_namings': {
+          'Test01': 0,
+        },
+      });
+      expect(
+        () => target.customNamings,
+        throwsA(
+          isA<AnalysisException>().having(
+            (e) => e.message,
+            'message',
+            "Unexpected value type of 'Test01' property of 'custom_namings'. "
+                'Value must be mapping of string key and mapping value, but int.',
+          ),
+        ),
+      );
+    });
+
+    test('non string type keys cause error', () {
+      final target = Config(<String, dynamic>{
+        'custom_namings': {
+          'Test01': {
+            0: '0',
+          }
+        },
+      });
+      expect(
+        () => target.customNamings,
+        throwsA(
+          isA<AnalysisException>().having(
+            (e) => e.message,
+            'message',
+            "Unexpected key type of '0' property of 'Test01' property of 'custom_namings'. "
+                'Keys must be string, but int.',
+          ),
+        ),
+      );
+    });
+
+    test('non string type values cause error', () {
+      final target = Config(<String, dynamic>{
+        'custom_namings': {
+          'Test01': {
+            'form_properties_builder': 0,
+          }
+        }
+      });
+      expect(
+        () => target.customNamings,
+        throwsA(
+          isA<AnalysisException>().having(
+            (e) => e.message,
+            'message',
+            "Unexpected value type of 'form_properties_builder' property of 'Test01' property of 'custom_namings'. "
+                'Value must be mapping of string key and string or null value, but int.',
+          ),
+        ),
+      );
+    });
+
+    test('unknown type values are halmless', () {
+      final target = Config(<String, dynamic>{
+        'custom_namings': {
+          'Test01': {
+            'form_properties_builder': {'build': 'build1'},
+            'awesome_type': {'foo': 'bar'},
+            'aweful_type': {'boo': 'hoge'},
+          }
+        }
+      });
+
+      final result = target.customNamings['Test01'];
+      expect(result, isNotNull);
+      expect(result!.formPropertiesBuilder, isNotNull);
+      expect(result.formPropertiesBuilder!.build, 'build1');
+    });
+
+    test('non string name keys cause error', () {
+      final target = Config(<String, dynamic>{
+        'custom_namings': {
+          'Test01': {
+            'form_properties_builder': {
+              0: '0',
+            }
+          }
+        },
+      });
+      expect(
+        () => target.customNamings,
+        throwsA(
+          isA<AnalysisException>().having(
+            (e) => e.message,
+            'message',
+            "Unexpected key type of '0' property of 'form_properties_builder' property of 'Test01' property of 'custom_namings'. "
+                'Keys must be string, but int.',
+          ),
+        ),
+      );
+    });
+
+    test('non string name values cause error', () {
+      final target = Config(<String, dynamic>{
+        'custom_namings': {
+          'Test01': {
+            'form_properties_builder': {'build': 0},
+          }
+        }
+      });
+      expect(
+        () => target.customNamings,
+        throwsA(
+          isA<AnalysisException>().having(
+            (e) => e.message,
+            'message',
+            "Unexpected value type of 'build' property of 'form_properties_builder' property of 'Test01' property of 'custom_namings'. "
+                'Values must be string or null, but int.',
+          ),
+        ),
+      );
+    });
+
+    test('unknown name values are halmless', () {
+      final target = Config(<String, dynamic>{
+        'custom_namings': {
+          'Test01': {
+            'form_properties_builder': {
+              'build': 'build1',
+              'awesome': 'foo',
+              'aweful': 'bar',
+            }
+          }
+        }
+      });
+
+      final result = target.customNamings['Test01'];
+      expect(result, isNotNull);
+      expect(result!.formPropertiesBuilder, isNotNull);
+      expect(result.formPropertiesBuilder!.build, 'build1');
+    });
+  });
 }

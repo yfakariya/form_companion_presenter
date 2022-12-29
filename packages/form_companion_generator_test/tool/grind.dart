@@ -153,8 +153,11 @@ import 'package:flutter/services.dart'
                     ? '''
 import 'package:intl/intl.dart' show DateFormat, NumberFormat;
 import 'package:intl/intl.dart' as intl show DateFormat;
+import 'package:meta/meta.dart' show immutable, sealed;
 '''
-                    : '',
+                    : '''
+import 'package:meta/meta.dart' show immutable, sealed;
+''',
               ),
         );
       } else {

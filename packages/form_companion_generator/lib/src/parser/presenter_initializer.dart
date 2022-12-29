@@ -56,7 +56,7 @@ class _InitializeCompanionMixinFinder extends RecursiveAstVisitor<void> {
   @override
   void visitMethodInvocation(MethodInvocation invocation) {
     if (invocation.methodName.name == initializeCompanionMixinMethodName &&
-        invocation.argumentList.arguments.length == 1) {
+        invocation.argumentList.arguments.length >= 1) {
       _invocations.add(invocation);
     }
   }

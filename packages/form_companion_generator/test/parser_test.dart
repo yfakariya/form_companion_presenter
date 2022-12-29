@@ -240,13 +240,16 @@ Future<void> main() async {
       expect(constructor.name, equals('toBeDetected'));
     });
 
-    test('1 method - found it', () async {
-      final found = await callFindInitializerAsync(
-        findType('InitializedInNonConstructor'),
-      );
-      final method = found.element as MethodElement;
-      expect(method.name, 'build');
-    });
+    test(
+      '1 method - error',
+      () => expectLater(
+        () async => await callFindInitializerAsync(
+          findType('InitializedInNonConstructor'),
+        ),
+        throwsA(isA<InvalidGenerationSourceError>()),
+      ),
+    );
+    ;
   });
 
   group('getProperties', () {
@@ -451,13 +454,6 @@ Future<void> main() async {
       test(
         'no addition - empty',
         () => testGetPropertiesNoProperties('InlineWithNoAddition'),
-      );
-    });
-
-    group('inline & expression', () {
-      test(
-        'with cascading in expression - detected',
-        () => testGetPropertiesSuccess('InlineWithCascadingExpression'),
       );
     });
 
@@ -1036,9 +1032,9 @@ Future<void> main() async {
         () => testGetPropertiesError<ClassElement>(
           'NoInitializeCompanionMixin',
           message:
-              "No constructors and methods which call `initializeCompanionMixin(PropertyDescriptorsBuilder)` are found in 'NoInitializeCompanionMixin' class.",
+              "No constructors which call `initializeCompanionMixin(PropertyDescriptorsBuilder)` are found in 'NoInitializeCompanionMixin' class.",
           todo:
-              'Modify to ensure only one constructor or instance method has body with and `initializeCompanionMixin(PropertyDescriptorsBuilder)` call.',
+              'Modify to ensure only one constructor which has body with `initializeCompanionMixin(PropertyDescriptorsBuilder)` call.',
         ),
       );
 
@@ -1820,6 +1816,10 @@ Future<void> main() async {
               'package:flutter/widgets.dart',
               shows: ['BuildContext', 'Localizations'],
             ),
+            ExpectedImport(
+              'package:meta/meta.dart',
+              shows: ['immutable', 'sealed'],
+            ),
             ExpectedImport('parameters.dart'),
           ],
         );
@@ -2218,6 +2218,13 @@ const _vanillaCommonImports = [
       'Localizations',
     ],
   ),
+  ExpectedImport(
+    'package:meta/meta.dart',
+    shows: [
+      'immutable',
+      'sealed',
+    ],
+  ),
 ];
 
 const _builderCommonImports = [
@@ -2245,6 +2252,13 @@ const _builderCommonImports = [
   ExpectedImport(
     'package:flutter_form_builder/flutter_form_builder.dart',
     shows: ['ValueTransformer'],
+  ),
+  ExpectedImport(
+    'package:meta/meta.dart',
+    shows: [
+      'immutable',
+      'sealed',
+    ],
   ),
 ];
 

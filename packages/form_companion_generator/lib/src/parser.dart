@@ -136,7 +136,7 @@ FutureOr<Initializer> findInitializerAsync(
   ParseContext context,
   ClassElement classElement,
 ) async {
-  final candidates = <Initializer>[];
+  final constructorCandidates = <Initializer>[];
   for (final constructor in classElement.constructors.where(
     (ctor) =>
         // Not a implicit default constructor -- they never have initializeCompanionMixin call.
@@ -153,10 +153,16 @@ FutureOr<Initializer> findInitializerAsync(
       constructor,
     );
     if (pdbArgument != null) {
-      candidates.add(Initializer(constructor, ast.body, pdbArgument));
+      constructorCandidates
+          .add(Initializer(constructor, ast.body, pdbArgument));
     }
   }
 
+  // We don't support initializeCompanionMixin call in non constructor members
+  // because it introduces extra complexity to state transition, and not required.
+  // However, some people should put it in build() of [Async]Notifier, so we believe that
+  // detecting and reporting of the situation are useful.
+  final methodCandidates = <Initializer>[];
   for (final method in classElement.methods.where(
     (m) =>
         // Not a implicit methods -- they should not have initializeCompanionMixin call.
@@ -173,32 +179,35 @@ FutureOr<Initializer> findInitializerAsync(
       method,
     );
     if (pdbArgument != null) {
-      candidates.add(Initializer(method, ast.body, pdbArgument));
+      methodCandidates.add(Initializer(method, ast.body, pdbArgument));
     }
   }
 
-  if (candidates.isEmpty) {
+  if (constructorCandidates.isEmpty) {
     throw InvalidGenerationSourceError(
-      'No constructors and methods which call `initializeCompanionMixin(PropertyDescriptorsBuilder)` '
+      'No constructors which call `initializeCompanionMixin(PropertyDescriptorsBuilder)` '
       "are found in '${classElement.name}' class.",
-      todo: 'Modify to ensure only one constructor or instance method has body '
-          'with and `initializeCompanionMixin(PropertyDescriptorsBuilder)` call.',
+      todo: 'Modify to ensure only one constructor which has body '
+          'with `initializeCompanionMixin(PropertyDescriptorsBuilder)` call.',
       element: classElement,
     );
   }
 
-  if (candidates.length > 1) {
+  if (constructorCandidates.length > 1 || methodCandidates.isNotEmpty) {
     throw InvalidGenerationSourceError(
-      'This generator only supports presenter class which has only one member '
+      'This generator only supports presenter class which has only one constructor '
       'which has body with `initializeCompanionMixin(PropertyDescriptorsBuilder)` call.'
-      'Class name: ${classElement.name}, found members: [${candidates.map((c) => c.element.displayName).join(', ')}]',
+      'Class name: ${classElement.name}, found members: [${[
+        ...constructorCandidates,
+        ...methodCandidates
+      ].map((c) => c.element.displayName).join(', ')}]',
       todo:
-          'Modify to ensure only one member (constructor or instance method) has body with `initializeCompanionMixin(PropertyDescriptorsBuilder)` call.',
+          'Modify to ensure only one constructor has body with `initializeCompanionMixin(PropertyDescriptorsBuilder)` call.',
       element: classElement,
     );
   }
 
-  return candidates.single;
+  return constructorCandidates.single;
 }
 
 /// Extracts unorderd map of [PropertyDefinition] where keys are names of the
@@ -410,7 +419,11 @@ FutureOr<List<LibraryImport>> collectDependenciesAsync(
     }
   }
 
-  collector.recordTypeIdDirect('package:flutter/widgets.dart', 'BuildContext');
+  collector
+    ..recordTypeIdDirect('package:flutter/widgets.dart', 'BuildContext')
+    // @sealed and @immutable for typed FormProperties
+    ..recordTypeIdDirect('package:meta/meta.dart', 'sealed')
+    ..recordTypeIdDirect('package:meta/meta.dart', 'immutable');
 
   return [
     ...collector.imports,

@@ -17,6 +17,12 @@ const _importsKey = 'imports';
 const _templateKey = 'template';
 const _itemTemplateKey = 'item_template';
 
+// custom_namings:
+//   {presenterName}:
+//     form_properties_builder:
+//       build:
+const _customNamingsKey = 'custom_namings';
+
 /// Represents configuration.
 /// A configuration is specified through builder option,
 /// but they can be overriden via annotation.
@@ -191,6 +197,48 @@ class Config {
     return _materializedArgumentTemplates!;
   }
 
+  String? _customNamingsError;
+  CustomNamings? _materializedCustomNamings;
+
+  /// `custom_namings` in config.
+  ///
+  /// Note that each templates can contain any context macros and named templates.
+  ///
+  /// See build.yaml in package root directory for built-in argument templates.
+  CustomNamings get customNamings {
+    if (_customNamingsError != null) {
+      throw AnalysisException(_customNamingsError!);
+    }
+
+    if (_materializedCustomNamings == null) {
+      final dynamic rawCustomNamings = _underlying[_customNamingsKey];
+      if (rawCustomNamings != null) {
+        try {
+          _materializedCustomNamings = CustomNamings(
+            _verifyMappingType<String, PresenterCustomNamings>(
+              rawCustomNamings,
+              "'$_customNamingsKey'",
+              (k, dynamic v, x) => MapEntry(
+                k,
+                PresenterCustomNamings.parse(
+                  v,
+                  "'$k' property of $x",
+                ),
+              ),
+            ),
+          );
+        } on AnalysisException catch (e) {
+          _customNamingsError = e.message;
+          rethrow;
+        }
+      } else {
+        _materializedCustomNamings = const CustomNamings({});
+      }
+    }
+
+    return _materializedCustomNamings!;
+  }
+
   /// Initializes a new instance with values from builder options.
   Config(this._underlying);
 }
@@ -205,8 +253,11 @@ String _stringifyType(Object? value) {
       return 'null';
     case 'bool?':
       return 'bool or null';
+    case 'String?':
+      return 'string or null';
     case 'List<String>':
       return 'sequence of string';
+    case 'dynamic':
     case 'ArgumentTemplate':
       return 'mapping';
     default:
@@ -599,4 +650,76 @@ class TemplateImports {
       );
     });
   }
+}
+
+/// Represents custom namings configuration.
+/// Custom namings handles identifier confliction.
+class CustomNamings {
+  final Map<String, PresenterCustomNamings> _customNamings;
+
+  /// Initializes a new [CustomNamings].
+  const CustomNamings(this._customNamings);
+
+  /// Gets a [PresenterCustomNamings] by presenter type name.
+  ///
+  /// If not configured for specified presenter, `null` will be returned.
+  PresenterCustomNamings? operator [](String presenterName) =>
+      _customNamings[presenterName];
+}
+
+/// Represents per presenter types custom namings.
+class PresenterCustomNamings {
+  static const _formPropertiesBuilderKey = 'form_properties_builder';
+
+  /// Custom naming configuration for typed form properties builder type.
+  ///
+  /// If not configured, `null` will be returned.
+  final FormPropertiesBuilderCustomNamings? formPropertiesBuilder;
+
+  PresenterCustomNamings._({
+    required this.formPropertiesBuilder,
+  });
+
+  /// Parses YAML node and creates [PresenterCustomNamings] instance.
+  factory PresenterCustomNamings.parse(
+    dynamic rawNode,
+    String context,
+  ) {
+    FormPropertiesBuilderCustomNamings? formPropertiesBuilder;
+
+    for (final entry
+        in _verifyMappingType<String, dynamic>(rawNode, context, null)
+            .entries) {
+      switch (entry.key) {
+        case _formPropertiesBuilderKey:
+          formPropertiesBuilder = FormPropertiesBuilderCustomNamings(
+            _verifyMappingType<String, String?>(
+              entry.value,
+              "'$_formPropertiesBuilderKey' property of $context",
+              null,
+            ),
+          );
+
+          break;
+      }
+    }
+
+    return PresenterCustomNamings._(
+      formPropertiesBuilder: formPropertiesBuilder,
+    );
+  }
+}
+
+/// Represents custom naming configuration for typed form properties builder type.
+class FormPropertiesBuilderCustomNamings {
+  final Map<String, String?> _customNamings;
+
+  /// Initializes a new [FormPropertiesBuilderCustomNamings] object
+  /// with string map, which has key for member identifier and value for
+  /// alternative custom name of it.
+  FormPropertiesBuilderCustomNamings(this._customNamings);
+
+  /// Gets a custom naming for `build` method.
+  /// If not configured, `null` will be returned.
+  String? get build => _customNamings['build'];
 }

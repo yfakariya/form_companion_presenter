@@ -84,7 +84,8 @@ class FormBuilderCompanionFeatures
   void saveFields(_FormBuilderStateAdapter formState) {
     formState.save();
     for (final field in formState._state.value.entries) {
-      _presenter.properties[field.key]
+      _presenter.propertiesState
+          .tryGetDescriptor(field.key)
           ?.setFieldValue(field.value, formState.locale);
     }
   }
@@ -138,6 +139,8 @@ mixin FormBuilderCompanionMixin on CompanionPresenterMixin {
 
     // More efficient than base implementation.
     return formState._state.fields.values.every((f) => !f.hasError) &&
-        properties.values.every((p) => !p.hasPendingAsyncValidations);
+        propertiesState
+            .getAllDescriptors()
+            .every((p) => !p.hasPendingAsyncValidations);
   }
 }

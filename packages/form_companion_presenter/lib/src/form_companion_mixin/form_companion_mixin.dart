@@ -93,6 +93,11 @@ class FormCompanionFeatures
 ///   is ready for "submit" or `null` otherwise. This class checks validation
 ///   results of [FormField]s and existance of pending async validations.
 mixin FormCompanionMixin on CompanionPresenterMixin {
+  late final FormCompanionFeatures _presenterFeatures;
+
+  @override
+  CompanionPresenterFeatures get presenterFeatures => _presenterFeatures;
+
   late final Map<String, GlobalKey<FormFieldState<dynamic>>?> _fieldKeys;
 
   /// Gets a key for specified named field.
@@ -109,11 +114,11 @@ mixin FormCompanionMixin on CompanionPresenterMixin {
 
   @override
   @nonVirtual
-  void initializeCompanionMixin(
-    PropertyDescriptorsBuilder properties,
-  ) {
+  void initializeCompanionMixin(PropertyDescriptorsBuilder properties) {
     _presenterFeatures = FormCompanionFeatures._(this);
-    super.initializeCompanionMixin(properties);
+    super.initializeCompanionMixin(
+      properties,
+    );
     _fieldKeys = {for (final name in properties._properties.keys) name: null};
   }
 
@@ -133,6 +138,8 @@ mixin FormCompanionMixin on CompanionPresenterMixin {
 
     return _fieldKeys.values
             .every((f) => !(f?.currentState?.hasError ?? false)) &&
-        properties.values.every((p) => !p.hasPendingAsyncValidations);
+        propertiesState
+            .getAllDescriptors()
+            .every((p) => !p.hasPendingAsyncValidations);
   }
 }

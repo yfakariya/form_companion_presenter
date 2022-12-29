@@ -9,7 +9,6 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:form_companion_presenter/src/async_validation_indicator.dart';
 import 'package:form_companion_presenter/src/form_companion_mixin.dart';
-import 'package:form_companion_presenter/src/presenter_extension.dart';
 
 class FormHost extends StatelessWidget {
   final Widget _child;
@@ -57,13 +56,20 @@ Widget _app(
 
 class Presenter with CompanionPresenterMixin, FormCompanionMixin {
   final FutureOr<void> Function() _doSubmitCalled;
+  final void Function(OnPropertiesChangedEvent) _onPropertiesChangedCalled;
 
   Presenter({
     required PropertyDescriptorsBuilder properties,
     FutureOr<void> Function()? doSubmitCalled,
-  }) : _doSubmitCalled = (doSubmitCalled ?? () {}) {
+    void Function(OnPropertiesChangedEvent)? onPropertiesChangedCalled,
+  })  : _doSubmitCalled = (doSubmitCalled ?? () {}),
+        _onPropertiesChangedCalled = (onPropertiesChangedCalled ?? (_) {}) {
     initializeCompanionMixin(properties);
   }
+
+  @override
+  void onPropertiesChanged(OnPropertiesChangedEvent event) =>
+      _onPropertiesChangedCalled(event);
 
   @override
   FutureOr<void> doSubmit() => _doSubmitCalled();
@@ -100,7 +106,8 @@ void main() {
       );
 
       expect(find.byType(CircularProgressIndicator), findsNothing);
-      presenter.getPropertyValidator<String>('prop', lastContext!)(null);
+      presenter.propertiesState
+          .getFieldValidator<String>('prop', lastContext!)(null);
       await tester.pump();
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
       validationStarter.complete();
@@ -176,7 +183,8 @@ void main() {
       );
 
       expect(find.byType(CircularProgressIndicator), findsNothing);
-      presenter.getPropertyValidator<String>('prop', lastContext!)(null);
+      presenter.propertiesState
+          .getFieldValidator<String>('prop', lastContext!)(null);
       await tester.pump();
 
       expect(find.text(defaultText), findsOneWidget);
@@ -213,7 +221,8 @@ void main() {
       );
 
       expect(find.byType(CircularProgressIndicator), findsNothing);
-      presenter.getPropertyValidator<String>('prop', lastContext!)(null);
+      presenter.propertiesState
+          .getFieldValidator<String>('prop', lastContext!)(null);
       await tester.pump();
 
       expect(find.text(text), findsOneWidget);

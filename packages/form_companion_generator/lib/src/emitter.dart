@@ -16,6 +16,11 @@ import 'type_instantiation.dart';
 
 part 'emitter/field_factory.dart';
 part 'emitter/typed_property.dart';
+part 'emitter/typed_property/form_properties_builder.dart';
+part 'emitter/typed_property/descriptors.dart';
+part 'emitter/typed_property/extension.dart';
+part 'emitter/typed_property/form_properties.dart';
+part 'emitter/typed_property/values.dart';
 
 const _todoHeader = 'TODO(CompanionGenerator):';
 
@@ -41,6 +46,9 @@ Stream<Object> emitFromData(
   }
 
   yield emitPropertyAccessor(data.name, data.properties, config);
+
+  // blank line
+  yield '';
 
   yield await emitFieldFactoriesAsync(nodeProvider, data, config, logger);
 }

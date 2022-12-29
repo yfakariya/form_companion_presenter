@@ -44,9 +44,20 @@ class FormBuilderPresenter
   FutureOr<void> doSubmit() {}
 }
 
+class _BaseCompanionFeatures extends CompanionPresenterFeatures {
+  const _BaseCompanionFeatures();
+
+  @override
+  FormStateAdapter? maybeFormStateOf(BuildContext context) =>
+      throw UnimplementedError();
+}
+
 @formCompanion
 class BaseCompanion with CompanionPresenterMixin {
+  late final CompanionPresenterFeatures presenterFeatures;
+
   BaseCompanion() {
+    presenterFeatures = const _BaseCompanionFeatures();
     initializeCompanionMixin(
       PropertyDescriptorsBuilder()..string(name: 'propString'),
     );
@@ -232,23 +243,6 @@ class InlineWithCascading
         ..add<List<MyEnum>, List<MyEnum>>(name: 'propEnumList'),
     );
   }
-
-  @override
-  FutureOr<void> doSubmit() {}
-}
-
-@formCompanion
-class InlineWithCascadingExpression
-    with CompanionPresenterMixin, FormBuilderCompanionMixin {
-  void build() => initializeCompanionMixin(
-        PropertyDescriptorsBuilder()
-          ..add<int, String>(
-              name: 'propInt', valueConverter: intStringConverter)
-          ..add<String, String>(name: 'propString')
-          ..add<bool, bool>(name: 'propBool')
-          ..add<MyEnum, MyEnum>(name: 'propEnum')
-          ..add<List<MyEnum>, List<MyEnum>>(name: 'propEnumList'),
-      );
 
   @override
   FutureOr<void> doSubmit() {}

@@ -228,13 +228,17 @@ void main() {
     required F value,
   }) {
     final presenter = Presenter(target);
-    final result = presenter.properties.values.single;
+    final result = presenter.propertiesState.getAllDescriptors().single;
     expect(
       result,
       isA<PropertyDescriptor<P, F>>()
           .having((p) => p.name, 'name', name)
           .having((p) => p.presenter, 'presenter', same(presenter))
-          .having((p) => p.value, 'value', initialPropertyValue)
+          .having(
+            (p) => presenter.propertiesState.getValue(p.name),
+            'value',
+            initialPropertyValue,
+          )
           .having(
             (p) => p.getFieldValue(defaultLocale),
             'getFieldValue',

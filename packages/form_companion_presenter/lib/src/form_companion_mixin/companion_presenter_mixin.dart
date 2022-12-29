@@ -2,6 +2,24 @@
 
 part of '../form_companion_mixin.dart';
 
+/// Represents event data of [CompanionPresenterMixin.onPropertiesChanged].
+@sealed
+class OnPropertiesChangedEvent {
+  /// Gets a ew [FormProperties] set to [CompanionPresenterMixin.propertiesState]
+  /// (or `properties` extension property).
+  final FormProperties newProperties;
+
+  /// Initializes a new [OnPropertiesChangedEvent].
+  ///
+  /// You should not instantiate [OnPropertiesChangedEvent] in your code
+  /// except testing code.
+  ///
+  /// Note that this constructor's signature is subject to change in future
+  /// to enhance this class functionality.
+  @visibleForTesting
+  OnPropertiesChangedEvent(this.newProperties) {}
+}
+
 /// Provides base implementation of presenters which cooporate with correspond
 /// [Form] and [FormField]s to handle user inputs, their transitive states,
 /// validations, and submission.
@@ -26,37 +44,41 @@ part of '../form_companion_mixin.dart';
 ///   is ready for "submit" or `null` otherwise. This class checks validation
 ///   results of [FormField]s and existance of pending async validations.
 mixin CompanionPresenterMixin {
-  late final CompanionPresenterFeatures _presenterFeatures;
-
   /// Do not use this property directly, use methods on
   /// [CompanionPresenterMixinExtension] instead.
   ///
   /// Gets a [CompanionPresenterFeatures] which provides overriden behaviors
   /// with subtype of [CompanionPresenterMixin].
   @visibleForOverriding
-  CompanionPresenterFeatures get presenterFeatures => _presenterFeatures;
+  CompanionPresenterFeatures get presenterFeatures;
 
-  late final Map<String, PropertyDescriptor<Object, Object>> _properties;
+  /// Will become `true` if all late fields are initialized.
+  bool _mounted = false;
+
+  late FormProperties _properties;
 
   late final bool _hasAsyncValidators;
 
   _ValidationContext _validationContext = _ValidationContext.unspecified;
 
-  /// Map of [PropertyDescriptor]. Key is [PropertyDescriptor.name].
+  /// Gets a current [FormProperties] which holds properties' values and
+  /// their [PropertyDescriptor]s.
   ///
   /// In most of cases, callers should use type property accessors generated
-  /// by `form_companion_generator` (preferred),
-  /// or use [CompanionPresenterMixinPropertiesExtension.getProperty] extension
-  /// method instead.
+  /// by `form_companion_generator` instead.
   @nonVirtual
-  Map<String, PropertyDescriptor<Object, Object>> get properties => _properties;
+  FormProperties get propertiesState =>
+      // Returns empty if not mounted yet to avoid complicated late initialization error.
+      _mounted ? _properties : FormProperties._(this, const {});
 
   /// Initializes [CompanionPresenterMixin].
   /// **You must call this method (or overriden method) in your presenter's
   /// constructor to work mixins correctly.**
   ///
+  /// This method also calls [onPropertiesChanged] callback in end.
+  ///
   /// [properties] must be [PropertyDescriptorsBuilder] instance which
-  /// have all properties which will be input via correspond [FormField]s.
+  /// have **all** properties which will be input via correspond [FormField]s.
   /// You can define properties in the presenter constructor as following, or
   /// use extension methods.:
   /// ```dart
@@ -84,14 +106,57 @@ mixin CompanionPresenterMixin {
   /// }
   /// ```
   @protected
-  void initializeCompanionMixin(
-    PropertyDescriptorsBuilder properties,
-  ) {
+  void initializeCompanionMixin(PropertyDescriptorsBuilder properties) {
     _properties = properties._build(this);
-    _hasAsyncValidators =
-        _properties.values.any((p) => p._asynvValidatorEntries.isNotEmpty);
+    _hasAsyncValidators = _properties
+        .getAllDescriptors()
+        .any((p) => p._asynvValidatorEntries.isNotEmpty);
+    _mounted = true;
+    resetPropertiesState(_properties);
   }
 
+  /// Resets [propertiesState] with specified new [FormProperties].
+  ///
+  /// This method also calls [onPropertiesChanged] callback.
+  ///
+  /// This method returns passed [FormProperties] for convinience.
+  @nonVirtual
+  FormProperties resetPropertiesState(FormProperties newProperties) {
+    _properties = newProperties;
+    onPropertiesChanged(OnPropertiesChangedEvent(newProperties));
+
+    assert(identical(_properties, newProperties));
+    return newProperties;
+  }
+
+  /// Called from [PropertyDescriptor].
+  /// Reflect changed value as the new state.
+  void _onPropertyChanged(String name, Object? newValue) {
+    // If not mounted yet, 1) _properties are not initialized yet
+    // 2) copyWithProperty should not work correctly, so avoid processing.
+    if (_mounted) {
+      resetPropertiesState(
+        _properties.copyWithProperty(name, newValue),
+      );
+    }
+  }
+
+  /// Called when any property values are changed.
+  /// [OnPropertiesChangedEvent.newProperties] stores new values of the properties.
+  ///
+  /// Note that [propertiesState] has been also updated
+  /// with [OnPropertiesChangedEvent.newProperties].
+  ///
+  /// You can use this method like:
+  /// * Call `notifyListeners()` on `ChangeNotifier`.
+  /// * Set `state` on `StateNotifier`.
+  @protected
+  @visibleForOverriding
+  void onPropertiesChanged(OnPropertiesChangedEvent event) {
+    // do nothing
+  }
+
+  /// {@template canSubmit}
   /// Returns whether the state of this presenter is "completed" or not.
   ///
   /// "Completed" means that:
@@ -107,8 +172,10 @@ mixin CompanionPresenterMixin {
   /// performance issue. So, if you use more clever form helper library which
   /// supports validation result checking without repeated validation calls,
   /// you should override this method.
+  /// {@endtemplate}
   bool canSubmit(BuildContext context);
 
+  /// {@template submit}
   /// Returns submit callback suitable for `onClick` callback of button
   /// which represents `submit` of form.
   ///
@@ -116,6 +183,7 @@ mixin CompanionPresenterMixin {
   /// otherwise, this returns [doSubmit] as function type result.
   /// So, the button will be disabled when [canSubmit] is `false`,
   /// and will be enabled otherwise.
+  /// {@endtemplate}
   @nonVirtual
   VoidCallback? submit(BuildContext context) {
     if (!canSubmit(context)) {
@@ -355,12 +423,13 @@ extension CompanionPresenterMixinExtension on CompanionPresenterMixin {
     final allSynchronousValidationsAreSucceeded = formState.validate();
 
     // Creates completers to wait pending async validations.
-    final completers = properties.values
+    final completers = _properties
+        .getAllDescriptors()
         .where(
-      (property) => property._asynvValidatorEntries.any(
-        (entry) => entry._executor.validating,
-      ),
-    )
+          (property) => property._asynvValidatorEntries.any(
+            (entry) => entry._executor.validating,
+          ),
+        )
         .map(
       (property) {
         final completer = Completer<bool>();
@@ -375,7 +444,7 @@ extension CompanionPresenterMixinExtension on CompanionPresenterMixin {
       asyncValidationResults =
           await Future.wait(completers.map((f) => f.future));
     } finally {
-      for (final property in properties.values) {
+      for (final property in _properties.getAllDescriptors()) {
         property._asyncValidationCompletion = null;
       }
     }
@@ -401,27 +470,13 @@ extension CompanionPresenterMixinExtension on CompanionPresenterMixin {
   }
 }
 
-/// Internal helper methos of [CompanionPresenterMixin].
+/// Internal helper methods of [CompanionPresenterMixin].
 ///
 /// The API in this extension subject to change without any notification,
 /// so users should not use this class.
 @internal
 @visibleForTesting
 extension CompanionPresenterMixinInternalExtension on CompanionPresenterMixin {
-  /// Returns an untyped [PropertyDescriptor] with specified [name].
-  PropertyDescriptor<Object, Object> getPropertyInternal(String name) {
-    final property = properties[name];
-    if (property == null) {
-      throw ArgumentError.value(
-        name,
-        'name',
-        'Specified property is not registered.',
-      );
-    }
-
-    return property;
-  }
-
   /// Returns a validation error message which is shown when the async validator
   /// failed to complete with an exception or an error.
   ///
@@ -438,5 +493,5 @@ extension CompanionPresenterMixinInternalExtension on CompanionPresenterMixin {
   ValueListenable<bool> getPropertyPendingAsyncValidationsListener(
     String name,
   ) =>
-      getPropertyInternal(name)._pendingAsyncValidations;
+      propertiesState.getDescriptor(name)._pendingAsyncValidations;
 }

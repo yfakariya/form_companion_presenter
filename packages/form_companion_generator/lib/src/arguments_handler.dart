@@ -299,7 +299,7 @@ final _intrinsicBuilderAssignmentEmitters =
 final _intrinsicVanillaAssignmentEmitters =
     <String, Iterable<String>? Function(ArgumentMacroContext)>{
   'key': (context) => [
-        'key: ${context.presenter}.getKey(${context.property}.name, ${context.buildContext}),'
+        'key: _properties.presenter.getKey(${context.property}.name, ${context.buildContext}),'
       ],
   'initialValue': _assignInitialValue,
   'onSaved': (context) => [
