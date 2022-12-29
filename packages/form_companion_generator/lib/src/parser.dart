@@ -343,8 +343,7 @@ FutureOr<List<LibraryImport>> collectDependenciesAsync(
     ];
   }
 
-  final collector = DependentLibraryCollector2(
-    nodeProvider,
+  final collector = DependentLibraryCollector(
     await nodeProvider.libraries.toList(),
     logger,
     presenterLibrary,
