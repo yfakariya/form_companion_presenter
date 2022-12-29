@@ -107,9 +107,6 @@ mixin CompanionPresenterMixin {
   /// performance issue. So, if you use more clever form helper library which
   /// supports validation result checking without repeated validation calls,
   /// you should override this method.
-  @protected
-  @visibleForOverriding
-  @visibleForTesting
   bool canSubmit(BuildContext context);
 
   /// Returns submit callback suitable for `onClick` callback of button
