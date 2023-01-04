@@ -151,7 +151,7 @@ class ArgumentMacroContext {
         applyMacro(
           context,
           input,
-          (v) => _namedTemplates.get(v)?.value,
+          (v) => _namedTemplates[v]?.value,
           allowsUnresolved: true,
         ),
         (k) => _contextValues[k],

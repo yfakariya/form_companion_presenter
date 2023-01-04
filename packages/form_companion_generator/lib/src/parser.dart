@@ -339,7 +339,7 @@ FutureOr<List<LibraryImport>> collectDependenciesAsync(
 
     return [
       ...argumentTemplate.imports,
-      ...usedMacros.expand((m) => config.namedTemplates.get(m)?.imports ?? [])
+      ...usedMacros.expand((m) => config.namedTemplates[m]?.imports ?? [])
     ];
   }
 
