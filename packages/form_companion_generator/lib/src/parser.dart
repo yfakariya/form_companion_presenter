@@ -44,7 +44,7 @@ FutureOr<PresenterDefinition> parseElementAsync(
   if (mixinType == null) {
     throw InvalidGenerationSourceError(
       'A target of `@formCompanion` must be mix-ined with the either of '
-      '`FormCompanionPresenterMixin` or `FormBuilderPresenterMixin` in '
+      '`FormCompanionMixin` or `FormBuilderCompanionMixin` in '
       "'${element.name}' class.",
       element: element,
     );

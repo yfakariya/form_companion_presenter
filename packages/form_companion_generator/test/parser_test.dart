@@ -106,12 +106,12 @@ Future<void> main() async {
   }
 
   group('detectMixinType', () {
-    // Note: We cannot declare class which only mix-in FormCompanionPresenterMixin
-    // or FormBuilderCompanionPresenterMixin because they require the class implements
+    // Note: We cannot declare class which only mix-in FormCompanionMixin
+    // or FormBuilderCompanionMixin because they require the class implements
     // CompanionPresenterMixin.
 
     test(
-      'with FormCompanionPresenterMixin is detected as formCompanionPresenterMixin',
+      'with FormCompanionMixin is detected as formCompanionMixin',
       () => expect(
         detectMixinType(findType('FormPresenter')),
         equals(MixinType.formCompanionMixin),
@@ -119,7 +119,7 @@ Future<void> main() async {
     );
 
     test(
-      'with FormBuilderCompanionPresenterMixin is detected as formBuilderCompanionPresenterMixin',
+      'with FormBuilderCompanionMixin is detected as formBuilderCompanionMixin',
       () => expect(
         detectMixinType(findType('FormBuilderPresenter')),
         equals(MixinType.formBuilderCompanionMixin),
@@ -2142,8 +2142,7 @@ Future<void> main() async {
         expect(
           e.message,
           'A target of `@formCompanion` must be mix-ined with the either of '
-          '`FormCompanionPresenterMixin` or `FormBuilderPresenterMixin` in '
-          "'BaseCompanion' class.",
+          "`FormCompanionMixin` or `FormBuilderCompanionMixin` in 'BaseCompanion' class.",
         );
         expect(e.element, isA<ClassElement>());
         expect(e.element?.name, 'BaseCompanion');
