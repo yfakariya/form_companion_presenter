@@ -49,6 +49,7 @@ class InputPatternDescription {
     bool Function(FormField<T> widget) fieldPredicate,
   ) async {
     if (shouldSuccess) {
+      verifyNoValidationErrors(tester);
       // check transition
       expect(router.location, '/');
     } else {
@@ -104,12 +105,32 @@ void setAsyncValidationFutureFactory(
       Waiter(factory);
 }
 
-void verifyNoValidationErrors(WidgetTester tester) => expect(
-      tester
-          .stateList<FormFieldState<dynamic>>(find.byType(FormField))
-          .every((element) => !element.hasError),
-      isTrue,
-    );
+void verifyNoValidationErrors(WidgetTester tester) {
+  final vanillaFieldStates = tester
+      .stateList<FormFieldState<dynamic>>(
+        find.bySubtype<FormField<dynamic>>(),
+      )
+      .toList();
+  final builderFieldStates = tester
+      .stateList<FormBuilderFieldState<FormBuilderField<dynamic>, dynamic>>(
+        find.bySubtype<FormBuilderField<dynamic>>(),
+      )
+      .toList();
+  final errors = builderFieldStates.isEmpty
+      ? vanillaFieldStates.where((e) => e.hasError).map(
+            (e) =>
+                'Key: ${e.widget.key}, Value: ${e.value}, Error: ${e.errorText})}',
+          )
+      : builderFieldStates.where((e) => e.hasError).map(
+            (e) =>
+                'Name: ${e.widget.name}, Value: ${e.value}, Error: ${e.errorText})}',
+          );
+  expect(
+    vanillaFieldStates.every((f) => !f.hasError),
+    isTrue,
+    reason: 'Some fields has errors. : ${errors.join('\n')}',
+  );
+}
 
 void verifySubmitButtonIsEnabled(
   WidgetTester tester, {
