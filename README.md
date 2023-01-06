@@ -154,7 +154,38 @@ class Presenter with CompanionPresenterMixin, FormBuilderCompanionMixin {
 
 `AsyncValidationIndicator` is helper widget to indicate asynchronous validation is in progress.
 
-TODO: sample code
+In presenter code, you specify async validator factory:
+
+```dart
+  MyPresenter() {
+    initializeCompanionMixin(
+      PropertyDescriptorsBuilder()
+        ...
+        ..string(
+          name: 'someProperty'
+          ...
+          asyncValidatorFactories: [
+            // put async validator factory here
+          ],
+          ...
+        )
+        ....
+```
+
+Now, you can use `AsyncValidationIndicator` for `someProperty` as following.
+
+```dart
+          TextFormField(
+            ...
+            decoration: InputDecoration(
+              ...
+              suffix: AsyncValidationIndicator(
+                presenter: presenter,
+                propertyName: 'someProperty',
+              ),
+            ),
+          ),
+```
 
 #### Helper extensions
 
