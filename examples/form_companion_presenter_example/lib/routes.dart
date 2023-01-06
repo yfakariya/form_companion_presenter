@@ -11,6 +11,7 @@ import 'home.dart';
 import 'manual_validation_form_builder_account.dart';
 import 'manual_validation_form_builder_booking.dart';
 import 'manual_validation_vanilla_form.dart';
+import 'simple_form.dart';
 
 final routes = [
   GoRoute(
@@ -62,6 +63,11 @@ final routes = [
     path: '/form-builder/auto/booking',
     name: 'auto.flutterFormBuilderBooking',
     builder: (context, state) => AutoValidationFormBuilderBookingPage(),
+  ),
+  GoRoute(
+    path: '/simple',
+    name: 'simple',
+    builder: (context, state) => SimpleAccountPage(),
   ),
 ];
 

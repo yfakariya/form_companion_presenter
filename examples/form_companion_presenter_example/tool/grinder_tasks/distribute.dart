@@ -31,6 +31,7 @@ final Map<String, Set<String>> _itemSets = {
     _path('manual_validation_vanilla_form.dart'),
     _path('manual_validation_vanilla_form.fcp.dart'),
     _path('manual_validation_vanilla_form.g.dart'),
+    _path('simple_form.dart'),
   },
   'form_builder_companion_presenter': {
     ..._commonItems,
