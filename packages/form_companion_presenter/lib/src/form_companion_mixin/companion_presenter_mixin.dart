@@ -266,6 +266,10 @@ abstract class CompanionPresenterFeatures<A extends FormStateAdapter> {
       'Failed to check value. Try input again later.';
 }
 
+// NOTE: Methods in CompanionPresenterMixinExtension is not marked with
+//       @protected nor @visibleForTesting because "friend types" like
+//       FormBuilderCompanionPresenterMixin related types access them.
+
 /// Provides helper methods of [CompanionPresenterMixin].
 ///
 /// By extracting helper methods as extension methods, presenter developers
