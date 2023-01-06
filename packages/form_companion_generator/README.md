@@ -139,9 +139,9 @@ builders:
     options:
       named_templates:
         # This template assumes easy_localization usage.
-        label_template: 'LocaleKeys.#PRESENTER#_#PROPERTY#_label.tr()'
+        label_template: 'LocaleKeys.#PRESENTER_NAME#_#PROPERTY_NAME#_label.tr()'
         # This template assumes intl usage (with gen-l10n).
-        hint_template: 'L10n.of(#BUILD_CONTEXT#).#PRESENTER#_#PROPERTY#_hint'
+        hint_template: 'L10n.of(#BUILD_CONTEXT#).#PRESENTER_NAME#_#PROPERTY_NAME#_hint'
 ```
 
 ### Custom naming
@@ -264,11 +264,11 @@ builders:
     options:
       named_templates:
           label_template:
-            template: 'L10n.#PRESENTER#_#PROPERTY#_label'
+            template: 'L10n.#PRESENTER_NAME#_#PROPERTY_NAME#_label'
             imports:
               - 'package:intl/intl.dart`
               - 'package:myapp/src/locale/l10n.dart'
-          hint_template: 'L10n.#PRESENTER#_#PROPERTY#_hint'
+          hint_template: 'L10n.#PRESENTER_NAME#_#PROPERTY_NAME#_hint'
             imports:
               - 'package:intl/intl.dart`
               - 'package:myapp/src/locale/l10n.dart'
@@ -331,6 +331,7 @@ In template values, you can use defined named templates or following context spe
 
 **key** | **available in** | **description**
 --|--|--
+`PRESENTER_NAME` | any | Replaced with static token which is name of the presenter type.
 `PROPERTY_NAME` | any | Replaced with static token which is name of the property.
 `PROPERTY_VALUE_TYPE` | any | Replaced with static token which is `P` of `PropertyDescriptor<P, F>` for the property.
 `FIELD_VALUE_TYPE` | any | Replaced with static token which is `P` of `PropertyDescriptor<P, F>` for the property.

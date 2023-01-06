@@ -174,13 +174,13 @@ class ArgumentsHandler {
 
   /// Emits assignment lines with specified data.
   ///
-  /// [propertyDescriptor], [buildContext], and [presenter] parameters represent
+  /// [propertyDescriptor] and [buildContext] parameters represent
   /// local variable or parameter names.
   Iterable<String> emitAssignments({
     required PresenterDefinition data,
     required String propertyDescriptor,
     required String buildContext,
-    required String presenter,
+    required String presenterName,
     required String itemValue,
     required String indent,
     required Logger logger,
@@ -193,7 +193,7 @@ class ArgumentsHandler {
           _property.fieldType.getDisplayString(withNullability: true),
       property: propertyDescriptor,
       buildContext: buildContext,
-      presenter: presenter,
+      presenterName: presenterName,
       autovalidateMode: data.fieldAutovalidateMode,
       namedTemplates: _namedTemplates,
       itemValue: itemValue,

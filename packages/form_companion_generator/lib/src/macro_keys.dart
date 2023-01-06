@@ -35,10 +35,8 @@ class ContextValueKeys {
   /// form field factory's call site.
   static const buildContext = 'BUILD_CONTEXT';
 
-  /// Expression for current "presenter" instance.
-  /// The presenter should implement `CompanionPresenterMixin` and
-  /// `FormCompanionMixin` (or its subtype).
-  static const presenter = 'PRESENTER';
+  /// Token for name of current presenter type without any quotations.
+  static const presenterName = 'PRESENTER_NAME';
 
   // For list items
 

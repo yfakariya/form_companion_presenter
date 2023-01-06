@@ -2,7 +2,6 @@
 
 part of '../emitter.dart';
 
-const _presenterField = '_presenter';
 const _formPropertiesField = '_properties';
 const _defaultPropertyDescriptorVariable = 'property';
 const _alternativePropertyDescriptorVariable = 'property_';
@@ -217,7 +216,7 @@ Iterable<String> _emitFieldFactoryCore(
   yield* argumentHandler.emitAssignments(
     data: data,
     buildContext: 'context',
-    presenter: _presenterField,
+    presenterName: data.name,
     propertyDescriptor: propertyDescriptorVariable,
     itemValue: 'x',
     indent: '      ',
