@@ -51,13 +51,12 @@ jobs:
         run: fvm flutter pub get
         working-directory: tool/dev_env
 
-      - name: Setup testing environment
-        run: grind setup-env
-        working-directory: tool/dev_env
-
       - name: Format sources
         run: grind format
         working-directory: tool/dev_env
+
+      - name: Initialize projects
+        run: melos run pubget
 
       - name: Analyze sources
         run: melos run analyze --no-select
