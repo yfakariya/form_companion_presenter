@@ -14,7 +14,7 @@ import 'package:form_companion_presenter/src/internal_utils.dart';
 import 'package:form_companion_presenter/src/string_converter.dart';
 import 'package:form_companion_presenter/src/value_converter.dart';
 
-import 'companion_presenter_mixin_test.dart';
+import 'test_helpers.dart';
 
 enum _MyEnum {
   one,
