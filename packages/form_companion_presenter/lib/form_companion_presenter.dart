@@ -21,7 +21,9 @@ export 'src/form_companion_mixin.dart'
         FormFieldValidatorFactory,
         FormStateAdapter,
         PropertyDescriptor,
-        PropertyDescriptorsBuilder;
+        PropertyDescriptorsBuilder,
+        ValidatorCreationOptions,
+        createValidatorCreationOptions;
 export 'src/future_invoker.dart'
     show
         AsyncErrorHandler,
