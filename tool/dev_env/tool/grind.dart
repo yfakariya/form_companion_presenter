@@ -3,7 +3,6 @@
 import 'package:grinder/grinder.dart';
 
 import 'tasks/check_env.dart';
-import 'tasks/enable_pub_get.dart';
 import 'tasks/prepare_publish.dart';
 import 'tasks/run_formats.dart';
 
@@ -11,17 +10,6 @@ Future<dynamic> main(List<String> args) => grind(args);
 
 @Task('Check development environment.')
 Future<dynamic> checkEnv() => checkDevEnv();
-
-@DefaultTask('Setup development environment.')
-@Depends(checkEnv)
-Future<void> setupEnv() async => enablePubGetCore(runPubGet: true);
-
-@Task(
-  'Enable `pub get` for melos enabled projects. Pass --run to run `pub get` immediately.',
-)
-Future<void> enablePubGet() => enablePubGetCore(
-      runPubGet: context.invocation.arguments.getFlag('run'),
-    );
 
 @Task(
   'Run `flutter format` for all project but except *.g.dart, *.freezed.dart, and .dart_tools/**/*.dart',
