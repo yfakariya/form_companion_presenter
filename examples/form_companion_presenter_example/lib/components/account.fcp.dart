@@ -87,47 +87,230 @@ import 'package:flutter_form_builder/flutter_form_builder.dart'
 
 import 'package:form_companion_presenter/form_companion_presenter.dart';
 
+import 'package:meta/meta.dart' show immutable, sealed;
+
 import '../l10n/locale_keys.g.dart' show LocaleKeys;
 
 import '../models.dart' show Gender, Region;
 
 import 'account.dart';
 
-/// Defines typed property accessors as extension properties for [AccountPresenterTemplate].
-extension $AccountPresenterTemplatePropertyExtension
-    on AccountPresenterTemplate {
+/// Defines typed property state accessors
+/// for [AccountPresenterTemplate].
+@sealed
+@immutable
+class $AccountPresenterTemplateFormProperties implements FormProperties {
+  final FormProperties _underlying;
+
+  /// Gets a [AccountPresenterTemplate] instance which holds this properties state.
+  AccountPresenterTemplate get presenter =>
+      _underlying.presenter as AccountPresenterTemplate;
+
+  /// Gets a typed [PropertyDescriptor] accessor [$AccountPresenterTemplatePropertyDescriptors]
+  /// for [AccountPresenterTemplate].
+  late final $AccountPresenterTemplatePropertyDescriptors descriptors;
+
+  /// Gets a typed property value accessor [$AccountPresenterTemplatePropertyValues]
+  /// for [AccountPresenterTemplate].
+  late final $AccountPresenterTemplatePropertyValues values;
+
+  /// Returns a [$AccountPresenterTemplateFormProperties] which wraps [FormProperties].
+  ///
+  /// Note that this factory returns [underlying] if [underlying] is
+  /// [$AccountPresenterTemplateFormProperties] type.
+  factory $AccountPresenterTemplateFormProperties(FormProperties underlying) {
+    if (underlying is $AccountPresenterTemplateFormProperties) {
+      return underlying;
+    }
+
+    if (underlying.presenter is! AccountPresenterTemplate) {
+      throw ArgumentError(
+        'Specified FormProperties does not hold ${AccountPresenterTemplate} type presenter.',
+        'underlying',
+      );
+    }
+
+    return $AccountPresenterTemplateFormProperties._(underlying);
+  }
+
+  $AccountPresenterTemplateFormProperties._(this._underlying) {
+    descriptors = $AccountPresenterTemplatePropertyDescriptors._(_underlying);
+    values = $AccountPresenterTemplatePropertyValues._(_underlying);
+  }
+
+  @override
+  bool canSubmit(BuildContext context) => _underlying.canSubmit(context);
+
+  @override
+  void Function()? submit(BuildContext context) => _underlying.submit(context);
+
+  @override
+  $AccountPresenterTemplateFormProperties copyWithProperties(
+    Map<String, Object?> newValues,
+  ) {
+    final newUnderlying = _underlying.copyWithProperties(newValues);
+    if (identical(newUnderlying, _underlying)) {
+      return this;
+    }
+
+    return $AccountPresenterTemplateFormProperties(newUnderlying);
+  }
+
+  @override
+  $AccountPresenterTemplateFormProperties copyWithProperty(
+    String name,
+    Object? newValue,
+  ) {
+    final newUnderlying = _underlying.copyWithProperty(name, newValue);
+    if (identical(newUnderlying, _underlying)) {
+      return this;
+    }
+
+    return $AccountPresenterTemplateFormProperties(newUnderlying);
+  }
+
+  /// Copies this instance with specified new property values specified via
+  /// returned [$AccountPresenterTemplateFormPropertiesBuilder] object.
+  ///
+  /// You must call [$AccountPresenterTemplateFormPropertiesBuilder.build]
+  /// to finish copying.
+  $AccountPresenterTemplateFormPropertiesBuilder copyWith() =>
+      $AccountPresenterTemplateFormPropertiesBuilder._(this);
+
+  @override
+  PropertyDescriptor<P, F> getDescriptor<P extends Object, F extends Object>(
+    String name,
+  ) =>
+      _underlying.getDescriptor<P, F>(name);
+
+  @override
+  PropertyDescriptor<P, F>?
+      tryGetDescriptor<P extends Object, F extends Object>(
+    String name,
+  ) =>
+          _underlying.tryGetDescriptor(name);
+
+  @override
+  Iterable<PropertyDescriptor<Object, Object>> getAllDescriptors() =>
+      _underlying.getAllDescriptors();
+
+  @override
+  Object? getValue(String name) => _underlying.getValue(name);
+}
+
+/// Defines typed [PropertyDescriptor] accessors
+/// for [AccountPresenterTemplateFormProperties].
+@sealed
+class $AccountPresenterTemplatePropertyDescriptors {
+  final FormProperties _properties;
+
+  $AccountPresenterTemplatePropertyDescriptors._(this._properties);
+
   /// Gets a [PropertyDescriptor] of `id` property.
   PropertyDescriptor<String, String> get id =>
-      // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-      properties['id']! as PropertyDescriptor<String, String>;
+      _properties.getDescriptor('id') as PropertyDescriptor<String, String>;
 
   /// Gets a [PropertyDescriptor] of `name` property.
   PropertyDescriptor<String, String> get name =>
-      // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-      properties['name']! as PropertyDescriptor<String, String>;
+      _properties.getDescriptor('name') as PropertyDescriptor<String, String>;
 
   /// Gets a [PropertyDescriptor] of `gender` property.
   PropertyDescriptor<Gender, Gender> get gender =>
-      // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-      properties['gender']! as PropertyDescriptor<Gender, Gender>;
+      _properties.getDescriptor('gender') as PropertyDescriptor<Gender, Gender>;
 
   /// Gets a [PropertyDescriptor] of `age` property.
   PropertyDescriptor<int, String> get age =>
-      // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-      properties['age']! as PropertyDescriptor<int, String>;
+      _properties.getDescriptor('age') as PropertyDescriptor<int, String>;
 
   /// Gets a [PropertyDescriptor] of `preferredRegions` property.
   PropertyDescriptor<List<Region>, List<Region>> get preferredRegions =>
-      // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-      properties['preferredRegions']!
+      _properties.getDescriptor('preferredRegions')
           as PropertyDescriptor<List<Region>, List<Region>>;
+}
+
+/// Defines typed property value accessors
+/// for [AccountPresenterTemplateFormProperties].
+@sealed
+class $AccountPresenterTemplatePropertyValues {
+  final FormProperties _properties;
+
+  $AccountPresenterTemplatePropertyValues._(this._properties);
+
+  /// Gets a current value of `id` property.
+  String get id => _properties.getValue('id') as String;
+
+  /// Gets a current value of `name` property.
+  String get name => _properties.getValue('name') as String;
+
+  /// Gets a current value of `gender` property.
+  Gender get gender => _properties.getValue('gender') as Gender;
+
+  /// Gets a current value of `age` property.
+  int get age => _properties.getValue('age') as int;
+
+  /// Gets a current value of `preferredRegions` property.
+  List<Region> get preferredRegions =>
+      _properties.getValue('preferredRegions') as List<Region>;
+}
+
+/// Defines a builder to help [AccountPresenterTemplateFormProperties.copyWith].
+@sealed
+class $AccountPresenterTemplateFormPropertiesBuilder {
+  final $AccountPresenterTemplateFormProperties _properties;
+  final Map<String, Object?> _newValues = {};
+
+  $AccountPresenterTemplateFormPropertiesBuilder._(this._properties);
+
+  /// Sets a new value of `id` property.
+  void id(String value) => _newValues['id'] = value;
+
+  /// Sets a new value of `name` property.
+  void name(String value) => _newValues['name'] = value;
+
+  /// Sets a new value of `gender` property.
+  void gender(Gender value) => _newValues['gender'] = value;
+
+  /// Sets a new value of `age` property.
+  void age(int value) => _newValues['age'] = value;
+
+  /// Sets a new value of `preferredRegions` property.
+  void preferredRegions(List<Region> value) =>
+      _newValues['preferredRegions'] = value;
+
+  $AccountPresenterTemplateFormProperties build() =>
+      _properties.copyWithProperties(_newValues);
+}
+
+/// Defines typed property accessors as extension properties for [AccountPresenterTemplate].
+extension $AccountPresenterTemplatePropertyExtension
+    on AccountPresenterTemplate {
+  /// Gets a current [$AccountPresenterTemplateFormProperties] which holds properties' values
+  /// and their [PropertyDescriptor]s.
+  $AccountPresenterTemplateFormProperties get properties =>
+      $AccountPresenterTemplateFormProperties(propertiesState);
+
+  /// Resets [properties] (and underlying[CompanionPresenterMixin.propertiesState])
+  /// with specified new [$AccountPresenterTemplateFormProperties].
+  ///
+  /// This method also calls [CompanionPresenterMixin.onPropertiesChanged] callback.
+  ///
+  /// This method returns passed [FormProperties] for convinience.
+  ///
+  /// This method is preferred over [CompanionPresenterMixin.resetPropertiesState]
+  /// because takes and returns more specific [$AccountPresenterTemplateFormProperties] type.
+  $AccountPresenterTemplateFormProperties resetProperties(
+    $AccountPresenterTemplateFormProperties newProperties,
+  ) {
+    resetPropertiesState(newProperties);
+    return newProperties;
+  }
 }
 
 /// Defines [FormField] factory methods for properties of [AccountPresenterTemplate].
 class $AccountPresenterTemplateFieldFactory {
-  final AccountPresenterTemplate _presenter;
+  final $AccountPresenterTemplateFormProperties _properties;
 
-  $AccountPresenterTemplateFieldFactory._(this._presenter);
+  $AccountPresenterTemplateFieldFactory._(this._properties);
 
   /// Gets a [FormField] for `id` property.
   FormBuilderTextField id(
@@ -151,6 +334,7 @@ class $AccountPresenterTemplateFieldFactory {
     bool autofocus = false,
     bool autocorrect = true,
     double cursorWidth = 2.0,
+    double? cursorHeight,
     TextInputType? keyboardType,
     TextStyle? style,
     TextEditingController? controller,
@@ -183,7 +367,7 @@ class $AccountPresenterTemplateFieldFactory {
     String obscuringCharacter = '•',
     MouseCursor? mouseCursor,
   }) {
-    final property = _presenter.id;
+    final property = _properties.descriptors.id;
     return FormBuilderTextField(
       key: key,
       name: property.name,
@@ -211,6 +395,7 @@ class $AccountPresenterTemplateFieldFactory {
       autofocus: autofocus,
       autocorrect: autocorrect,
       cursorWidth: cursorWidth,
+      cursorHeight: cursorHeight,
       keyboardType: keyboardType,
       style: style,
       controller: controller,
@@ -267,6 +452,7 @@ class $AccountPresenterTemplateFieldFactory {
     bool autofocus = false,
     bool autocorrect = true,
     double cursorWidth = 2.0,
+    double? cursorHeight,
     TextInputType? keyboardType,
     TextStyle? style,
     TextEditingController? controller,
@@ -299,7 +485,7 @@ class $AccountPresenterTemplateFieldFactory {
     String obscuringCharacter = '•',
     MouseCursor? mouseCursor,
   }) {
-    final property = _presenter.name;
+    final property = _properties.descriptors.name;
     return FormBuilderTextField(
       key: key,
       name: property.name,
@@ -327,6 +513,7 @@ class $AccountPresenterTemplateFieldFactory {
       autofocus: autofocus,
       autocorrect: autocorrect,
       cursorWidth: cursorWidth,
+      cursorHeight: cursorHeight,
       keyboardType: keyboardType,
       style: style,
       controller: controller,
@@ -394,7 +581,7 @@ class $AccountPresenterTemplateFieldFactory {
     BorderRadius? borderRadius,
     AlignmentGeometry alignment = AlignmentDirectional.centerStart,
   }) {
-    final property = _presenter.gender;
+    final property = _properties.descriptors.gender;
     return FormBuilderDropdown<Gender>(
       key: key,
       name: property.name,
@@ -460,6 +647,7 @@ class $AccountPresenterTemplateFieldFactory {
     bool autofocus = false,
     bool autocorrect = true,
     double cursorWidth = 2.0,
+    double? cursorHeight,
     TextInputType? keyboardType,
     TextStyle? style,
     TextEditingController? controller,
@@ -492,7 +680,7 @@ class $AccountPresenterTemplateFieldFactory {
     String obscuringCharacter = '•',
     MouseCursor? mouseCursor,
   }) {
-    final property = _presenter.age;
+    final property = _properties.descriptors.age;
     return FormBuilderTextField(
       key: key,
       name: property.name,
@@ -520,6 +708,7 @@ class $AccountPresenterTemplateFieldFactory {
       autofocus: autofocus,
       autocorrect: autocorrect,
       cursorWidth: cursorWidth,
+      cursorHeight: cursorHeight,
       keyboardType: keyboardType,
       style: style,
       controller: controller,
@@ -593,7 +782,7 @@ class $AccountPresenterTemplateFieldFactory {
     ValueTransformer<List<Region>?>? valueTransformer,
     VoidCallback? onReset,
   }) {
-    final property = _presenter.preferredRegions;
+    final property = _properties.descriptors.preferredRegions;
     return FormBuilderFilterChip<Region>(
       autovalidateMode: autovalidateMode ?? AutovalidateMode.onUserInteraction,
       enabled: enabled,
@@ -652,8 +841,8 @@ class $AccountPresenterTemplateFieldFactory {
 }
 
 /// Defines an extension property to get [$AccountPresenterTemplateFieldFactory] from [AccountPresenterTemplate].
-extension $AccountPresenterTemplateFieldFactoryExtension
-    on AccountPresenterTemplate {
+extension $AccountPresenterTemplateFormPropertiesFieldFactoryExtension
+    on $AccountPresenterTemplateFormProperties {
   /// Gets a [FormField] factory.
   $AccountPresenterTemplateFieldFactory get fields =>
       $AccountPresenterTemplateFieldFactory._(this);

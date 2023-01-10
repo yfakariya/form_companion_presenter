@@ -77,9 +77,16 @@ class ArgumentsHandler {
 
   static String? _tryGetConstantItemValues(PropertyDefinition property) {
     String? getEnumConstantItemValues(GenericType itemType) {
-      final members = (itemType.rawType.element2! as ClassElement)
+      // Use InterfaceElement here because Enum is ClassElement with isEnum == true.
+      final members = (itemType.rawType.element! as InterfaceElement)
           .fields
-          .where((f) => f.type == itemType.rawType && f.isConst && f.isStatic)
+          .where(
+            (f) =>
+                // Use element instead of type to handle nullable type correctly here.
+                f.type.element == itemType.rawType.element &&
+                f.isConst &&
+                f.isStatic,
+          )
           .map(
             (f) =>
                 '${f.type.getDisplayString(withNullability: false)}.${f.name}',
@@ -167,13 +174,13 @@ class ArgumentsHandler {
 
   /// Emits assignment lines with specified data.
   ///
-  /// [propertyDescriptor], [buildContext], and [presenter] parameters represent
+  /// [propertyDescriptor] and [buildContext] parameters represent
   /// local variable or parameter names.
   Iterable<String> emitAssignments({
     required PresenterDefinition data,
     required String propertyDescriptor,
     required String buildContext,
-    required String presenter,
+    required String presenterName,
     required String itemValue,
     required String indent,
     required Logger logger,
@@ -186,7 +193,7 @@ class ArgumentsHandler {
           _property.fieldType.getDisplayString(withNullability: true),
       property: propertyDescriptor,
       buildContext: buildContext,
-      presenter: presenter,
+      presenterName: presenterName,
       autovalidateMode: data.fieldAutovalidateMode,
       namedTemplates: _namedTemplates,
       itemValue: itemValue,
@@ -292,7 +299,7 @@ final _intrinsicBuilderAssignmentEmitters =
 final _intrinsicVanillaAssignmentEmitters =
     <String, Iterable<String>? Function(ArgumentMacroContext)>{
   'key': (context) => [
-        'key: ${context.presenter}.getKey(${context.property}.name, ${context.buildContext}),'
+        'key: _properties.presenter.getKey(${context.property}.name, ${context.buildContext}),'
       ],
   'initialValue': _assignInitialValue,
   'onSaved': (context) => [

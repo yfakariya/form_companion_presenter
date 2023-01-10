@@ -605,7 +605,7 @@ class C extends B {
           final type = typeProvider.stringType;
           await assertGenericType(
             sourceType: type,
-            target: GenericType.generic(type, [], type.element2),
+            target: GenericType.generic(type, [], type.element),
             expectedTypeArguments: [],
             rawTypeName: 'String',
             displayStringWithNullability: 'String',
@@ -642,7 +642,7 @@ class C extends B {
         () async {
           final type = typeProvider
               .mapType(typeProvider.stringType, typeProvider.intType)
-              .element2
+              .element
               .thisType;
           final typeArguments = [
             toGenericType(typeProvider.stringType),
@@ -651,9 +651,9 @@ class C extends B {
           await assertGenericType(
             sourceType: type,
             target: GenericType.generic(
-              type.element2.thisType,
+              type.element.thisType,
               typeArguments,
-              type.element2,
+              type.element,
             ),
             expectedTypeArguments: ['String', 'int'],
             rawTypeName: 'Map<K, V>',
@@ -699,7 +699,7 @@ class C extends B {
             target: GenericType.generic(
               typeProvider.neverType,
               [],
-              typeProvider.neverType.element2!,
+              typeProvider.neverType.element!,
             ),
             expectedTypeArguments: [],
             rawTypeName: 'Never',

@@ -14,7 +14,7 @@ import 'package:form_companion_presenter/src/internal_utils.dart';
 import 'package:form_companion_presenter/src/string_converter.dart';
 import 'package:form_companion_presenter/src/value_converter.dart';
 
-import 'companion_presenter_mixin_test.dart';
+import 'test_helpers.dart';
 
 enum _MyEnum {
   one,
@@ -94,13 +94,17 @@ void main() {
     required F value,
   }) {
     final presenter = Presenter(target);
-    final result = presenter.properties.values.single;
+    final result = presenter.propertiesState.getAllDescriptors().single;
     expect(
       result,
       isA<PropertyDescriptor<P, F>>()
           .having((p) => p.name, 'name', name)
           .having((p) => p.presenter, 'presenter', same(presenter))
-          .having((p) => p.value, 'value', initialPropertyValue)
+          .having(
+            (p) => presenter.propertiesState.getValue(name),
+            'value',
+            initialPropertyValue,
+          )
           .having(
             (p) => p.getFieldValue(defaultLocale),
             'getFieldValue',

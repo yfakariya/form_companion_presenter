@@ -115,73 +115,299 @@ import 'package:intl/intl.dart' show DateFormat, NumberFormat;
 
 import 'package:intl/intl.dart' as intl show DateFormat;
 
+import 'package:meta/meta.dart' show immutable, sealed;
+
 import 'auto_validation_form_builder_booking.dart';
 
 import 'l10n/locale_keys.g.dart' show LocaleKeys;
 
 import 'models.dart' show MealType, RoomType;
 
-/// Defines typed property accessors as extension properties for [AutoValidationFormBuilderBookingPresenter].
-extension $AutoValidationFormBuilderBookingPresenterPropertyExtension
-    on AutoValidationFormBuilderBookingPresenter {
+/// Defines typed property state accessors
+/// for [AutoValidationFormBuilderBookingPresenter].
+@sealed
+@immutable
+class $AutoValidationFormBuilderBookingPresenterFormProperties
+    implements FormProperties {
+  final FormProperties _underlying;
+
+  /// Gets a [AutoValidationFormBuilderBookingPresenter] instance which holds this properties state.
+  AutoValidationFormBuilderBookingPresenter get presenter =>
+      _underlying.presenter as AutoValidationFormBuilderBookingPresenter;
+
+  /// Gets a typed [PropertyDescriptor] accessor [$AutoValidationFormBuilderBookingPresenterPropertyDescriptors]
+  /// for [AutoValidationFormBuilderBookingPresenter].
+  late final $AutoValidationFormBuilderBookingPresenterPropertyDescriptors
+      descriptors;
+
+  /// Gets a typed property value accessor [$AutoValidationFormBuilderBookingPresenterPropertyValues]
+  /// for [AutoValidationFormBuilderBookingPresenter].
+  late final $AutoValidationFormBuilderBookingPresenterPropertyValues values;
+
+  /// Returns a [$AutoValidationFormBuilderBookingPresenterFormProperties] which wraps [FormProperties].
+  ///
+  /// Note that this factory returns [underlying] if [underlying] is
+  /// [$AutoValidationFormBuilderBookingPresenterFormProperties] type.
+  factory $AutoValidationFormBuilderBookingPresenterFormProperties(
+      FormProperties underlying) {
+    if (underlying
+        is $AutoValidationFormBuilderBookingPresenterFormProperties) {
+      return underlying;
+    }
+
+    if (underlying.presenter is! AutoValidationFormBuilderBookingPresenter) {
+      throw ArgumentError(
+        'Specified FormProperties does not hold ${AutoValidationFormBuilderBookingPresenter} type presenter.',
+        'underlying',
+      );
+    }
+
+    return $AutoValidationFormBuilderBookingPresenterFormProperties
+        ._(underlying);
+  }
+
+  $AutoValidationFormBuilderBookingPresenterFormProperties._(this._underlying) {
+    descriptors = $AutoValidationFormBuilderBookingPresenterPropertyDescriptors
+        ._(_underlying);
+    values =
+        $AutoValidationFormBuilderBookingPresenterPropertyValues._(_underlying);
+  }
+
+  @override
+  bool canSubmit(BuildContext context) => _underlying.canSubmit(context);
+
+  @override
+  void Function()? submit(BuildContext context) => _underlying.submit(context);
+
+  @override
+  $AutoValidationFormBuilderBookingPresenterFormProperties copyWithProperties(
+    Map<String, Object?> newValues,
+  ) {
+    final newUnderlying = _underlying.copyWithProperties(newValues);
+    if (identical(newUnderlying, _underlying)) {
+      return this;
+    }
+
+    return $AutoValidationFormBuilderBookingPresenterFormProperties(
+        newUnderlying);
+  }
+
+  @override
+  $AutoValidationFormBuilderBookingPresenterFormProperties copyWithProperty(
+    String name,
+    Object? newValue,
+  ) {
+    final newUnderlying = _underlying.copyWithProperty(name, newValue);
+    if (identical(newUnderlying, _underlying)) {
+      return this;
+    }
+
+    return $AutoValidationFormBuilderBookingPresenterFormProperties(
+        newUnderlying);
+  }
+
+  /// Copies this instance with specified new property values specified via
+  /// returned [$AutoValidationFormBuilderBookingPresenterFormPropertiesBuilder] object.
+  ///
+  /// You must call [$AutoValidationFormBuilderBookingPresenterFormPropertiesBuilder.build]
+  /// to finish copying.
+  $AutoValidationFormBuilderBookingPresenterFormPropertiesBuilder copyWith() =>
+      $AutoValidationFormBuilderBookingPresenterFormPropertiesBuilder._(this);
+
+  @override
+  PropertyDescriptor<P, F> getDescriptor<P extends Object, F extends Object>(
+    String name,
+  ) =>
+      _underlying.getDescriptor<P, F>(name);
+
+  @override
+  PropertyDescriptor<P, F>?
+      tryGetDescriptor<P extends Object, F extends Object>(
+    String name,
+  ) =>
+          _underlying.tryGetDescriptor(name);
+
+  @override
+  Iterable<PropertyDescriptor<Object, Object>> getAllDescriptors() =>
+      _underlying.getAllDescriptors();
+
+  @override
+  Object? getValue(String name) => _underlying.getValue(name);
+}
+
+/// Defines typed [PropertyDescriptor] accessors
+/// for [AutoValidationFormBuilderBookingPresenterFormProperties].
+@sealed
+class $AutoValidationFormBuilderBookingPresenterPropertyDescriptors {
+  final FormProperties _properties;
+
+  $AutoValidationFormBuilderBookingPresenterPropertyDescriptors._(
+      this._properties);
+
   /// Gets a [PropertyDescriptor] of `stay` property.
   PropertyDescriptor<DateTimeRange, DateTimeRange> get stay =>
-      // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-      properties['stay']! as PropertyDescriptor<DateTimeRange, DateTimeRange>;
+      _properties.getDescriptor('stay')
+          as PropertyDescriptor<DateTimeRange, DateTimeRange>;
 
   /// Gets a [PropertyDescriptor] of `specialOfferDate` property.
   PropertyDescriptor<DateTime, DateTime> get specialOfferDate =>
-      // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-      properties['specialOfferDate']! as PropertyDescriptor<DateTime, DateTime>;
+      _properties.getDescriptor('specialOfferDate')
+          as PropertyDescriptor<DateTime, DateTime>;
 
   /// Gets a [PropertyDescriptor] of `roomType` property.
   PropertyDescriptor<RoomType, RoomType> get roomType =>
-      // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-      properties['roomType']! as PropertyDescriptor<RoomType, RoomType>;
+      _properties.getDescriptor('roomType')
+          as PropertyDescriptor<RoomType, RoomType>;
 
   /// Gets a [PropertyDescriptor] of `mealOffers` property.
   PropertyDescriptor<List<MealType>, List<MealType>> get mealOffers =>
-      // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-      properties['mealOffers']!
+      _properties.getDescriptor('mealOffers')
           as PropertyDescriptor<List<MealType>, List<MealType>>;
 
   /// Gets a [PropertyDescriptor] of `smoking` property.
   PropertyDescriptor<bool, bool> get smoking =>
-      // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-      properties['smoking']! as PropertyDescriptor<bool, bool>;
+      _properties.getDescriptor('smoking') as PropertyDescriptor<bool, bool>;
 
   /// Gets a [PropertyDescriptor] of `persons` property.
   PropertyDescriptor<int, double> get persons =>
-      // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-      properties['persons']! as PropertyDescriptor<int, double>;
+      _properties.getDescriptor('persons') as PropertyDescriptor<int, double>;
 
   /// Gets a [PropertyDescriptor] of `babyBeds` property.
   PropertyDescriptor<int, int> get babyBeds =>
-      // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-      properties['babyBeds']! as PropertyDescriptor<int, int>;
+      _properties.getDescriptor('babyBeds') as PropertyDescriptor<int, int>;
 
   /// Gets a [PropertyDescriptor] of `preferredPrice` property.
   PropertyDescriptor<RangeValues, RangeValues> get preferredPrice =>
-      // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-      properties['preferredPrice']!
+      _properties.getDescriptor('preferredPrice')
           as PropertyDescriptor<RangeValues, RangeValues>;
 
   /// Gets a [PropertyDescriptor] of `donation` property.
   PropertyDescriptor<double, String> get donation =>
-      // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-      properties['donation']! as PropertyDescriptor<double, String>;
+      _properties.getDescriptor('donation')
+          as PropertyDescriptor<double, String>;
 
   /// Gets a [PropertyDescriptor] of `note` property.
   PropertyDescriptor<String, String> get note =>
-      // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-      properties['note']! as PropertyDescriptor<String, String>;
+      _properties.getDescriptor('note') as PropertyDescriptor<String, String>;
+}
+
+/// Defines typed property value accessors
+/// for [AutoValidationFormBuilderBookingPresenterFormProperties].
+@sealed
+class $AutoValidationFormBuilderBookingPresenterPropertyValues {
+  final FormProperties _properties;
+
+  $AutoValidationFormBuilderBookingPresenterPropertyValues._(this._properties);
+
+  /// Gets a current value of `stay` property.
+  DateTimeRange get stay => _properties.getValue('stay') as DateTimeRange;
+
+  /// Gets a current value of `specialOfferDate` property.
+  DateTime get specialOfferDate =>
+      _properties.getValue('specialOfferDate') as DateTime;
+
+  /// Gets a current value of `roomType` property.
+  RoomType get roomType => _properties.getValue('roomType') as RoomType;
+
+  /// Gets a current value of `mealOffers` property.
+  List<MealType> get mealOffers =>
+      _properties.getValue('mealOffers') as List<MealType>;
+
+  /// Gets a current value of `smoking` property.
+  bool get smoking => _properties.getValue('smoking') as bool;
+
+  /// Gets a current value of `persons` property.
+  int get persons => _properties.getValue('persons') as int;
+
+  /// Gets a current value of `babyBeds` property.
+  int get babyBeds => _properties.getValue('babyBeds') as int;
+
+  /// Gets a current value of `preferredPrice` property.
+  RangeValues get preferredPrice =>
+      _properties.getValue('preferredPrice') as RangeValues;
+
+  /// Gets a current value of `donation` property.
+  double get donation => _properties.getValue('donation') as double;
+
+  /// Gets a current value of `note` property.
+  String get note => _properties.getValue('note') as String;
+}
+
+/// Defines a builder to help [AutoValidationFormBuilderBookingPresenterFormProperties.copyWith].
+@sealed
+class $AutoValidationFormBuilderBookingPresenterFormPropertiesBuilder {
+  final $AutoValidationFormBuilderBookingPresenterFormProperties _properties;
+  final Map<String, Object?> _newValues = {};
+
+  $AutoValidationFormBuilderBookingPresenterFormPropertiesBuilder._(
+      this._properties);
+
+  /// Sets a new value of `stay` property.
+  void stay(DateTimeRange value) => _newValues['stay'] = value;
+
+  /// Sets a new value of `specialOfferDate` property.
+  void specialOfferDate(DateTime value) =>
+      _newValues['specialOfferDate'] = value;
+
+  /// Sets a new value of `roomType` property.
+  void roomType(RoomType value) => _newValues['roomType'] = value;
+
+  /// Sets a new value of `mealOffers` property.
+  void mealOffers(List<MealType> value) => _newValues['mealOffers'] = value;
+
+  /// Sets a new value of `smoking` property.
+  void smoking(bool value) => _newValues['smoking'] = value;
+
+  /// Sets a new value of `persons` property.
+  void persons(int value) => _newValues['persons'] = value;
+
+  /// Sets a new value of `babyBeds` property.
+  void babyBeds(int value) => _newValues['babyBeds'] = value;
+
+  /// Sets a new value of `preferredPrice` property.
+  void preferredPrice(RangeValues value) =>
+      _newValues['preferredPrice'] = value;
+
+  /// Sets a new value of `donation` property.
+  void donation(double value) => _newValues['donation'] = value;
+
+  /// Sets a new value of `note` property.
+  void note(String value) => _newValues['note'] = value;
+
+  $AutoValidationFormBuilderBookingPresenterFormProperties build() =>
+      _properties.copyWithProperties(_newValues);
+}
+
+/// Defines typed property accessors as extension properties for [AutoValidationFormBuilderBookingPresenter].
+extension $AutoValidationFormBuilderBookingPresenterPropertyExtension
+    on AutoValidationFormBuilderBookingPresenter {
+  /// Gets a current [$AutoValidationFormBuilderBookingPresenterFormProperties] which holds properties' values
+  /// and their [PropertyDescriptor]s.
+  $AutoValidationFormBuilderBookingPresenterFormProperties get properties =>
+      $AutoValidationFormBuilderBookingPresenterFormProperties(propertiesState);
+
+  /// Resets [properties] (and underlying[CompanionPresenterMixin.propertiesState])
+  /// with specified new [$AutoValidationFormBuilderBookingPresenterFormProperties].
+  ///
+  /// This method also calls [CompanionPresenterMixin.onPropertiesChanged] callback.
+  ///
+  /// This method returns passed [FormProperties] for convinience.
+  ///
+  /// This method is preferred over [CompanionPresenterMixin.resetPropertiesState]
+  /// because takes and returns more specific [$AutoValidationFormBuilderBookingPresenterFormProperties] type.
+  $AutoValidationFormBuilderBookingPresenterFormProperties resetProperties(
+    $AutoValidationFormBuilderBookingPresenterFormProperties newProperties,
+  ) {
+    resetPropertiesState(newProperties);
+    return newProperties;
+  }
 }
 
 /// Defines [FormField] factory methods for properties of [AutoValidationFormBuilderBookingPresenter].
 class $AutoValidationFormBuilderBookingPresenterFieldFactory {
-  final AutoValidationFormBuilderBookingPresenter _presenter;
+  final $AutoValidationFormBuilderBookingPresenterFormProperties _properties;
 
-  $AutoValidationFormBuilderBookingPresenterFieldFactory._(this._presenter);
+  $AutoValidationFormBuilderBookingPresenterFieldFactory._(this._properties);
 
   /// Gets a [FormField] for `stay` property.
   FormBuilderDateRangePicker stay(
@@ -204,6 +430,7 @@ class $AutoValidationFormBuilderBookingPresenterFieldFactory {
     bool enableInteractiveSelection = true,
     MaxLengthEnforcement? maxLengthEnforcement,
     TextAlign textAlign = TextAlign.start,
+    TextAlignVertical? textAlignVertical,
     bool autofocus = false,
     bool autocorrect = true,
     double cursorWidth = 2.0,
@@ -244,7 +471,7 @@ class $AutoValidationFormBuilderBookingPresenterFieldFactory {
     bool allowClear = false,
     Widget? clearIcon,
   }) {
-    final property = _presenter.stay;
+    final property = _properties.descriptors.stay;
     return FormBuilderDateRangePicker(
       key: key,
       name: property.name,
@@ -271,6 +498,7 @@ class $AutoValidationFormBuilderBookingPresenterFieldFactory {
       enableInteractiveSelection: enableInteractiveSelection,
       maxLengthEnforcement: maxLengthEnforcement,
       textAlign: textAlign,
+      textAlignVertical: textAlignVertical,
       autofocus: autofocus,
       autocorrect: autocorrect,
       cursorWidth: cursorWidth,
@@ -351,6 +579,7 @@ class $AutoValidationFormBuilderBookingPresenterFieldFactory {
     Locale? locale,
     int? maxLength,
     ui.TextDirection? textDirection,
+    TextAlignVertical? textAlignVertical,
     ValueChanged<DateTime?>? onFieldSubmitted,
     TextEditingController? controller,
     TextStyle? style,
@@ -377,7 +606,7 @@ class $AutoValidationFormBuilderBookingPresenterFieldFactory {
     Offset? anchorPoint,
     EntryModeChangeCallback? onEntryModeChanged,
   }) {
-    final property = _presenter.specialOfferDate;
+    final property = _properties.descriptors.specialOfferDate;
     return FormBuilderDateTimePicker(
       key: key,
       name: property.name,
@@ -421,6 +650,7 @@ class $AutoValidationFormBuilderBookingPresenterFieldFactory {
       locale: locale,
       maxLength: maxLength,
       textDirection: textDirection,
+      textAlignVertical: textAlignVertical,
       onFieldSubmitted: onFieldSubmitted,
       controller: controller,
       style: style,
@@ -479,7 +709,7 @@ class $AutoValidationFormBuilderBookingPresenterFieldFactory {
     ValueTransformer<RoomType?>? valueTransformer,
     VoidCallback? onReset,
   }) {
-    final property = _presenter.roomType;
+    final property = _properties.descriptors.roomType;
     return FormBuilderRadioGroup<RoomType>(
       autovalidateMode: autovalidateMode ?? AutovalidateMode.onUserInteraction,
       enabled: enabled,
@@ -559,7 +789,7 @@ class $AutoValidationFormBuilderBookingPresenterFieldFactory {
     ValueTransformer<List<MealType>?>? valueTransformer,
     VoidCallback? onReset,
   }) {
-    final property = _presenter.mealOffers;
+    final property = _properties.descriptors.mealOffers;
     return FormBuilderFilterChip<MealType>(
       autovalidateMode: autovalidateMode ?? AutovalidateMode.onUserInteraction,
       enabled: enabled,
@@ -635,7 +865,7 @@ class $AutoValidationFormBuilderBookingPresenterFieldFactory {
     bool shouldRequestFocus = false,
     bool selected = false,
   }) {
-    final property = _presenter.smoking;
+    final property = _properties.descriptors.smoking;
     return FormBuilderSwitch(
       key: key,
       name: property.name,
@@ -698,7 +928,7 @@ class $AutoValidationFormBuilderBookingPresenterFieldFactory {
     MouseCursor? mouseCursor,
     bool shouldRequestFocus = false,
   }) {
-    final property = _presenter.persons;
+    final property = _properties.descriptors.persons;
     return FormBuilderSlider(
       key: key,
       name: property.name,
@@ -754,7 +984,7 @@ class $AutoValidationFormBuilderBookingPresenterFieldFactory {
     Color? unselectedColor,
     bool shouldRequestFocus = false,
   }) {
-    final property = _presenter.babyBeds;
+    final property = _properties.descriptors.babyBeds;
     return FormBuilderSegmentedControl<int>(
       key: key,
       name: property.name,
@@ -808,7 +1038,7 @@ class $AutoValidationFormBuilderBookingPresenterFieldFactory {
     NumberFormat? numberFormat,
     bool shouldRequestFocus = false,
   }) {
-    final property = _presenter.preferredPrice;
+    final property = _properties.descriptors.preferredPrice;
     return FormBuilderRangeSlider(
       key: key,
       name: property.name,
@@ -865,6 +1095,7 @@ class $AutoValidationFormBuilderBookingPresenterFieldFactory {
     bool autofocus = false,
     bool autocorrect = true,
     double cursorWidth = 2.0,
+    double? cursorHeight,
     TextInputType? keyboardType,
     TextStyle? style,
     TextEditingController? controller,
@@ -897,7 +1128,7 @@ class $AutoValidationFormBuilderBookingPresenterFieldFactory {
     String obscuringCharacter = '•',
     MouseCursor? mouseCursor,
   }) {
-    final property = _presenter.donation;
+    final property = _properties.descriptors.donation;
     return FormBuilderTextField(
       key: key,
       name: property.name,
@@ -925,6 +1156,7 @@ class $AutoValidationFormBuilderBookingPresenterFieldFactory {
       autofocus: autofocus,
       autocorrect: autocorrect,
       cursorWidth: cursorWidth,
+      cursorHeight: cursorHeight,
       keyboardType: keyboardType,
       style: style,
       controller: controller,
@@ -981,6 +1213,7 @@ class $AutoValidationFormBuilderBookingPresenterFieldFactory {
     bool autofocus = false,
     bool autocorrect = true,
     double cursorWidth = 2.0,
+    double? cursorHeight,
     TextInputType? keyboardType,
     TextStyle? style,
     TextEditingController? controller,
@@ -1013,7 +1246,7 @@ class $AutoValidationFormBuilderBookingPresenterFieldFactory {
     String obscuringCharacter = '•',
     MouseCursor? mouseCursor,
   }) {
-    final property = _presenter.note;
+    final property = _properties.descriptors.note;
     return FormBuilderTextField(
       key: key,
       name: property.name,
@@ -1041,6 +1274,7 @@ class $AutoValidationFormBuilderBookingPresenterFieldFactory {
       autofocus: autofocus,
       autocorrect: autocorrect,
       cursorWidth: cursorWidth,
+      cursorHeight: cursorHeight,
       keyboardType: keyboardType,
       style: style,
       controller: controller,
@@ -1077,8 +1311,8 @@ class $AutoValidationFormBuilderBookingPresenterFieldFactory {
 }
 
 /// Defines an extension property to get [$AutoValidationFormBuilderBookingPresenterFieldFactory] from [AutoValidationFormBuilderBookingPresenter].
-extension $AutoValidationFormBuilderBookingPresenterFieldFactoryExtension
-    on AutoValidationFormBuilderBookingPresenter {
+extension $AutoValidationFormBuilderBookingPresenterFormPropertiesFieldFactoryExtension
+    on $AutoValidationFormBuilderBookingPresenterFormProperties {
   /// Gets a [FormField] factory.
   $AutoValidationFormBuilderBookingPresenterFieldFactory get fields =>
       $AutoValidationFormBuilderBookingPresenterFieldFactory._(this);

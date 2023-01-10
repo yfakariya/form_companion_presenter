@@ -1,7 +1,7 @@
 // coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint
-// ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target
+// ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'models.dart';
 
@@ -26,8 +26,8 @@ mixin _$Account {
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult Function()? empty,
-    TResult Function(String id, String name, Gender gender, int age,
+    TResult? Function()? empty,
+    TResult? Function(String id, String name, Gender gender, int age,
             List<Region> preferredRegions)?
         registered,
   }) =>
@@ -49,8 +49,8 @@ mixin _$Account {
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult Function(AccountEmpty value)? empty,
-    TResult Function(AccountRegistered value)? registered,
+    TResult? Function(AccountEmpty value)? empty,
+    TResult? Function(AccountRegistered value)? registered,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -65,16 +65,18 @@ mixin _$Account {
 /// @nodoc
 abstract class $AccountCopyWith<$Res> {
   factory $AccountCopyWith(Account value, $Res Function(Account) then) =
-      _$AccountCopyWithImpl<$Res>;
+      _$AccountCopyWithImpl<$Res, Account>;
 }
 
 /// @nodoc
-class _$AccountCopyWithImpl<$Res> implements $AccountCopyWith<$Res> {
+class _$AccountCopyWithImpl<$Res, $Val extends Account>
+    implements $AccountCopyWith<$Res> {
   _$AccountCopyWithImpl(this._value, this._then);
 
-  final Account _value;
   // ignore: unused_field
-  final $Res Function(Account) _then;
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
 }
 
 /// @nodoc
@@ -85,14 +87,12 @@ abstract class _$$AccountEmptyCopyWith<$Res> {
 }
 
 /// @nodoc
-class __$$AccountEmptyCopyWithImpl<$Res> extends _$AccountCopyWithImpl<$Res>
+class __$$AccountEmptyCopyWithImpl<$Res>
+    extends _$AccountCopyWithImpl<$Res, _$AccountEmpty>
     implements _$$AccountEmptyCopyWith<$Res> {
   __$$AccountEmptyCopyWithImpl(
       _$AccountEmpty _value, $Res Function(_$AccountEmpty) _then)
-      : super(_value, (v) => _then(v as _$AccountEmpty));
-
-  @override
-  _$AccountEmpty get _value => super._value as _$AccountEmpty;
+      : super(_value, _then);
 }
 
 /// @nodoc
@@ -128,8 +128,8 @@ class _$AccountEmpty extends AccountEmpty {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult Function()? empty,
-    TResult Function(String id, String name, Gender gender, int age,
+    TResult? Function()? empty,
+    TResult? Function(String id, String name, Gender gender, int age,
             List<Region> preferredRegions)?
         registered,
   }) {
@@ -163,8 +163,8 @@ class _$AccountEmpty extends AccountEmpty {
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult Function(AccountEmpty value)? empty,
-    TResult Function(AccountRegistered value)? registered,
+    TResult? Function(AccountEmpty value)? empty,
+    TResult? Function(AccountRegistered value)? registered,
   }) {
     return empty?.call(this);
   }
@@ -193,6 +193,7 @@ abstract class _$$AccountRegisteredCopyWith<$Res> {
   factory _$$AccountRegisteredCopyWith(
           _$AccountRegistered value, $Res Function(_$AccountRegistered) then) =
       __$$AccountRegisteredCopyWithImpl<$Res>;
+  @useResult
   $Res call(
       {String id,
       String name,
@@ -203,41 +204,39 @@ abstract class _$$AccountRegisteredCopyWith<$Res> {
 
 /// @nodoc
 class __$$AccountRegisteredCopyWithImpl<$Res>
-    extends _$AccountCopyWithImpl<$Res>
+    extends _$AccountCopyWithImpl<$Res, _$AccountRegistered>
     implements _$$AccountRegisteredCopyWith<$Res> {
   __$$AccountRegisteredCopyWithImpl(
       _$AccountRegistered _value, $Res Function(_$AccountRegistered) _then)
-      : super(_value, (v) => _then(v as _$AccountRegistered));
+      : super(_value, _then);
 
-  @override
-  _$AccountRegistered get _value => super._value as _$AccountRegistered;
-
+  @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? id = freezed,
-    Object? name = freezed,
-    Object? gender = freezed,
-    Object? age = freezed,
-    Object? preferredRegions = freezed,
+    Object? id = null,
+    Object? name = null,
+    Object? gender = null,
+    Object? age = null,
+    Object? preferredRegions = null,
   }) {
     return _then(_$AccountRegistered(
-      id: id == freezed
+      id: null == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
               as String,
-      name: name == freezed
+      name: null == name
           ? _value.name
           : name // ignore: cast_nullable_to_non_nullable
               as String,
-      gender: gender == freezed
+      gender: null == gender
           ? _value.gender
           : gender // ignore: cast_nullable_to_non_nullable
               as Gender,
-      age: age == freezed
+      age: null == age
           ? _value.age
           : age // ignore: cast_nullable_to_non_nullable
               as int,
-      preferredRegions: preferredRegions == freezed
+      preferredRegions: null == preferredRegions
           ? _value._preferredRegions
           : preferredRegions // ignore: cast_nullable_to_non_nullable
               as List<Region>,
@@ -268,6 +267,8 @@ class _$AccountRegistered extends AccountRegistered {
   final List<Region> _preferredRegions;
   @override
   List<Region> get preferredRegions {
+    if (_preferredRegions is EqualUnmodifiableListView)
+      return _preferredRegions;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(_preferredRegions);
   }
@@ -282,25 +283,21 @@ class _$AccountRegistered extends AccountRegistered {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$AccountRegistered &&
-            const DeepCollectionEquality().equals(other.id, id) &&
-            const DeepCollectionEquality().equals(other.name, name) &&
-            const DeepCollectionEquality().equals(other.gender, gender) &&
-            const DeepCollectionEquality().equals(other.age, age) &&
+            (identical(other.id, id) || other.id == id) &&
+            (identical(other.name, name) || other.name == name) &&
+            (identical(other.gender, gender) || other.gender == gender) &&
+            (identical(other.age, age) || other.age == age) &&
             const DeepCollectionEquality()
                 .equals(other._preferredRegions, _preferredRegions));
   }
 
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      const DeepCollectionEquality().hash(id),
-      const DeepCollectionEquality().hash(name),
-      const DeepCollectionEquality().hash(gender),
-      const DeepCollectionEquality().hash(age),
+  int get hashCode => Object.hash(runtimeType, id, name, gender, age,
       const DeepCollectionEquality().hash(_preferredRegions));
 
   @JsonKey(ignore: true)
   @override
+  @pragma('vm:prefer-inline')
   _$$AccountRegisteredCopyWith<_$AccountRegistered> get copyWith =>
       __$$AccountRegisteredCopyWithImpl<_$AccountRegistered>(this, _$identity);
 
@@ -318,8 +315,8 @@ class _$AccountRegistered extends AccountRegistered {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult Function()? empty,
-    TResult Function(String id, String name, Gender gender, int age,
+    TResult? Function()? empty,
+    TResult? Function(String id, String name, Gender gender, int age,
             List<Region> preferredRegions)?
         registered,
   }) {
@@ -353,8 +350,8 @@ class _$AccountRegistered extends AccountRegistered {
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult Function(AccountEmpty value)? empty,
-    TResult Function(AccountRegistered value)? registered,
+    TResult? Function(AccountEmpty value)? empty,
+    TResult? Function(AccountRegistered value)? registered,
   }) {
     return registered?.call(this);
   }
@@ -415,8 +412,8 @@ mixin _$Booking {
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult Function()? empty,
-    TResult Function(
+    TResult? Function()? empty,
+    TResult? Function(
             String bookingId,
             String userId,
             DateTimeRange stay,
@@ -460,8 +457,8 @@ mixin _$Booking {
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult Function(BookingEmpty value)? empty,
-    TResult Function(BookingRegistered value)? registered,
+    TResult? Function(BookingEmpty value)? empty,
+    TResult? Function(BookingRegistered value)? registered,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -476,16 +473,18 @@ mixin _$Booking {
 /// @nodoc
 abstract class $BookingCopyWith<$Res> {
   factory $BookingCopyWith(Booking value, $Res Function(Booking) then) =
-      _$BookingCopyWithImpl<$Res>;
+      _$BookingCopyWithImpl<$Res, Booking>;
 }
 
 /// @nodoc
-class _$BookingCopyWithImpl<$Res> implements $BookingCopyWith<$Res> {
+class _$BookingCopyWithImpl<$Res, $Val extends Booking>
+    implements $BookingCopyWith<$Res> {
   _$BookingCopyWithImpl(this._value, this._then);
 
-  final Booking _value;
   // ignore: unused_field
-  final $Res Function(Booking) _then;
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
 }
 
 /// @nodoc
@@ -496,14 +495,12 @@ abstract class _$$BookingEmptyCopyWith<$Res> {
 }
 
 /// @nodoc
-class __$$BookingEmptyCopyWithImpl<$Res> extends _$BookingCopyWithImpl<$Res>
+class __$$BookingEmptyCopyWithImpl<$Res>
+    extends _$BookingCopyWithImpl<$Res, _$BookingEmpty>
     implements _$$BookingEmptyCopyWith<$Res> {
   __$$BookingEmptyCopyWithImpl(
       _$BookingEmpty _value, $Res Function(_$BookingEmpty) _then)
-      : super(_value, (v) => _then(v as _$BookingEmpty));
-
-  @override
-  _$BookingEmpty get _value => super._value as _$BookingEmpty;
+      : super(_value, _then);
 }
 
 /// @nodoc
@@ -550,8 +547,8 @@ class _$BookingEmpty extends BookingEmpty {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult Function()? empty,
-    TResult Function(
+    TResult? Function()? empty,
+    TResult? Function(
             String bookingId,
             String userId,
             DateTimeRange stay,
@@ -607,8 +604,8 @@ class _$BookingEmpty extends BookingEmpty {
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult Function(BookingEmpty value)? empty,
-    TResult Function(BookingRegistered value)? registered,
+    TResult? Function(BookingEmpty value)? empty,
+    TResult? Function(BookingRegistered value)? registered,
   }) {
     return empty?.call(this);
   }
@@ -637,6 +634,7 @@ abstract class _$$BookingRegisteredCopyWith<$Res> {
   factory _$$BookingRegisteredCopyWith(
           _$BookingRegistered value, $Res Function(_$BookingRegistered) then) =
       __$$BookingRegisteredCopyWithImpl<$Res>;
+  @useResult
   $Res call(
       {String bookingId,
       String userId,
@@ -654,76 +652,74 @@ abstract class _$$BookingRegisteredCopyWith<$Res> {
 
 /// @nodoc
 class __$$BookingRegisteredCopyWithImpl<$Res>
-    extends _$BookingCopyWithImpl<$Res>
+    extends _$BookingCopyWithImpl<$Res, _$BookingRegistered>
     implements _$$BookingRegisteredCopyWith<$Res> {
   __$$BookingRegisteredCopyWithImpl(
       _$BookingRegistered _value, $Res Function(_$BookingRegistered) _then)
-      : super(_value, (v) => _then(v as _$BookingRegistered));
+      : super(_value, _then);
 
-  @override
-  _$BookingRegistered get _value => super._value as _$BookingRegistered;
-
+  @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? bookingId = freezed,
-    Object? userId = freezed,
-    Object? stay = freezed,
-    Object? specialOfferDate = freezed,
-    Object? roomType = freezed,
-    Object? mealOffers = freezed,
-    Object? persons = freezed,
-    Object? babyBeds = freezed,
-    Object? smoking = freezed,
-    Object? price = freezed,
-    Object? donation = freezed,
-    Object? note = freezed,
+    Object? bookingId = null,
+    Object? userId = null,
+    Object? stay = null,
+    Object? specialOfferDate = null,
+    Object? roomType = null,
+    Object? mealOffers = null,
+    Object? persons = null,
+    Object? babyBeds = null,
+    Object? smoking = null,
+    Object? price = null,
+    Object? donation = null,
+    Object? note = null,
   }) {
     return _then(_$BookingRegistered(
-      bookingId: bookingId == freezed
+      bookingId: null == bookingId
           ? _value.bookingId
           : bookingId // ignore: cast_nullable_to_non_nullable
               as String,
-      userId: userId == freezed
+      userId: null == userId
           ? _value.userId
           : userId // ignore: cast_nullable_to_non_nullable
               as String,
-      stay: stay == freezed
+      stay: null == stay
           ? _value.stay
           : stay // ignore: cast_nullable_to_non_nullable
               as DateTimeRange,
-      specialOfferDate: specialOfferDate == freezed
+      specialOfferDate: null == specialOfferDate
           ? _value.specialOfferDate
           : specialOfferDate // ignore: cast_nullable_to_non_nullable
               as DateTime,
-      roomType: roomType == freezed
+      roomType: null == roomType
           ? _value.roomType
           : roomType // ignore: cast_nullable_to_non_nullable
               as RoomType,
-      mealOffers: mealOffers == freezed
+      mealOffers: null == mealOffers
           ? _value._mealOffers
           : mealOffers // ignore: cast_nullable_to_non_nullable
               as List<MealType>,
-      persons: persons == freezed
+      persons: null == persons
           ? _value.persons
           : persons // ignore: cast_nullable_to_non_nullable
               as int,
-      babyBeds: babyBeds == freezed
+      babyBeds: null == babyBeds
           ? _value.babyBeds
           : babyBeds // ignore: cast_nullable_to_non_nullable
               as int,
-      smoking: smoking == freezed
+      smoking: null == smoking
           ? _value.smoking
           : smoking // ignore: cast_nullable_to_non_nullable
               as bool,
-      price: price == freezed
+      price: null == price
           ? _value.price
           : price // ignore: cast_nullable_to_non_nullable
               as double,
-      donation: donation == freezed
+      donation: null == donation
           ? _value.donation
           : donation // ignore: cast_nullable_to_non_nullable
               as double,
-      note: note == freezed
+      note: null == note
           ? _value.note
           : note // ignore: cast_nullable_to_non_nullable
               as String,
@@ -763,6 +759,7 @@ class _$BookingRegistered extends BookingRegistered {
   final List<MealType> _mealOffers;
   @override
   List<MealType> get mealOffers {
+    if (_mealOffers is EqualUnmodifiableListView) return _mealOffers;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(_mealOffers);
   }
@@ -790,40 +787,45 @@ class _$BookingRegistered extends BookingRegistered {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$BookingRegistered &&
-            const DeepCollectionEquality().equals(other.bookingId, bookingId) &&
-            const DeepCollectionEquality().equals(other.userId, userId) &&
-            const DeepCollectionEquality().equals(other.stay, stay) &&
-            const DeepCollectionEquality()
-                .equals(other.specialOfferDate, specialOfferDate) &&
-            const DeepCollectionEquality().equals(other.roomType, roomType) &&
+            (identical(other.bookingId, bookingId) ||
+                other.bookingId == bookingId) &&
+            (identical(other.userId, userId) || other.userId == userId) &&
+            (identical(other.stay, stay) || other.stay == stay) &&
+            (identical(other.specialOfferDate, specialOfferDate) ||
+                other.specialOfferDate == specialOfferDate) &&
+            (identical(other.roomType, roomType) ||
+                other.roomType == roomType) &&
             const DeepCollectionEquality()
                 .equals(other._mealOffers, _mealOffers) &&
-            const DeepCollectionEquality().equals(other.persons, persons) &&
-            const DeepCollectionEquality().equals(other.babyBeds, babyBeds) &&
-            const DeepCollectionEquality().equals(other.smoking, smoking) &&
-            const DeepCollectionEquality().equals(other.price, price) &&
-            const DeepCollectionEquality().equals(other.donation, donation) &&
-            const DeepCollectionEquality().equals(other.note, note));
+            (identical(other.persons, persons) || other.persons == persons) &&
+            (identical(other.babyBeds, babyBeds) ||
+                other.babyBeds == babyBeds) &&
+            (identical(other.smoking, smoking) || other.smoking == smoking) &&
+            (identical(other.price, price) || other.price == price) &&
+            (identical(other.donation, donation) ||
+                other.donation == donation) &&
+            (identical(other.note, note) || other.note == note));
   }
 
   @override
   int get hashCode => Object.hash(
       runtimeType,
-      const DeepCollectionEquality().hash(bookingId),
-      const DeepCollectionEquality().hash(userId),
-      const DeepCollectionEquality().hash(stay),
-      const DeepCollectionEquality().hash(specialOfferDate),
-      const DeepCollectionEquality().hash(roomType),
+      bookingId,
+      userId,
+      stay,
+      specialOfferDate,
+      roomType,
       const DeepCollectionEquality().hash(_mealOffers),
-      const DeepCollectionEquality().hash(persons),
-      const DeepCollectionEquality().hash(babyBeds),
-      const DeepCollectionEquality().hash(smoking),
-      const DeepCollectionEquality().hash(price),
-      const DeepCollectionEquality().hash(donation),
-      const DeepCollectionEquality().hash(note));
+      persons,
+      babyBeds,
+      smoking,
+      price,
+      donation,
+      note);
 
   @JsonKey(ignore: true)
   @override
+  @pragma('vm:prefer-inline')
   _$$BookingRegisteredCopyWith<_$BookingRegistered> get copyWith =>
       __$$BookingRegisteredCopyWithImpl<_$BookingRegistered>(this, _$identity);
 
@@ -853,8 +855,8 @@ class _$BookingRegistered extends BookingRegistered {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult Function()? empty,
-    TResult Function(
+    TResult? Function()? empty,
+    TResult? Function(
             String bookingId,
             String userId,
             DateTimeRange stay,
@@ -912,8 +914,8 @@ class _$BookingRegistered extends BookingRegistered {
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult Function(BookingEmpty value)? empty,
-    TResult Function(BookingRegistered value)? registered,
+    TResult? Function(BookingEmpty value)? empty,
+    TResult? Function(BookingRegistered value)? registered,
   }) {
     return registered?.call(this);
   }

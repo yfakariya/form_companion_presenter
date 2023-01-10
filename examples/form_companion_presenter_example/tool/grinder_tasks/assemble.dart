@@ -2,7 +2,6 @@
 
 import 'dart:io';
 
-import 'package:format/format.dart';
 import 'package:grinder/grinder.dart';
 import 'package:path/path.dart';
 
@@ -20,7 +19,7 @@ extension _ModeExtension on _Mode {
     }
   }
 
-  String toLowerCase() {
+  String toLowerSnakeCase() {
     switch (this) {
       case _Mode.auto:
         return 'auto';
@@ -28,6 +27,17 @@ extension _ModeExtension on _Mode {
         return 'manual';
       case _Mode.bulkAuto:
         return 'bulk_auto';
+    }
+  }
+
+  String toLowerCamelCase() {
+    switch (this) {
+      case _Mode.auto:
+        return 'auto';
+      case _Mode.manual:
+        return 'manual';
+      case _Mode.bulkAuto:
+        return 'bulkAuto';
     }
   }
 }
@@ -48,6 +58,11 @@ extension _ModelExtension on _Model {
 
 final _macroRegexp = RegExp(
   '//!macro\\s*(?<Id>\\w+)(\\s+(?<Arg>\\S+))?\\s*',
+  unicode: true,
+);
+
+final _formatRegexp = RegExp(
+  r'\{(?<Name>[^\}]+)\}',
   unicode: true,
 );
 
@@ -162,7 +177,7 @@ Future<void> assembleCore(
           continue;
         }
 
-        final destinationFileName = '${mode.toLowerCase()}_validation_'
+        final destinationFileName = '${mode.toLowerSnakeCase()}_validation_'
             '${flavor == _Flavor.vanillaForm ? 'vanilla_form' : 'form_builder_${model.toLowerCase()}'}';
 
         final replacementMap = {
@@ -172,7 +187,9 @@ Future<void> assembleCore(
               '_${mode.toTitleCase()}Validation${flavor.toTitleCase()}${model.toTitleCase()}Pane',
           '${model.toTitleCase()}PresenterTemplate':
               '${mode.toTitleCase()}Validation${flavor.toTitleCase()}${model.toTitleCase()}Presenter',
-          "'TITLE_TEMPLATE'": 'LocaleKeys.${mode.toLowerCase()}_'
+          '${model.toLowerCase()}PresenterTemplateProvider':
+              '${mode.toLowerCamelCase()}Validation${flavor.toTitleCase()}${model.toTitleCase()}PresenterProvider',
+          "'TITLE_TEMPLATE'": 'LocaleKeys.${mode.toLowerSnakeCase()}_'
               '${flavor == _Flavor.vanillaForm ? 'vanilla' : 'flutterFormBuilder${model.toTitleCase()}'}_title.tr()',
           r"import '\.\./": "import '",
         };
@@ -262,6 +279,45 @@ typedef _Macro = void Function(
   _OutputController output,
 );
 
+String _format(String input, [Object? args]) {
+  if (args == null || input.isEmpty) {
+    return input;
+  }
+
+  late final Map<String, String> namedArgs;
+  if (args is Map<String, String>) {
+    namedArgs = args;
+  } else if (args is List<String>) {
+    namedArgs = {};
+    for (var i = 0; i < args.length; i++) {
+      namedArgs[i.toString()] = args[i];
+    }
+  } else {
+    namedArgs = {'0': args.toString()};
+  }
+
+  final result = StringBuffer();
+  var finalMatch = 0;
+  for (final match in _formatRegexp.allMatches(input)) {
+    result.write(input.substring(finalMatch, match.start));
+    finalMatch = match.end;
+
+    final name = match.namedGroup('Name')!;
+    final substitution = namedArgs[name];
+    if (substitution == null) {
+      result
+        ..write('{')
+        ..write(name)
+        ..write('}');
+    } else {
+      result.write(substitution);
+    }
+  }
+
+  result.write(input.substring(finalMatch));
+  return result.toString();
+}
+
 Map<String, _Macro> _setupMacro(
   _Mode mode,
   _Model model,
@@ -293,7 +349,7 @@ Map<String, _Macro> _setupMacro(
 
   final simpleMacros = {
     'headerNote': headerNote.toString(),
-    'pageDocument': format(
+    'pageDocument': _format(
       _pageDocumentTemplate,
       {
         'model': model.toTitleCase(),
@@ -311,6 +367,7 @@ Map<String, _Macro> _setupMacro(
         ? _preferredRegionsAssignmentVanilla
         : _preferredRegionsAssignmentBuilder,
     'importFcp': "import '$destinationFileName.fcp.dart';",
+    'partG': "part '$destinationFileName.g.dart';",
   };
 
   return simpleMacros.map(
@@ -321,7 +378,7 @@ Map<String, _Macro> _setupMacro(
           // without newline here.
           output.sink.write(value);
         } else {
-          output.sink.write(format(value, macroArg));
+          output.sink.write(_format(value, macroArg));
         }
       },
     ),

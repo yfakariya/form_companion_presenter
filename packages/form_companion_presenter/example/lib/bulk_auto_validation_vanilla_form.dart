@@ -1,13 +1,12 @@
 // See LICENCE file in the root.
 
-import 'dart:async';
-
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:form_companion_presenter/async_validation_indicator.dart';
 import 'package:form_companion_presenter/form_companion_annotation.dart';
 import 'package:form_companion_presenter/form_companion_presenter.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'bulk_auto_validation_vanilla_form.fcp.dart';
 import 'l10n/locale_keys.g.dart';
@@ -15,7 +14,7 @@ import 'models.dart';
 import 'routes.dart';
 import 'screen.dart';
 import 'validators.dart';
-
+part 'bulk_auto_validation_vanilla_form.g.dart';
 //------------------------------------------------------------------------------
 // In this example, [AutovalidateMode] of the form and fields are set to
 // [AutovalidateMode.onUserInteraction].
@@ -56,12 +55,20 @@ class BulkAutoValidationVanillaFormAccountPage extends Screen {
 class _BulkAutoValidationVanillaFormAccountPane extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final presenter = ref.watch(_presenter.notifier);
+    final presenter = ref
+        .watch(bulkAutoValidationVanillaFormAccountPresenterProvider.notifier);
+    final state =
+        ref.watch(bulkAutoValidationVanillaFormAccountPresenterProvider);
+
+    if (state is! AsyncData<
+        $BulkAutoValidationVanillaFormAccountPresenterFormProperties>) {
+      return Text('now loading...');
+    }
 
     return SingleChildScrollView(
       child: Column(
         children: [
-          presenter.fields.id(
+          state.value.fields.id(
             context,
             decoration: InputDecoration(
               labelText: LocaleKeys.id_label.tr(),
@@ -72,17 +79,17 @@ class _BulkAutoValidationVanillaFormAccountPane extends ConsumerWidget {
               ),
             ),
           ),
-          presenter.fields.name(
+          state.value.fields.name(
             context,
           ),
-          presenter.fields.gender(
+          state.value.fields.gender(
             context,
           ),
-          presenter.fields.age(
+          state.value.fields.age(
             context,
           ),
           ElevatedButton(
-            onPressed: presenter.submit(context),
+            onPressed: state.value.submit(context),
             child: Text(
               LocaleKeys.submit.tr(),
             ),
@@ -95,21 +102,16 @@ class _BulkAutoValidationVanillaFormAccountPane extends ConsumerWidget {
 
 /// Presenter which holds form properties.
 @formCompanion
+@riverpod
 class BulkAutoValidationVanillaFormAccountPresenter
-    extends StateNotifier<Account>
+    extends AutoDisposeAsyncNotifier<
+        $BulkAutoValidationVanillaFormAccountPresenterFormProperties>
     with CompanionPresenterMixin, FormCompanionMixin {
-  final Reader _read;
-
-  /// Creates new [BulkAutoValidationVanillaFormAccountPresenter].
-  BulkAutoValidationVanillaFormAccountPresenter(
-    Account initialState,
-    this._read,
-  ) : super(initialState) {
+  BulkAutoValidationVanillaFormAccountPresenter() {
     initializeCompanionMixin(
       PropertyDescriptorsBuilder()
         ..string(
           name: 'id',
-          initialValue: initialState.id,
           validatorFactories: [
             Validator.required,
             Validator.email,
@@ -120,18 +122,15 @@ class BulkAutoValidationVanillaFormAccountPresenter
         )
         ..string(
           name: 'name',
-          initialValue: initialState.name,
           validatorFactories: [
             Validator.required,
           ],
         )
         ..enumerated<Gender>(
           name: 'gender',
-          initialValue: initialState.gender,
         )
         ..integerText(
           name: 'age',
-          initialValue: initialState.age,
           validatorFactories: [
             Validator.required,
             Validator.min(0),
@@ -141,12 +140,34 @@ class BulkAutoValidationVanillaFormAccountPresenter
   }
 
   @override
+  FutureOr<$BulkAutoValidationVanillaFormAccountPresenterFormProperties>
+      build() async {
+    final initialState = await ref.watch(accountStateProvider.future);
+
+    // Restore or set default for optional properties using cascading syntax.
+    final builder = properties.copyWith()
+      ..age(initialState.age)
+      ..gender(initialState.gender);
+
+    // Try to restore required fields only if stored.
+    if (initialState.id != null) {
+      builder.id(initialState.id!);
+    }
+
+    if (initialState.name != null) {
+      builder.name(initialState.name!);
+    }
+
+    return resetProperties(builder.build());
+  }
+
+  @override
   FutureOr<void> doSubmit() async {
     // Get saved values here to call business logic.
-    final id = this.id.value!;
-    final name = this.name.value!;
-    final gender = this.gender.value!;
-    final age = this.age.value!;
+    final id = properties.values.id;
+    final name = properties.values.name;
+    final gender = properties.values.gender;
+    final age = properties.values.age;
 
     // Call business logic.
     if (!(await doSubmitLogic(
@@ -158,8 +179,7 @@ class BulkAutoValidationVanillaFormAccountPresenter
       return;
     }
 
-    // Set local state.
-    state = Account.registered(
+    final account = Account.registered(
       id: id,
       name: name,
       gender: gender,
@@ -168,7 +188,7 @@ class BulkAutoValidationVanillaFormAccountPresenter
     );
 
     // Propagate to global state.
-    _read(account.state).state = state;
+    await ref.read(accountStateProvider.notifier).save(account);
     router.go('/');
   }
 
@@ -189,11 +209,3 @@ class BulkAutoValidationVanillaFormAccountPresenter
     return true;
   }
 }
-
-final _presenter = StateNotifierProvider<
-    BulkAutoValidationVanillaFormAccountPresenter, Account>(
-  (ref) => BulkAutoValidationVanillaFormAccountPresenter(
-    ref.watch(account),
-    ref.read,
-  ),
-);

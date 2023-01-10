@@ -87,47 +87,241 @@ import 'package:flutter_form_builder/flutter_form_builder.dart'
 
 import 'package:form_companion_presenter/form_companion_presenter.dart';
 
+import 'package:meta/meta.dart' show immutable, sealed;
+
 import 'auto_validation_form_builder_account.dart';
 
 import 'l10n/locale_keys.g.dart' show LocaleKeys;
 
 import 'models.dart' show Gender, Region;
 
-/// Defines typed property accessors as extension properties for [AutoValidationFormBuilderAccountPresenter].
-extension $AutoValidationFormBuilderAccountPresenterPropertyExtension
-    on AutoValidationFormBuilderAccountPresenter {
+/// Defines typed property state accessors
+/// for [AutoValidationFormBuilderAccountPresenter].
+@sealed
+@immutable
+class $AutoValidationFormBuilderAccountPresenterFormProperties
+    implements FormProperties {
+  final FormProperties _underlying;
+
+  /// Gets a [AutoValidationFormBuilderAccountPresenter] instance which holds this properties state.
+  AutoValidationFormBuilderAccountPresenter get presenter =>
+      _underlying.presenter as AutoValidationFormBuilderAccountPresenter;
+
+  /// Gets a typed [PropertyDescriptor] accessor [$AutoValidationFormBuilderAccountPresenterPropertyDescriptors]
+  /// for [AutoValidationFormBuilderAccountPresenter].
+  late final $AutoValidationFormBuilderAccountPresenterPropertyDescriptors
+      descriptors;
+
+  /// Gets a typed property value accessor [$AutoValidationFormBuilderAccountPresenterPropertyValues]
+  /// for [AutoValidationFormBuilderAccountPresenter].
+  late final $AutoValidationFormBuilderAccountPresenterPropertyValues values;
+
+  /// Returns a [$AutoValidationFormBuilderAccountPresenterFormProperties] which wraps [FormProperties].
+  ///
+  /// Note that this factory returns [underlying] if [underlying] is
+  /// [$AutoValidationFormBuilderAccountPresenterFormProperties] type.
+  factory $AutoValidationFormBuilderAccountPresenterFormProperties(
+      FormProperties underlying) {
+    if (underlying
+        is $AutoValidationFormBuilderAccountPresenterFormProperties) {
+      return underlying;
+    }
+
+    if (underlying.presenter is! AutoValidationFormBuilderAccountPresenter) {
+      throw ArgumentError(
+        'Specified FormProperties does not hold ${AutoValidationFormBuilderAccountPresenter} type presenter.',
+        'underlying',
+      );
+    }
+
+    return $AutoValidationFormBuilderAccountPresenterFormProperties
+        ._(underlying);
+  }
+
+  $AutoValidationFormBuilderAccountPresenterFormProperties._(this._underlying) {
+    descriptors = $AutoValidationFormBuilderAccountPresenterPropertyDescriptors
+        ._(_underlying);
+    values =
+        $AutoValidationFormBuilderAccountPresenterPropertyValues._(_underlying);
+  }
+
+  @override
+  bool canSubmit(BuildContext context) => _underlying.canSubmit(context);
+
+  @override
+  void Function()? submit(BuildContext context) => _underlying.submit(context);
+
+  @override
+  $AutoValidationFormBuilderAccountPresenterFormProperties copyWithProperties(
+    Map<String, Object?> newValues,
+  ) {
+    final newUnderlying = _underlying.copyWithProperties(newValues);
+    if (identical(newUnderlying, _underlying)) {
+      return this;
+    }
+
+    return $AutoValidationFormBuilderAccountPresenterFormProperties(
+        newUnderlying);
+  }
+
+  @override
+  $AutoValidationFormBuilderAccountPresenterFormProperties copyWithProperty(
+    String name,
+    Object? newValue,
+  ) {
+    final newUnderlying = _underlying.copyWithProperty(name, newValue);
+    if (identical(newUnderlying, _underlying)) {
+      return this;
+    }
+
+    return $AutoValidationFormBuilderAccountPresenterFormProperties(
+        newUnderlying);
+  }
+
+  /// Copies this instance with specified new property values specified via
+  /// returned [$AutoValidationFormBuilderAccountPresenterFormPropertiesBuilder] object.
+  ///
+  /// You must call [$AutoValidationFormBuilderAccountPresenterFormPropertiesBuilder.build]
+  /// to finish copying.
+  $AutoValidationFormBuilderAccountPresenterFormPropertiesBuilder copyWith() =>
+      $AutoValidationFormBuilderAccountPresenterFormPropertiesBuilder._(this);
+
+  @override
+  PropertyDescriptor<P, F> getDescriptor<P extends Object, F extends Object>(
+    String name,
+  ) =>
+      _underlying.getDescriptor<P, F>(name);
+
+  @override
+  PropertyDescriptor<P, F>?
+      tryGetDescriptor<P extends Object, F extends Object>(
+    String name,
+  ) =>
+          _underlying.tryGetDescriptor(name);
+
+  @override
+  Iterable<PropertyDescriptor<Object, Object>> getAllDescriptors() =>
+      _underlying.getAllDescriptors();
+
+  @override
+  Object? getValue(String name) => _underlying.getValue(name);
+}
+
+/// Defines typed [PropertyDescriptor] accessors
+/// for [AutoValidationFormBuilderAccountPresenterFormProperties].
+@sealed
+class $AutoValidationFormBuilderAccountPresenterPropertyDescriptors {
+  final FormProperties _properties;
+
+  $AutoValidationFormBuilderAccountPresenterPropertyDescriptors._(
+      this._properties);
+
   /// Gets a [PropertyDescriptor] of `id` property.
   PropertyDescriptor<String, String> get id =>
-      // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-      properties['id']! as PropertyDescriptor<String, String>;
+      _properties.getDescriptor('id') as PropertyDescriptor<String, String>;
 
   /// Gets a [PropertyDescriptor] of `name` property.
   PropertyDescriptor<String, String> get name =>
-      // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-      properties['name']! as PropertyDescriptor<String, String>;
+      _properties.getDescriptor('name') as PropertyDescriptor<String, String>;
 
   /// Gets a [PropertyDescriptor] of `gender` property.
   PropertyDescriptor<Gender, Gender> get gender =>
-      // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-      properties['gender']! as PropertyDescriptor<Gender, Gender>;
+      _properties.getDescriptor('gender') as PropertyDescriptor<Gender, Gender>;
 
   /// Gets a [PropertyDescriptor] of `age` property.
   PropertyDescriptor<int, String> get age =>
-      // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-      properties['age']! as PropertyDescriptor<int, String>;
+      _properties.getDescriptor('age') as PropertyDescriptor<int, String>;
 
   /// Gets a [PropertyDescriptor] of `preferredRegions` property.
   PropertyDescriptor<List<Region>, List<Region>> get preferredRegions =>
-      // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-      properties['preferredRegions']!
+      _properties.getDescriptor('preferredRegions')
           as PropertyDescriptor<List<Region>, List<Region>>;
+}
+
+/// Defines typed property value accessors
+/// for [AutoValidationFormBuilderAccountPresenterFormProperties].
+@sealed
+class $AutoValidationFormBuilderAccountPresenterPropertyValues {
+  final FormProperties _properties;
+
+  $AutoValidationFormBuilderAccountPresenterPropertyValues._(this._properties);
+
+  /// Gets a current value of `id` property.
+  String get id => _properties.getValue('id') as String;
+
+  /// Gets a current value of `name` property.
+  String get name => _properties.getValue('name') as String;
+
+  /// Gets a current value of `gender` property.
+  Gender get gender => _properties.getValue('gender') as Gender;
+
+  /// Gets a current value of `age` property.
+  int get age => _properties.getValue('age') as int;
+
+  /// Gets a current value of `preferredRegions` property.
+  List<Region> get preferredRegions =>
+      _properties.getValue('preferredRegions') as List<Region>;
+}
+
+/// Defines a builder to help [AutoValidationFormBuilderAccountPresenterFormProperties.copyWith].
+@sealed
+class $AutoValidationFormBuilderAccountPresenterFormPropertiesBuilder {
+  final $AutoValidationFormBuilderAccountPresenterFormProperties _properties;
+  final Map<String, Object?> _newValues = {};
+
+  $AutoValidationFormBuilderAccountPresenterFormPropertiesBuilder._(
+      this._properties);
+
+  /// Sets a new value of `id` property.
+  void id(String value) => _newValues['id'] = value;
+
+  /// Sets a new value of `name` property.
+  void name(String value) => _newValues['name'] = value;
+
+  /// Sets a new value of `gender` property.
+  void gender(Gender value) => _newValues['gender'] = value;
+
+  /// Sets a new value of `age` property.
+  void age(int value) => _newValues['age'] = value;
+
+  /// Sets a new value of `preferredRegions` property.
+  void preferredRegions(List<Region> value) =>
+      _newValues['preferredRegions'] = value;
+
+  $AutoValidationFormBuilderAccountPresenterFormProperties build() =>
+      _properties.copyWithProperties(_newValues);
+}
+
+/// Defines typed property accessors as extension properties for [AutoValidationFormBuilderAccountPresenter].
+extension $AutoValidationFormBuilderAccountPresenterPropertyExtension
+    on AutoValidationFormBuilderAccountPresenter {
+  /// Gets a current [$AutoValidationFormBuilderAccountPresenterFormProperties] which holds properties' values
+  /// and their [PropertyDescriptor]s.
+  $AutoValidationFormBuilderAccountPresenterFormProperties get properties =>
+      $AutoValidationFormBuilderAccountPresenterFormProperties(propertiesState);
+
+  /// Resets [properties] (and underlying[CompanionPresenterMixin.propertiesState])
+  /// with specified new [$AutoValidationFormBuilderAccountPresenterFormProperties].
+  ///
+  /// This method also calls [CompanionPresenterMixin.onPropertiesChanged] callback.
+  ///
+  /// This method returns passed [FormProperties] for convinience.
+  ///
+  /// This method is preferred over [CompanionPresenterMixin.resetPropertiesState]
+  /// because takes and returns more specific [$AutoValidationFormBuilderAccountPresenterFormProperties] type.
+  $AutoValidationFormBuilderAccountPresenterFormProperties resetProperties(
+    $AutoValidationFormBuilderAccountPresenterFormProperties newProperties,
+  ) {
+    resetPropertiesState(newProperties);
+    return newProperties;
+  }
 }
 
 /// Defines [FormField] factory methods for properties of [AutoValidationFormBuilderAccountPresenter].
 class $AutoValidationFormBuilderAccountPresenterFieldFactory {
-  final AutoValidationFormBuilderAccountPresenter _presenter;
+  final $AutoValidationFormBuilderAccountPresenterFormProperties _properties;
 
-  $AutoValidationFormBuilderAccountPresenterFieldFactory._(this._presenter);
+  $AutoValidationFormBuilderAccountPresenterFieldFactory._(this._properties);
 
   /// Gets a [FormField] for `id` property.
   FormBuilderTextField id(
@@ -151,6 +345,7 @@ class $AutoValidationFormBuilderAccountPresenterFieldFactory {
     bool autofocus = false,
     bool autocorrect = true,
     double cursorWidth = 2.0,
+    double? cursorHeight,
     TextInputType? keyboardType,
     TextStyle? style,
     TextEditingController? controller,
@@ -183,7 +378,7 @@ class $AutoValidationFormBuilderAccountPresenterFieldFactory {
     String obscuringCharacter = '•',
     MouseCursor? mouseCursor,
   }) {
-    final property = _presenter.id;
+    final property = _properties.descriptors.id;
     return FormBuilderTextField(
       key: key,
       name: property.name,
@@ -211,6 +406,7 @@ class $AutoValidationFormBuilderAccountPresenterFieldFactory {
       autofocus: autofocus,
       autocorrect: autocorrect,
       cursorWidth: cursorWidth,
+      cursorHeight: cursorHeight,
       keyboardType: keyboardType,
       style: style,
       controller: controller,
@@ -267,6 +463,7 @@ class $AutoValidationFormBuilderAccountPresenterFieldFactory {
     bool autofocus = false,
     bool autocorrect = true,
     double cursorWidth = 2.0,
+    double? cursorHeight,
     TextInputType? keyboardType,
     TextStyle? style,
     TextEditingController? controller,
@@ -299,7 +496,7 @@ class $AutoValidationFormBuilderAccountPresenterFieldFactory {
     String obscuringCharacter = '•',
     MouseCursor? mouseCursor,
   }) {
-    final property = _presenter.name;
+    final property = _properties.descriptors.name;
     return FormBuilderTextField(
       key: key,
       name: property.name,
@@ -327,6 +524,7 @@ class $AutoValidationFormBuilderAccountPresenterFieldFactory {
       autofocus: autofocus,
       autocorrect: autocorrect,
       cursorWidth: cursorWidth,
+      cursorHeight: cursorHeight,
       keyboardType: keyboardType,
       style: style,
       controller: controller,
@@ -394,7 +592,7 @@ class $AutoValidationFormBuilderAccountPresenterFieldFactory {
     BorderRadius? borderRadius,
     AlignmentGeometry alignment = AlignmentDirectional.centerStart,
   }) {
-    final property = _presenter.gender;
+    final property = _properties.descriptors.gender;
     return FormBuilderDropdown<Gender>(
       key: key,
       name: property.name,
@@ -460,6 +658,7 @@ class $AutoValidationFormBuilderAccountPresenterFieldFactory {
     bool autofocus = false,
     bool autocorrect = true,
     double cursorWidth = 2.0,
+    double? cursorHeight,
     TextInputType? keyboardType,
     TextStyle? style,
     TextEditingController? controller,
@@ -492,7 +691,7 @@ class $AutoValidationFormBuilderAccountPresenterFieldFactory {
     String obscuringCharacter = '•',
     MouseCursor? mouseCursor,
   }) {
-    final property = _presenter.age;
+    final property = _properties.descriptors.age;
     return FormBuilderTextField(
       key: key,
       name: property.name,
@@ -520,6 +719,7 @@ class $AutoValidationFormBuilderAccountPresenterFieldFactory {
       autofocus: autofocus,
       autocorrect: autocorrect,
       cursorWidth: cursorWidth,
+      cursorHeight: cursorHeight,
       keyboardType: keyboardType,
       style: style,
       controller: controller,
@@ -593,7 +793,7 @@ class $AutoValidationFormBuilderAccountPresenterFieldFactory {
     ValueTransformer<List<Region>?>? valueTransformer,
     VoidCallback? onReset,
   }) {
-    final property = _presenter.preferredRegions;
+    final property = _properties.descriptors.preferredRegions;
     return FormBuilderFilterChip<Region>(
       autovalidateMode: autovalidateMode ?? AutovalidateMode.onUserInteraction,
       enabled: enabled,
@@ -652,8 +852,8 @@ class $AutoValidationFormBuilderAccountPresenterFieldFactory {
 }
 
 /// Defines an extension property to get [$AutoValidationFormBuilderAccountPresenterFieldFactory] from [AutoValidationFormBuilderAccountPresenter].
-extension $AutoValidationFormBuilderAccountPresenterFieldFactoryExtension
-    on AutoValidationFormBuilderAccountPresenter {
+extension $AutoValidationFormBuilderAccountPresenterFormPropertiesFieldFactoryExtension
+    on $AutoValidationFormBuilderAccountPresenterFormProperties {
   /// Gets a [FormField] factory.
   $AutoValidationFormBuilderAccountPresenterFieldFactory get fields =>
       $AutoValidationFormBuilderAccountPresenterFieldFactory._(this);

@@ -19,6 +19,7 @@ Future<void> runFormats({
   // Do manual execution rather than melos
   // to avoid format genrated sources...
   Future<void> runFormat(String directory) async {
+    log('run format for $directory');
     final sources = await getDir(directory)
         .list(recursive: true, followLinks: false)
         .where(
@@ -30,6 +31,11 @@ Future<void> runFormats({
         .map((f) => path.relative(f.path, from: directory))
         .where((f) => !f.startsWith('.'))
         .toList();
+    if (sources.isEmpty) {
+      // Avoid waiting for stdin
+      return;
+    }
+
     await runAsync(
       'fvm',
       arguments: [

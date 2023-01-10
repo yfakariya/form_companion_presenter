@@ -21,6 +21,9 @@ class CodegenLoader extends AssetLoader{
     "accountHeader": "Your last input Account model:",
     "bookingHeader": "Your last input Booking model:"
   },
+  "simple": {
+    "title": "Simple Example"
+  },
   "manual": {
     "vanilla": {
       "title": "Manual validation, vanilla Form for Account"
@@ -150,6 +153,9 @@ static const Map<String,dynamic> ja = {
     "title": "ホーム",
     "accountHeader": "最後に入力した Account モデル:",
     "bookingHeader": "最後に入力した Booking モデル:"
+  },
+  "simple": {
+    "title": "単純な例"
   },
   "manual": {
     "vanilla": {

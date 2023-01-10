@@ -10,32 +10,39 @@ String emitPropertyAccessor(
   Config config,
 ) {
   assert(properties.isNotEmpty);
-
-  return '''
-/// Defines typed property accessors as extension properties for [$baseName].
-extension \$${baseName}PropertyExtension on $baseName {
-${_emitPropertyAccessors(properties).join('\n')}
-}
-''';
+  return _emitPropertyAccessorLines(baseName, properties, config).join('\n');
 }
 
-/// Emits each property accessor lines.
-Iterable<String> _emitPropertyAccessors(
+Iterable<String> _emitPropertyAccessorLines(
+  String baseName,
   Iterable<PropertyAndFormFieldDefinition> properties,
+  Config config,
 ) sync* {
-  var isFirst = true;
-  for (final property in properties) {
-    if (isFirst) {
-      isFirst = false;
-    } else {
-      // empty line
-      yield '';
-    }
+  final builderBuildMethodName =
+      config.customNamings[baseName]?.formPropertiesBuilder?.build ?? 'build';
 
-    yield '  /// Gets a [PropertyDescriptor] of `${property.name}` property.';
-    yield '  PropertyDescriptor<${property.propertyValueType}, ${property.fieldValueType}> get ${property.name} =>';
-    // properties is marked as @protected and @visibleForTesting
-    yield '      // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member';
-    yield "      properties['${property.name}']! as PropertyDescriptor<${property.propertyValueType}, ${property.fieldValueType}>;";
-  }
+  yield emitTypedFormProperties(baseName, properties, builderBuildMethodName);
+
+  // blank line
+  yield '';
+
+  yield emitPropertyDescriptorAccessor(baseName, properties);
+
+  // blank line
+  yield '';
+
+  yield emitPropertyValueAccessor(baseName, properties);
+
+  // blank line
+  yield '';
+
+  yield emitFormPropertiesBuilder(
+    baseName,
+    {for (final e in properties) e.name: e},
+    builderBuildMethodName,
+  );
+
+  // blank line
+  yield '';
+  yield emitPropertyAccessorExtension(baseName, properties);
 }

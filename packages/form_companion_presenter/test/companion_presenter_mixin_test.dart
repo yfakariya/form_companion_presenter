@@ -4,14 +4,14 @@
 
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:form_companion_presenter/src/form_companion_mixin.dart';
 import 'package:form_companion_presenter/src/internal_utils.dart';
-import 'package:form_companion_presenter/src/presenter_extension.dart';
 import 'package:form_companion_presenter/src/string_converter.dart';
+
+import 'test_helpers.dart';
 
 class TestPresenterFeatures extends CompanionPresenterFeatures {
   final TestPresenter _presenter;
@@ -39,6 +39,7 @@ class TestPresenter with CompanionPresenterMixin {
   CompanionPresenterFeatures get presenterFeatures => _presenterFeatures;
 
   final void Function() _doSubmitCalled;
+  final void Function(OnPropertiesChangedEvent) _onPropertiesChangedCalled;
   final FormStateAdapter? Function(BuildContext) _maybeFormStateOfCalled;
   final void Function(AsyncError)? _onHandleCanceledAsyncValidationError;
   final bool Function(BuildContext) _canSubmitCalled;
@@ -49,14 +50,20 @@ class TestPresenter with CompanionPresenterMixin {
     FormStateAdapter? Function(BuildContext)? maybeFormStateOfCalled,
     void Function(AsyncError)? onHandleCanceledAsyncValidationError,
     bool Function(BuildContext)? canSubmitCalled,
+    void Function(OnPropertiesChangedEvent)? onPropertiesChangedCalled,
   })  : _doSubmitCalled = (doSubmitCalled ?? () {}),
         _maybeFormStateOfCalled = (maybeFormStateOfCalled ?? (_) => null),
         _onHandleCanceledAsyncValidationError =
             onHandleCanceledAsyncValidationError,
-        _canSubmitCalled = (canSubmitCalled ?? (_) => true) {
+        _canSubmitCalled = (canSubmitCalled ?? (_) => true),
+        _onPropertiesChangedCalled = (onPropertiesChangedCalled ?? (_) {}) {
     _presenterFeatures = TestPresenterFeatures(this);
     initializeCompanionMixin(properties);
   }
+
+  @override
+  void onPropertiesChanged(OnPropertiesChangedEvent event) =>
+      _onPropertiesChangedCalled(event);
 
   @override
   FutureOr<void> doSubmit() async {
@@ -65,141 +72,6 @@ class TestPresenter with CompanionPresenterMixin {
 
   @override
   bool canSubmit(BuildContext context) => _canSubmitCalled(context);
-}
-
-class FixedFormStateAdapter implements FormStateAdapter {
-  final AutovalidateMode _autovalidateMode;
-  final VoidCallback _onSave;
-  final bool Function() _onValidate;
-
-  FixedFormStateAdapter({
-    AutovalidateMode? autovalidateMode,
-    VoidCallback? onSave,
-    bool Function()? onValidate,
-  })  : _autovalidateMode = autovalidateMode ?? AutovalidateMode.disabled,
-        _onSave = (onSave ?? () {}),
-        _onValidate = (onValidate ?? () => true);
-
-  @override
-  AutovalidateMode get autovalidateMode => _autovalidateMode;
-
-  @override
-  Locale get locale => defaultLocale;
-
-  @override
-  bool get mounted => true;
-
-  @override
-  void save() => _onSave();
-
-  @override
-  bool validate() => _onValidate();
-}
-
-class DummyBuildContext extends BuildContext {
-  DummyBuildContext();
-
-  @override
-  bool get debugDoingBuild => throw UnimplementedError();
-
-  @override
-  InheritedWidget dependOnInheritedElement(
-    InheritedElement ancestor, {
-    Object? aspect,
-  }) {
-    throw UnimplementedError();
-  }
-
-  @override
-  T? dependOnInheritedWidgetOfExactType<T extends InheritedWidget>({
-    Object? aspect,
-  }) {
-    // Required for getLocale() test.
-    return null;
-  }
-
-  @override
-  DiagnosticsNode describeElement(
-    String name, {
-    DiagnosticsTreeStyle style = DiagnosticsTreeStyle.errorProperty,
-  }) {
-    throw UnimplementedError();
-  }
-
-  @override
-  List<DiagnosticsNode> describeMissingAncestor({
-    required Type expectedAncestorType,
-  }) {
-    throw UnimplementedError();
-  }
-
-  @override
-  DiagnosticsNode describeOwnershipChain(String name) {
-    throw UnimplementedError();
-  }
-
-  @override
-  DiagnosticsNode describeWidget(
-    String name, {
-    DiagnosticsTreeStyle style = DiagnosticsTreeStyle.errorProperty,
-  }) {
-    throw UnimplementedError();
-  }
-
-  @override
-  T? findAncestorRenderObjectOfType<T extends RenderObject>() {
-    throw UnimplementedError();
-  }
-
-  @override
-  T? findAncestorStateOfType<T extends State<StatefulWidget>>() {
-    throw UnimplementedError();
-  }
-
-  @override
-  T? findAncestorWidgetOfExactType<T extends Widget>() {
-    throw UnimplementedError();
-  }
-
-  @override
-  RenderObject? findRenderObject() {
-    throw UnimplementedError();
-  }
-
-  @override
-  T? findRootAncestorStateOfType<T extends State<StatefulWidget>>() {
-    throw UnimplementedError();
-  }
-
-  @override
-  InheritedElement?
-      getElementForInheritedWidgetOfExactType<T extends InheritedWidget>() {
-    throw UnimplementedError();
-  }
-
-  @override
-  BuildOwner? get owner => throw UnimplementedError();
-
-  @override
-  Size? get size => throw UnimplementedError();
-
-  @override
-  void visitAncestorElements(bool Function(Element element) visitor) {
-    throw UnimplementedError();
-  }
-
-  @override
-  void visitChildElements(ElementVisitor visitor) {
-    throw UnimplementedError();
-  }
-
-  @override
-  Widget get widget => throw UnimplementedError();
-
-  @override
-  void dispatchNotification(Notification notification) {
-    throw UnimplementedError();
-  }
 }
 
 void main() {
@@ -237,23 +109,29 @@ void main() {
 
   // Note: maybeFormStateOf() and saveFields() should be tested as overridden.
   group('property', () {
-    group('properties', () {
-      test('is initialized with constructor argument.', () {
+    group('propertiesState', () {
+      test('is initialized with initializeCompanionMixin argument.', () {
         final target = TestPresenter(
           properties: PropertyDescriptorsBuilder()
             ..add<int, String>(name: 'int')
             ..add<String, String>(name: 'string'),
         );
-        expect(target.properties.length, equals(2));
-        expect(target.properties, contains('int'));
+        expect(target.propertiesState.getAllDescriptors().length, equals(2));
         expect(
-          target.properties['int'],
+          target.propertiesState.getAllDescriptors().map((e) => e.name),
+          contains('int'),
+        );
+        expect(
+          target.propertiesState.getDescriptor('int'),
           isA<PropertyDescriptor<int, String>>(),
         );
 
-        expect(target.properties, contains('string'));
         expect(
-          target.properties['string'],
+          target.propertiesState.getAllDescriptors().map((e) => e.name),
+          contains('string'),
+        );
+        expect(
+          target.propertiesState.getDescriptor('string'),
           isA<PropertyDescriptor<String, String>>(),
         );
       });
@@ -262,27 +140,24 @@ void main() {
         final target = TestPresenter(
           properties: PropertyDescriptorsBuilder(),
         );
-        expect(target.properties.length, equals(0));
+        expect(target.propertiesState.getAllDescriptors().length, equals(0));
       });
     });
 
-    group('getProperty', () {
-      test('is wrapper of properties.', () {
+    group('getDescriptor', () {
+      test('can get existing', () {
         final target = TestPresenter(
           properties: PropertyDescriptorsBuilder()
             ..add<int, String>(name: 'int')
             ..add<String, String>(name: 'string'),
         );
-        expect(target.getProperty<int, String>('int'), isNotNull);
         expect(
-          target.getProperty<int, String>('int'),
-          same(target.properties['int']),
+          target.propertiesState.getDescriptor<int, String>('int'),
+          isNotNull,
         );
-
-        expect(target.getProperty<String, String>('string'), isNotNull);
         expect(
-          target.getProperty<String, String>('string'),
-          same(target.properties['string']),
+          target.propertiesState.getDescriptor<String, String>('string'),
+          isNotNull,
         );
       });
 
@@ -293,7 +168,7 @@ void main() {
         );
 
         expect(
-          () => target.getProperty<String, String>('string'),
+          () => target.propertiesState.getDescriptor<String, String>('string'),
           throwsArgumentError,
         );
       });
@@ -305,7 +180,7 @@ void main() {
         );
 
         expect(
-          () => target.getProperty<String, String>('int'),
+          () => target.propertiesState.getDescriptor<String, String>('int'),
           throwsStateError,
         );
       });
@@ -319,7 +194,8 @@ void main() {
             ..add<int, String>(name: 'int'),
         );
 
-        final target = presenter.savePropertyValue('long', DummyBuildContext());
+        final target = presenter.propertiesState
+            .savePropertyValue('long', DummyBuildContext());
         expect(target, isNotNull);
         expect(() => target(0), throwsArgumentError);
       });
@@ -332,24 +208,25 @@ void main() {
             ..add<int, String>(name: 'int', valueConverter: intStringConverter),
         );
 
-        final target = presenter.savePropertyValue('int', DummyBuildContext());
+        final target = presenter.propertiesState
+            .savePropertyValue('int', DummyBuildContext());
         expect(target, isNotNull);
         final value = DateTime.now().microsecondsSinceEpoch;
         target(value.toString());
 
         // Check pass through
-        expect(presenter.getSavedPropertyValue('int'), equals(value));
+        expect(presenter.propertiesState.getValue('int'), equals(value));
       });
     });
 
-    group('getSavedPropertyValue', () {
+    group('getValue', () {
       test('null when never saved and no initial value.', () {
         final target = TestPresenter(
           properties: PropertyDescriptorsBuilder()
             ..add<int, String>(name: 'int', valueConverter: intStringConverter),
         );
 
-        expect(target.getSavedPropertyValue('int'), isNull);
+        expect(target.propertiesState.getValue('int'), isNull);
       });
 
       test('initial value when never saved and initial value was specified.',
@@ -364,7 +241,7 @@ void main() {
             ),
         );
 
-        expect(target.getSavedPropertyValue('int'), initialValue);
+        expect(target.propertiesState.getValue('int'), initialValue);
       });
 
       test('can get saved value.', () {
@@ -374,8 +251,9 @@ void main() {
         );
 
         final value = DateTime.now().microsecondsSinceEpoch;
-        target.savePropertyValue('int', DummyBuildContext())(value.toString());
-        expect(target.getSavedPropertyValue('int'), value);
+        target.propertiesState
+            .savePropertyValue('int', DummyBuildContext())(value.toString());
+        expect(target.propertiesState.getValue('int'), value);
       });
     });
 
@@ -387,7 +265,7 @@ void main() {
         );
 
         expect(
-          () => target.hasPendingAsyncValidations('long'),
+          () => target.propertiesState.hasPendingAsyncValidations('long'),
           throwsArgumentError,
         );
       });
@@ -407,7 +285,10 @@ void main() {
             ),
         );
 
-        expect(target.hasPendingAsyncValidations('int'), isFalse);
+        expect(
+          target.propertiesState.hasPendingAsyncValidations('int'),
+          isFalse,
+        );
       });
 
       test('true for any async validations are running.', () {
@@ -425,10 +306,13 @@ void main() {
             ),
         );
 
-        target
-            .getProperty<int, int>('int')
+        target.propertiesState
+            .getDescriptor<int, int>('int')
             .getValidator(DummyBuildContext())(123);
-        expect(target.hasPendingAsyncValidations('int'), isTrue);
+        expect(
+          target.propertiesState.hasPendingAsyncValidations('int'),
+          isTrue,
+        );
         completer.complete();
       });
 
@@ -447,30 +331,41 @@ void main() {
             ),
         );
 
-        target
-            .getProperty<int, int>('int')
+        target.propertiesState
+            .getDescriptor<int, int>('int')
             .getValidator(DummyBuildContext())(123);
         await completer.future;
         // pump
         await Future<void>.delayed(Duration.zero);
-        expect(target.hasPendingAsyncValidations('int'), isFalse);
+        expect(
+          target.propertiesState.hasPendingAsyncValidations('int'),
+          isFalse,
+        );
       });
     });
 
     group('PropertyDescriptor', () {
-      test('can be get / save value.', () {
+      test('can save value, and the callback called.', () {
+        FormProperties? callbacked;
         final target = TestPresenter(
           properties: PropertyDescriptorsBuilder()
             ..add<int, String>(
               name: 'int',
               valueConverter: intStringConverter,
             ),
+          onPropertiesChangedCalled: (event) {
+            callbacked = event.newProperties;
+          },
         );
 
-        final property = target.getProperty<int, String>('int');
+        final property =
+            target.propertiesState.getDescriptor<int, String>('int');
         // ignore: cascade_invocations
         property.setFieldValue('123', defaultLocale);
-        expect(property.value, equals(123));
+        expect(target.propertiesState.getValue('int'), 123);
+        expect(callbacked, isNotNull);
+        expect(callbacked!.getValue('int'), 123);
+        expect(callbacked, same(target.propertiesState));
       });
 
       test('conversion failure.', () {
@@ -482,7 +377,8 @@ void main() {
             ),
         );
 
-        final property = target.getProperty<int, String>('int');
+        final property =
+            target.propertiesState.getDescriptor<int, String>('int');
         // ignore: cascade_invocations
         expect(
           () => property.setFieldValue('A', defaultLocale),
@@ -500,11 +396,11 @@ void main() {
         doSubmitCalled: () {},
         maybeFormStateOfCalled: (_) => FixedFormStateAdapter(
           autovalidateMode: AutovalidateMode.onUserInteraction,
-          onValidate: () => target!.properties.values.every(
-            // Simulate validators call here with null value
-            // and then check there is no error message (null).
-            (p) => p.getValidator(DummyBuildContext()).call(null) == null,
-          ),
+          onValidate: () => target!.propertiesState.getAllDescriptors().every(
+                // Simulate validators call here with null value
+                // and then check there is no error message (null).
+                (p) => p.getValidator(DummyBuildContext()).call(null) == null,
+              ),
         ),
         canSubmitCalled: (_) => false,
       );
@@ -527,11 +423,11 @@ void main() {
         doSubmitCalled: doSubmitCalled.complete,
         maybeFormStateOfCalled: (_) => FixedFormStateAdapter(
           autovalidateMode: AutovalidateMode.onUserInteraction,
-          onValidate: () => target!.properties.values.every(
-            // Simulate validators call here with null value
-            // and then check there is no error message (null).
-            (p) => p.getValidator(DummyBuildContext()).call(null) == null,
-          ),
+          onValidate: () => target!.propertiesState.getAllDescriptors().every(
+                // Simulate validators call here with null value
+                // and then check there is no error message (null).
+                (p) => p.getValidator(DummyBuildContext()).call(null) == null,
+              ),
         ),
         canSubmitCalled: (_) => true,
       );
@@ -541,6 +437,66 @@ void main() {
       submit!();
       await doSubmitCalled.future;
       expect(doSubmitCalled.isCompleted, isTrue);
+    });
+
+    group('resetPropertiesState', () {
+      test('call changes propertiesState and kick onPropertiesChanged', () {
+        FormProperties? callbacked;
+        const initialValue = 123;
+        const newValue = 987;
+        final target = TestPresenter(
+          properties: PropertyDescriptorsBuilder()
+            ..add<int, String>(
+              name: 'int',
+              valueConverter: intStringConverter,
+              initialValue: initialValue,
+            ),
+          onPropertiesChangedCalled: (event) {
+            callbacked = event.newProperties;
+          },
+        );
+
+        final newState =
+            target.propertiesState.copyWithProperty('int', newValue);
+        target.resetPropertiesState(newState);
+
+        expect(target.propertiesState.getValue('int'), newValue);
+        expect(target.propertiesState, same(newState));
+        expect(callbacked, isNotNull);
+        expect(callbacked!.getValue('int'), newValue);
+        expect(callbacked, same(newState));
+      });
+
+      test(
+        'initialValue does not call onPropertiesChanged, but initializeCompanionMixin does',
+        () {
+          final callbacked = <FormProperties>[];
+          const initialValue1 = 123;
+          const initialValue2 = 456;
+          final target = TestPresenter(
+            properties: PropertyDescriptorsBuilder()
+              ..add<int, String>(
+                name: 'int1',
+                valueConverter: intStringConverter,
+                initialValue: initialValue1,
+              )
+              ..add<int, String>(
+                name: 'int2',
+                valueConverter: intStringConverter,
+                initialValue: initialValue2,
+              ),
+            onPropertiesChangedCalled: (event) {
+              callbacked.add(event.newProperties);
+            },
+          );
+
+          expect(target.propertiesState.getValue('int1'), initialValue1);
+          expect(target.propertiesState.getValue('int2'), initialValue2);
+          expect(callbacked.length, 1);
+          expect(callbacked[0].getValue('int1'), initialValue1);
+          expect(callbacked[0].getValue('int2'), initialValue2);
+        },
+      );
     });
   });
 
@@ -581,8 +537,9 @@ void main() {
           ),
       );
 
-      final validator =
-          target.getProperty<int, int>('prop').getValidator(context);
+      final validator = target.propertiesState
+          .getDescriptor<int, int>('prop')
+          .getValidator(context);
       expect(validator(0), isNull);
       expect(asyncOperationStartGates[0].isCompleted, isFalse);
       expect(validator(1), isNull);
@@ -643,7 +600,9 @@ void main() {
         ),
       );
 
-      validator = target.getProperty<int, int>('prop').getValidator(context);
+      validator = target.propertiesState
+          .getDescriptor<int, int>('prop')
+          .getValidator(context);
       expect(validator(0), isNull);
       await asyncOperationCompletion.future;
       // Try call following validation again
@@ -685,7 +644,9 @@ void main() {
         ),
       );
 
-      validator = target.getProperty<int, int>('prop').getValidator(context);
+      validator = target.propertiesState
+          .getDescriptor<int, int>('prop')
+          .getValidator(context);
       expect(validator(0), isNull);
       await asyncOperationCompletion.future;
       // Try call following validation again
@@ -739,8 +700,9 @@ void main() {
               onHandleCanceledAsyncValidationError,
         );
 
-        final validator =
-            target.getProperty<int, int>('prop').getValidator(context);
+        final validator = target.propertiesState
+            .getDescriptor<int, int>('prop')
+            .getValidator(context);
         // Causes exception
         expect(validator(2), isNull);
         // Cancel previous
@@ -887,8 +849,9 @@ void main() {
             onValidate: () {
               // dummy logic
               final context = DummyBuildContext();
-              final validator =
-                  target.getProperty<int, int>('int').getValidator(context);
+              final validator = target.propertiesState
+                  .getDescriptor<int, int>('int')
+                  .getValidator(context);
               final result = validator(1) == null;
               validationResults.add(result);
               return result;
@@ -971,7 +934,7 @@ void main() {
               ),
           );
           expect(
-            target.getPropertyValidator<String>(
+            target.propertiesState.getFieldValidator<String>(
               'prop',
               DummyBuildContext(),
             )('123'),
@@ -991,7 +954,7 @@ void main() {
               ),
           );
           expect(
-            target.getPropertyValidator<String>(
+            target.propertiesState.getFieldValidator<String>(
               'prop',
               DummyBuildContext(),
             )('ABC'),
@@ -1011,7 +974,7 @@ void main() {
               ),
           );
           expect(
-            target.getPropertyValidator<String>(
+            target.propertiesState.getFieldValidator<String>(
               'prop',
               DummyBuildContext(),
             )(null),
@@ -1067,7 +1030,7 @@ void main() {
           ),
       );
 
-      final property = target.getProperty<int, int>(name);
+      final property = target.propertiesState.getDescriptor<int, int>(name);
       const locale = Locale('en', 'US');
       final context = DummyBuildContext();
       const value = 123;

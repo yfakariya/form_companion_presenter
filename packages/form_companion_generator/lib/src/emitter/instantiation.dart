@@ -86,7 +86,7 @@ void _processTypeParameter(
   TypeParameter parameter,
   StringSink sink,
 ) {
-  sink.write(context.getMappedType(parameter.name2.lexeme));
+  sink.write(context.getMappedType(parameter.name.lexeme));
 }
 
 void _processTypeArguments(
@@ -125,7 +125,7 @@ void _processGenericFunctionType(
   sink.write(' Function');
 
   if (type.typeParameters?.typeParameters
-          .any((t) => !context.isMapped(t.name2.lexeme)) ??
+          .any((t) => !context.isMapped(t.name.lexeme)) ??
       false) {
     _processTypeParameters(context, type.typeParameters?.typeParameters, sink);
   }
@@ -263,7 +263,7 @@ void processTypeAnnotation(
   if (annotationType is TypeParameterType) {
     _processTypeArgumentElement(
       context,
-      annotationType.element2,
+      annotationType.element,
       sink,
     );
 
@@ -301,7 +301,7 @@ void processTypeWithValueType(
   StringSink sink,
 ) {
   if (parameterType is ParameterizedType) {
-    sink.write(parameterType.element2!.name);
+    sink.write(parameterType.element!.name);
 
     if (parameterType.typeArguments.isNotEmpty) {
       _processTypeArguments(context, parameterType.typeArguments, sink);

@@ -21,8 +21,9 @@ This project depends on [melos](https://melos.invertase.dev/) and [fvm](https://
 3. Setup `grinder` with `fvm flutter pub global activate grinder`.
 4. Move to `tool/dev_env` directory.
 5. Run `fvm flutter pub get`.
-6. Run `fvm flutter pub global run grinder setup-env` (or `grind setup-env` if you ran `flutter global`).
-7. Open this (repository root) directory in your favorite IDE.
+6. Back to top directory.
+7. Run `fvm flutter pub global run melos bs`
+8. Open this (repository root) directory in your favorite IDE.
 
 ### Lint
 

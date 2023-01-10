@@ -1,6 +1,7 @@
 // See LICENCE file in the root.
 
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/exception/exception.dart';
 import 'package:form_companion_generator/src/config.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:test/test.dart';
@@ -124,9 +125,18 @@ void main() {
       expect(target.getUsesEnumName(ver2_15), isTrue);
     });
 
-    test('non boolean -- default', () {
+    test('non boolean -- error', () {
       final target = Config(const <String, dynamic>{'uses_enum_name': 'true'});
-      expect(target.getUsesEnumName(ver2_15), isTrue);
+      expect(
+        () => target.getUsesEnumName(ver2_15),
+        throwsA(
+          isA<AnalysisException>().having(
+            (e) => e.message,
+            'message',
+            "Unexpected value type of 'uses_enum_name'. Value must be bool or null, but string.",
+          ),
+        ),
+      );
     });
   });
 
@@ -159,14 +169,21 @@ void main() {
       expect(target.extraLibraries, isEmpty);
     });
 
-    test('non boolean -- ignored', () {
+    test('non sequence -- error', () {
       final target = Config(<String, dynamic>{'extra_libraries': true});
-      expect(target.extraLibraries, isEmpty);
+      expect(
+        () => target.extraLibraries,
+        throwsA(
+          isA<AnalysisException>().having(
+            (e) => e.message,
+            'message',
+            "Unexpected value type of 'extra_libraries'. Value must be list of string, but bool.",
+          ),
+        ),
+      );
     });
 
-    test(
-        'hetero types -- only non-nested string elements in list are recognized',
-        () {
+    test('hetero types -- all errors are reported', () {
       final target = Config(<String, dynamic>{
         'extra_libraries': [
           'package:foo/foo.dart',
@@ -176,8 +193,15 @@ void main() {
         ]
       });
       expect(
-        target.extraLibraries,
-        ['package:foo/foo.dart', 'package:boo/boo.dart'],
+        () => target.extraLibraries,
+        throwsA(
+          isA<AnalysisException>().having(
+            (e) => e.message,
+            'message',
+            "Unexpected item type at index 1 in 'extra_libraries'. Items must be string, but bool.\n"
+                "Unexpected item type at index 2 in 'extra_libraries'. Items must be string, but sequence of string.",
+          ),
+        ),
       );
     });
   });
@@ -187,7 +211,7 @@ void main() {
       final target = Config(<String, dynamic>{
         'named_templates': {'key': 'VALUE'},
       });
-      final result = target.namedTemplates.get('KEY');
+      final result = target.namedTemplates['KEY'];
       expect(result, isNotNull);
       expect(result!.value, 'VALUE');
       expect(result.imports, isEmpty);
@@ -212,10 +236,10 @@ void main() {
       expect(
         () => target.namedTemplates.isEmpty,
         throwsA(
-          isArgumentError.having(
+          isA<AnalysisException>().having(
             (e) => e.message,
             'message',
-            "Unexpected key type of property of 'named_templates': int. Keys must be String.",
+            "Unexpected key type of '0' property of 'named_templates'. Keys must be string, but int.",
           ),
         ),
       );
@@ -230,11 +254,11 @@ void main() {
       expect(
         () => target.namedTemplates.isEmpty,
         throwsA(
-          isArgumentError.having(
+          isA<AnalysisException>().having(
             (e) => e.message,
             'message',
-            "Unexpected value type of 'map' property of 'named_templates': int. "
-                'Value must be String or object.',
+            "Unexpected value type of 'map' property of 'named_templates'. "
+                'Value must be String or mapping, but int.',
           ),
         ),
       );
@@ -253,7 +277,7 @@ void main() {
             }
           },
         });
-        final result = target.namedTemplates.get('TEMPLATE');
+        final result = target.namedTemplates['TEMPLATE'];
         expect(result, isNotNull);
         expect(result!.value, 'value');
         expected.sort((l, r) {
@@ -309,12 +333,12 @@ void main() {
           },
         });
         expect(
-          () => target.namedTemplates.get('TEMPLATE'),
+          () => target.namedTemplates['TEMPLATE'],
           throwsA(
-            isA<ArgumentError>().having(
+            isA<AnalysisException>().having(
               (e) => e.message,
               'message',
-              "Unexpected type of 'imports': int",
+              "Unexpected value type of 'imports' property of 'named_templates'. Value must be string or mapping, but int.",
             ),
           ),
         );
@@ -330,12 +354,12 @@ void main() {
           },
         });
         expect(
-          () => target.namedTemplates.get('TEMPLATE'),
+          () => target.namedTemplates['TEMPLATE'],
           throwsA(
-            isA<ArgumentError>().having(
+            isA<AnalysisException>().having(
               (e) => e.message,
               'message',
-              "Unexpected property key type of 'imports': int",
+              "Unexpected key '0' type of 'imports' property of 'named_templates'. Keys must be string, but int.",
             ),
           ),
         );
@@ -351,12 +375,12 @@ void main() {
           },
         });
         expect(
-          () => target.namedTemplates.get('TEMPLATE'),
+          () => target.namedTemplates['TEMPLATE'],
           throwsA(
-            isA<ArgumentError>().having(
+            isA<AnalysisException>().having(
               (e) => e.message,
               'message',
-              "Unexpected property value type of '0' property of 'imports': int",
+              "Unexpected value '0' type of '0' property of 'imports' property of 'named_templates'. Values must be URI string, but int.",
             ),
           ),
         );
@@ -372,12 +396,12 @@ void main() {
           },
         });
         expect(
-          () => target.namedTemplates.get('TEMPLATE'),
+          () => target.namedTemplates['TEMPLATE'],
           throwsA(
-            isA<ArgumentError>().having(
+            isA<AnalysisException>().having(
               (e) => e.message,
               'message',
-              "Unexpected property key format of 'imports': 'a.b.c'",
+              "Unexpected key format of 'imports' property of 'named_templates'. Keys must be '[{prefix}.]{typeName}', but 'a.b.c'.",
             ),
           ),
         );
@@ -417,11 +441,11 @@ void main() {
       expect(
         () => target.argumentTemplates.isEmpty,
         throwsA(
-          isArgumentError.having(
+          isA<AnalysisException>().having(
             (e) => e.message,
             'message',
-            "Unexpected key type of property of 'argument_templates': int. "
-                'Keys must be String.',
+            "Unexpected key type of '0' property of 'argument_templates'. "
+                'Keys must be string, but int.',
           ),
         ),
       );
@@ -436,11 +460,11 @@ void main() {
       expect(
         () => target.argumentTemplates.isEmpty,
         throwsA(
-          isArgumentError.having(
+          isA<AnalysisException>().having(
             (e) => e.message,
             'message',
-            "Unexpected value type of '0' property of 'argument_templates': String. "
-                'Values must be Map<dynamic, dynamic>.',
+            "Unexpected value type of '0' property of 'argument_templates'. "
+                'Value must be mapping of string key and mapping value, but string.',
           ),
         ),
       );
@@ -476,11 +500,11 @@ void main() {
       expect(
         () => target.argumentTemplates.get('AFormField', '0'),
         throwsA(
-          isArgumentError.having(
+          isA<AnalysisException>().having(
             (e) => e.message,
             'message',
-            "Unexpected key type of 'AFormField' property of 'argument_templates': int. "
-                'Keys must be String.',
+            "Unexpected key type of '0' property of 'AFormField' property of 'argument_templates'. "
+                'Keys must be string, but int.',
           ),
         ),
       );
@@ -497,11 +521,11 @@ void main() {
       expect(
         () => target.argumentTemplates.get('AFormField', 'scalar'),
         throwsA(
-          isArgumentError.having(
+          isA<AnalysisException>().having(
             (e) => e.message,
             'message',
-            "Unexpected value type of 'scalar' property of "
-                "'argument_templates': int. Value must be String or object.",
+            "Unexpected value type of 'scalar' property of 'AFormField' property of "
+                "'argument_templates'. Value must be string or mapping, but int.",
           ),
         ),
       );
@@ -518,13 +542,13 @@ void main() {
       expect(
         () => target.argumentTemplates.get('AFormField', 'scalar'),
         throwsA(
-          isArgumentError.having(
+          isA<AnalysisException>().having(
             (e) => e.message,
             'message',
-            "'empty' property of 'AFormField' property of"
-                "'argument_templates' must have String 'template' or 'item_template' "
-                "property but the type of 'template' is: Null, "
-                "and the type of 'item_template' is: Null.",
+            "'empty' property of 'AFormField' property of "
+                "'argument_templates' must have string 'template' or 'item_template' "
+                "property, but the type of 'template' is null, "
+                "and the type of 'item_template' is null.",
           ),
         ),
       );
@@ -542,13 +566,13 @@ void main() {
       expect(
         () => target.argumentTemplates.get('AFormField', 'scalar'),
         throwsA(
-          isArgumentError.having(
+          isA<AnalysisException>().having(
             (e) => e.message,
             'message',
-            "'empty' property of 'AFormField' property of"
-                "'argument_templates' must have String 'template' or 'item_template' "
-                "property but the type of 'template' is: int, "
-                "and the type of 'item_template' is: bool.",
+            "'empty' property of 'AFormField' property of "
+                "'argument_templates' must have string 'template' or 'item_template' "
+                "property, but the type of 'template' is int, "
+                "and the type of 'item_template' is bool.",
           ),
         ),
       );
@@ -690,10 +714,10 @@ void main() {
         expect(
           () => target.argumentTemplates.get('AFormField', 'param'),
           throwsA(
-            isA<ArgumentError>().having(
+            isA<AnalysisException>().having(
               (e) => e.message,
               'message',
-              "Unexpected type of 'imports': int",
+              "Unexpected value type of 'imports' property of 'param' property of 'AFormField' property of 'argument_templates'. Value must be string or mapping, but int.",
             ),
           ),
         );
@@ -713,10 +737,10 @@ void main() {
         expect(
           () => target.argumentTemplates.get('AFormField', 'param'),
           throwsA(
-            isA<ArgumentError>().having(
+            isA<AnalysisException>().having(
               (e) => e.message,
               'message',
-              "Unexpected property key type of 'imports': int",
+              "Unexpected key '0' type of 'imports' property of 'param' property of 'AFormField' property of 'argument_templates'. Keys must be string, but int.",
             ),
           ),
         );
@@ -736,10 +760,10 @@ void main() {
         expect(
           () => target.argumentTemplates.get('AFormField', 'param'),
           throwsA(
-            isA<ArgumentError>().having(
+            isA<AnalysisException>().having(
               (e) => e.message,
               'message',
-              "Unexpected property value type of '0' property of 'imports': int",
+              "Unexpected value '0' type of '0' property of 'imports' property of 'param' property of 'AFormField' property of 'argument_templates'. Values must be URI string, but int.",
             ),
           ),
         );
@@ -759,10 +783,10 @@ void main() {
         expect(
           () => target.argumentTemplates.get('AFormField', 'param'),
           throwsA(
-            isA<ArgumentError>().having(
+            isA<AnalysisException>().having(
               (e) => e.message,
               'message',
-              "Unexpected property key format of 'imports': 'a.b.c'",
+              "Unexpected key format of 'imports' property of 'param' property of 'AFormField' property of 'argument_templates'. Keys must be '[{prefix}.]{typeName}', but 'a.b.c'.",
             ),
           ),
         );
@@ -862,6 +886,224 @@ void main() {
         expect(result.itemTemplate, isNull);
         expect(result.value, '#ARGUMENT#');
       });
+    });
+  });
+
+  group('custom_namings', () {
+    test('single items string maps can be parsed', () {
+      final target = Config(<String, dynamic>{
+        'custom_namings': {
+          'Test01': {
+            'form_properties_builder': {'build': 'build1'}
+          }
+        },
+      });
+      final result = target.customNamings['Test01'];
+      expect(result, isNotNull);
+      expect(result!.formPropertiesBuilder, isNotNull);
+      expect(result.formPropertiesBuilder!.build, 'build1');
+    });
+
+    test('mutiple items string maps can be parsed', () {
+      final target = Config(<String, dynamic>{
+        'custom_namings': {
+          'Test01': {
+            'form_properties_builder': {'build': 'build1'}
+          },
+          'Test02': {
+            'form_properties_builder': {'build': 'build2'}
+          }
+        },
+      });
+      final result1 = target.customNamings['Test01'];
+      expect(result1, isNotNull);
+      expect(result1!.formPropertiesBuilder, isNotNull);
+      expect(result1.formPropertiesBuilder!.build, 'build1');
+
+      final result2 = target.customNamings['Test02'];
+      expect(result2, isNotNull);
+      expect(result2!.formPropertiesBuilder, isNotNull);
+      expect(result2.formPropertiesBuilder!.build, 'build2');
+    });
+
+    test('empty maps is harmless', () {
+      final target = Config(<String, dynamic>{
+        'custom_namings': <String, String>{},
+      });
+      expect(target.customNamings, isNotNull);
+    });
+
+    test('can access undefined type and name', () {
+      final target = Config(<String, dynamic>{
+        'custom_namings': {
+          'Test01': {
+            'form_properties_builder': {'build': 'build1'}
+          }
+        },
+      });
+      final result = target.customNamings['Test02'];
+      expect(result, isNull);
+      expect(result?.formPropertiesBuilder, isNull);
+      expect(result?.formPropertiesBuilder?.build, isNull);
+    });
+
+    test('non string keys cause error', () {
+      final target = Config(<String, dynamic>{
+        'custom_namings': {
+          0: '0',
+        },
+      });
+      expect(
+        () => target.customNamings,
+        throwsA(
+          isA<AnalysisException>().having(
+            (e) => e.message,
+            'message',
+            "Unexpected key type of '0' property of 'custom_namings'. Keys must be string, but int.",
+          ),
+        ),
+      );
+    });
+
+    test('non string values cause error', () {
+      final target = Config(<String, dynamic>{
+        'custom_namings': {
+          'Test01': 0,
+        },
+      });
+      expect(
+        () => target.customNamings,
+        throwsA(
+          isA<AnalysisException>().having(
+            (e) => e.message,
+            'message',
+            "Unexpected value type of 'Test01' property of 'custom_namings'. "
+                'Value must be mapping of string key and mapping value, but int.',
+          ),
+        ),
+      );
+    });
+
+    test('non string type keys cause error', () {
+      final target = Config(<String, dynamic>{
+        'custom_namings': {
+          'Test01': {
+            0: '0',
+          }
+        },
+      });
+      expect(
+        () => target.customNamings,
+        throwsA(
+          isA<AnalysisException>().having(
+            (e) => e.message,
+            'message',
+            "Unexpected key type of '0' property of 'Test01' property of 'custom_namings'. "
+                'Keys must be string, but int.',
+          ),
+        ),
+      );
+    });
+
+    test('non string type values cause error', () {
+      final target = Config(<String, dynamic>{
+        'custom_namings': {
+          'Test01': {
+            'form_properties_builder': 0,
+          }
+        }
+      });
+      expect(
+        () => target.customNamings,
+        throwsA(
+          isA<AnalysisException>().having(
+            (e) => e.message,
+            'message',
+            "Unexpected value type of 'form_properties_builder' property of 'Test01' property of 'custom_namings'. "
+                'Value must be mapping of string key and string or null value, but int.',
+          ),
+        ),
+      );
+    });
+
+    test('unknown type values are halmless', () {
+      final target = Config(<String, dynamic>{
+        'custom_namings': {
+          'Test01': {
+            'form_properties_builder': {'build': 'build1'},
+            'awesome_type': {'foo': 'bar'},
+            'aweful_type': {'boo': 'hoge'},
+          }
+        }
+      });
+
+      final result = target.customNamings['Test01'];
+      expect(result, isNotNull);
+      expect(result!.formPropertiesBuilder, isNotNull);
+      expect(result.formPropertiesBuilder!.build, 'build1');
+    });
+
+    test('non string name keys cause error', () {
+      final target = Config(<String, dynamic>{
+        'custom_namings': {
+          'Test01': {
+            'form_properties_builder': {
+              0: '0',
+            }
+          }
+        },
+      });
+      expect(
+        () => target.customNamings,
+        throwsA(
+          isA<AnalysisException>().having(
+            (e) => e.message,
+            'message',
+            "Unexpected key type of '0' property of 'form_properties_builder' property of 'Test01' property of 'custom_namings'. "
+                'Keys must be string, but int.',
+          ),
+        ),
+      );
+    });
+
+    test('non string name values cause error', () {
+      final target = Config(<String, dynamic>{
+        'custom_namings': {
+          'Test01': {
+            'form_properties_builder': {'build': 0},
+          }
+        }
+      });
+      expect(
+        () => target.customNamings,
+        throwsA(
+          isA<AnalysisException>().having(
+            (e) => e.message,
+            'message',
+            "Unexpected value type of 'build' property of 'form_properties_builder' property of 'Test01' property of 'custom_namings'. "
+                'Values must be string or null, but int.',
+          ),
+        ),
+      );
+    });
+
+    test('unknown name values are halmless', () {
+      final target = Config(<String, dynamic>{
+        'custom_namings': {
+          'Test01': {
+            'form_properties_builder': {
+              'build': 'build1',
+              'awesome': 'foo',
+              'aweful': 'bar',
+            }
+          }
+        }
+      });
+
+      final result = target.customNamings['Test01'];
+      expect(result, isNotNull);
+      expect(result!.formPropertiesBuilder, isNotNull);
+      expect(result.formPropertiesBuilder!.build, 'build1');
     });
   });
 }

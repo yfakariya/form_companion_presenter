@@ -2,5 +2,4 @@
 
 library form_companion_extension;
 
-export 'src/presenter_extension.dart'
-    show CompanionPresenterMixinPropertiesExtension;
+export 'src/form_companion_mixin.dart' show FormPropertiesExtension;

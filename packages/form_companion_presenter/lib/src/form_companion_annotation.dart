@@ -62,7 +62,8 @@ extension FormCompanionPropertyDescriptorBuilderExtensions
     List<FormFieldValidatorFactory<F>>? validatorFactories,
     List<AsyncValidatorFactory<F>>? asyncValidatorFactories,
     P? initialValue,
-    Equality<F>? equality,
+    Equality<F>? fieldValueEquality,
+    Equality<P>? propertyValueEquality,
     ValueConverter<P, F>? valueConverter,
   }) =>
       // NOTE: TField is not used in runtime.
@@ -72,7 +73,8 @@ extension FormCompanionPropertyDescriptorBuilderExtensions
         validatorFactories: validatorFactories,
         asyncValidatorFactories: asyncValidatorFactories,
         initialValue: initialValue,
-        equality: equality,
+        fieldValueEquality: fieldValueEquality,
+        propertyValueEquality: propertyValueEquality,
         valueConverter: valueConverter,
       );
 

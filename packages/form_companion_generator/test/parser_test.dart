@@ -12,6 +12,7 @@ import 'package:form_companion_generator/src/form_field_locator.dart';
 import 'package:form_companion_generator/src/model.dart';
 import 'package:form_companion_generator/src/node_provider.dart';
 import 'package:form_companion_generator/src/parser.dart';
+import 'package:form_companion_generator/src/parser/parser_data.dart';
 import 'package:logging/logging.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:test/test.dart';
@@ -105,12 +106,12 @@ Future<void> main() async {
   }
 
   group('detectMixinType', () {
-    // Note: We cannot declare class which only mix-in FormCompanionPresenterMixin
-    // or FormBuilderCompanionPresenterMixin because they require the class implements
+    // Note: We cannot declare class which only mix-in FormCompanionMixin
+    // or FormBuilderCompanionMixin because they require the class implements
     // CompanionPresenterMixin.
 
     test(
-      'with FormCompanionPresenterMixin is detected as formCompanionPresenterMixin',
+      'with FormCompanionMixin is detected as formCompanionMixin',
       () => expect(
         detectMixinType(findType('FormPresenter')),
         equals(MixinType.formCompanionMixin),
@@ -118,7 +119,7 @@ Future<void> main() async {
     );
 
     test(
-      'with FormBuilderCompanionPresenterMixin is detected as formBuilderCompanionPresenterMixin',
+      'with FormBuilderCompanionMixin is detected as formBuilderCompanionMixin',
       () => expect(
         detectMixinType(findType('FormBuilderPresenter')),
         equals(MixinType.formBuilderCompanionMixin),
@@ -151,50 +152,104 @@ Future<void> main() async {
   });
 
   group('findConstructor', () {
-    test('1 public constructor - found it', () {
-      final found = findConstructor(findType('FormPresenter'));
-      expect(found, isNotNull);
-      expect(found.isPublic, isTrue);
+    FutureOr<Initializer> callFindInitializerAsync(
+      ClassElement classElement,
+    ) async {
+      final library = classElement.library;
+      final context = ParseContext(
+        library.languageVersion,
+        _emptyConfig,
+        logger,
+        nodeProvider,
+        formFieldLocator,
+        typeProvider,
+        library.typeSystem,
+        [],
+        isFormBuilder: false,
+      );
+
+      return await findInitializerAsync(context, classElement);
+    }
+
+    test('1 public constructor - found it', () async {
+      final found = await callFindInitializerAsync(findType('FormPresenter'));
+      expect(found.element.isPublic, isTrue);
     });
 
-    test('1 private constructor - found it', () {
-      final found = findConstructor(findType('WithPrivateConstructor'));
-      expect(found, isNotNull);
-      expect(found.isPrivate, isTrue);
+    test('1 private constructor - found it', () async {
+      final found =
+          await callFindInitializerAsync(findType('WithPrivateConstructor'));
+      expect(found.element.isPrivate, isTrue);
     });
 
-    test('with delegating constructors - found non-delegated one', () {
-      final found = findConstructor(findType('WithDelegatingConstructors'));
-      expect(found, isNotNull);
-      expect(found.isDefaultConstructor, isFalse);
-      expect(found.isPrivate, isTrue);
-      expect(found.isFactory, isFalse);
+    test('with delegating constructors - found non-delegated one', () async {
+      final found = await callFindInitializerAsync(
+        findType('WithDelegatingConstructors'),
+      );
+      final constructor = found.element as ConstructorElement;
+      expect(constructor.isDefaultConstructor, isFalse);
+      expect(constructor.isPrivate, isTrue);
+      expect(constructor.isFactory, isFalse);
     });
 
     test(
-      'Multiple constructor bodies - error',
-      () => expect(
-        () => findConstructor(findType('MultipleConstructorBody')),
+      'Multiple constructors with `initializeCompanionMixin()` call - error',
+      () => expectLater(
+        () async =>
+            await callFindInitializerAsync(findType('MultipleConstructorBody')),
         throwsA(isA<InvalidGenerationSourceError>()),
       ),
     );
 
     test(
-      'No constructors - error',
-      () => expect(
-        () => findConstructor(findType('WithoutConstructor')),
+      'Multiple methods with `initializeCompanionMixin()` call - error',
+      () => expectLater(
+        () async => await callFindInitializerAsync(
+          findType('InitializedInMultipleNonConstructor'),
+        ),
         throwsA(isA<InvalidGenerationSourceError>()),
       ),
     );
 
-    test('No default constructors - found not delegated one', () {
-      final found = findConstructor(findType('NoDefaultConstructors'));
-      expect(found, isNotNull);
-      expect(found.isDefaultConstructor, isFalse);
-      expect(found.isPublic, isTrue);
-      expect(found.isFactory, isFalse);
-      expect(found.name, equals('toBeDetected'));
+    test(
+      'A constructor and a method with `initializeCompanionMixin()` call - error',
+      () => expectLater(
+        () async => await callFindInitializerAsync(
+          findType('InitializedInConstructorAndNonConstructor'),
+        ),
+        throwsA(isA<InvalidGenerationSourceError>()),
+      ),
+    );
+
+    test(
+      'No members with `initializeCompanionMixin()` call - error',
+      () => expectLater(
+        () async =>
+            await callFindInitializerAsync(findType('WithoutConstructor')),
+        throwsA(isA<InvalidGenerationSourceError>()),
+      ),
+    );
+
+    test('No default constructors - found not delegated one', () async {
+      final found =
+          await callFindInitializerAsync(findType('NoDefaultConstructors'));
+      final constructor = found.element as ConstructorElement;
+      expect(constructor.isDefaultConstructor, isFalse);
+      expect(constructor.isPublic, isTrue);
+      expect(constructor.isFactory, isFalse);
+      expect(constructor.name, equals('toBeDetected'));
     });
+
+    test(
+      '1 method - error',
+      () => expectLater(
+        () async => await callFindInitializerAsync(
+          findType('InitializedInNonConstructor'),
+        ),
+        throwsA(isA<InvalidGenerationSourceError>()),
+      ),
+    );
+    ;
   });
 
   group('getProperties', () {
@@ -206,15 +261,21 @@ Future<void> main() async {
     }) async {
       final targetClass = findType(name);
       final warnings = <String>[];
-      final result = await getPropertiesAsync(
-        _emptyConfig,
+      final context = ParseContext(
         presenterLibrary.element.languageVersion,
+        _emptyConfig,
+        logger,
         nodeProvider,
         formFieldLocator,
-        findConstructor(targetClass),
+        typeProvider,
+        presenterLibrary.element.typeSystem,
         warnings,
-        logger,
         isFormBuilder: isFormBuilder,
+      );
+
+      final result = await getPropertiesAsync(
+        context,
+        await findInitializerAsync(context, targetClass),
       );
 
       if (warningsAssertion != null) {
@@ -238,15 +299,21 @@ Future<void> main() async {
       final targetClass = findType(name);
       final warnings = <String>[];
       try {
-        final result = await getPropertiesAsync(
-          _emptyConfig,
+        final context = ParseContext(
           presenterLibrary.element.languageVersion,
+          _emptyConfig,
+          logger,
           nodeProvider,
           formFieldLocator,
-          findConstructor(targetClass),
+          typeProvider,
+          presenterLibrary.element.typeSystem,
           warnings,
-          logger,
           isFormBuilder: true,
+        );
+
+        final result = await getPropertiesAsync(
+          context,
+          await findInitializerAsync(context, targetClass),
         );
         fail(
           'No error occurred. Properties: {${result.map(
@@ -281,7 +348,7 @@ Future<void> main() async {
       expect(props[0].propertyValueType.rawType, typeProvider.intType);
       expect(props[0].fieldValueType.rawType, typeProvider.stringType);
       expect(props[0].formFieldConstructors.length, 1);
-      expect(props[0].formFieldConstructors.first.constructor.name2, isNull);
+      expect(props[0].formFieldConstructors.first.constructor.name, isNull);
       expect(props[0].formFieldType, isNotNull);
       expect(props[0].formFieldType!.toString(), 'FormBuilderTextField');
       expect(props[0].formFieldTypeName, 'FormBuilderTextField');
@@ -293,7 +360,7 @@ Future<void> main() async {
       expect(props[1].propertyValueType.rawType, typeProvider.stringType);
       expect(props[1].fieldValueType.rawType, typeProvider.stringType);
       expect(props[1].formFieldConstructors.length, 1);
-      expect(props[1].formFieldConstructors.first.constructor.name2, isNull);
+      expect(props[1].formFieldConstructors.first.constructor.name, isNull);
       expect(props[1].formFieldType, isNotNull);
       expect(props[1].formFieldType!.toString(), 'FormBuilderTextField');
       expect(props[1].formFieldTypeName, 'FormBuilderTextField');
@@ -305,7 +372,7 @@ Future<void> main() async {
       expect(props[2].propertyValueType.rawType, typeProvider.boolType);
       expect(props[2].fieldValueType.rawType, typeProvider.boolType);
       expect(props[2].formFieldConstructors.length, 1);
-      expect(props[2].formFieldConstructors.first.constructor.name2, isNull);
+      expect(props[2].formFieldConstructors.first.constructor.name, isNull);
       expect(props[2].formFieldType, isNotNull);
       expect(props[2].formFieldType!.toString(), 'FormBuilderSwitch');
       expect(props[2].formFieldTypeName, 'FormBuilderSwitch');
@@ -317,7 +384,7 @@ Future<void> main() async {
       expect(props[3].propertyValueType.toString(), 'MyEnum');
       expect(props[3].fieldValueType.toString(), 'MyEnum');
       expect(props[3].formFieldConstructors.length, 1);
-      expect(props[3].formFieldConstructors.first.constructor.name2, isNull);
+      expect(props[3].formFieldConstructors.first.constructor.name, isNull);
       expect(props[3].formFieldType, isNotNull);
       expect(props[3].formFieldType!.toString(), 'FormBuilderDropdown<T>');
       expect(props[3].formFieldTypeName, 'FormBuilderDropdown');
@@ -329,7 +396,7 @@ Future<void> main() async {
       expect(props[4].propertyValueType.toString(), 'List<MyEnum>');
       expect(props[4].fieldValueType.toString(), 'List<MyEnum>');
       expect(props[4].formFieldConstructors.length, 1);
-      expect(props[4].formFieldConstructors.first.constructor.name2, isNull);
+      expect(props[4].formFieldConstructors.first.constructor.name, isNull);
       expect(props[4].formFieldType, isNotNull);
       expect(props[4].formFieldType!.toString(), 'FormBuilderFilterChip<T>');
       expect(props[4].formFieldTypeName, 'FormBuilderFilterChip');
@@ -345,7 +412,7 @@ Future<void> main() async {
       expect(props[5].propertyValueType.rawType, typeProvider.stringType);
       expect(props[5].fieldValueType.rawType, typeProvider.stringType);
       expect(props[5].formFieldConstructors.length, 1);
-      expect(props[5].formFieldConstructors.first.constructor.name2, isNull);
+      expect(props[5].formFieldConstructors.first.constructor.name, isNull);
       expect(props[5].formFieldType, isNotNull);
       expect(props[5].formFieldType!.toString(), 'FormBuilderTextField');
       expect(props[5].formFieldTypeName, 'FormBuilderTextField');
@@ -409,7 +476,7 @@ Future<void> main() async {
             );
             expect(props[0].formFieldConstructors.length, 1);
             expect(
-              props[0].formFieldConstructors.first.constructor.name2,
+              props[0].formFieldConstructors.first.constructor.name,
               isNull,
             );
             expect(props[0].formFieldType, isNotNull);
@@ -430,7 +497,7 @@ Future<void> main() async {
             );
             expect(props[1].formFieldConstructors.length, 1);
             expect(
-              props[1].formFieldConstructors.first.constructor.name2,
+              props[1].formFieldConstructors.first.constructor.name,
               isNull,
             );
             expect(props[1].formFieldType, isNotNull);
@@ -467,7 +534,7 @@ Future<void> main() async {
             );
             expect(props[0].formFieldConstructors.length, 1);
             expect(
-              props[0].formFieldConstructors.first.constructor.name2,
+              props[0].formFieldConstructors.first.constructor.name,
               isNull,
             );
             expect(props[0].formFieldType, isNotNull);
@@ -491,7 +558,7 @@ Future<void> main() async {
             );
             expect(props[1].formFieldConstructors.length, 1);
             expect(
-              props[1].formFieldConstructors.first.constructor.name2,
+              props[1].formFieldConstructors.first.constructor.name,
               isNull,
             );
             expect(props[1].formFieldType, isNotNull);
@@ -515,7 +582,7 @@ Future<void> main() async {
             );
             expect(props[2].formFieldConstructors.length, 1);
             expect(
-              props[2].formFieldConstructors.first.constructor.name2,
+              props[2].formFieldConstructors.first.constructor.name,
               isNull,
             );
             expect(props[2].formFieldType, isNotNull);
@@ -533,7 +600,7 @@ Future<void> main() async {
             expect(props[3].fieldValueType.maybeAsInterfaceType, myEnumType);
             expect(props[3].formFieldConstructors.length, 1);
             expect(
-              props[3].formFieldConstructors.first.constructor.name2,
+              props[3].formFieldConstructors.first.constructor.name,
               isNull,
             );
             expect(props[3].formFieldType, isNotNull);
@@ -563,7 +630,7 @@ Future<void> main() async {
             );
             expect(props[4].formFieldConstructors.length, 1);
             expect(
-              props[4].formFieldConstructors.first.constructor.name2,
+              props[4].formFieldConstructors.first.constructor.name,
               isNull,
             );
             expect(props[4].formFieldType, isNotNull);
@@ -587,7 +654,7 @@ Future<void> main() async {
             );
             expect(props[5].formFieldConstructors.length, 1);
             expect(
-              props[5].formFieldConstructors.first.constructor.name2,
+              props[5].formFieldConstructors.first.constructor.name,
               isNull,
             );
             expect(props[5].formFieldType, isNotNull);
@@ -617,7 +684,7 @@ Future<void> main() async {
             );
             expect(props[6].formFieldConstructors.length, 1);
             expect(
-              props[6].formFieldConstructors.first.constructor.name2,
+              props[6].formFieldConstructors.first.constructor.name,
               isNull,
             );
             expect(props[6].formFieldType, isNotNull);
@@ -962,12 +1029,12 @@ Future<void> main() async {
     group('error cases', () {
       test(
         'no initializeCompanionMixin invocation - error',
-        () => testGetPropertiesError<ConstructorElement>(
+        () => testGetPropertiesError<ClassElement>(
           'NoInitializeCompanionMixin',
           message:
-              "No initializeCompanionMixin(PropertyDescriptorsBuilder) invocation in constructor body of 'NoInitializeCompanionMixin' class.",
+              "No constructors which call `initializeCompanionMixin(PropertyDescriptorsBuilder)` are found in 'NoInitializeCompanionMixin' class.",
           todo:
-              'Call initializeCompanionMixin(PropertyDescriptorsBuilder) in constructor body.',
+              'Modify to ensure only one constructor which has body with `initializeCompanionMixin(PropertyDescriptorsBuilder)` call.',
         ),
       );
 
@@ -983,7 +1050,7 @@ Future<void> main() async {
             expect(
               warnings,
               [
-                "initializeCompanionMixin(PropertyDescriptorsBuilder) is called multiply in constructor of class 'MultipleInitializeCompanionMixin', so last one is used.",
+                "`initializeCompanionMixin(PropertyDescriptorsBuilder)` is called multiply in 'MultipleInitializeCompanionMixin'(CONSTRUCTOR), so last one is used.",
               ],
             );
           },
@@ -1297,7 +1364,7 @@ Future<void> main() async {
             );
             expect(props.single.formFieldConstructors.length, 1);
             expect(
-              props.single.formFieldConstructors.first.constructor.name2,
+              props.single.formFieldConstructors.first.constructor.name,
               isNull,
             );
             expect(props.single.formFieldType, isNotNull);
@@ -1519,7 +1586,7 @@ Future<void> main() async {
           expect(props[0].fieldValueType.rawType, typeProvider.stringType);
           expect(props[0].formFieldConstructors.length, 1);
           expect(
-            props[0].formFieldConstructors.first.constructor.name2,
+            props[0].formFieldConstructors.first.constructor.name,
             isNull,
           );
           expect(props[0].formFieldType, isNotNull);
@@ -1537,7 +1604,7 @@ Future<void> main() async {
           expect(props[1].fieldValueType.rawType, typeProvider.stringType);
           expect(props[1].formFieldConstructors.length, 1);
           expect(
-            props[1].formFieldConstructors.first.constructor.name2,
+            props[1].formFieldConstructors.first.constructor.name,
             isNull,
           );
           expect(props[1].formFieldType, isNotNull);
@@ -1552,7 +1619,7 @@ Future<void> main() async {
           expect(props[2].fieldValueType.rawType, typeProvider.stringType);
           expect(props[2].formFieldConstructors.length, 1);
           expect(
-            props[2].formFieldConstructors.first.constructor.name2,
+            props[2].formFieldConstructors.first.constructor.name,
             isNull,
           );
           expect(props[2].formFieldType, isNotNull);
@@ -1567,7 +1634,7 @@ Future<void> main() async {
           expect(props[3].fieldValueType.rawType, myEnumType);
           expect(props[3].formFieldConstructors.length, 1);
           expect(
-            props[3].formFieldConstructors.first.constructor.name2,
+            props[3].formFieldConstructors.first.constructor.name,
             isNull,
           );
           expect(props[3].formFieldType, isNotNull);
@@ -1592,7 +1659,7 @@ Future<void> main() async {
           );
           expect(props[4].formFieldConstructors.length, 1);
           expect(
-            props[4].formFieldConstructors.first.constructor.name2,
+            props[4].formFieldConstructors.first.constructor.name,
             isNull,
           );
           expect(props[4].formFieldType, isNotNull);
@@ -1630,14 +1697,14 @@ Future<void> main() async {
           formFieldType.typeArguments.any((t) => t is TypeParameterType)
               ? [GenericType.fromDartType(valueType, valueTypeContextElement)]
               : [],
-          formFieldType.element2,
+          formFieldType.element,
         ),
         warnings: [],
       );
 
       final formFieldConstructor =
           await nodeProvider.getElementDeclarationAsync<ConstructorDeclaration>(
-        formFieldType.element2.unnamedConstructor!,
+        formFieldType.element.unnamedConstructor!,
       );
 
       return PropertyAndFormFieldDefinition(
@@ -1749,6 +1816,10 @@ Future<void> main() async {
               'package:flutter/widgets.dart',
               shows: ['BuildContext', 'Localizations'],
             ),
+            ExpectedImport(
+              'package:meta/meta.dart',
+              shows: ['immutable', 'sealed'],
+            ),
             ExpectedImport('parameters.dart'),
           ],
         );
@@ -1767,7 +1838,7 @@ Future<void> main() async {
           await makeProperty(
             fieldName,
             valueType,
-            valueType.element2,
+            valueType.element,
             isFormBuilder: isFormBuilder,
           ),
         ],
@@ -1922,7 +1993,7 @@ Future<void> main() async {
           await makeProperty(
             'DropdownButtonFormField',
             myEnumType,
-            myEnumType.element2,
+            myEnumType.element,
             isFormBuilder: false,
           ),
         ],
@@ -2070,9 +2141,8 @@ Future<void> main() async {
       on InvalidGenerationSourceError catch (e) {
         expect(
           e.message,
-          'A target of @formCompanion must be mix-ined with the either of '
-          'FormCompanionPresenterMixin or FormBuilderPresenterMixin. '
-          'Class name: BaseCompanion',
+          'A target of `@formCompanion` must be mix-ined with the either of '
+          "`FormCompanionMixin` or `FormBuilderCompanionMixin` in 'BaseCompanion' class.",
         );
         expect(e.element, isA<ClassElement>());
         expect(e.element?.name, 'BaseCompanion');
@@ -2148,6 +2218,13 @@ const _vanillaCommonImports = [
       'Localizations',
     ],
   ),
+  ExpectedImport(
+    'package:meta/meta.dart',
+    shows: [
+      'immutable',
+      'sealed',
+    ],
+  ),
 ];
 
 const _builderCommonImports = [
@@ -2175,6 +2252,13 @@ const _builderCommonImports = [
   ExpectedImport(
     'package:flutter_form_builder/flutter_form_builder.dart',
     shows: ['ValueTransformer'],
+  ),
+  ExpectedImport(
+    'package:meta/meta.dart',
+    shows: [
+      'immutable',
+      'sealed',
+    ],
   ),
 ];
 
@@ -2351,7 +2435,7 @@ final _expectedImports = {
     ),
     ExpectedImport(
       'package:flutter/painting.dart',
-      shows: ['EdgeInsets', 'StrutStyle', 'TextStyle'],
+      shows: ['EdgeInsets', 'StrutStyle', 'TextAlignVertical', 'TextStyle'],
     ),
     ExpectedImport(
       'package:flutter/services.dart',
@@ -2402,7 +2486,7 @@ final _expectedImports = {
     ),
     ExpectedImport(
       'package:flutter/painting.dart',
-      shows: ['EdgeInsets', 'StrutStyle', 'TextStyle'],
+      shows: ['EdgeInsets', 'StrutStyle', 'TextAlignVertical', 'TextStyle'],
     ),
     ExpectedImport(
       'package:flutter/services.dart',

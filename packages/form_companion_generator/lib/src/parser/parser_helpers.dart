@@ -19,7 +19,7 @@ InterfaceElement? lookupTargetClass(
   Element callerElement,
   MethodInvocation method,
 ) {
-  final target = method.realTarget?.staticType?.element2 as ClassElement?;
+  final target = method.realTarget?.staticType?.element as ClassElement?;
   if (target != null) {
     return target;
   }
@@ -28,7 +28,7 @@ InterfaceElement? lookupTargetClass(
   final callerType =
       callerElement.thisOrAncestorOfType<ExtensionElement>()?.extendedType;
   if (callerType is InterfaceType) {
-    return callerType.element2;
+    return callerType.element;
   } else {
     return null;
   }

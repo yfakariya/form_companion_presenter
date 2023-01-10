@@ -44,9 +44,20 @@ class FormBuilderPresenter
   FutureOr<void> doSubmit() {}
 }
 
+class _BaseCompanionFeatures extends CompanionPresenterFeatures {
+  const _BaseCompanionFeatures();
+
+  @override
+  FormStateAdapter? maybeFormStateOf(BuildContext context) =>
+      throw UnimplementedError();
+}
+
 @formCompanion
 class BaseCompanion with CompanionPresenterMixin {
+  late final CompanionPresenterFeatures presenterFeatures;
+
   BaseCompanion() {
+    presenterFeatures = const _BaseCompanionFeatures();
     initializeCompanionMixin(
       PropertyDescriptorsBuilder()..string(name: 'propString'),
     );
@@ -100,7 +111,7 @@ class InvalidCompanionPresenter with CompanionPresenterMixin {
   FutureOr<void> doSubmit() {}
 }
 
-// for findConstructor() testing
+// for findInitializerAsync() testing
 
 @formCompanion
 class WithPrivateConstructor with CompanionPresenterMixin, FormCompanionMixin {
@@ -166,6 +177,50 @@ class MultipleConstructorBody with CompanionPresenterMixin, FormCompanionMixin {
   }
 
   MultipleConstructorBody._() {
+    initializeCompanionMixin(PropertyDescriptorsBuilder());
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+// Like Riverpod2 Notifier/AsyncNotifier.
+@formCompanion
+class InitializedInNonConstructor
+    with CompanionPresenterMixin, FormCompanionMixin {
+  FutureOr<void> build() {
+    initializeCompanionMixin(PropertyDescriptorsBuilder());
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+// error
+@formCompanion
+class InitializedInMultipleNonConstructor
+    with CompanionPresenterMixin, FormCompanionMixin {
+  FutureOr<void> build() {
+    initializeCompanionMixin(PropertyDescriptorsBuilder());
+  }
+
+  void build2() {
+    initializeCompanionMixin(PropertyDescriptorsBuilder());
+  }
+
+  @override
+  FutureOr<void> doSubmit() {}
+}
+
+// error
+@formCompanion
+class InitializedInConstructorAndNonConstructor
+    with CompanionPresenterMixin, FormCompanionMixin {
+  InitializedInConstructorAndNonConstructor() {
+    initializeCompanionMixin(PropertyDescriptorsBuilder());
+  }
+
+  FutureOr<void> build() {
     initializeCompanionMixin(PropertyDescriptorsBuilder());
   }
 

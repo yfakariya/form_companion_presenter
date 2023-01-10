@@ -86,7 +86,7 @@ Future<void> easyL10n() async {
 }
 
 @Task(
-  'Run freezed and form_companion_generator. Specify --watch to run with watch mode.',
+  'Run freezed, riverpod_generator, and form_companion_generator. Specify --watch to run with watch mode.',
 )
 Future<void> runBuildRunner() async {
   final command =

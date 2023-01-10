@@ -210,7 +210,10 @@ Future<void> main() async {
       );
       expect(
         emitPropertyAccessor(data.name, data.properties, _emptyConfig),
-        typedProperties('Test01', [Tuple3('prop', 'String', 'String')]),
+        typedProperties(
+          'Test01',
+          [Tuple3('prop', 'String', 'String')],
+        ),
       );
     });
 
@@ -287,6 +290,49 @@ Future<void> main() async {
         typedProperties(
           'Test01',
           [Tuple3('prop', 'List<MyEnum>', 'List<MyEnum>')],
+        ),
+      );
+    });
+
+    test('with custom builder.build name', () async {
+      final properties = await makeProperty(
+        'prop',
+        library.typeProvider.stringType,
+        library.typeProvider.stringType,
+        textFormField,
+        isFormBuilder: false,
+      );
+      final data = PresenterDefinition(
+        name: 'Test01',
+        isFormBuilder: false,
+        doAutovalidate: false,
+        warnings: [],
+        imports: await collectDependenciesAsync(
+          library,
+          defaultConfig,
+          properties,
+          nodeProvider,
+          logger,
+          isFormBuilder: false,
+        ),
+        properties: properties,
+      );
+      expect(
+        emitPropertyAccessor(
+          data.name,
+          data.properties,
+          Config(<String, dynamic>{
+            'custom_namings': {
+              'Test01': {
+                'form_properties_builder': {'build': 'buildFormProperties'}
+              }
+            }
+          }),
+        ),
+        typedProperties(
+          'Test01',
+          [Tuple3('prop', 'String', 'String')],
+          'buildFormProperties',
         ),
       );
     });
@@ -412,6 +458,7 @@ Future<void> main() async {
             "import 'package:flutter/services.dart' show MaxLengthEnforcement, MouseCursor, SmartDashesType, SmartQuotesType, TextCapitalization, TextInputAction, TextInputFormatter, TextInputType;",
             "import 'package:flutter/widgets.dart' show AutovalidateMode, BuildContext, FocusNode, Localizations, ScrollController, ScrollPhysics, TextEditingController, TextSelectionControls, ToolbarOptions;",
             "import 'package:form_companion_presenter/form_companion_presenter.dart';",
+            "import 'package:meta/meta.dart' show immutable, sealed;",
             '',
             "import 'form_fields.dart';"
           ],
@@ -450,12 +497,13 @@ Future<void> main() async {
             '',
             "import 'package:flutter/foundation.dart' show Key, ValueChanged;",
             "import 'package:flutter/material.dart' show DatePickerEntryMode, DatePickerMode, EntryModeChangeCallback, Icons, InputCounterWidgetBuilder, InputDecoration, SelectableDayPredicate, TimeOfDay, TimePickerEntryMode;",
-            "import 'package:flutter/painting.dart' show EdgeInsets, StrutStyle, TextStyle;",
+            "import 'package:flutter/painting.dart' show EdgeInsets, StrutStyle, TextAlignVertical, TextStyle;",
             "import 'package:flutter/services.dart' show MaxLengthEnforcement, TextCapitalization, TextInputAction, TextInputFormatter, TextInputType;",
             "import 'package:flutter/widgets.dart' show AutovalidateMode, BuildContext, FocusNode, Icon, Localizations, RouteSettings, TextEditingController, TransitionBuilder, Widget;",
             "import 'package:flutter_form_builder/flutter_form_builder.dart' show FormBuilderDateTimePicker, InputType, ValueTransformer;",
             "import 'package:form_companion_presenter/form_companion_presenter.dart';",
             "import 'package:intl/intl.dart' show DateFormat;",
+            "import 'package:meta/meta.dart' show immutable, sealed;",
             '',
             "import 'form_fields.dart';"
           ],
@@ -537,12 +585,13 @@ Future<void> main() async {
             '',
             "import 'package:flutter/foundation.dart' show Key, ValueChanged;",
             "import 'package:flutter/material.dart' show DatePickerEntryMode, DatePickerMode, EntryModeChangeCallback, Icons, InputCounterWidgetBuilder, InputDecoration, SelectableDayPredicate, TimeOfDay, TimePickerEntryMode;",
-            "import 'package:flutter/painting.dart' show EdgeInsets, StrutStyle, TextStyle;",
+            "import 'package:flutter/painting.dart' show EdgeInsets, StrutStyle, TextAlignVertical, TextStyle;",
             "import 'package:flutter/services.dart' show MaxLengthEnforcement, TextCapitalization, TextInputAction, TextInputFormatter, TextInputType;",
             "import 'package:flutter/widgets.dart' show AutovalidateMode, BuildContext, FocusNode, Icon, Localizations, RouteSettings, TextEditingController, TransitionBuilder, Widget;",
             "import 'package:flutter_form_builder/flutter_form_builder.dart' show FormBuilderDateTimePicker, InputType, ValueTransformer;",
             "import 'package:form_companion_presenter/form_companion_presenter.dart';",
             "import 'package:intl/intl.dart' show DateFormat;",
+            "import 'package:meta/meta.dart' show immutable, sealed;",
             "import 'package:ok/ok1.dart';",
             "import 'package:ok/ok1.dart' as b show A;",
             "import 'package:ok/ok2.dart';",
@@ -590,12 +639,13 @@ Future<void> main() async {
             '',
             "import 'package:flutter/foundation.dart' show Key, ValueChanged;",
             "import 'package:flutter/material.dart' show DatePickerEntryMode, DatePickerMode, EntryModeChangeCallback, Icons, InputCounterWidgetBuilder, InputDecoration, SelectableDayPredicate, TimeOfDay, TimePickerEntryMode;",
-            "import 'package:flutter/painting.dart' show EdgeInsets, StrutStyle, TextStyle;",
+            "import 'package:flutter/painting.dart' show EdgeInsets, StrutStyle, TextAlignVertical, TextStyle;",
             "import 'package:flutter/services.dart' show MaxLengthEnforcement, TextCapitalization, TextInputAction, TextInputFormatter, TextInputType;",
             "import 'package:flutter/widgets.dart' show AutovalidateMode, BuildContext, FocusNode, Icon, Localizations, RouteSettings, TextEditingController, TransitionBuilder, Widget;",
             "import 'package:flutter_form_builder/flutter_form_builder.dart' show FormBuilderDateTimePicker, InputType, ValueTransformer;",
             "import 'package:form_companion_presenter/form_companion_presenter.dart';",
             "import 'package:intl/intl.dart' show DateFormat;",
+            "import 'package:meta/meta.dart' show immutable, sealed;",
             '',
             "import 'form_fields.dart';"
           ],
@@ -645,11 +695,12 @@ Future<void> main() async {
             '',
             "// import 'package:flutter/foundation.dart' show Key, ValueChanged;",
             "// import 'package:flutter/material.dart' show DatePickerEntryMode, DatePickerMode, EntryModeChangeCallback, Icons, InputCounterWidgetBuilder, InputDecoration, SelectableDayPredicate, TimeOfDay, TimePickerEntryMode;",
-            "// import 'package:flutter/painting.dart' show EdgeInsets, StrutStyle, TextStyle;",
+            "// import 'package:flutter/painting.dart' show EdgeInsets, StrutStyle, TextAlignVertical, TextStyle;",
             "// import 'package:flutter/services.dart' show MaxLengthEnforcement, TextCapitalization, TextInputAction, TextInputFormatter, TextInputType;",
             "// import 'package:flutter/widgets.dart' show AutovalidateMode, BuildContext, FocusNode, Icon, Localizations, RouteSettings, TextEditingController, TransitionBuilder, Widget;",
             "// import 'package:flutter_form_builder/flutter_form_builder.dart' show FormBuilderDateTimePicker, InputType, ValueTransformer;",
             "// import 'package:intl/intl.dart' show DateFormat;",
+            "// import 'package:meta/meta.dart' show immutable, sealed;",
             '',
           ],
         );
@@ -831,7 +882,7 @@ Future<void> main() async {
     BuildContext context, {
 ${spec.item3.map((p) => '    ${p.item1} ${p.item2}').join(',\n')},
   }) {
-    final property = _presenter.$propertyName;
+    final property = _properties.descriptors.$propertyName;
     return $construtorName(
 ${spec.item3.map((p) => '      ${p.item2}: ${p.item2}').join(',\n')},
     );
@@ -1062,7 +1113,7 @@ ${spec.item3.map((p) => '      ${p.item2}: ${p.item2}').join(',\n')},
           '''
 /// Defines [FormField] factory methods for properties of [Test].
 class \$TestFieldFactory {
-  final Test _presenter;
+  final \$TestFormProperties _properties;
 
   /// Gets a [FormField] factory for `p` property.
   final \$\$TestPFieldFactory p;
@@ -1070,10 +1121,10 @@ class \$TestFieldFactory {
   /// Gets a [FormField] factory for `p4` property.
   final \$\$TestP4FieldFactory p4;
 
-  \$TestFieldFactory._(Test presenter) :
-    _presenter = presenter,
-    p = \$\$TestPFieldFactory(presenter),
-    p4 = \$\$TestP4FieldFactory(presenter);
+  \$TestFieldFactory._(\$TestFormProperties properties) :
+    _properties = properties,
+    p = \$\$TestPFieldFactory(properties),
+    p4 = \$\$TestP4FieldFactory(properties);
 
 ${textFormFieldFactory('prop1')}
 
@@ -1082,9 +1133,9 @@ ${dropdownButtonFieldFactory('prop3', 'bool', usesEnumName: true)}
 
 /// A [FormField] factory for `p` property of [Test].
 class \$\$TestPFieldFactory {
-  final Test _presenter;
+  final \$TestFormProperties _properties;
 
-  \$\$TestPFieldFactory._(this._presenter);
+  \$\$TestPFieldFactory._(this._properties);
 
   /// Gets a [FormField] for `p` property with [ConstructorWithNamedConstructors.new] constructor.
   ConstructorWithNamedConstructors withDefaultConstructor(
@@ -1092,7 +1143,7 @@ class \$\$TestPFieldFactory {
     InputDecoration? inputDecoration,
     String? constructorParameter,
   }) {
-    final property = _presenter.p;
+    final property = _properties.descriptors.p;
     return ConstructorWithNamedConstructors(
       inputDecoration: inputDecoration,
       constructorParameter: constructorParameter,
@@ -1105,7 +1156,7 @@ class \$\$TestPFieldFactory {
     InputDecoration? inputDecoration,
     String? namedConstructorParameter,
   }) {
-    final property = _presenter.p;
+    final property = _properties.descriptors.p;
     return ConstructorWithNamedConstructors.generative(
       inputDecoration: inputDecoration,
       namedConstructorParameter: namedConstructorParameter,
@@ -1118,7 +1169,7 @@ class \$\$TestPFieldFactory {
     InputDecoration? inputDecoration,
     String? namedFactoryParameter,
   }) {
-    final property = _presenter.p;
+    final property = _properties.descriptors.p;
     return ConstructorWithNamedConstructors.factory(
       inputDecoration: inputDecoration,
       namedFactoryParameter: namedFactoryParameter,
@@ -1128,9 +1179,9 @@ class \$\$TestPFieldFactory {
 
 /// A [FormField] factory for `p4` property of [Test].
 class \$\$TestP4FieldFactory {
-  final Test _presenter;
+  final \$TestFormProperties _properties;
 
-  \$\$TestP4FieldFactory._(this._presenter);
+  \$\$TestP4FieldFactory._(this._properties);
 
   /// Gets a [FormField] for `p4` property with [FactoryWithNamedConstructors.new] constructor.
   FactoryWithNamedConstructors withDefaultConstructor(
@@ -1138,7 +1189,7 @@ class \$\$TestP4FieldFactory {
     InputDecoration? inputDecoration,
     String? factoryParameter,
   }) {
-    final property = _presenter.p4;
+    final property = _properties.descriptors.p4;
     return FactoryWithNamedConstructors(
       inputDecoration: inputDecoration,
       factoryParameter: factoryParameter,
@@ -1151,7 +1202,7 @@ class \$\$TestP4FieldFactory {
     InputDecoration? inputDecoration,
     String? namedConstructorParameter,
   }) {
-    final property = _presenter.p4;
+    final property = _properties.descriptors.p4;
     return FactoryWithNamedConstructors.generative(
       inputDecoration: inputDecoration,
       namedConstructorParameter: namedConstructorParameter,
@@ -1164,7 +1215,7 @@ class \$\$TestP4FieldFactory {
     InputDecoration? inputDecoration,
     String? namedFactoryParameter,
   }) {
-    final property = _presenter.p4;
+    final property = _properties.descriptors.p4;
     return FactoryWithNamedConstructors.factory(
       inputDecoration: inputDecoration,
       namedFactoryParameter: namedFactoryParameter,
@@ -1173,11 +1224,10 @@ class \$\$TestP4FieldFactory {
 }
 
 /// Defines an extension property to get [\$TestFieldFactory] from [Test].
-extension \$TestFieldFactoryExtension on Test {
+extension \$TestFormPropertiesFieldFactoryExtension on \$TestFormProperties {
   /// Gets a [FormField] factory.
   \$TestFieldFactory get fields => \$TestFieldFactory._(this);
-}
-''',
+}''',
         );
       },
     );
@@ -1643,9 +1693,9 @@ extension \$TestFieldFactoryExtension on Test {
     InputDecoration? decoration,
     String? property,
   }) {
-    final property_ = _presenter.prop;
+    final property_ = _properties.descriptors.prop;
     return FormFieldWithPropertyParameter(
-      key: _presenter.getKey(property_.name, context),
+      key: _properties.presenter.getKey(property_.name, context),
       initialValue: property_.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       decoration: decoration ?? const InputDecoration().copyWith(labelText: property_.name, hintText: null),
       onSaved: (v) => property_.setFieldValue(v, Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
@@ -1780,6 +1830,7 @@ extension \$TestFieldFactoryExtension on Test {
               Tuple3('prop1', 'String', 'String'),
             ],
           ),
+          '',
           fieldFactories(
             'Test',
             [
@@ -1832,20 +1883,228 @@ class FormBuilderTestSpec {
 /// Each tuples in [propertyTypes] are: `name`, `propertyType`, and `fieldType`.
 String typedProperties(
   String className,
+  Iterable<Tuple3<String, String, String>> propertyTypes, [
+  String builderBuildMethodName = 'build',
+]) =>
+    '''
+${typedFormProperties(className, propertyTypes, builderBuildMethodName)}
+
+${typedPropertyDescriptors(className, propertyTypes)}
+
+${typedPropertyValues(className, propertyTypes)}
+
+${typedFormPropertiesBuilder(className, propertyTypes, builderBuildMethodName)}
+
+${typedPropertiesExtension(className)}''';
+
+String typedFormProperties(
+  String className,
+  Iterable<Tuple3<String, String, String>> propertyTypes,
+  String builderBuildMethodName,
+) =>
+    '''
+/// Defines typed property state accessors
+/// for [$className].
+@sealed
+@immutable
+class \$${className}FormProperties implements FormProperties {
+  final FormProperties _underlying;
+
+  /// Gets a [$className] instance which holds this properties state.
+  $className get presenter => _underlying.presenter as $className;
+
+  /// Gets a typed [PropertyDescriptor] accessor [\$${className}PropertyDescriptors]
+  /// for [$className].
+  late final \$${className}PropertyDescriptors descriptors;
+
+  /// Gets a typed property value accessor [\$${className}PropertyValues]
+  /// for [$className].
+  late final \$${className}PropertyValues values;
+
+  /// Returns a [\$${className}FormProperties] which wraps [FormProperties].
+  /// 
+  /// Note that this factory returns [underlying] if [underlying] is 
+  /// [\$${className}FormProperties] type.
+  factory \$${className}FormProperties(FormProperties underlying) {
+    if (underlying is \$${className}FormProperties) {
+      return underlying;
+    }
+
+    if (underlying.presenter is! $className) {
+      throw ArgumentError(
+        'Specified FormProperties does not hold \${$className} type presenter.',
+        'underlying',
+      );
+    }
+
+    return \$${className}FormProperties._(underlying);
+  }
+
+  \$${className}FormProperties._(this._underlying) {
+    descriptors = \$${className}PropertyDescriptors._(_underlying);
+    values = \$${className}PropertyValues._(_underlying);
+  }
+
+  @override
+  bool canSubmit(BuildContext context) => _underlying.canSubmit(context);
+
+  @override
+  void Function()? submit(BuildContext context) => _underlying.submit(context);
+
+  @override
+  \$${className}FormProperties copyWithProperties(
+    Map<String, Object?> newValues,
+  ) {
+    final newUnderlying = _underlying.copyWithProperties(newValues);
+    if (identical(newUnderlying, _underlying)) {
+      return this;
+    }
+
+    return \$${className}FormProperties(newUnderlying);
+  }
+
+  @override
+  \$${className}FormProperties copyWithProperty(
+    String name,
+    Object? newValue,
+  ) {
+    final newUnderlying = _underlying.copyWithProperty(name, newValue);
+    if (identical(newUnderlying, _underlying)) {
+      return this;
+    }
+
+    return \$${className}FormProperties(newUnderlying);
+  }
+
+  /// Copies this instance with specified new property values specified via
+  /// returned [\$${className}FormPropertiesBuilder] object.
+  /// 
+  /// You must call [\$${className}FormPropertiesBuilder.$builderBuildMethodName]
+  /// to finish copying.
+  \$${className}FormPropertiesBuilder copyWith() =>
+      \$${className}FormPropertiesBuilder._(this);
+
+  @override
+  PropertyDescriptor<P, F> getDescriptor<P extends Object, F extends Object>(
+    String name,
+  ) =>
+      _underlying.getDescriptor<P, F>(name);
+      
+  @override
+  PropertyDescriptor<P, F>?
+      tryGetDescriptor<P extends Object, F extends Object>(
+    String name,
+  ) =>
+          _underlying.tryGetDescriptor(name);
+
+  @override
+  Iterable<PropertyDescriptor<Object, Object>> getAllDescriptors() =>
+      _underlying.getAllDescriptors();
+
+  @override
+  Object? getValue(String name) => _underlying.getValue(name);
+}''';
+
+String typedPropertyDescriptors(
+  String className,
   Iterable<Tuple3<String, String, String>> propertyTypes,
 ) =>
     '''
-/// Defines typed property accessors as extension properties for [$className].
-extension \$${className}PropertyExtension on $className {
-${propertyTypes.isEmpty ? '  // No properties were found.' : propertyTypes.map((e) => typedProperty(e.item1, e.item2, e.item3)).join('\n\n')}
-}
-''';
+/// Defines typed [PropertyDescriptor] accessors
+/// for [${className}FormProperties].
+@sealed
+class \$${className}PropertyDescriptors {
+  final FormProperties _properties;
 
-String typedProperty(String name, String propertyType, String fieldType) => '''
+  \$${className}PropertyDescriptors._(this._properties);
+
+${propertyTypes.map((e) => typedPropertyDescriptor(e.item1, e.item2, e.item3)).join('\n\n')}
+}''';
+
+String typedPropertyDescriptor(
+  String name,
+  String propertyType,
+  String fieldType,
+) =>
+    '''
   /// Gets a [PropertyDescriptor] of `$name` property.
   PropertyDescriptor<$propertyType, $fieldType> get $name =>
-      // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
-      properties['$name']! as PropertyDescriptor<$propertyType, $fieldType>;''';
+      _properties.getDescriptor('$name') as PropertyDescriptor<$propertyType, $fieldType>;''';
+
+String typedPropertyValues(
+  String className,
+  Iterable<Tuple3<String, String, String>> propertyTypes,
+) =>
+    '''
+/// Defines typed property value accessors
+/// for [${className}FormProperties].
+@sealed
+class \$${className}PropertyValues {
+  final FormProperties _properties;
+
+  \$${className}PropertyValues._(this._properties);
+
+${propertyTypes.map((e) => typedPropertyValue(e.item1, e.item2)).join('\n\n')}
+}''';
+
+String typedPropertyValue(String name, String propertyType) => '''
+  /// Gets a current value of `$name` property.
+  $propertyType get $name =>
+      _properties.getValue('$name') as $propertyType;''';
+
+String typedFormPropertiesBuilder(
+  String className,
+  Iterable<Tuple3<String, String, String>> propertyTypes,
+  String builderBuildMethodName,
+) =>
+    '''
+/// Defines a builder to help [${className}FormProperties.copyWith].
+@sealed
+class \$${className}FormPropertiesBuilder {
+  final \$${className}FormProperties _properties;
+  final Map<String, Object?> _newValues = {};
+
+  \$${className}FormPropertiesBuilder._(this._properties);
+
+${propertyTypes.map((e) => typedFormPropertiesBuilderSetter(e.item1, e.item2)).join('\n\n')}
+
+  \$${className}FormProperties $builderBuildMethodName() =>
+      _properties.copyWithProperties(_newValues);
+}''';
+
+String typedFormPropertiesBuilderSetter(
+  String name,
+  String propertyType,
+) =>
+    '''
+  /// Sets a new value of `$name` property.
+  void $name($propertyType value) =>
+      _newValues['$name'] = value;''';
+
+String typedPropertiesExtension(String className) => '''
+/// Defines typed property accessors as extension properties for [$className].
+extension \$${className}PropertyExtension on $className {
+  /// Gets a current [\$${className}FormProperties] which holds properties' values
+  /// and their [PropertyDescriptor]s.
+  \$${className}FormProperties get properties =>
+      \$${className}FormProperties(propertiesState);
+
+  /// Resets [properties] (and underlying[CompanionPresenterMixin.propertiesState])
+  /// with specified new [\$${className}FormProperties].
+  ///
+  /// This method also calls [CompanionPresenterMixin.onPropertiesChanged] callback.
+  /// 
+  /// This method returns passed [FormProperties] for convinience.
+  /// 
+  /// This method is preferred over [CompanionPresenterMixin.resetPropertiesState]
+  /// because takes and returns more specific [\$${className}FormProperties] type.
+  \$${className}FormProperties resetProperties(
+    \$${className}FormProperties newProperties,
+  ) {
+    resetPropertiesState(newProperties);
+    return newProperties;
+  }
+}''';
 
 String fieldFactories(
   String className,
@@ -1854,19 +2113,18 @@ String fieldFactories(
     '''
 /// Defines [FormField] factory methods for properties of [$className].
 class \$${className}FieldFactory {
-  final $className _presenter;
+  final \$${className}FormProperties _properties;
 
-  \$${className}FieldFactory._(this._presenter);
+  \$${className}FieldFactory._(this._properties);
 
-${factories.isEmpty ? '  // No properties were found.' : factories.join('\n\n')}
+${factories.join('\n\n')}
 }
 
 /// Defines an extension property to get [\$${className}FieldFactory] from [$className].
-extension \$${className}FieldFactoryExtension on $className {
+extension \$${className}FormPropertiesFieldFactoryExtension on \$${className}FormProperties {
   /// Gets a [FormField] factory.
   \$${className}FieldFactory get fields => \$${className}FieldFactory._(this);
-}
-''';
+}''';
 
 String multiFieldFactories(
   String className,
@@ -1877,13 +2135,12 @@ String multiFieldFactories(
     return '''
 /// A [FormField] factory for `$propertyName` property of [$className].
 class \$\$$className${pascalize(propertyName)}FieldFactory {
-  final $className _presenter;
+  final \$${className}FormProperties _properties;
 
-  \$\$$className${pascalize(propertyName)}FieldFactory._(this._presenter);
+  \$\$$className${pascalize(propertyName)}FieldFactory._(this._properties);
 
-${factories.isEmpty ? '  // No properties were found.' : factories[propertyName]!.join('\n\n')}
-}
-''';
+${factories[propertyName]!.join('\n\n')}
+}''';
   }
 
   return '''
@@ -1894,17 +2151,17 @@ ${propertyNames.map(
                 '  final \$\$$className${pascalize(e)}FieldFactory $e;',
           ).join('\n')}
 
-  \$${className}FieldFactory._($className presenter) :
-    ${propertyNames.map((e) => '$e = \$\$$className${pascalize(e)}FieldFactory(presenter)').join(',\n      ')};
+  \$${className}FieldFactory._(\$${className}FormProperties properties) :
+    ${propertyNames.map((e) => '$e = \$\$$className${pascalize(e)}FieldFactory(properties)').join(',\n      ')};
 }
 
 ${propertyNames.map(childFieldFactory).join('\n')}
+
 /// Defines an extension property to get [\$${className}FieldFactory] from [$className].
-extension \$${className}FieldFactoryExtension on $className {
+extension \$${className}FormPropertiesFieldFactoryExtension on \$${className}FormProperties {
   /// Gets a [FormField] factory.
   \$${className}FieldFactory get fields => \$${className}FieldFactory._(this);
-}
-''';
+}''';
 }
 
 String itemsExpression(
@@ -2005,9 +2262,9 @@ String textFormFieldFactory(
     bool enableIMEPersonalizedLearning = true,
     MouseCursor? mouseCursor,
   }) {
-    final property = _presenter.$propertyName;
+    final property = _properties.descriptors.$propertyName;
     return TextFormField(
-      key: _presenter.getKey(property.name, context),
+      key: _properties.presenter.getKey(property.name, context),
       controller: controller,
       initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       focusNode: focusNode,
@@ -2105,9 +2362,9 @@ String dropdownButtonFieldFactory(
     AlignmentGeometry alignment = AlignmentDirectional.centerStart,
     BorderRadius? borderRadius,
   }) {
-    final property = _presenter.$propertyName;
+    final property = _properties.descriptors.$propertyName;
     return DropdownButtonFormField<$propertyType>(
-      key: _presenter.getKey(property.name, context),
+      key: _properties.presenter.getKey(property.name, context),
 '''
     '${isNotEnumNorBool ? '''
       items: items,
@@ -2173,7 +2430,7 @@ String formBuilderCheckboxFactory(
     Widget? subtitle,
     bool tristate = false,
   }) {
-    final property = _presenter.$propertyName;
+    final property = _properties.descriptors.$propertyName;
     return FormBuilderCheckbox(
       key: key,
       name: property.name,
@@ -2239,7 +2496,7 @@ String formBuilderCheckboxGroupFactory(
     OptionsOrientation orientation = OptionsOrientation.wrap,
     bool shouldRequestFocus = false,
   }) {
-    final property = _presenter.$propertyName;
+    final property = _properties.descriptors.$propertyName;
     return FormBuilderCheckboxGroup<$propertyElementType>(
       key: key,
       name: property.name,
@@ -2318,7 +2575,7 @@ String formBuilderChoiceChipFactory(
     ValueTransformer<$propertyType?>? valueTransformer,
     VoidCallback? onReset,
   }) {
-    final property = _presenter.$propertyName;
+    final property = _properties.descriptors.$propertyName;
     return FormBuilderChoiceChip<$propertyType>(
       autovalidateMode: autovalidateMode ?? AutovalidateMode.${isAutovalidate ? 'onUserInteraction' : 'disabled'},
       enabled: enabled,
@@ -2384,6 +2641,7 @@ String formBuilderDateRangePickerFactory(
     bool enableInteractiveSelection = true,
     MaxLengthEnforcement? maxLengthEnforcement,
     TextAlign textAlign = TextAlign.start,
+    TextAlignVertical? textAlignVertical,
     bool autofocus = false,
     bool autocorrect = true,
     double cursorWidth = 2.0,
@@ -2424,7 +2682,7 @@ String formBuilderDateRangePickerFactory(
     bool allowClear = false,
     Widget? clearIcon,
   }) {
-    final property = _presenter.$propertyName;
+    final property = _properties.descriptors.$propertyName;
     return FormBuilderDateRangePicker(
       key: key,
       name: property.name,
@@ -2447,6 +2705,7 @@ String formBuilderDateRangePickerFactory(
       enableInteractiveSelection: enableInteractiveSelection,
       maxLengthEnforcement: maxLengthEnforcement,
       textAlign: textAlign,
+      textAlignVertical: textAlignVertical,
       autofocus: autofocus,
       autocorrect: autocorrect,
       cursorWidth: cursorWidth,
@@ -2532,6 +2791,7 @@ String formBuilderDateTimePickerFactory(
     Locale? locale,
     int? maxLength,
     ui.TextDirection? textDirection,
+    TextAlignVertical? textAlignVertical,
     ValueChanged<DateTime?>? onFieldSubmitted,
     TextEditingController? controller,
     TextStyle? style,
@@ -2558,7 +2818,7 @@ String formBuilderDateTimePickerFactory(
     Offset? anchorPoint,
     EntryModeChangeCallback? onEntryModeChanged,
   }) {
-    final property = _presenter.$propertyName;
+    final property = _properties.descriptors.$propertyName;
     return FormBuilderDateTimePicker(
       key: key,
       name: property.name,
@@ -2598,6 +2858,7 @@ String formBuilderDateTimePickerFactory(
       locale: locale,
       maxLength: maxLength,
       textDirection: textDirection,
+      textAlignVertical: textAlignVertical,
       onFieldSubmitted: onFieldSubmitted,
       controller: controller,
       style: style,
@@ -2673,7 +2934,7 @@ String formBuilderDropdownFactory(
     BorderRadius? borderRadius,
     AlignmentGeometry alignment = AlignmentDirectional.centerStart,
   }) {
-    final property = _presenter.$propertyName;
+    final property = _properties.descriptors.$propertyName;
     return FormBuilderDropdown<$propertyType>(
       key: key,
       name: property.name,
@@ -2762,7 +3023,7 @@ String formBuilderFilterChipFactory(
     ValueTransformer<List<$propertyElementType>?>? valueTransformer,
     VoidCallback? onReset,
   }) {
-    final property = _presenter.$propertyName;
+    final property = _properties.descriptors.$propertyName;
     return FormBuilderFilterChip<$propertyElementType>(
       autovalidateMode: autovalidateMode ?? AutovalidateMode.${isAutovalidate ? 'onUserInteraction' : 'disabled'},
       enabled: enabled,
@@ -2842,7 +3103,7 @@ String formBuilderRadioGroupFactory(
     ValueTransformer<$propertyType?>? valueTransformer,
     VoidCallback? onReset,
   }) {
-    final property = _presenter.$propertyName;
+    final property = _properties.descriptors.$propertyName;
     return FormBuilderRadioGroup<$propertyType>(
       autovalidateMode: autovalidateMode ?? AutovalidateMode.${isAutovalidate ? 'onUserInteraction' : 'disabled'},
       enabled: enabled,
@@ -2908,7 +3169,7 @@ String formBuilderRangeSliderFactory(
     NumberFormat? numberFormat,
     bool shouldRequestFocus = false,
   }) {
-    final property = _presenter.$propertyName;
+    final property = _properties.descriptors.$propertyName;
     return FormBuilderRangeSlider(
       key: key,
       name: property.name,
@@ -2965,7 +3226,7 @@ String formBuilderSegmentedControlFactory(
     Color? unselectedColor,
     bool shouldRequestFocus = false,
   }) {
-    final property = _presenter.$propertyName;
+    final property = _properties.descriptors.$propertyName;
     return FormBuilderSegmentedControl<$propertyType>(
       key: key,
       name: property.name,
@@ -3022,7 +3283,7 @@ String formBuilderSliderFactory(
     MouseCursor? mouseCursor,
     bool shouldRequestFocus = false,
   }) {
-    final property = _presenter.prop;
+    final property = _properties.descriptors.$propertyName;
     return FormBuilderSlider(
       key: key,
       name: property.name,
@@ -3086,7 +3347,7 @@ String formBuilderSwitchFactory(
     bool shouldRequestFocus = false,
     bool selected = false,
   }) {
-    final property = _presenter.prop;
+    final property = _properties.descriptors.$propertyName;
     return FormBuilderSwitch(
       key: key,
       name: property.name,
@@ -3143,6 +3404,7 @@ String formBuilderTextFieldFactory(
     bool autofocus = false,
     bool autocorrect = true,
     double cursorWidth = 2.0,
+    double? cursorHeight,
     TextInputType? keyboardType,
     TextStyle? style,
     TextEditingController? controller,
@@ -3175,7 +3437,7 @@ String formBuilderTextFieldFactory(
     String obscuringCharacter = '•',
     MouseCursor? mouseCursor,
   }) {
-    final property = _presenter.$propertyName;
+    final property = _properties.descriptors.$propertyName;
     return FormBuilderTextField(
       key: key,
       name: property.name,
@@ -3199,6 +3461,7 @@ String formBuilderTextFieldFactory(
       autofocus: autofocus,
       autocorrect: autocorrect,
       cursorWidth: cursorWidth,
+      cursorHeight: cursorHeight,
       keyboardType: keyboardType,
       style: style,
       controller: controller,

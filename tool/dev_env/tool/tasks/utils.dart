@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:grinder/grinder.dart';
-import 'package:pubspec_parse/pubspec_parse.dart';
 
 Future<bool> internalRunAsync(
   String command, [
@@ -36,20 +35,3 @@ Stream<String> getPackages(String directory) =>
       // because directories' URIs always end with '/'.
       return pathSegments[pathSegments.length - 2];
     });
-
-Iterable<String> findDependentPackages(
-  List<String> packages,
-  Pubspec pubspec,
-) sync* {
-  for (final package in packages) {
-    final dependency = pubspec.dependencies[package];
-    if (dependency is HostedDependency) {
-      yield package;
-    }
-  }
-}
-
-final _packagesShouldNotBeTweakedPubSpecs = {'form_companion_generator_test'};
-
-bool shouldEnablePubGetTargets(String package) =>
-    !_packagesShouldNotBeTweakedPubSpecs.contains(package);

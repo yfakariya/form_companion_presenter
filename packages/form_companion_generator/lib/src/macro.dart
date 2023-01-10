@@ -22,11 +22,6 @@ class ArgumentMacroContext {
   /// form field factory's call site.
   String get buildContext => _contextValues[ContextValueKeys.buildContext]!;
 
-  /// Expression for current "presenter" instance.
-  /// The presenter should implement `CompanionPresenterMixin` and
-  /// `FormCompanionMixin` (or its subtype).
-  String get presenter => _contextValues[ContextValueKeys.presenter]!;
-
   /// Expression for a local variable which stores current `PropertyDescriptor<P, F>`.
   String get property => _contextValues[ContextValueKeys.property]!;
 
@@ -45,7 +40,7 @@ class ArgumentMacroContext {
     required String fieldValueType,
     required String property,
     required String buildContext,
-    required String presenter,
+    required String presenterName,
     required String? autovalidateMode,
     required NamedTemplates namedTemplates,
     required String itemValue,
@@ -57,7 +52,7 @@ class ArgumentMacroContext {
           ContextValueKeys.fieldValueType: fieldValueType,
           ContextValueKeys.property: property,
           ContextValueKeys.buildContext: buildContext,
-          ContextValueKeys.presenter: presenter,
+          ContextValueKeys.presenterName: presenterName,
         },
         _namedTemplates = namedTemplates {
     _contextValues[ContextValueKeys.autoValidateMode] =
@@ -151,7 +146,7 @@ class ArgumentMacroContext {
         applyMacro(
           context,
           input,
-          (v) => _namedTemplates.get(v)?.value,
+          (v) => _namedTemplates[v]?.value,
           allowsUnresolved: true,
         ),
         (k) => _contextValues[k],

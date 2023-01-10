@@ -1,9 +1,27 @@
 // See LICENCE file in the root.
 
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/exception/exception.dart';
 import 'package:meta/meta.dart';
 
 import 'macro_keys.dart';
+
+const _autovalidateByDefaultKey = 'autovalidate_by_default';
+const _extraLibrariesKey = 'extra_libraries';
+const _usesEnumNameKey = 'uses_enum_name';
+
+const _namedTemplatesKey = 'named_templates';
+const _argumentTemplatesKey = 'argument_templates';
+
+const _importsKey = 'imports';
+const _templateKey = 'template';
+const _itemTemplateKey = 'item_template';
+
+// custom_namings:
+//   {presenterName}:
+//     form_properties_builder:
+//       build:
+const _customNamingsKey = 'custom_namings';
 
 /// Represents configuration.
 /// A configuration is specified through builder option,
@@ -20,15 +38,8 @@ import 'macro_keys.dart';
 ///   complexity of the annotation now.
 /// * As part should be controled globally rather than presenter-locally.
 class Config {
-  static const _autovalidateByDefaultKey = 'autovalidate_by_default';
-  static const _extraLibrariesKey = 'extra_libraries';
-  static const _usesEnumNameKey = 'uses_enum_name';
-
   /// Key of [asPart] in config.
   static const asPartKey = 'as_part';
-
-  static const _namedTemplatesKey = 'named_templates';
-  static const _argumentTemplatesKey = 'argument_templates';
 
   final Map<String, dynamic> _underlying;
 
@@ -63,10 +74,15 @@ class Config {
   ///
   /// [version] must be version of target library to be processed.
   bool getUsesEnumName(LibraryLanguageVersion version) {
-    final dynamic rawValue = _underlying[_usesEnumNameKey];
-    if (rawValue is bool) {
-      return rawValue;
+    final value = _verifyScalarType<bool?>(
+      _underlying[_usesEnumNameKey],
+      "'$_usesEnumNameKey'",
+    );
+    if (value is bool) {
+      return value;
     } else {
+      assert(value == null);
+
       // >= 2.15
       if (version.effective.major < 2 || version.effective.minor < 15) {
         return false;
@@ -92,16 +108,17 @@ class Config {
   /// work, so resolution of `FormField` can be failed. If so, you specify this
   /// property to help generator.
   List<String> get extraLibraries {
-    final dynamic mayBeExtraLibraries = _underlying[_extraLibrariesKey];
-    if (mayBeExtraLibraries is String) {
-      return [mayBeExtraLibraries];
-    } else if (mayBeExtraLibraries is List) {
-      return mayBeExtraLibraries.whereType<String>().toList();
+    final dynamic rawNode = _underlying[_extraLibrariesKey];
+    if (rawNode is String) {
+      return [rawNode];
+    } else if (rawNode == null) {
+      return const [];
     } else {
-      return [];
+      return _verifySequenceType<String>(rawNode, "'$_extraLibrariesKey'");
     }
   }
 
+  String? _namedTemplatesError;
   NamedTemplates? _materializedNamedTemplates;
 
   /// `named_templates` in config.
@@ -110,21 +127,25 @@ class Config {
   ///
   /// See build.yaml in package root directory for built-in named templates.
   NamedTemplates get namedTemplates {
+    if (_namedTemplatesError != null) {
+      throw AnalysisException(_namedTemplatesError!);
+    }
+
     if (_materializedNamedTemplates == null) {
       final dynamic rawNamedTemplates = _underlying[_namedTemplatesKey];
-      if (rawNamedTemplates is Map) {
-        _materializedNamedTemplates = NamedTemplates(
-          Map.fromEntries(
-            rawNamedTemplates.entries
-                .map(
-                  (e) => _checkMapType<String, dynamic>(
-                    e,
-                    "property of 'named_templates'",
-                  ),
-                )
-                .map(NamedTemplate.parse),
-          ),
-        );
+      if (rawNamedTemplates != null) {
+        try {
+          _materializedNamedTemplates = NamedTemplates(
+            _verifyMappingType<String, NamedTemplate>(
+              rawNamedTemplates,
+              "'$_namedTemplatesKey'",
+              NamedTemplate.parse,
+            ),
+          );
+        } on AnalysisException catch (e) {
+          _namedTemplatesError = e.message;
+          rethrow;
+        }
       } else {
         _materializedNamedTemplates = const NamedTemplates({});
       }
@@ -133,7 +154,8 @@ class Config {
     return _materializedNamedTemplates!;
   }
 
-  ArgumentTemplates? _materializedItemTemplates;
+  String? _argumentTemplatesError;
+  ArgumentTemplates? _materializedArgumentTemplates;
 
   /// `argument_templates` in config.
   ///
@@ -141,64 +163,201 @@ class Config {
   ///
   /// See build.yaml in package root directory for built-in argument templates.
   ArgumentTemplates get argumentTemplates {
-    if (_materializedItemTemplates == null) {
-      final dynamic rawItemTemplates = _underlying[_argumentTemplatesKey];
-      if (rawItemTemplates is Map) {
-        _materializedItemTemplates = ArgumentTemplates({
-          for (final e in rawItemTemplates.entries.map(
-            (x) => _checkMapType<String, Map<dynamic, dynamic>>(
-              x,
-              "property of 'argument_templates'",
+    if (_argumentTemplatesError != null) {
+      throw AnalysisException(_argumentTemplatesError!);
+    }
+
+    if (_materializedArgumentTemplates == null) {
+      final dynamic rawArgumentTemplates = _underlying[_argumentTemplatesKey];
+      if (rawArgumentTemplates != null) {
+        try {
+          _materializedArgumentTemplates = ArgumentTemplates(
+            _verifyMappingType<String, Map<String, ArgumentTemplate>>(
+              rawArgumentTemplates,
+              "'$_argumentTemplatesKey'",
+              (k, dynamic v, x) => MapEntry(
+                k,
+                _verifyMappingType(
+                  v,
+                  "'$k' property of $x",
+                  ArgumentTemplate.parse,
+                ),
+              ),
             ),
-          ))
-            e.key: {
-              for (final t in e.value.entries
-                  .map(
-                    (x) => _checkMapType<String, dynamic>(
-                      x,
-                      "'${e.key}' property of 'argument_templates'",
-                    ),
-                  )
-                  .map((x) => ArgumentTemplate.parse(x, e.key)))
-                t.key: t.value
-            },
-        });
+          );
+        } on AnalysisException catch (e) {
+          _argumentTemplatesError = e.message;
+          rethrow;
+        }
       } else {
-        _materializedItemTemplates = ArgumentTemplates({});
+        _materializedArgumentTemplates = const ArgumentTemplates({});
       }
     }
 
-    return _materializedItemTemplates!;
+    return _materializedArgumentTemplates!;
+  }
+
+  String? _customNamingsError;
+  CustomNamings? _materializedCustomNamings;
+
+  /// `custom_namings` in config.
+  ///
+  /// Note that each templates can contain any context macros and named templates.
+  ///
+  /// See build.yaml in package root directory for built-in argument templates.
+  CustomNamings get customNamings {
+    if (_customNamingsError != null) {
+      throw AnalysisException(_customNamingsError!);
+    }
+
+    if (_materializedCustomNamings == null) {
+      final dynamic rawCustomNamings = _underlying[_customNamingsKey];
+      if (rawCustomNamings != null) {
+        try {
+          _materializedCustomNamings = CustomNamings(
+            _verifyMappingType<String, PresenterCustomNamings>(
+              rawCustomNamings,
+              "'$_customNamingsKey'",
+              (k, dynamic v, x) => MapEntry(
+                k,
+                PresenterCustomNamings.parse(
+                  v,
+                  "'$k' property of $x",
+                ),
+              ),
+            ),
+          );
+        } on AnalysisException catch (e) {
+          _customNamingsError = e.message;
+          rethrow;
+        }
+      } else {
+        _materializedCustomNamings = const CustomNamings({});
+      }
+    }
+
+    return _materializedCustomNamings!;
   }
 
   /// Initializes a new instance with values from builder options.
   Config(this._underlying);
 }
 
-MapEntry<K, V> _checkMapType<K, V>(
-  MapEntry<dynamic, dynamic> entry,
+String _stringifyType(Object? value) {
+  final typeName =
+      value is Type ? value.toString() : value.runtimeType.toString();
+  switch (typeName) {
+    case 'String':
+      return 'string';
+    case 'Null':
+      return 'null';
+    case 'bool?':
+      return 'bool or null';
+    case 'String?':
+      return 'string or null';
+    case 'List<String>':
+      return 'sequence of string';
+    case 'dynamic':
+    case 'ArgumentTemplate':
+      return 'mapping';
+    default:
+      return typeName;
+  }
+}
+
+T _verifyScalarType<T>(dynamic rawNode, String context) {
+  if (rawNode is! T) {
+    throw AnalysisException(
+      'Unexpected value type of $context. '
+      // ignore: avoid_dynamic_calls
+      'Value must be ${_stringifyType(T)}, but ${_stringifyType(rawNode)}.',
+    );
+  }
+
+  return rawNode;
+}
+
+List<T> _verifySequenceType<T>(dynamic rawNode, String context) {
+  if (rawNode is! List) {
+    throw AnalysisException(
+      'Unexpected value type of $context. '
+      // ignore: avoid_dynamic_calls
+      'Value must be list of ${_stringifyType(T)}, but ${_stringifyType(rawNode)}.',
+    );
+  }
+
+  final result = <T>[];
+  final error = StringBuffer();
+  for (var i = 0; i < rawNode.length; i++) {
+    final dynamic item = rawNode[i];
+    if (item is T) {
+      result.add(item);
+    } else {
+      if (error.isNotEmpty) {
+        error.write('\n');
+      }
+
+      error.write(
+        'Unexpected item type at index $i in $context. '
+        // ignore: avoid_dynamic_calls
+        'Items must be ${_stringifyType(T)}, but ${_stringifyType(item)}.',
+      );
+    }
+  }
+
+  if (error.length > 0) {
+    throw AnalysisException(error.toString());
+  }
+
+  return result;
+}
+
+class _DefaultValueParser<K, V> {
+  MapEntry<K, V> _parse(K key, dynamic value, String context) {
+    if (value is! V) {
+      throw AnalysisException(
+        "Unexpected value type of '$key' property of $context. "
+        // ignore: avoid_dynamic_calls
+        'Values must be ${_stringifyType(V)}, but ${_stringifyType(value)}.',
+      );
+    }
+
+    return MapEntry(key, value);
+  }
+}
+
+Map<K, V> _verifyMappingType<K, V>(
+  dynamic rawNode,
   String context,
+  MapEntry<K, V> Function(K, dynamic, String)? entryParser,
 ) {
-  final dynamic key = entry.key;
-  if (key is! K) {
-    throw ArgumentError(
-      'Unexpected key type of $context: '
+  if (rawNode is! Map) {
+    throw AnalysisException(
+      'Unexpected value type of $context. '
       // ignore: avoid_dynamic_calls
-      '${key.runtimeType}. Keys must be $K.',
+      'Value must be mapping of ${_stringifyType(K)} key and ${_stringifyType(V)} value, '
+      'but ${_stringifyType(rawNode)}.',
     );
   }
 
-  final dynamic value = entry.value;
+  final result = <K, V>{};
+  final realEntryParser = entryParser ?? _DefaultValueParser<K, V>()._parse;
 
-  if (value is! V) {
-    throw ArgumentError(
-      "Unexpected value type of '$key' $context: "
-      // ignore: avoid_dynamic_calls
-      '${value.runtimeType}. Values must be $V.',
-    );
+  for (final entry in rawNode.entries) {
+    final dynamic key = entry.key;
+    if (key is! K) {
+      throw AnalysisException(
+        "Unexpected key type of '$key' property of $context. "
+        // ignore: avoid_dynamic_calls
+        'Keys must be ${_stringifyType(K)}, but ${_stringifyType(key)}.',
+      );
+    }
+
+    final parsedEntry = realEntryParser(key, entry.value, context);
+    result[parsedEntry.key] = parsedEntry.value;
   }
 
-  return MapEntry<K, V>(key, value);
+  return result;
 }
 
 /// Represents `named_templates` configuration property.
@@ -217,7 +376,7 @@ class NamedTemplates {
   /// Gets a specified template.
   ///
   /// This method returns `null` when the specified template is not defined.
-  NamedTemplate? get(String name) => _namedTemplates[name];
+  NamedTemplate? operator [](String name) => _namedTemplates[name];
 }
 
 /// Represents `argument_templates` configuration property.
@@ -269,39 +428,43 @@ class NamedTemplate {
   ///
   /// For any type error, [ArgumentError] will be thrown.
   static MapEntry<String, NamedTemplate> parse(
-    MapEntry<String, dynamic> rawNamedTemplate,
+    String key,
+    dynamic simpleOrStructuredTemplate,
+    String context,
   ) {
-    final dynamic simpleOrStructuredTemplate = rawNamedTemplate.value;
     if (simpleOrStructuredTemplate is String) {
       return MapEntry(
-        rawNamedTemplate.key.toUpperCase(),
+        key.toUpperCase(),
         NamedTemplate(
           simpleOrStructuredTemplate,
           [],
         ),
       );
     } else if (simpleOrStructuredTemplate is Map) {
-      final dynamic templateValue = simpleOrStructuredTemplate['template'];
+      final dynamic templateValue = simpleOrStructuredTemplate[_templateKey];
       if (templateValue is String) {
         return MapEntry(
-          rawNamedTemplate.key.toUpperCase(),
+          key.toUpperCase(),
           NamedTemplate(
             templateValue,
-            TemplateImports.parse(simpleOrStructuredTemplate['imports']),
+            TemplateImports.parse(
+              simpleOrStructuredTemplate['$_importsKey'],
+              "'$_importsKey' property of $context",
+            ),
           ),
         );
       }
 
-      throw ArgumentError(
-        "'${rawNamedTemplate.key}' property of 'named_templates' must have "
-        "String 'template' property but the type of 'template' is: "
-        '${templateValue.runtimeType}.',
+      throw AnalysisException(
+        "'$key' property of $context must have "
+        "String '$_templateKey' property, but the type of '$_templateKey' is "
+        '${_stringifyType(templateValue)}.',
       );
     } else {
-      throw ArgumentError(
-        "Unexpected value type of '${rawNamedTemplate.key}' property of "
-        "'named_templates': ${simpleOrStructuredTemplate.runtimeType}. "
-        'Value must be String or object.',
+      throw AnalysisException(
+        "Unexpected value type of '${key}' property of $context. "
+        'Value must be String or mapping, '
+        'but ${_stringifyType(simpleOrStructuredTemplate)}.',
       );
     }
   }
@@ -336,13 +499,13 @@ class ArgumentTemplate {
   ///
   /// For any type error, [ArgumentError] will be thrown.
   static MapEntry<String, ArgumentTemplate> parse(
-    MapEntry<String, dynamic> rawArgumentTemplate,
+    String key,
+    dynamic simpleOrStructuredTemplate,
     String context,
   ) {
-    final dynamic simpleOrStructuredTemplate = rawArgumentTemplate.value;
     if (simpleOrStructuredTemplate is String) {
       return MapEntry(
-        rawArgumentTemplate.key,
+        key,
         ArgumentTemplate(
           simpleOrStructuredTemplate,
           null,
@@ -351,41 +514,47 @@ class ArgumentTemplate {
       );
     } else if (simpleOrStructuredTemplate is Map) {
       final dynamic itemTemplateValue =
-          simpleOrStructuredTemplate['item_template'];
+          simpleOrStructuredTemplate[_itemTemplateKey];
       if (itemTemplateValue is String) {
         return MapEntry(
-          rawArgumentTemplate.key,
+          key,
           ArgumentTemplate(
             null,
             itemTemplateValue,
-            TemplateImports.parse(simpleOrStructuredTemplate['imports']),
+            TemplateImports.parse(
+              simpleOrStructuredTemplate[_importsKey],
+              "'$_importsKey' property of '$key' property of $context",
+            ),
           ),
         );
       }
 
-      final dynamic templateValue = simpleOrStructuredTemplate['template'];
+      final dynamic templateValue = simpleOrStructuredTemplate[_templateKey];
       if (templateValue is String) {
         return MapEntry(
-          rawArgumentTemplate.key,
+          key,
           ArgumentTemplate(
             templateValue,
             null,
-            TemplateImports.parse(simpleOrStructuredTemplate['imports']),
+            TemplateImports.parse(
+              simpleOrStructuredTemplate[_importsKey],
+              "'$_importsKey' property of '$key' property of $context",
+            ),
           ),
         );
       }
 
-      throw ArgumentError(
-        "'${rawArgumentTemplate.key}' property of '$context' property of"
-        "'argument_templates' must have String 'template' or 'item_template' "
-        "property but the type of 'template' is: ${templateValue.runtimeType}, "
-        "and the type of 'item_template' is: ${itemTemplateValue.runtimeType}.",
+      throw AnalysisException(
+        "'$key' property of $context must have "
+        "string '$_templateKey' or '$_itemTemplateKey' "
+        "property, but the type of '$_templateKey' is ${_stringifyType(templateValue)}, "
+        "and the type of '$_itemTemplateKey' is ${_stringifyType(itemTemplateValue)}.",
       );
     } else {
-      throw ArgumentError(
-        "Unexpected value type of '${rawArgumentTemplate.key}' property of "
-        "'argument_templates': ${simpleOrStructuredTemplate.runtimeType}. "
-        'Value must be String or object.',
+      throw AnalysisException(
+        "Unexpected value type of '$key' property of $context. "
+        'Value must be string or mapping, '
+        'but ${_stringifyType(simpleOrStructuredTemplate)}.',
       );
     }
   }
@@ -424,40 +593,42 @@ class TemplateImports {
   ///   `Type` and its values are treated as URI of packages, then the parsed
   ///   collection of their key-value pair is returned.
   /// * Otherwise, [ArgumentError] will be thrown.
-  static Iterable<TemplateImports> parse(dynamic imports) {
+  static Iterable<TemplateImports> parse(dynamic imports, String context) {
     if (imports == null) {
       return [];
     } else if (imports is String) {
       return [TemplateImports(imports, '', [])];
     } else if (imports is! Map) {
-      throw ArgumentError(
-        "Unexpected type of 'imports': ${imports.runtimeType}",
+      throw AnalysisException(
+        'Unexpected value type of $context. '
+        'Value must be string or mapping, but ${_stringifyType(imports)}.',
       );
     }
 
-    // ignore: omit_local_variable_types
-    final Map<String, Map<String, Set<String>>> foundImports = {};
+    final foundImports = <String, Map<String, Set<String>>>{};
 
     for (final typeMayBePrefixed in imports.keys) {
       if (typeMayBePrefixed is! String) {
-        throw ArgumentError(
-          "Unexpected property key type of 'imports': ${typeMayBePrefixed.runtimeType}",
+        throw AnalysisException(
+          "Unexpected key '$typeMayBePrefixed' type of $context. "
+          'Keys must be string, but ${_stringifyType(typeMayBePrefixed)}.',
         );
       }
 
       final dynamic mayBeUri = imports[typeMayBePrefixed];
       if (mayBeUri is! String) {
-        throw ArgumentError(
-          "Unexpected property value type of '$typeMayBePrefixed' property of "
-          "'imports': ${mayBeUri.runtimeType}",
+        throw AnalysisException(
+          "Unexpected value '$mayBeUri' type of '$typeMayBePrefixed' property of $context. "
+          'Values must be URI string, but ${_stringifyType(mayBeUri)}.',
         );
       }
 
       final matches =
           _prefixedTypePattern.allMatches(typeMayBePrefixed).toList();
       if (matches.isEmpty) {
-        throw ArgumentError(
-          "Unexpected property key format of 'imports': '$typeMayBePrefixed'",
+        throw AnalysisException(
+          'Unexpected key format of $context. '
+          "Keys must be '[{prefix}.]{typeName}', but '$typeMayBePrefixed'.",
         );
       }
 
@@ -479,4 +650,76 @@ class TemplateImports {
       );
     });
   }
+}
+
+/// Represents custom namings configuration.
+/// Custom namings handles identifier confliction.
+class CustomNamings {
+  final Map<String, PresenterCustomNamings> _customNamings;
+
+  /// Initializes a new [CustomNamings].
+  const CustomNamings(this._customNamings);
+
+  /// Gets a [PresenterCustomNamings] by presenter type name.
+  ///
+  /// If not configured for specified presenter, `null` will be returned.
+  PresenterCustomNamings? operator [](String presenterName) =>
+      _customNamings[presenterName];
+}
+
+/// Represents per presenter types custom namings.
+class PresenterCustomNamings {
+  static const _formPropertiesBuilderKey = 'form_properties_builder';
+
+  /// Custom naming configuration for typed form properties builder type.
+  ///
+  /// If not configured, `null` will be returned.
+  final FormPropertiesBuilderCustomNamings? formPropertiesBuilder;
+
+  PresenterCustomNamings._({
+    required this.formPropertiesBuilder,
+  });
+
+  /// Parses YAML node and creates [PresenterCustomNamings] instance.
+  factory PresenterCustomNamings.parse(
+    dynamic rawNode,
+    String context,
+  ) {
+    FormPropertiesBuilderCustomNamings? formPropertiesBuilder;
+
+    for (final entry
+        in _verifyMappingType<String, dynamic>(rawNode, context, null)
+            .entries) {
+      switch (entry.key) {
+        case _formPropertiesBuilderKey:
+          formPropertiesBuilder = FormPropertiesBuilderCustomNamings(
+            _verifyMappingType<String, String?>(
+              entry.value,
+              "'$_formPropertiesBuilderKey' property of $context",
+              null,
+            ),
+          );
+
+          break;
+      }
+    }
+
+    return PresenterCustomNamings._(
+      formPropertiesBuilder: formPropertiesBuilder,
+    );
+  }
+}
+
+/// Represents custom naming configuration for typed form properties builder type.
+class FormPropertiesBuilderCustomNamings {
+  final Map<String, String?> _customNamings;
+
+  /// Initializes a new [FormPropertiesBuilderCustomNamings] object
+  /// with string map, which has key for member identifier and value for
+  /// alternative custom name of it.
+  FormPropertiesBuilderCustomNamings(this._customNamings);
+
+  /// Gets a custom naming for `build` method.
+  /// If not configured, `null` will be returned.
+  String? get build => _customNamings['build'];
 }

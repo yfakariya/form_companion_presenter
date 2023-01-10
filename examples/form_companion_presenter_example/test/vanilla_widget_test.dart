@@ -10,6 +10,37 @@ import 'package:form_companion_presenter_examples/app.dart';
 import 'widget_test_helpers.dart';
 
 Future<void> main() async {
+  // For debugging
+  // loggerSink = (
+  //   name,
+  //   level,
+  //   message,
+  //   zone,
+  //   error,
+  //   stackTrace,
+  // ) {
+  //   String messageString;
+  //   if (message is String Function()) {
+  //     messageString = message();
+  //   } else if (message is String) {
+  //     messageString = message;
+  //   } else {
+  //     messageString = message?.toString() ?? '';
+  //   }
+
+  //   String errorString;
+  //   if (error != null) {
+  //     if (stackTrace != null) {
+  //       errorString = ' $error\n$stackTrace';
+  //     } else {
+  //       errorString = ' $error';
+  //     }
+  //   } else {
+  //     errorString = '';
+  //   }
+
+  //   print('[${level.name}] $name: $messageString$errorString');
+  // };
   await EasyLocalization.ensureInitialized();
 
   const fieldPredicate = formFieldPredicate;
@@ -33,6 +64,8 @@ Future<void> main() async {
           await tester.pumpWidget(const App());
           transitToScreen(page);
           await tester.pump();
+          // Additional wait for await in build()
+          await tester.pump();
 
           for (final fieldName in fieldValidationErrors.keys) {
             final field =
@@ -50,6 +83,8 @@ Future<void> main() async {
         (tester) async {
           await tester.pumpWidget(const App());
           transitToScreen(page);
+          await tester.pump();
+          // Additional wait for await in build()
           await tester.pump();
 
           final fieldState =
@@ -74,6 +109,8 @@ Future<void> main() async {
           };
           await tester.pumpWidget(const App());
           transitToScreen(page);
+          await tester.pump();
+          // Additional wait for await in build()
           await tester.pump();
 
           await tester.enterText(
@@ -103,6 +140,8 @@ Future<void> main() async {
           await tester.pumpWidget(const App());
           transitToScreen(page);
           await tester.pump();
+          // Additional wait for await in build()
+          await tester.pump();
 
           await tester.enterText(
             find.byWidget(
@@ -122,18 +161,17 @@ Future<void> main() async {
       testWidgets(
         'Async validation indicator is shown when async validation is in progress',
         (tester) async {
-          final completer = Completer<String?>();
-          await tester.pumpWidget(const App());
+          final completer = Completer<void>();
+          await tester.pumpWidget(
+            withDeterministicAsyncValidationFutureFactory(
+              completer,
+              const App(),
+            ),
+          );
           transitToScreen(page);
           await tester.pump();
-
-          setAsyncValidationFutureFactory(
-            tester,
-            (duration, validation) async {
-              await completer.future;
-              return validation();
-            },
-          );
+          // Additional wait for await in build()
+          await tester.pump();
 
           await tester.enterText(
             find.byWidget(
@@ -148,25 +186,24 @@ Future<void> main() async {
             shown: validationType.value != 'manual',
           );
 
-          completer.complete(null);
+          completer.complete();
         },
       );
 
       testWidgets(
         'Async validation indicator is disappered when async validation is completed',
         (tester) async {
-          final completer = Completer<String?>();
-          await tester.pumpWidget(const App());
+          final completer = Completer<void>();
+          await tester.pumpWidget(
+            withDeterministicAsyncValidationFutureFactory(
+              completer,
+              const App(),
+            ),
+          );
           transitToScreen(page);
           await tester.pump();
-
-          setAsyncValidationFutureFactory(
-            tester,
-            (duration, validation) async {
-              await completer.future;
-              return validation();
-            },
-          );
+          // Additional wait for await in build()
+          await tester.pump();
 
           await tester.enterText(
             find.byWidget(
@@ -176,7 +213,7 @@ Future<void> main() async {
           );
           await tester.pump();
 
-          completer.complete(null);
+          completer.complete();
 
           await tester.pump();
 
@@ -189,18 +226,17 @@ Future<void> main() async {
             ? 'Async validation disables submit button'
             : 'Async validation does not disable submit button even if it is invalid',
         (tester) async {
-          final completer = Completer<String?>();
-          await tester.pumpWidget(const App());
+          final completer = Completer<void>();
+          await tester.pumpWidget(
+            withDeterministicAsyncValidationFutureFactory(
+              completer,
+              const App(),
+            ),
+          );
           transitToScreen(page);
           await tester.pump();
-
-          setAsyncValidationFutureFactory(
-            tester,
-            (duration, validation) async {
-              await completer.future;
-              return validation();
-            },
-          );
+          // Additional wait for await in build()
+          await tester.pump();
 
           await tester.enterText(
             find.byWidget(
@@ -223,7 +259,7 @@ Future<void> main() async {
             enabled: validationType.value != 'bulkAuto',
           );
 
-          completer.complete(null);
+          completer.complete();
         },
       );
 
@@ -232,18 +268,17 @@ Future<void> main() async {
         testWidgets(
           'Submit button re-validates and shows validation error when any sync validation error exist',
           (tester) async {
-            final completer = Completer<String?>();
-            await tester.pumpWidget(const App());
+            final completer = Completer<void>();
+            await tester.pumpWidget(
+              withDeterministicAsyncValidationFutureFactory(
+                completer,
+                const App(),
+              ),
+            );
             transitToScreen(page);
             await tester.pump();
-
-            setAsyncValidationFutureFactory(
-              tester,
-              (duration, validation) async {
-                await completer.future;
-                return validation();
-              },
-            );
+            // Additional wait for await in build()
+            await tester.pump();
 
             await tester.enterText(
               find.byWidget(
@@ -257,7 +292,7 @@ Future<void> main() async {
 
             await tester.pump();
             await tester.tap(find.byType(ElevatedButton));
-            completer.complete(null);
+            completer.complete();
             await tester.pump();
 
             expect(
@@ -296,19 +331,17 @@ Future<void> main() async {
           testWidgets(
             'Input causes async validation and then ${pattern.description}',
             (tester) async {
-              final completer = Completer<String?>();
-              await tester.pumpWidget(const App());
+              final completer = Completer<void>();
+              await tester.pumpWidget(
+                withDeterministicAsyncValidationFutureFactory(
+                  completer,
+                  const App(),
+                ),
+              );
               transitToScreen(page);
               await tester.pump();
-
-              setAsyncValidationFutureFactory(
-                tester,
-                (duration, validation) async {
-                  await completer.future;
-                  final result = validation();
-                  return result;
-                },
-              );
+              // Additional wait for await in build()
+              await tester.pump();
 
               await tester.enterText(
                 find.byWidget(
@@ -376,19 +409,21 @@ Future<void> main() async {
         testWidgets(
           'Submit button waits for async validation completion and then ${pattern.description}',
           (tester) async {
-            var completer = Completer<String?>();
-            await tester.pumpWidget(const App());
+            var completer = Completer<void>();
+            await tester.pumpWidget(
+              withAsyncValidationFutureFactory(
+                completer,
+                const App(),
+                (duration, validation) async {
+                  await completer.future;
+                  return validation();
+                },
+              ),
+            );
             transitToScreen(page);
             await tester.pump();
-
-            setAsyncValidationFutureFactory(
-              tester,
-              (duration, validation) async {
-                await completer.future;
-                final result = validation();
-                return result;
-              },
-            );
+            // Additional wait for await in build()
+            await tester.pump();
 
             await tester.enterText(
               find.byWidget(
@@ -422,14 +457,16 @@ Future<void> main() async {
 
             if (validationType.value == 'bulkAuto') {
               // Recycle completer for async validation control
-              completer = Completer<String?>();
+              completer = Completer<void>();
             }
 
             await tester.tap(find.byType(ElevatedButton));
 
-            completer.complete(null);
+            completer.complete();
 
             // Do async validation.
+            await tester.pump();
+            await tester.pump();
             await tester.pump();
 
             await pattern.verifySubmitResult<dynamic>(
@@ -465,19 +502,17 @@ Future<void> main() async {
           testWidgets(
             'Submit button waits for async validation completion when already in-progress and then ${pattern.description}',
             (tester) async {
-              final completer = Completer<String?>();
-              await tester.pumpWidget(const App());
+              final completer = Completer<void>();
+              await tester.pumpWidget(
+                withDeterministicAsyncValidationFutureFactory(
+                  completer,
+                  const App(),
+                ),
+              );
               transitToScreen(page);
               await tester.pump();
-
-              setAsyncValidationFutureFactory(
-                tester,
-                (duration, validation) async {
-                  await completer.future;
-                  final result = validation();
-                  return result;
-                },
-              );
+              // Additional wait for await in build()
+              await tester.pump();
 
               await tester.enterText(
                 find.byWidget(
@@ -501,7 +536,7 @@ Future<void> main() async {
 
               await tester.tap(find.byType(ElevatedButton));
 
-              completer.complete(null);
+              completer.complete();
 
               // Do async validation.
               await tester.pump();

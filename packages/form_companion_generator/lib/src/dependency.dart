@@ -1,18 +1,14 @@
 // See LICENCE file in the root.
 
-import 'dart:async';
-
 import 'package:analyzer/dart/ast/ast.dart';
-import 'package:analyzer/dart/ast/token.dart';
-import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:analyzer/exception/exception.dart';
 import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
 
-import 'model.dart' show GenericType;
-import 'node_provider.dart';
+import 'model.dart' show GenericType, ParameterInfo;
+import 'utilities.dart';
 
 /// Represents library import.
 @sealed
@@ -95,12 +91,11 @@ class LibraryImport {
   }
 }
 
-/// A visitor for [AstNode] tree to collect dependent libraries.
+/// Implements collection of dependent libraries.
 @sealed
-class DependentLibraryCollector extends RecursiveAstVisitor<void> {
+class DependentLibraryCollector {
   static final _dartCoreLibraryId = 'dart:core';
 
-  final NodeProvider _nodeProvider;
   final List<LibraryElement> _allLibraries;
   final Logger _logger;
 
@@ -120,14 +115,11 @@ class DependentLibraryCollector extends RecursiveAstVisitor<void> {
   /// Collected information as unordered collection of [LibraryElement].
   Iterable<LibraryImport> get imports => _imports.values;
 
-  final List<Future<void>> _pendingAsyncOperations = [];
-
   /// Initializes a new [DependentLibraryCollector] instance.
   ///
   /// [presenterLibrary] is the library itself to be scanned.
   /// References to this library will not be collected.
   DependentLibraryCollector(
-    this._nodeProvider,
     this._allLibraries,
     this._logger,
     LibraryElement presenterLibrary,
@@ -135,16 +127,17 @@ class DependentLibraryCollector extends RecursiveAstVisitor<void> {
     for (final import in presenterLibrary.libraryImports) {
       final importedLibraryIdentifier = import.importedLibrary?.identifier;
       final importUri = import.uri;
-      if (importUri is! DirectiveUriWithSource) {
-        throw Exception(
-          'Unexpected import directive : ${importUri.runtimeType}',
-        );
-      }
-
-      if (importedLibraryIdentifier != null &&
-          importUri.source.shortName != importedLibraryIdentifier) {
-        _relativeImportIdentityMap[importedLibraryIdentifier] =
-            importUri.relativeUriString;
+      // Make map to resolve libraries as relative uri like '../x.dart'
+      // It is OK to ignore importUri other than DirectiveUriWithSource
+      // because they should be imports which are not specified with relative
+      // uri even if they look like. For example, 'dart:ui' is relative URI
+      // technically, but it is just an identifier, not a locator.
+      if (importUri is DirectiveUriWithSource) {
+        if (importedLibraryIdentifier != null &&
+            importUri.source.shortName != importedLibraryIdentifier) {
+          _relativeImportIdentityMap[importedLibraryIdentifier] =
+              importUri.relativeUriString;
+        }
       }
     }
 
@@ -160,35 +153,24 @@ class DependentLibraryCollector extends RecursiveAstVisitor<void> {
   /// which will be traversed by this visitor.
   /// [warnings] are list to record warnings found in new session.
   void reset(InterfaceElement contextClass, List<String> warnings) {
-    // check endAsync() has been called.
-    assert(_pendingAsyncOperations.isEmpty);
     _contextClass = contextClass;
     _warnings = warnings;
   }
 
-  /// Bookkeeps internal pending asynchronous information records and
-  /// returns [Completer] to notify completion to [endAsync] caller.
-  Completer<void> _beginAsync() {
-    final completer = Completer<void>();
-    _pendingAsyncOperations.add(completer.future);
-    return completer;
-  }
-
-  /// Awaits pending asynchronous operations.
-  Future<void> endAsync() async {
-    await Future.wait(_pendingAsyncOperations);
-    _pendingAsyncOperations.clear();
-  }
-
-  LibraryImport? _getLibraryImportEntry(Element element) {
-    assert(element.library != null);
-
-    final library = element.library!;
+  LibraryImport? _getLibraryImportEntry(Element? element) {
+    // HACK: workaround for dart:ui
+    // Analyzer 5.x cannot resolve dart:ui, the reason is not known but
+    // it is not core library from Dart SDK perspective but it has "relative" UI
+    // so analyzer does not resolve it.
+    // This is just a workaround.
+    final libraryIdentifier = element?.library?.identifier ?? 'dart:ui';
+    final librarySourceFullName =
+        element?.library?.source.fullName ?? 'dart:ui';
     return _getLibraryImportEntryDirect(
-      library.identifier,
+      libraryIdentifier,
       () => _findLogicalLibraryId(
-        library.identifier,
-        library.source.fullName,
+        libraryIdentifier,
+        librarySourceFullName,
         element,
       ),
     );
@@ -233,7 +215,7 @@ class DependentLibraryCollector extends RecursiveAstVisitor<void> {
   String _findLogicalLibraryId(
     String sourceLibraryId,
     String sourceLibraryLocation,
-    Element targetElement,
+    Element? targetElement,
   ) {
     final match = _src.firstMatch(sourceLibraryId);
     if (match == null) {
@@ -287,25 +269,27 @@ class DependentLibraryCollector extends RecursiveAstVisitor<void> {
 
   void _processTypeAnnotation(TypeAnnotation type) {
     if (type is NamedType) {
-      // Calls override
-      visitNamedType(type);
+      _handleNamedType(type);
     } else if (type is GenericFunctionType) {
       // Delegates super class implementation,
       // it should call visitNamedType() eventually.
-      visitGenericFunctionType(type);
+      _handleGenericFunctionType(type);
     } else {
-      throw Exception("Type of '$type' (${type.runtimeType}) is unexpected.");
+      throw AnalysisException(
+        "Type of '$type' (${type.runtimeType}) is unexpected "
+        'at ${getNodeLocation(type, _contextClass)}',
+      );
     }
   }
 
   /// Records import for specified [Identifier] which is imported from
   /// the library which declares [holderElement].
-  void recordTypeId(Element holderElement, Identifier id) =>
+  void recordTypeId(Element? holderElement, Identifier id) =>
       _getLibraryImportEntry(holderElement)?.addType(id);
 
   /// Records import for specified non-qualified [typeName] which is imported from
   /// the library which declares [holderElement].
-  void recordTypeName(Element holderElement, String typeName) =>
+  void recordTypeName(Element? holderElement, String typeName) =>
       _getLibraryImportEntry(holderElement)?.addTypeName(typeName);
 
   /// Records import for specified [Identifier] which is imported from
@@ -337,161 +321,120 @@ class DependentLibraryCollector extends RecursiveAstVisitor<void> {
       _getLibraryImportEntryDirect(libraryIdentifier, null)
           ?.markImportAsPrefixed(libraryPrefix);
 
-  Future<AstNode> _beginGetElementDeclaration(String fieldName) async {
-    InterfaceElement? targetClass = _contextClass;
-    while (targetClass != null) {
-      final field = targetClass.getField(fieldName);
-      if (field != null) {
-        return _nodeProvider.getElementDeclarationAsync(field);
+  /// Collects depencendies from specified [ParameterInfo].
+  void collectDependencyForParameter(ParameterInfo parameter) {
+    if (parameter.typeAnnotation != null) {
+      // If the node has typeAnnotation, use it because AST node has
+      // package prefix.
+      _processTypeAnnotation(parameter.typeAnnotation!);
+    } else {
+      // Otherwise, use element instead of AST node.
+      _processType(parameter.type);
+    }
+
+    // Handle default value of the parameter.
+    final node = parameter.node;
+    if (node is DefaultFormalParameter && node.defaultValue != null) {
+      _handleExpression(node.declaredElement, node.defaultValue!);
+    }
+  }
+
+  void _handleExpression(Element? element, Expression expression) {
+    if (expression is Literal) {
+      // Nothing to do
+      return;
+    } else if (expression is SimpleIdentifier) {
+      _logger.finer(
+        'Identifier $expression should be constant. Element is ${element}.',
+      );
+      recordTypeId(
+        expression.staticType?.element ?? element!,
+        expression,
+      );
+    } else if (expression is PrefixedIdentifier) {
+      if (expression.staticType != null) {
+        if (!isTypeName(expression.prefix.name)) {
+          _logger.finer(
+            "Identifier '$expression' should be unresolved prefixed type. "
+            "Element is '${expression.staticElement}' in '$element', "
+            'type is ${expression.staticType}.',
+          );
+
+          // Failed to resolve prefixed type.
+          recordTypeId(expression.staticElement, expression);
+        } else {
+          _logger.finer(
+            "Identifier '$expression' should be static or enum member reference. "
+            "Element is '${expression.staticElement}' in '$element', "
+            'type is ${expression.staticType}.',
+          );
+
+          // Prefix is type name of static const member reference
+          // or enum member reference.
+          // So type ID is just prefix.
+          // Note that prefix.name does not match to static type name
+          // for static constants like 'Foos.bar' like following:
+          // class Foos { const static final Foo bar = const Foo(...); }
+          // So, this should be in 'else' clause rather than 'if' clause.
+          recordTypeId(expression.staticElement, expression.prefix);
+        }
+      } else if (expression.staticElement != null) {
+        final typeElement = expression.staticElement!;
+        if (expression.identifier.name == typeElement.name) {
+          _logger.finer(
+            "Identifier '$expression' should be prefixed library and the type. "
+            "Element is '$typeElement'.",
+          );
+          // Prefix is library prefix,
+          // because lib.Type.member is interpreted as
+          // PropertyAcess(target: PrefixedIdentifier, propertyName: SimpleIdentifier)
+          // so identifier is type name.
+          // In addition, lib.FunctionAlias should be here.
+          recordTypeId(typeElement, expression);
+        }
       }
-
-      targetClass = targetClass.supertype?.element2;
-    }
-
-    throw Exception("Failed to get correspond field '$fieldName' for parameter "
-        'in $_contextClass class hierarchy.');
-  }
-
-  @override
-  void visitFieldFormalParameter(FieldFormalParameter node) {
-    super.visitFieldFormalParameter(node);
-    _visitFormalParameter(node.declaredElement, node.name, node.type);
-  }
-
-  @override
-  void visitSuperFormalParameter(SuperFormalParameter node) {
-    super.visitSuperFormalParameter(node);
-    _visitFormalParameter(node.declaredElement, node.name, node.type);
-  }
-
-  void _visitFormalParameter(
-    ParameterElement? element,
-    Token name,
-    TypeAnnotation? type,
-  ) {
-    if (type == null) {
-      // Process field here.
-      assert(
-        element is FieldFormalParameterElement ||
-            element is SuperFormalParameterElement,
-      );
-
-      // We must get field declaration to get declared type
-      // instead of resolved type here.
-      // For example, we want to get alias of function type.
-      final completer = _beginAsync();
-      unawaited(
-        _beginGetElementDeclaration(name.lexeme).then((field) {
-          try {
-            // Because we get node from FieldFormalParameterElement,
-            // so the node should be VariableDeclaration
-            // rather than FieldDeclaration which may contain multiple declarations.
-            assert(field is VariableDeclaration);
-            final declaration = field.parent! as VariableDeclarationList;
-            final fieldType = declaration.type;
-            if (fieldType != null) {
-              _processTypeAnnotation(fieldType);
-            } else {
-              // Like `var i = 0;` case, we use element here.
-              _processType(element!.type);
-            }
-          }
-          // ignore: avoid_catches_without_on_clauses
-          catch (e, s) {
-            completer.completeError(e, s);
-          } finally {
-            if (!completer.isCompleted) {
-              completer.complete();
-            }
-          }
-        }).catchError(
-          // ignore: avoid_types_on_closure_parameters
-          (Object e, StackTrace s) async {
-            if (!completer.isCompleted) {
-              completer.completeError(e, s);
-            }
-          },
-        ),
-      );
-    }
-  }
-
-  @override
-  void visitDefaultFormalParameter(DefaultFormalParameter node) {
-    super.visitDefaultFormalParameter(node);
-    final defaultValue = node.defaultValue;
-    if (defaultValue != null) {
-      defaultValue.accept(this);
-    }
-  }
-
-  @override
-  void visitSimpleIdentifier(SimpleIdentifier node) {
-    final type = node.staticType;
-    if (type != null) {
-      _logger.finer(
-        'Identifier $node should be constant. Element is ${node.staticElement}.',
-      );
-      recordTypeId(node.staticElement!, node);
-    }
-  }
-
-  @override
-  void visitPrefixedIdentifier(PrefixedIdentifier node) {
-    if (node.staticType != null) {
-      _logger.finer(
-        'Identifier $node should be static or enum member reference. '
-        'Element is ${node.staticElement}.',
-      );
-      // Prefix is type name of static const member reference
-      // or enum member reference.
-      // So type ID is just prefix.
-      // Note that prefix.name does not match to static type name
-      // for static constants like 'Foos.bar' like following:
-      // class Foos { const static final Foo bar = const Foo(...); }
-      // So, this should be in 'else' clause rather than 'if' clause.
-      recordTypeId(node.staticElement!, node.prefix);
-    } else if (node.staticElement != null) {
-      final element = node.staticElement!;
-      if (node.identifier.name == element.name) {
+    } else if (expression is PropertyAccess) {
+      final target = expression.target;
+      if (target != null) {
         _logger.finer(
-          'Identifier $node should be prefixed library and the type. '
-          'Element is $element.',
+          "Target '$target' of property access '$expression' may be type reference.",
         );
-        // Prefix is library prefix,
-        // because lib.Type.member is interpreted as
-        // PropertyAcess(target: PrefixedIdentifier, propertyName: SimpleIdentifier)
-        // so identifier is type name.
-        // In addition, lib.FunctionAlias should be here.
-        recordTypeId(element, node);
+        // target may be type, which is library prefixed or simple type name,
+        // so travarse them as PrefixedIdentifier or SimpleIdentifier above.
+        _handleExpression(element, target);
       }
-    }
-  }
-
-  @override
-  void visitPropertyAccess(PropertyAccess node) {
-    final target = node.target;
-    if (target != null) {
-      _logger.finer(
-        "Target '$target' of property access '$node' may be type reference.",
+    } else if (expression is InstanceCreationExpression) {
+      assert(expression.isConst);
+      _handleNamedType(expression.constructorName.type);
+      expression.argumentList.arguments.forEach(
+        (e) => _handleExpression(e.staticParameterElement, e),
       );
-      // target may be type, which is library prefixed or simple type name,
-      // so travarse them as PrefixedIdentifier or SimpleIdentifier above.
-      target.accept(this);
+    } else if (expression is NamedExpression) {
+      // Like 'hour: 12' of 'const TimeOfDay(hour: 12)'.
+      // Parse expression ('12' in above) recursively.
+      _handleExpression(expression.element, expression.expression);
+    } else {
+      throw AnalysisException(
+        "Unexpected parameter default value expression '$expression' "
+        'type: ${expression.runtimeType} '
+        'at ${getNodeLocation(expression, _contextClass)}',
+      );
     }
   }
 
-  @override
-  void visitNamedType(NamedType node) {
+  void _handleNamedType(NamedType node) {
     assert(node.type != null);
 
     final type = node.type!;
 
-    final element = type.element2 ?? type.alias?.element;
+    final element = type.element ?? type.alias?.element;
     if (type is NeverType ||
         type is VoidType ||
-        type is DynamicType ||
         type is TypeParameterType ||
+        // We cannot use 'type is DynamicType' here because some type in some
+        // library (like dart:ui in form field libraries) cannot be resolved
+        // correctly, so they are 'resolved' as dynamic type.
+        node.name.name == 'dynamic' ||
         element!.isPrivate) {
       // Above dart:core types, type parameter, private types never to be imported
       return;
@@ -500,18 +443,28 @@ class DependentLibraryCollector extends RecursiveAstVisitor<void> {
     recordTypeId(element, node.name);
 
     // Process type arguments
-    super.visitNamedType(node);
+    node.typeArguments?.arguments.forEach(_processTypeAnnotation);
+  }
+
+  void _handleGenericFunctionType(GenericFunctionType type) {
+    if (type.returnType != null) {
+      _processTypeAnnotation(type.returnType!);
+    }
+
+    // Ignore typeParameters here...
+
+    type.parameters.parameterElements.map((e) => e!.type).forEach(_processType);
   }
 
   /// Process specified [DartType] and records its and its type arguments imports.
   void _processType(DartType type) {
     if (type is InterfaceType) {
-      if (type.element2.isPrivate) {
+      if (type.element.isPrivate) {
         return;
       }
 
       recordTypeName(
-        type.element2,
+        type.element,
         type.getDisplayString(withNullability: false),
       );
       type.typeArguments.forEach(_processType);

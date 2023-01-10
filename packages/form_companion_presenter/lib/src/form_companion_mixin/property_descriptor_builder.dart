@@ -22,7 +22,8 @@ class PropertyDescriptorsBuilder {
     List<FormFieldValidatorFactory<F>>? validatorFactories,
     List<AsyncValidatorFactory<F>>? asyncValidatorFactories,
     P? initialValue,
-    Equality<F>? equality,
+    Equality<F>? fieldValueEquality,
+    Equality<P>? propertyValueEquality,
     ValueConverter<P, F>? valueConverter,
   }) {
     final descriptor = _PropertyDescriptorSource<P, F>(
@@ -30,23 +31,27 @@ class PropertyDescriptorsBuilder {
       validatorFactories: validatorFactories ?? [],
       asyncValidatorFactories: asyncValidatorFactories ?? [],
       initialValue: initialValue,
-      equality: equality,
+      fieldValueEquality: fieldValueEquality,
+      propertyValueEquality: propertyValueEquality,
       valueConverter: valueConverter,
     );
     final oldOrNew = _properties.putIfAbsent(name, () => descriptor);
     assert(oldOrNew == descriptor, '$name is already registered.');
   }
 
-  /// Build [PropertyDescriptor] which is connected with specified [presenter].
-  Map<String, PropertyDescriptor<Object, Object>> _build(
+  /// Build [FormProperties] which is connected with specified [presenter].
+  FormProperties _build(
     CompanionPresenterMixin presenter,
   ) =>
-      _properties.map(
-        (key, value) => MapEntry(
-          key,
-          // Delegates actual build to (typed) _PropertyDescriptorSource to
-          // handle generic type arguments of them.
-          value.build(presenter),
+      FormProperties._(
+        presenter,
+        _properties.map(
+          (key, value) => MapEntry(
+            key,
+            // Delegates actual build to (typed) _PropertyDescriptorSource to
+            // handle generic type arguments of them.
+            _PropertyState(value.build(presenter), value.initialValue),
+          ),
         ),
       );
 }
@@ -194,7 +199,8 @@ class _PropertyDescriptorSource<P extends Object, F extends Object> {
   final List<FormFieldValidatorFactory<F>> validatorFactories;
   final List<AsyncValidatorFactory<F>> asyncValidatorFactories;
   final P? initialValue;
-  final Equality<F>? equality;
+  final Equality<F>? fieldValueEquality;
+  final Equality<P>? propertyValueEquality;
   final ValueConverter<P, F>? valueConverter;
 
   _PropertyDescriptorSource({
@@ -202,7 +208,8 @@ class _PropertyDescriptorSource<P extends Object, F extends Object> {
     required this.validatorFactories,
     required this.asyncValidatorFactories,
     required this.initialValue,
-    required this.equality,
+    required this.fieldValueEquality,
+    required this.propertyValueEquality,
     required this.valueConverter,
   });
 
@@ -215,8 +222,9 @@ class _PropertyDescriptorSource<P extends Object, F extends Object> {
         presenter: presenter,
         validatorFactories: validatorFactories,
         asyncValidatorFactories: asyncValidatorFactories,
-        initialValue: initialValue,
-        equality: equality,
+        onPropertyChanged: presenter._onPropertyChanged,
+        fieldValueEquality: fieldValueEquality,
+        propertyValueEquality: propertyValueEquality,
         valueConverter: valueConverter,
       );
 }

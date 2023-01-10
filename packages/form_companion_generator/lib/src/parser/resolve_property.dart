@@ -195,7 +195,7 @@ PropertyDefinitionWithSource _createPropertyDefinition({
       }
     }
 
-    if (typeArgument3?.rawType.element2?.name == 'FormField') {
+    if (typeArgument3?.rawType.element?.name == 'FormField') {
       warnings.add(
         '`FormField<${typeArgument2.getDisplayString(withNullability: true)}>` '
         'is used for FormField type because type parameter `TField` is not '
@@ -268,7 +268,7 @@ List<GenericType> _mapTypeArguments(
       );
     } else if (invocationTypeArgument is TypeParameterType) {
       result.add(
-        typeArgumentsMap[invocationTypeArgument.element2.name]!,
+        typeArgumentsMap[invocationTypeArgument.element.name]!,
       );
     } else {
       throwNotSupportedYet(node: invocation, contextElement: current);
@@ -298,7 +298,7 @@ Iterable<GenericType> _resolveTypeArguments(
 ) sync* {
   for (final typeArgument in currentType.typeArguments) {
     if (typeArgument is TypeParameterType) {
-      yield typeArguments[typeArgument.element2.name]!;
+      yield typeArguments[typeArgument.element.name]!;
     } else if (typeArgument is InterfaceType) {
       yield GenericType.generic(
         typeArgument,

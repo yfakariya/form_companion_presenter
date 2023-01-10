@@ -17,7 +17,7 @@ Future<void> main() async {
         fieldValueType: 'F',
         property: 'property__',
         buildContext: 'context_',
-        presenter: 'presenter_',
+        presenterName: 'Test01',
         autovalidateMode: 'AutovalidateMode.onUserInteraction',
         namedTemplates: namedTemplates,
         itemValue: 'v',
@@ -30,11 +30,11 @@ Future<void> main() async {
       );
 
   const baseInput = '#PROPERTY_NAME#|#PROPERTY_VALUE_TYPE#|#FIELD_VALUE_TYPE#|'
-      '#PROPERTY#|#BUILD_CONTEXT#|#PRESENTER#|#AUTO_VALIDATE_MODE#|'
+      '#PROPERTY#|#BUILD_CONTEXT#|#PRESENTER_NAME#|#AUTO_VALIDATE_MODE#|'
       '#ITEM_VALUE#|#ITEM_VALUE_TYPE#|#ITEM_VALUE_STRING#|'
       '#ARGUMENT#|#PARAMETER_TYPE#|#DEFAULT_VALUE#';
 
-  const baseResult = 'prop|P|F|property__|context_|presenter_|'
+  const baseResult = 'prop|P|F|property__|context_|Test01|'
       'AutovalidateMode.onUserInteraction|v|E|v.toString()|arg|double|'
       "'default'";
 
@@ -85,7 +85,7 @@ Future<void> main() async {
               .having(
                 (p) => p.message,
                 'message',
-                'Unknown macro `#ANOTHER_TEMPLATE#` in CONTEXT, position: 212.',
+                'Unknown macro `#ANOTHER_TEMPLATE#` in CONTEXT, position: 217.',
               )
               .having(
                 (p) => p.todo,
@@ -111,7 +111,7 @@ Future<void> main() async {
               .having(
                 (p) => p.message,
                 'message',
-                'Unknown macro `#THE_TEMPLATE#` in CONTEXT, position: 212.',
+                'Unknown macro `#THE_TEMPLATE#` in CONTEXT, position: 217.',
               )
               .having(
                 (p) => p.todo,

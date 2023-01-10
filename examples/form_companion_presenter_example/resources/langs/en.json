@@ -5,6 +5,9 @@
         "accountHeader": "Your last input Account model:",
         "bookingHeader": "Your last input Booking model:"
     },
+    "simple": {
+        "title": "Simple Example"
+    },
     "manual": {
         "vanilla": {
             "title": "Manual validation, vanilla Form for Account"

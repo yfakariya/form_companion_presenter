@@ -2,7 +2,7 @@
 
 part of '../emitter.dart';
 
-const _presenterField = '_presenter';
+const _formPropertiesField = '_properties';
 const _defaultPropertyDescriptorVariable = 'property';
 const _alternativePropertyDescriptorVariable = 'property_';
 
@@ -20,13 +20,13 @@ Future<String> emitFieldFactoriesAsync(
 ${_emitFieldFactoriesClasses(nodeProvider, data, logger).join('\n')}
 
 /// Defines an extension property to get [\$${data.name}FieldFactory] from [${data.name}].
-extension \$${data.name}FieldFactoryExtension on ${data.name} {
+extension \$${data.name}FormPropertiesFieldFactoryExtension on \$${data.name}FormProperties {
   /// Gets a [FormField] factory.
   \$${data.name}FieldFactory get fields => \$${data.name}FieldFactory._(this);
-}
-''';
+}''';
 }
 
+/// Emits each form factory class lines.
 Iterable<String> _emitFieldFactoriesClasses(
   NodeProvider nodeProvider,
   PresenterDefinition data,
@@ -40,7 +40,7 @@ Iterable<String> _emitFieldFactoriesClasses(
   yield '/// Defines [FormField] factory methods for properties of [${data.name}].';
   yield 'class \$${data.name}FieldFactory {';
   if (hasSimpleProperties) {
-    yield '  final ${data.name} $_presenterField;';
+    yield '  final \$${data.name}FormProperties $_formPropertiesField;';
 
     // blank line
     yield '';
@@ -56,22 +56,22 @@ Iterable<String> _emitFieldFactoriesClasses(
 
   // constructor
   if (propertyWithComplexFormFields.isEmpty) {
-    yield '  \$${data.name}FieldFactory._(this.$_presenterField);';
+    yield '  \$${data.name}FieldFactory._(this.$_formPropertiesField);';
   } else {
-    yield '  \$${data.name}FieldFactory._(${data.name} presenter) :';
+    yield '  \$${data.name}FieldFactory._(\$${data.name}FormProperties properties) :';
     if (hasSimpleProperties) {
-      yield '    $_presenterField = presenter,';
+      yield '    $_formPropertiesField = properties,';
     }
 
     for (var i = 0; i < propertyWithComplexFormFields.length - 1; i++) {
       yield '    ${propertyWithComplexFormFields[i].name} = '
           '${_getNamedFormFactoryClassName(data.name, propertyWithComplexFormFields[i])}'
-          '(presenter),';
+          '(properties),';
     }
 
     yield '    ${propertyWithComplexFormFields.last.name} = '
         '${_getNamedFormFactoryClassName(data.name, propertyWithComplexFormFields.last)}'
-        '(presenter);';
+        '(properties);';
   }
 
   for (final property in data.properties.where((p) => p.isSimpleFormField)) {
@@ -94,12 +94,12 @@ Iterable<String> _emitFieldFactoriesClasses(
 
     yield '/// A [FormField] factory for `${property.name}` property of [${data.name}].';
     yield 'class $className {';
-    yield '  final ${data.name} $_presenterField;';
+    yield '  final \$${data.name}FormProperties $_formPropertiesField;';
 
     // blank line
     yield '';
 
-    yield '  $className._(this.$_presenterField);';
+    yield '  $className._(this.$_formPropertiesField);';
 
     if (property.warnings.isNotEmpty) {
       // For newline before warnings.
@@ -140,7 +140,7 @@ String _getNamedFormFactoryClassName(
   return '\$\$$className${pascalPropertyName}FieldFactory';
 }
 
-/// Emits a field factory method lines.
+/// Emits form field factory method lines.
 @visibleForTesting
 Iterable<String> emitFieldFactory(
   NodeProvider nodeProvider,
@@ -193,12 +193,12 @@ Iterable<String> _emitFieldFactoryCore(
     constructorName = formFieldType;
   } else {
     yield '  /// Gets a [FormField] for `${property.name}` property '
-        'with [$formFieldType.${constructor.constructor.name2?.lexeme ?? 'new'}] constructor.';
+        'with [$formFieldType.${constructor.constructor.name?.lexeme ?? 'new'}] constructor.';
     methodName =
-        constructor.constructor.name2?.lexeme ?? 'withDefaultConstructor';
-    constructorName = constructor.constructor.name2 == null
+        constructor.constructor.name?.lexeme ?? 'withDefaultConstructor';
+    constructorName = constructor.constructor.name == null
         ? formFieldType
-        : '$formFieldType.${constructor.constructor.name2?.lexeme}';
+        : '$formFieldType.${constructor.constructor.name?.lexeme}';
   }
 
   yield '  $formFieldType $methodName(';
@@ -211,12 +211,12 @@ Iterable<String> _emitFieldFactoryCore(
       ? _alternativePropertyDescriptorVariable
       : _defaultPropertyDescriptorVariable;
   yield '  }) {';
-  yield '    final $propertyDescriptorVariable = $_presenterField.${property.name};';
+  yield '    final $propertyDescriptorVariable = $_formPropertiesField.descriptors.${property.name};';
   yield '    return $constructorName(';
   yield* argumentHandler.emitAssignments(
     data: data,
     buildContext: 'context',
-    presenter: _presenterField,
+    presenterName: data.name,
     propertyDescriptor: propertyDescriptorVariable,
     itemValue: 'x',
     indent: '      ',

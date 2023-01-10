@@ -154,13 +154,20 @@ Widget _app(Widget child) => MaterialApp(home: Scaffold(body: child));
 
 class Presenter with CompanionPresenterMixin, FormBuilderCompanionMixin {
   final FutureOr<void> Function() _doSubmitCalled;
+  final void Function(OnPropertiesChangedEvent) _onPropertiesChangedCalled;
 
   Presenter({
     required PropertyDescriptorsBuilder properties,
     FutureOr<void> Function()? doSubmitCalled,
-  }) : _doSubmitCalled = (doSubmitCalled ?? () {}) {
+    void Function(OnPropertiesChangedEvent)? onPropertiesChangedCalled,
+  })  : _doSubmitCalled = (doSubmitCalled ?? () {}),
+        _onPropertiesChangedCalled = (onPropertiesChangedCalled ?? (_) {}) {
     initializeCompanionMixin(properties);
   }
+
+  @override
+  void onPropertiesChanged(OnPropertiesChangedEvent event) =>
+      _onPropertiesChangedCalled(event);
 
   @override
   FutureOr<void> doSubmit() => _doSubmitCalled();
@@ -249,7 +256,7 @@ void main() {
             autovalidateMode: AutovalidateMode.onUserInteraction,
             fieldName: 'prop',
             validatorFactory: (context) =>
-                presenter.getPropertyValidator('prop', context),
+                presenter.propertiesState.getFieldValidator('prop', context),
           ),
         ),
       );
@@ -296,7 +303,7 @@ void main() {
             fieldName: 'prop',
             autovalidateMode: AutovalidateMode.onUserInteraction,
             validatorFactory: (context) =>
-                presenter.getPropertyValidator('prop', context),
+                presenter.propertiesState.getFieldValidator('prop', context),
           ),
         ),
       );
@@ -345,7 +352,7 @@ void main() {
             autovalidateMode: AutovalidateMode.onUserInteraction,
             fieldName: 'prop',
             validatorFactory: (context) =>
-                presenter.getPropertyValidator('prop', context),
+                presenter.propertiesState.getFieldValidator('prop', context),
           ),
         ),
       );
@@ -419,7 +426,7 @@ void main() {
             fieldName: 'prop',
             autovalidateMode: AutovalidateMode.onUserInteraction,
             validatorFactory: (context) =>
-                presenter.getPropertyValidator('prop', context),
+                presenter.propertiesState.getFieldValidator('prop', context),
           ),
         ),
       );
@@ -585,7 +592,6 @@ void main() {
             name: 'target',
             validatorFactories: [
               (_) => (value) {
-                    print('Validate TARGET: $value (${value.runtimeType})');
                     targetValidatorCalled++;
                     return null;
                   },
@@ -601,7 +607,6 @@ void main() {
             name: 'another',
             validatorFactories: [
               (_) => (value) {
-                    print('Validate ANOTHER: $value (${value.runtimeType})');
                     anotherValidatorCalled++;
                     return null;
                   },
@@ -622,12 +627,14 @@ void main() {
             childrenFactory: (context) => [
               FormBuilderTextField(
                 name: 'target',
-                validator: presenter.getPropertyValidator('target', context),
+                validator: presenter.propertiesState
+                    .getFieldValidator('target', context),
                 autovalidateMode: AutovalidateMode.onUserInteraction,
               ),
               FormBuilderTextField(
                 name: 'another',
-                validator: presenter.getPropertyValidator('another', context),
+                validator: presenter.propertiesState
+                    .getFieldValidator('another', context),
                 autovalidateMode: AutovalidateMode.onUserInteraction,
               ),
             ],
@@ -772,7 +779,7 @@ void main() {
 
       presenter.saveFields(presenter.maybeFormStateOf(lastContext)!);
 
-      expect(presenter.getSavedPropertyValue('target'), equals('A'));
+      expect(presenter.propertiesState.getValue('target'), equals('A'));
     }
 
     testWidgets(

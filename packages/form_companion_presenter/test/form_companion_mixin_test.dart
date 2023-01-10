@@ -9,7 +9,6 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:form_companion_presenter/src/form_companion_mixin.dart';
 import 'package:form_companion_presenter/src/internal_utils.dart';
-import 'package:form_companion_presenter/src/presenter_extension.dart';
 
 Widget _buildChilren(
   BuildContext context, {
@@ -169,13 +168,20 @@ Widget _app(
 
 class Presenter with CompanionPresenterMixin, FormCompanionMixin {
   final FutureOr<void> Function() _doSubmitCalled;
+  final void Function(OnPropertiesChangedEvent) _onPropertiesChangedCalled;
 
   Presenter({
     required PropertyDescriptorsBuilder properties,
     FutureOr<void> Function()? doSubmitCalled,
-  }) : _doSubmitCalled = (doSubmitCalled ?? () {}) {
+    void Function(OnPropertiesChangedEvent)? onPropertiesChangedCalled,
+  })  : _doSubmitCalled = (doSubmitCalled ?? () {}),
+        _onPropertiesChangedCalled = (onPropertiesChangedCalled ?? (_) {}) {
     initializeCompanionMixin(properties);
   }
+
+  @override
+  void onPropertiesChanged(OnPropertiesChangedEvent event) =>
+      _onPropertiesChangedCalled(event);
 
   @override
   FutureOr<void> doSubmit() => _doSubmitCalled();
@@ -263,7 +269,7 @@ void main() {
             autovalidateMode: AutovalidateMode.onUserInteraction,
             fieldKeyFactory: (context) => presenter.getKey('prop', context),
             validatorFactory: (context) =>
-                presenter.getPropertyValidator('prop', context),
+                presenter.propertiesState.getFieldValidator('prop', context),
           ),
         ),
       );
@@ -310,7 +316,7 @@ void main() {
             fieldKeyFactory: (context) => presenter.getKey('prop', context),
             autovalidateMode: AutovalidateMode.onUserInteraction,
             validatorFactory: (context) =>
-                presenter.getPropertyValidator('prop', context),
+                presenter.propertiesState.getFieldValidator('prop', context),
           ),
         ),
       );
@@ -359,7 +365,7 @@ void main() {
             autovalidateMode: AutovalidateMode.onUserInteraction,
             fieldKeyFactory: (context) => presenter.getKey('prop', context),
             validatorFactory: (context) =>
-                presenter.getPropertyValidator('prop', context),
+                presenter.propertiesState.getFieldValidator('prop', context),
           ),
         ),
       );
@@ -431,7 +437,7 @@ void main() {
             },
             autovalidateMode: AutovalidateMode.onUserInteraction,
             validatorFactory: (context) =>
-                presenter.getPropertyValidator('prop', context),
+                presenter.propertiesState.getFieldValidator('prop', context),
           ),
         ),
       );
@@ -653,13 +659,15 @@ void main() {
               TextFormField(
                 key: presenter.getKey('target', context),
                 initialValue: 'target',
-                validator: presenter.getPropertyValidator('target', context),
+                validator: presenter.propertiesState
+                    .getFieldValidator('target', context),
                 autovalidateMode: AutovalidateMode.onUserInteraction,
               ),
               TextFormField(
                 key: presenter.getKey('another', context),
                 initialValue: 'another',
-                validator: presenter.getPropertyValidator('another', context),
+                validator: presenter.propertiesState
+                    .getFieldValidator('another', context),
                 autovalidateMode: AutovalidateMode.onUserInteraction,
               ),
             ],
@@ -804,7 +812,7 @@ void main() {
             autovalidateMode: AutovalidateMode.onUserInteraction,
             fieldKeyFactory: (context) => presenter.getKey('prop', context),
             validatorFactory: (context) =>
-                presenter.getPropertyValidator('prop', context),
+                presenter.propertiesState.getFieldValidator('prop', context),
           ),
         ),
       );
@@ -818,12 +826,18 @@ void main() {
       );
 
       await widgetTester.pump();
-      expect(presenter.getProperty('prop').hasPendingAsyncValidations, isTrue);
+      expect(
+        presenter.propertiesState.hasPendingAsyncValidations('prop'),
+        isTrue,
+      );
 
       validationStopper.complete();
       await validationCompletion.future;
 
-      expect(presenter.getProperty('prop').hasPendingAsyncValidations, isFalse);
+      expect(
+        presenter.propertiesState.hasPendingAsyncValidations('prop'),
+        isFalse,
+      );
 
       expect(key.currentState?.hasError, isFalse);
       expect(key.currentState?.errorText, isNull);
@@ -859,7 +873,7 @@ void main() {
             autovalidateMode: AutovalidateMode.onUserInteraction,
             fieldKeyFactory: (context) => presenter.getKey('prop', context),
             validatorFactory: (context) =>
-                presenter.getPropertyValidator('prop', context),
+                presenter.propertiesState.getFieldValidator('prop', context),
           ),
         ),
       );
@@ -872,12 +886,18 @@ void main() {
         'A',
       );
       await widgetTester.pump();
-      expect(presenter.getProperty('prop').hasPendingAsyncValidations, isTrue);
+      expect(
+        presenter.propertiesState.hasPendingAsyncValidations('prop'),
+        isTrue,
+      );
 
       validationStopper.complete();
       await validationCompletion.future;
 
-      expect(presenter.getProperty('prop').hasPendingAsyncValidations, isFalse);
+      expect(
+        presenter.propertiesState.hasPendingAsyncValidations('prop'),
+        isFalse,
+      );
 
       expect(key.currentState?.hasError, isFalse);
       expect(key.currentState?.errorText, isNull);
@@ -888,7 +908,10 @@ void main() {
       );
       await widgetTester.pump();
       // If we use cache, no pending async validation exist.
-      expect(presenter.getProperty('prop').hasPendingAsyncValidations, isFalse);
+      expect(
+        presenter.propertiesState.hasPendingAsyncValidations('prop'),
+        isFalse,
+      );
       expect(validatorCalled, equals(1));
     });
 
@@ -923,7 +946,7 @@ void main() {
             autovalidateMode: AutovalidateMode.onUserInteraction,
             fieldKeyFactory: (context) => presenter.getKey('prop', context),
             validatorFactory: (context) =>
-                presenter.getPropertyValidator('prop', context),
+                presenter.propertiesState.getFieldValidator('prop', context),
           ),
         ),
       );
@@ -932,12 +955,18 @@ void main() {
           as GlobalObjectKey<FormFieldState<dynamic>>;
 
       presenter.submit(lastContext)!();
-      expect(presenter.getProperty('prop').hasPendingAsyncValidations, isTrue);
+      expect(
+        presenter.propertiesState.hasPendingAsyncValidations('prop'),
+        isTrue,
+      );
 
       validationStopper.complete();
       await validationCompletion.future;
 
-      expect(presenter.getProperty('prop').hasPendingAsyncValidations, isFalse);
+      expect(
+        presenter.propertiesState.hasPendingAsyncValidations('prop'),
+        isFalse,
+      );
 
       expect(key.currentState?.hasError, isTrue);
       expect(
@@ -991,7 +1020,7 @@ void main() {
             autovalidateMode: AutovalidateMode.onUserInteraction,
             fieldKeyFactory: (context) => presenter.getKey('prop', context),
             validatorFactory: (context) =>
-                presenter.getPropertyValidator('prop', context),
+                presenter.propertiesState.getFieldValidator('prop', context),
           ),
         ),
       );
@@ -1006,12 +1035,18 @@ void main() {
         'A',
       );
       await widgetTester.pump();
-      expect(presenter.getProperty('prop').hasPendingAsyncValidations, isTrue);
+      expect(
+        presenter.propertiesState.hasPendingAsyncValidations('prop'),
+        isTrue,
+      );
 
       validationStoppers[0].complete();
       await validationCompletions[0].future;
 
-      expect(presenter.getProperty('prop').hasPendingAsyncValidations, isFalse);
+      expect(
+        presenter.propertiesState.hasPendingAsyncValidations('prop'),
+        isFalse,
+      );
 
       expect(key.currentState?.hasError, isFalse);
       expect(key.currentState?.errorText, isNull);
@@ -1019,12 +1054,18 @@ void main() {
       expect(validatorCalled, equals(1));
 
       submit!();
-      expect(presenter.getProperty('prop').hasPendingAsyncValidations, isTrue);
+      expect(
+        presenter.propertiesState.hasPendingAsyncValidations('prop'),
+        isTrue,
+      );
 
       validationStoppers[1].complete();
       await validationCompletions[1].future;
 
-      expect(presenter.getProperty('prop').hasPendingAsyncValidations, isFalse);
+      expect(
+        presenter.propertiesState.hasPendingAsyncValidations('prop'),
+        isFalse,
+      );
 
       // Failure is reported as error.
       expect(key.currentState?.hasError, isTrue);
@@ -1084,12 +1125,14 @@ void main() {
               childrenFactory: (context) => [
                 TextFormField(
                   key: presenter.getKey('prop1', context),
-                  validator: presenter.getPropertyValidator('prop1', context),
+                  validator: presenter.propertiesState
+                      .getFieldValidator('prop1', context),
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                 ),
                 TextFormField(
                   key: presenter.getKey('prop2', context),
-                  validator: presenter.getPropertyValidator('prop2', context),
+                  validator: presenter.propertiesState
+                      .getFieldValidator('prop2', context),
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                 ),
               ],
@@ -1106,7 +1149,7 @@ void main() {
         );
         await widgetTester.pump();
         expect(
-          presenter.getProperty('prop1').hasPendingAsyncValidations,
+          presenter.propertiesState.hasPendingAsyncValidations('prop1'),
           isTrue,
         );
 
@@ -1115,7 +1158,7 @@ void main() {
         // pump for async completion
         await widgetTester.pump();
         expect(
-          presenter.getProperty('prop1').hasPendingAsyncValidations,
+          presenter.propertiesState.hasPendingAsyncValidations('prop1'),
           isFalse,
         );
 
@@ -1191,13 +1234,15 @@ void main() {
               childrenFactory: (context) => [
                 TextFormField(
                   key: presenter.getKey('prop1', context),
-                  validator: presenter.getPropertyValidator('prop1', context),
+                  validator: presenter.propertiesState
+                      .getFieldValidator('prop1', context),
                   initialValue: 'prop1',
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                 ),
                 TextFormField(
                   key: presenter.getKey('prop2', context),
-                  validator: presenter.getPropertyValidator('prop2', context),
+                  validator: presenter.propertiesState
+                      .getFieldValidator('prop2', context),
                   initialValue: 'prop2',
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                 ),
@@ -1221,7 +1266,7 @@ void main() {
         );
         await widgetTester.pump();
         expect(
-          presenter.getProperty('prop1').hasPendingAsyncValidations,
+          presenter.propertiesState.hasPendingAsyncValidations('prop1'),
           isTrue,
         );
 
@@ -1229,7 +1274,7 @@ void main() {
         await validationCompletions1[0].future;
 
         expect(
-          presenter.getProperty('prop1').hasPendingAsyncValidations,
+          presenter.propertiesState.hasPendingAsyncValidations('prop1'),
           isFalse,
         );
 
@@ -1244,7 +1289,7 @@ void main() {
         );
         await widgetTester.pump();
         expect(
-          presenter.getProperty('prop2').hasPendingAsyncValidations,
+          presenter.propertiesState.hasPendingAsyncValidations('prop2'),
           isTrue,
         );
 
@@ -1252,7 +1297,7 @@ void main() {
         await validationCompletions2[0].future;
 
         expect(
-          presenter.getProperty('prop2').hasPendingAsyncValidations,
+          presenter.propertiesState.hasPendingAsyncValidations('prop2'),
           isFalse,
         );
 
@@ -1261,25 +1306,25 @@ void main() {
 
         submit!();
         expect(
-          presenter.getProperty('prop1').hasPendingAsyncValidations,
+          presenter.propertiesState.hasPendingAsyncValidations('prop1'),
           isTrue,
         );
         validationStoppers1[1].complete();
         await validationCompletions1[1].future;
 
         expect(
-          presenter.getProperty('prop2').hasPendingAsyncValidations,
+          presenter.propertiesState.hasPendingAsyncValidations('prop2'),
           isTrue,
         );
         validationStoppers2[1].complete();
         await validationCompletions2[1].future;
 
         expect(
-          presenter.getProperty('prop1').hasPendingAsyncValidations,
+          presenter.propertiesState.hasPendingAsyncValidations('prop1'),
           isFalse,
         );
         expect(
-          presenter.getProperty('prop2').hasPendingAsyncValidations,
+          presenter.propertiesState.hasPendingAsyncValidations('prop2'),
           isFalse,
         );
 
@@ -1340,7 +1385,7 @@ void main() {
             autovalidateMode: AutovalidateMode.onUserInteraction,
             fieldKeyFactory: (context) => presenter.getKey('prop', context),
             validatorFactory: (context) =>
-                presenter.getPropertyValidator('prop', context),
+                presenter.propertiesState.getFieldValidator('prop', context),
           ),
         ),
       );

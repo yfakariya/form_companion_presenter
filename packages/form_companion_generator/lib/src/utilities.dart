@@ -132,7 +132,7 @@ DartType? getCollectionElementType(DartType type, Element element) {
   }
 
   final library = element.library!;
-  if (type.element2 == library.typeProvider.iterableElement) {
+  if (type.element == library.typeProvider.iterableElement) {
     return type.typeArguments.single;
   }
 
@@ -144,4 +144,20 @@ DartType? getCollectionElementType(DartType type, Element element) {
   }
 
   return null;
+}
+
+class _CodePoint {
+  static const underScore = 0x5F;
+  static const asciiUpperA = 0x41;
+  static const asciiUpperZ = 0x5A;
+}
+
+/// Determines that whether specified identifier may be type name or not.
+bool isTypeName(String mayBeTypeName) {
+  final codePoint = (mayBeTypeName.length > 1 &&
+          mayBeTypeName.codeUnitAt(0) == _CodePoint.underScore)
+      ? mayBeTypeName.codeUnitAt(1)
+      : mayBeTypeName.codeUnitAt(0);
+  return codePoint >= _CodePoint.asciiUpperA &&
+      codePoint <= _CodePoint.asciiUpperZ;
 }

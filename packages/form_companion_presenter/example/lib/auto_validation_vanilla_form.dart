@@ -1,13 +1,12 @@
 // See LICENCE file in the root.
 
-import 'dart:async';
-
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:form_companion_presenter/async_validation_indicator.dart';
 import 'package:form_companion_presenter/form_companion_annotation.dart';
 import 'package:form_companion_presenter/form_companion_presenter.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'auto_validation_vanilla_form.fcp.dart';
 import 'l10n/locale_keys.g.dart';
@@ -15,7 +14,7 @@ import 'models.dart';
 import 'routes.dart';
 import 'screen.dart';
 import 'validators.dart';
-
+part 'auto_validation_vanilla_form.g.dart';
 //------------------------------------------------------------------------------
 // In this example, [AutovalidateMode] of the form is disabled (default value)
 // and [AutovalidateMode] of fields are set to [AutovalidateMode.onUserInteraction].
@@ -54,12 +53,19 @@ class AutoValidationVanillaFormAccountPage extends Screen {
 class _AutoValidationVanillaFormAccountPane extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final presenter = ref.watch(_presenter.notifier);
+    final presenter =
+        ref.watch(autoValidationVanillaFormAccountPresenterProvider.notifier);
+    final state = ref.watch(autoValidationVanillaFormAccountPresenterProvider);
+
+    if (state is! AsyncData<
+        $AutoValidationVanillaFormAccountPresenterFormProperties>) {
+      return Text('now loading...');
+    }
 
     return SingleChildScrollView(
       child: Column(
         children: [
-          presenter.fields.id(
+          state.value.fields.id(
             context,
             decoration: InputDecoration(
               labelText: LocaleKeys.id_label.tr(),
@@ -70,17 +76,17 @@ class _AutoValidationVanillaFormAccountPane extends ConsumerWidget {
               ),
             ),
           ),
-          presenter.fields.name(
+          state.value.fields.name(
             context,
           ),
-          presenter.fields.gender(
+          state.value.fields.gender(
             context,
           ),
-          presenter.fields.age(
+          state.value.fields.age(
             context,
           ),
           ElevatedButton(
-            onPressed: presenter.submit(context),
+            onPressed: state.value.submit(context),
             child: Text(
               LocaleKeys.submit.tr(),
             ),
@@ -93,20 +99,16 @@ class _AutoValidationVanillaFormAccountPane extends ConsumerWidget {
 
 /// Presenter which holds form properties.
 @formCompanion
-class AutoValidationVanillaFormAccountPresenter extends StateNotifier<Account>
+@riverpod
+class AutoValidationVanillaFormAccountPresenter
+    extends AutoDisposeAsyncNotifier<
+        $AutoValidationVanillaFormAccountPresenterFormProperties>
     with CompanionPresenterMixin, FormCompanionMixin {
-  final Reader _read;
-
-  /// Creates new [AutoValidationVanillaFormAccountPresenter].
-  AutoValidationVanillaFormAccountPresenter(
-    Account initialState,
-    this._read,
-  ) : super(initialState) {
+  AutoValidationVanillaFormAccountPresenter() {
     initializeCompanionMixin(
       PropertyDescriptorsBuilder()
         ..string(
           name: 'id',
-          initialValue: initialState.id,
           validatorFactories: [
             Validator.required,
             Validator.email,
@@ -117,18 +119,15 @@ class AutoValidationVanillaFormAccountPresenter extends StateNotifier<Account>
         )
         ..string(
           name: 'name',
-          initialValue: initialState.name,
           validatorFactories: [
             Validator.required,
           ],
         )
         ..enumerated<Gender>(
           name: 'gender',
-          initialValue: initialState.gender,
         )
         ..integerText(
           name: 'age',
-          initialValue: initialState.age,
           validatorFactories: [
             Validator.required,
             Validator.min(0),
@@ -138,12 +137,34 @@ class AutoValidationVanillaFormAccountPresenter extends StateNotifier<Account>
   }
 
   @override
+  FutureOr<$AutoValidationVanillaFormAccountPresenterFormProperties>
+      build() async {
+    final initialState = await ref.watch(accountStateProvider.future);
+
+    // Restore or set default for optional properties using cascading syntax.
+    final builder = properties.copyWith()
+      ..age(initialState.age)
+      ..gender(initialState.gender);
+
+    // Try to restore required fields only if stored.
+    if (initialState.id != null) {
+      builder.id(initialState.id!);
+    }
+
+    if (initialState.name != null) {
+      builder.name(initialState.name!);
+    }
+
+    return resetProperties(builder.build());
+  }
+
+  @override
   FutureOr<void> doSubmit() async {
     // Get saved values here to call business logic.
-    final id = this.id.value!;
-    final name = this.name.value!;
-    final gender = this.gender.value!;
-    final age = this.age.value!;
+    final id = properties.values.id;
+    final name = properties.values.name;
+    final gender = properties.values.gender;
+    final age = properties.values.age;
 
     // Call business logic.
     if (!(await doSubmitLogic(
@@ -155,8 +176,7 @@ class AutoValidationVanillaFormAccountPresenter extends StateNotifier<Account>
       return;
     }
 
-    // Set local state.
-    state = Account.registered(
+    final account = Account.registered(
       id: id,
       name: name,
       gender: gender,
@@ -165,7 +185,7 @@ class AutoValidationVanillaFormAccountPresenter extends StateNotifier<Account>
     );
 
     // Propagate to global state.
-    _read(account.state).state = state;
+    await ref.read(accountStateProvider.notifier).save(account);
     router.go('/');
   }
 
@@ -186,11 +206,3 @@ class AutoValidationVanillaFormAccountPresenter extends StateNotifier<Account>
     return true;
   }
 }
-
-final _presenter =
-    StateNotifierProvider<AutoValidationVanillaFormAccountPresenter, Account>(
-  (ref) => AutoValidationVanillaFormAccountPresenter(
-    ref.watch(account),
-    ref.read,
-  ),
-);
