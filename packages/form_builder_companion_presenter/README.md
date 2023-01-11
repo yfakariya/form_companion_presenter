@@ -28,20 +28,50 @@ Do you read this section in pub.dev? Check above and click "Installing" tab!
 
 ### Usage
 
-1. Declare presenter class. It is recommended to use [state notifier](https://pub.dev/packages/state_notifier) and [freezed](https://pub.dev/packages/freezed).
+#### Prerequisite
+
+Note that this example uses [riverpod](https://pub.dev/packages/riverpod) and [form_companion_generator](https://pub.dev/packages/form_companion_generator), and it is recommended approach.
+
+1. Ensure following packages are added to  `dependencies` of your `pubspec.yaml`
+
+* `riverpod`
+* `riverpod_annotation`
+* `form_builder_companion_builder`
+
+2. Ensure following packages are added to `dev_dependencies` of your `pubspec.yaml`
+
+* `build_runner`
+* `riverpod_generator`
+* `form_companion_generator`
+
+Example:
+
+```yaml
+dependencies:
+  riverpod: # put favorite version above 2.0.0 here
+  riverpod_annotation: # put favorite version here
+  form_builder_companion_presenter: # put favorite version here
+  ...
+
+dev_dependencies:
+  build_runner: # put favorite version above 2.0.0 here
+  riverpod_generator: # put favorite version here
+  form_companion_generator: # put favorite version here
+```
+
+#### Steps
+
+1. Declare presenter class.
 
 ```dart
-@freezed
-class MyViewState with _$MyViewState {
-  factory MyViewState({
-    required String name,
-    required int age,
-  }) = _MyViewState;
-}
+@riverpod
+@formCompanion
+class MyPresenter extends AutoDisposeAsyncNotifier<$MyPresenterFormProperties> {
+  MyPresenter() {
+  }
 
-class MyPresenter extends StateNotifier<MyViewState> {
-  MyPresenter(MyViewState initialState)
-    : super(initialState) {
+  @override
+  FutureOr<$MyPresenterFormProperties> build() async {
   }
 }
 ```
@@ -49,10 +79,15 @@ class MyPresenter extends StateNotifier<MyViewState> {
 2. Declare `with` in your presenter for `CompanionPresenterMixin` and `FormBuilderCompanionMixin` in this order:
 
 ```dart
-class MyPresenter extends StateNotifier<MyViewState>
+@riverpod
+@formCompanion
+class MyPresenter extends AutoDisposeAsyncNotifier<$MyPresenterFormProperties>
   with CompanionPresenterMixin, FormBuilderCompanionMixin {
-  MyPresenter(MyViewState initialState)
-    : super(initialState) {
+  MyPresenter() {
+  }
+
+  @override
+  FutureOr<$MyPresenterFormProperties> build() async {
   }
 }
 ```
@@ -60,8 +95,7 @@ class MyPresenter extends StateNotifier<MyViewState>
 3. Add `initializeCompanionMixin()` call with property declaration in the constructor of the presenter. Properties represents values of states which will be input via form fields. They have names and validators, and their type must be same as `FormBuilderField`'s type rather than type of state object property:
 
 ```dart
-  MyPresenter(MyViewState initialState)
-    : super(initialState) {
+  MyPresenter() {
       initializeCompanionMixin(
         PropertyDescriptorBuilder()
         ..add<String>(
@@ -81,9 +115,32 @@ class MyPresenter extends StateNotifier<MyViewState>
   }
 ```
 
-4. Implement `doSubmit` override method in your presenter. It handle 'submit' action of the entire form.
+4. Implement `build` to fetch upstream state and fill it as properties' initial state.
 
-TODO:
+```dart
+  @override
+  FutureOr<$MyPresenterFormProperties> build() async {
+    final upstreamState = await ref.watch(upstreamStateProvider.future);
+    return resetProperties(
+      (properties.copyWith()
+      ..name(upstreamState.name)
+      ..age(upstreamState.age)
+      ).build()
+    )
+  }
+```
+
+5. Add `part` directive near top of the file where `example.dart` is the file name of this code.
+
+```dart
+part 'example.fcp.dart';
+part 'example.g.dart';
+```
+
+6. Run `build_runner` (for example, run `flutter pub run build_runner build -d`). Provider global property and related types will be created by `riverpod_generator`, and `$MyPresenterFormStates` and related extensions will be created by `form_companion_generator`.
+
+7. Implement `doSubmit` override method in your presenter. It handle 'submit' action of the entire form.
+
 ```dart
   @override
   FutureOr<void> doSubmit(BuildContext context) async {
@@ -93,19 +150,11 @@ TODO:
     // Calls your business logic here. You can use await here.
     ...
     // Set state to expose for other components of your app.
-    state = MyState(name: name, age: age);
+    state = AsyncData(MyState(name: name, age: age));
   }
 ```
 
-5. Register your presenter to provider. This example uses [riverpod](https://pub.dev/packages/riverpod):
-
-```dart
-final _presenter = StateNotifierProvider<MyPresenter, MyViewState>(
-  (ref) => MyPresenter(),
-);
-```
-
-6. Create widget. We use `ConsumerWidget` here. Note that you must place `FormBuilder` and `FormBuilderFields` to separate widget:
+8. Create widget. We use `ConsumerWidget` here. Note that you must place `FormBuilder` and `FormBuilderFields` to separate widget:
 
 ```dart
 class MyForm extends StatelessWidget {
@@ -141,7 +190,7 @@ class MyFormFields extends ConsumerWidget {
 }
 ```
 
-7. Set `FormBuilder`'s `autovalidateMode`. `AutovalidateMode.onUserInteraction` is recommended.
+9. Set `FormBuilder`'s `autovalidateMode`. `AutovalidateMode.onUserInteraction` is recommended.
 
 ```dart
 class MyForm extends StatelessWidget {
@@ -166,7 +215,7 @@ If you set `AutovalidateMode.disabled` (default value), you can execute validati
   }
 ```
 
-8. Get presenter and state in your form field widget, and bind them to the field and 'submit' button:
+10. Get presenter and state in your form field widget, and bind them to the field and 'submit' button:
 
 ```dart
   @override
@@ -177,25 +226,54 @@ If you set `AutovalidateMode.disabled` (default value), you can execute validati
       children: [
         FormBuilderTextField(
           name: 'name',
-          initialValue: state.name,
-          validator: presenter.getPropertyValidator('name', context),
-          onSave: presenter.savePropertyValue('name'),
+          initialValue: state.getValue('name'),
+          validator: state.getFieldValidator('name', context),
+          onSave: state.savePropertyValue('name', context),
           decoration: InputDecoration(
             labelText: 'Name',
           ),
         ),
         FormBuilderTextField(
           name: 'age',
-          initialValue: state.age,
-          validator: presenter.getPropertyValidator('age', context),
-          onSave: presenter.savePropertyValue('age'),
+          initialValue: state.getValue('age'),
+          validator: state.getFieldValidator('age', context),
+          onSave: state.savePropertyValue('age', context),
           decoration: InputDecoration(
             labelText: 'Age',
           ),
         ),
         ElevatedButton(
           child: Text('Submit'),
-          onTap: presenter.submit(context),
+          onTap: state.submit(context),
+        ),
+      ],
+    );
+  }
+```
+
+**Or, thanks to [form_companion_genarator](https://pub.dev/packages/form_companion_genarator), you can avoid boilerplates as following!
+
+```dart
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(_presenter);
+    return Column(
+      children: [
+        state.fields.name(
+          context,
+          decoration: InputDecoration(
+            labelText: 'Name',
+          ),
+        ),
+        state.fields.age(
+          context,
+          decoration: InputDecoration(
+            labelText: 'Age',
+          ),
+        ),
+        ElevatedButton(
+          child: Text('Submit'),
+          onTap: state.submit(context),
         ),
       ],
     );
@@ -207,129 +285,6 @@ That's it!
 ### More examples?
 
 See [repository](https://github.com/yfakariya/form_companion_presenter/examples/). `*_form_builder_*.dart` files use `form_builder_companion_presenter`. Note that `*_vanilla_form_*.dart` files use [form_companion_presenter](https://pub.dev/packages/form_companion_presenter) instead.
-
-## Uses `form_companion_generator` to reduce boiler plate code
-
-You can use [form_companion_generator](../form_companion_generator/README.md) to reduce boiler plate code from previous examples.
-
-To use the generator, follow steps below (see [form_companion_generator docs](../form_companion_generator/README.md) for details):
-
-4. After step 3 of previous examples, qualify your presenter class with `@formCompanion` (or `@FormCompanion()`) annotation:
-
-```dart
-@formComapnion
-class MyPresenter extends StateNotifier<MyViewState>
-  with CompanionPresenterMixin, FormBuilderCompanionMixin {
-    ...
-```
-
-5. Add following packages to `dev_dependencies` of your `pubspec.yaml`
-
-* `build_runner`
-* `form_builder_companion_generator`
-
-6. (Optional) Add `build.yaml` in your project's package root (next to `pubspec.yaml`) and configure it (see [documentation of build_config](https://pub.dev/packages/build_config) and [form_companion_generator docs](../form_companion_generator/README.md) for details).
-
-7. Run `flutter pub run build_runner` in your project. Some `.fcp.dart` files will be generated.
-
-8. (Altered from step 4 of previous example ) Implement `doSubmit` override method in your presenter. It handle 'submit' action of the entire form. Note that you can use typed and named getters to access property values.
-
-```dart
-  @override
-  FutureOr<void> doSubmit(BuildContext context) async {
-    // Gets a validated input values
-    String name = this.name.value!;
-    int age = this.age.value!;
-    // Calls your business logic here. You can use await here.
-    ...
-    // Set state to expose for other components of your app.
-    state = MyState(name: name, age: age);
-  }
-```
-
-9. (Same as step 5 of previous example) Register your presenter to provider. This example uses [riverpod](https://pub.dev/packages/riverpod):
-
-```dart
-final _presenter = StateNotifierProvider<MyPresenter, MyViewState>(
-  (ref) => MyPresenter(),
-);
-```
-
-10. (Same as step 6 of previous example) Create widget. We use `ConsumerWidget` here. Note that you must place `Form` and `FormFields` to separate widget:
-
-```dart
-class MyForm extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) => Form(
-    child: MyFormFields(),
-  );
-}
-
-class MyFormFields extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Column(children: [
-      FormBuilderTextField(
-        decoration: InputDecoration(
-          labelText: 'Name',
-        ),
-      ),
-      FormBuilderTextField(
-        decoration: InputDecoration(
-          labelText: 'Age',
-        ),
-      ),
-      ElevatedButton(
-        child: Text('Submit'),
-      ),
-    ]);
-  }
-}
-```
-
-11. (Same as step 7 of previous example) Set `FormBuilder`'s `autovalidateMode`. `AutovalidateMode.onUserInteraction` is recommended.
-
-```dart
-class MyForm extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) => FormBuilder(
-    autovalidateMode: AutovalidateMode.onUserInteraction,
-    child: MyFormFields(),
-  );
-}
-```
-
-If you set `AutovalidateMode.disabled` (default value), you can execute validation in head of your `doSubmit()` as following:
-
-```dart
-  @override
-  FutureOr<void> doSubmit(BuildContext context) async{
-    if (!await validateAndSave(context)) {
-      return;
-    }
-
-    ..rest of code..
-  }
-```
-
-12. (Altered from step 8 of previous example) Get presenter and state in your form field widget, and bind them to the field and 'submit' button. Note that there are much less code than previous example:
-
-```dart
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final presenter = ref.watch(_presenter.notifier);
-    return Column(
-      children: [
-        presenter.fields.name(context),
-        presenter.fields.age(context),
-        ElevatedButton(
-          child: Text('Submit'),
-          onTap: presenter.submit(context),
-        ),
-      ],
-    );
-  }
-```
 
 ## Components
 
