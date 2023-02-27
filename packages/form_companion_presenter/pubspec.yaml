@@ -7,8 +7,10 @@ version: 0.3.0
 repository: https://github.com/yfakariya/form_companion_presenter
 
 environment:
-  sdk: ">=2.13.0 <3.0.0"
-  flutter: ">=1.17.0"
+  sdk: ">=2.19.0 <3.0.0"
+  # We use Form.maybeOf, which requries 3.7 and Form.of is changed with compatibility break.
+  # So, we cannot support before 3.7.
+  flutter: ">=3.7.0"
 
 dependencies:
   collection: ^1.15.0
@@ -17,7 +19,7 @@ dependencies:
   meta: ^1.3.0
 
 dev_dependencies:
-  flutter_lints: ^2.0.1
+  flutter_lints: ^2.0.0
   flutter_localizations:
     sdk: flutter
   flutter_test:

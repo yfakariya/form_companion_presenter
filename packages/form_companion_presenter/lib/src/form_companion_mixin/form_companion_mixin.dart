@@ -46,7 +46,7 @@ class _FormCompanionFeatures
   @override
   @nonVirtual
   FormStateAdapter? maybeFormStateOf(BuildContext context) {
-    final state = Form.of(context);
+    final state = Form.maybeOf(context);
     return state == null ? null : _FormStateAdapter(state, getLocale(context));
   }
 

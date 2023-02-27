@@ -456,7 +456,7 @@ Future<void> main() async {
             "import 'package:flutter/material.dart' show InputCounterWidgetBuilder, InputDecoration, TextFormField;",
             "import 'package:flutter/painting.dart' show EdgeInsets, StrutStyle, TextAlignVertical, TextStyle;",
             "import 'package:flutter/services.dart' show MaxLengthEnforcement, MouseCursor, SmartDashesType, SmartQuotesType, TextCapitalization, TextInputAction, TextInputFormatter, TextInputType;",
-            "import 'package:flutter/widgets.dart' show AutovalidateMode, BuildContext, FocusNode, Localizations, ScrollController, ScrollPhysics, TextEditingController, TextSelectionControls, ToolbarOptions;",
+            "import 'package:flutter/widgets.dart' show AutovalidateMode, BuildContext, EditableTextContextMenuBuilder, FocusNode, Localizations, ScrollController, ScrollPhysics, TapRegionCallback, TextEditingController, TextSelectionControls;",
             "import 'package:form_companion_presenter/form_companion_presenter.dart';",
             "import 'package:meta/meta.dart' show immutable, sealed;",
             '',
@@ -2226,7 +2226,6 @@ String textFormFieldFactory(
     TextAlignVertical? textAlignVertical,
     bool autofocus = false,
     bool readOnly = false,
-    ToolbarOptions? toolbarOptions,
     bool? showCursor,
     String obscuringCharacter = '•',
     bool obscureText = false,
@@ -2241,6 +2240,7 @@ String textFormFieldFactory(
     int? maxLength,
     ValueChanged<String>? onChanged,
     GestureTapCallback? onTap,
+    TapRegionCallback? onTapOutside,
     VoidCallback? onEditingComplete,
     ValueChanged<String>? onFieldSubmitted,
     List<TextInputFormatter>? inputFormatters,
@@ -2261,6 +2261,7 @@ String textFormFieldFactory(
     String? restorationId,
     bool enableIMEPersonalizedLearning = true,
     MouseCursor? mouseCursor,
+    EditableTextContextMenuBuilder? contextMenuBuilder,
   }) {
     final property = _properties.descriptors.$propertyName;
     return TextFormField(

@@ -2297,11 +2297,12 @@ final _expectedImports = {
     ExpectedImport(
       'package:flutter/widgets.dart',
       shows: [
+        'EditableTextContextMenuBuilder',
         'ScrollController',
         'ScrollPhysics',
+        'TapRegionCallback',
         'TextEditingController',
         'TextSelectionControls',
-        'ToolbarOptions',
       ],
     ),
   ]),
