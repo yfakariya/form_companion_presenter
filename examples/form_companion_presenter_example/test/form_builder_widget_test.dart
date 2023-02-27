@@ -10,6 +10,7 @@ import 'package:form_companion_presenter_examples/app.dart';
 import 'widget_test_helpers.dart';
 
 Future<void> main() async {
+  TestWidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
 
   const fieldPredicate = formBuilderFieldPredicate;

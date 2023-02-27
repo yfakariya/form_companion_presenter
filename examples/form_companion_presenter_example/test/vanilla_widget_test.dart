@@ -41,6 +41,7 @@ Future<void> main() async {
 
   //   print('[${level.name}] $name: $messageString$errorString');
   // };
+  TestWidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
 
   const fieldPredicate = formFieldPredicate;
