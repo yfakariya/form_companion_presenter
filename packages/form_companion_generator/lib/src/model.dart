@@ -76,6 +76,7 @@ class ParameterInfo {
       final base =
           await ParameterInfo.fromNodeAsync(nodeProvider, node.parameter);
       // But, use original DefaultFormalParameter for node for DependencyCollector.
+
       return ParameterInfo._(
         node,
         base.name,

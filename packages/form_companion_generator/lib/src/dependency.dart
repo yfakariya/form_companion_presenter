@@ -340,8 +340,8 @@ class DependentLibraryCollector {
   }
 
   void _handleExpression(Element? element, Expression expression) {
-    if (expression is Literal) {
-      // Nothing to do
+    if (expression is Literal || expression.staticType is FunctionType) {
+      // Nothing to do -- we do not have to import literals and function types.
       return;
     } else if (expression is SimpleIdentifier) {
       _logger.finer(

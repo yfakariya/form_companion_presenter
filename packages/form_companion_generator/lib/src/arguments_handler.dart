@@ -163,9 +163,15 @@ class ArgumentsHandler {
       return false;
     }
 
-    if (_templates.get(_formFieldType, parameter.name).itemTemplate != null &&
-        _itemValueType == null) {
+    final argumentTemplate = _templates.get(_formFieldType, parameter.name);
+    if (argumentTemplate.itemTemplate != null && _itemValueType == null) {
       // itemTemplate is specified for non-collection, non-enum, non-bool property/field type.
+      return false;
+    }
+
+    if (argumentTemplate.value == null &&
+        argumentTemplate.itemTemplate == null) {
+      // argumentTemplate is specified just for imports, so we should not change optionality.
       return false;
     }
 

@@ -2033,7 +2033,18 @@ Future<void> main() async {
     }) async {
       final config = Config(<String, dynamic>{
         'as_part': asPart,
-        'autovalidate_by_default': autovalidate
+        'autovalidate_by_default': autovalidate,
+        // required default config for test validation
+        'argument_templates': {
+          'TextFormField': {
+            'contextMenuBuilder': {
+              'imports': {
+                'AdaptiveTextSelectionToolbar': 'package:flutter/material.dart',
+                'EditableTextState': 'package:flutter/widgets.dart',
+              }
+            }
+          }
+        }
       });
       final type =
           findType(isFormBuilder ? 'FormBuilderPresenter' : 'FormPresenter');
@@ -2275,7 +2286,11 @@ final _expectedImports = {
     ),
     ExpectedImport(
       'package:flutter/material.dart',
-      shows: ['InputCounterWidgetBuilder', 'TextFormField'],
+      shows: [
+        'AdaptiveTextSelectionToolbar',
+        'InputCounterWidgetBuilder',
+        'TextFormField',
+      ],
     ),
     ExpectedImport(
       'package:flutter/painting.dart',
@@ -2298,6 +2313,7 @@ final _expectedImports = {
       'package:flutter/widgets.dart',
       shows: [
         'EditableTextContextMenuBuilder',
+        'EditableTextState',
         'ScrollController',
         'ScrollPhysics',
         'TapRegionCallback',

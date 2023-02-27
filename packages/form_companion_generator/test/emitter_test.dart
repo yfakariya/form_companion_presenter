@@ -453,10 +453,10 @@ Future<void> main() async {
             '',
             "import 'package:flutter/foundation.dart' show ValueChanged;",
             "import 'package:flutter/gestures.dart' show GestureTapCallback;",
-            "import 'package:flutter/material.dart' show InputCounterWidgetBuilder, InputDecoration, TextFormField;",
+            "import 'package:flutter/material.dart' show AdaptiveTextSelectionToolbar, InputCounterWidgetBuilder, InputDecoration, TextFormField;",
             "import 'package:flutter/painting.dart' show EdgeInsets, StrutStyle, TextAlignVertical, TextStyle;",
             "import 'package:flutter/services.dart' show MaxLengthEnforcement, MouseCursor, SmartDashesType, SmartQuotesType, TextCapitalization, TextInputAction, TextInputFormatter, TextInputType;",
-            "import 'package:flutter/widgets.dart' show AutovalidateMode, BuildContext, EditableTextContextMenuBuilder, FocusNode, Localizations, ScrollController, ScrollPhysics, TapRegionCallback, TextEditingController, TextSelectionControls;",
+            "import 'package:flutter/widgets.dart' show AutovalidateMode, BuildContext, EditableTextContextMenuBuilder, EditableTextState, FocusNode, Localizations, ScrollController, ScrollPhysics, TapRegionCallback, TextEditingController, TextSelectionControls;",
             "import 'package:form_companion_presenter/form_companion_presenter.dart';",
             "import 'package:meta/meta.dart' show immutable, sealed;",
             '',
@@ -734,7 +734,13 @@ Future<void> main() async {
       );
       await expectLater(
         await emitFieldFactoriesAsync(nodeProvider, data, _emptyConfig, logger),
-        fieldFactories('Test01', [textFormFieldFactory('prop')]),
+        fieldFactories(
+          'Test01',
+          [
+            textFormFieldFactory('prop'),
+            textFormFieldFunctionAuguments,
+          ],
+        ),
       );
     });
 
@@ -778,6 +784,7 @@ Future<void> main() async {
           [
             textFormFieldFactory('prop1'),
             dropdownButtonFieldFactory('prop2', 'bool', usesEnumName: true),
+            textFormFieldFunctionAuguments,
           ],
         ),
       );
@@ -1129,6 +1136,8 @@ class \$TestFieldFactory {
 ${textFormFieldFactory('prop1')}
 
 ${dropdownButtonFieldFactory('prop3', 'bool', usesEnumName: true)}
+
+$textFormFieldFunctionAuguments
 }
 
 /// A [FormField] factory for `p` property of [Test].
@@ -2261,7 +2270,7 @@ String textFormFieldFactory(
     String? restorationId,
     bool enableIMEPersonalizedLearning = true,
     MouseCursor? mouseCursor,
-    EditableTextContextMenuBuilder? contextMenuBuilder,
+    EditableTextContextMenuBuilder? contextMenuBuilder = _TextFormField_defaultContextMenuBuilder,
   }) {
     final property = _properties.descriptors.$propertyName;
     return TextFormField(
@@ -2319,6 +2328,9 @@ String textFormFieldFactory(
       mouseCursor: mouseCursor,
     );
   }''';
+
+const textFormFieldFunctionAuguments = '''
+  static Widget _TextFormField_defaultContextMenuBuilder(BuildContext context, EditableTextState editableTextState) {return AdaptiveTextSelectionToolbar.editableText(editableTextState: editableTextState);}''';
 
 String dropdownButtonFieldFactory(
   String propertyName,
