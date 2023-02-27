@@ -78,6 +78,7 @@ import 'package:flutter/widgets.dart'
     show
         AutovalidateMode,
         BuildContext,
+        EditableTextContextMenuBuilder,
         FocusNode,
         Icon,
         Localizations,
@@ -86,7 +87,7 @@ import 'package:flutter/widgets.dart'
         ScrollPhysics,
         Text,
         TextEditingController,
-        ToolbarOptions,
+        TextMagnifierConfiguration,
         TransitionBuilder,
         Widget;
 
@@ -1128,11 +1129,12 @@ class $ManualValidationFormBuilderBookingPresenterFieldFactory {
     ui.BoxWidthStyle selectionWidthStyle = ui.BoxWidthStyle.tight,
     SmartDashesType? smartDashesType,
     SmartQuotesType? smartQuotesType,
-    ToolbarOptions? toolbarOptions,
     ui.BoxHeightStyle selectionHeightStyle = ui.BoxHeightStyle.tight,
     Iterable<String>? autofillHints,
     String obscuringCharacter = '•',
     MouseCursor? mouseCursor,
+    EditableTextContextMenuBuilder? contextMenuBuilder,
+    TextMagnifierConfiguration? magnifierConfiguration,
   }) {
     final property = _properties.descriptors.donation;
     return FormBuilderTextField(
@@ -1189,11 +1191,12 @@ class $ManualValidationFormBuilderBookingPresenterFieldFactory {
       selectionWidthStyle: selectionWidthStyle,
       smartDashesType: smartDashesType,
       smartQuotesType: smartQuotesType,
-      toolbarOptions: toolbarOptions,
       selectionHeightStyle: selectionHeightStyle,
       autofillHints: autofillHints,
       obscuringCharacter: obscuringCharacter,
       mouseCursor: mouseCursor,
+      contextMenuBuilder: contextMenuBuilder,
+      magnifierConfiguration: magnifierConfiguration,
     );
   }
 
@@ -1246,11 +1249,12 @@ class $ManualValidationFormBuilderBookingPresenterFieldFactory {
     ui.BoxWidthStyle selectionWidthStyle = ui.BoxWidthStyle.tight,
     SmartDashesType? smartDashesType,
     SmartQuotesType? smartQuotesType,
-    ToolbarOptions? toolbarOptions,
     ui.BoxHeightStyle selectionHeightStyle = ui.BoxHeightStyle.tight,
     Iterable<String>? autofillHints,
     String obscuringCharacter = '•',
     MouseCursor? mouseCursor,
+    EditableTextContextMenuBuilder? contextMenuBuilder,
+    TextMagnifierConfiguration? magnifierConfiguration,
   }) {
     final property = _properties.descriptors.note;
     return FormBuilderTextField(
@@ -1307,11 +1311,12 @@ class $ManualValidationFormBuilderBookingPresenterFieldFactory {
       selectionWidthStyle: selectionWidthStyle,
       smartDashesType: smartDashesType,
       smartQuotesType: smartQuotesType,
-      toolbarOptions: toolbarOptions,
       selectionHeightStyle: selectionHeightStyle,
       autofillHints: autofillHints,
       obscuringCharacter: obscuringCharacter,
       mouseCursor: mouseCursor,
+      contextMenuBuilder: contextMenuBuilder,
+      magnifierConfiguration: magnifierConfiguration,
     );
   }
 }

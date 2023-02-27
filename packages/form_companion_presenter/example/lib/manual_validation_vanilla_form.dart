@@ -100,8 +100,7 @@ class _ManualValidationVanillaFormAccountPane extends ConsumerWidget {
 @FormCompanion(autovalidate: false)
 @riverpod
 class ManualValidationVanillaFormAccountPresenter
-    extends AutoDisposeAsyncNotifier<
-        $ManualValidationVanillaFormAccountPresenterFormProperties>
+    extends _$ManualValidationVanillaFormAccountPresenter
     with CompanionPresenterMixin, FormCompanionMixin {
   ManualValidationVanillaFormAccountPresenter() {
     initializeCompanionMixin(

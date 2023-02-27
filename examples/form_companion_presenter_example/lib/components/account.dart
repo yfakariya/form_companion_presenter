@@ -99,8 +99,7 @@ class _AccountPaneTemplate extends ConsumerWidget {
 /// Presenter which holds form properties.
 @formCompanion
 @riverpod
-class AccountPresenterTemplate
-    extends AutoDisposeAsyncNotifier<$AccountPresenterTemplateFormProperties>
+class AccountPresenterTemplate extends _$AccountPresenterTemplate
     with CompanionPresenterMixin, FormBuilderCompanionMixin {
   AccountPresenterTemplate() {
     initializeCompanionMixin(

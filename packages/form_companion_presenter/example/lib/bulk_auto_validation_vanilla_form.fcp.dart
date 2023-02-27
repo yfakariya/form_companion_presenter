@@ -26,6 +26,7 @@ import 'package:flutter/gestures.dart' show GestureTapCallback;
 
 import 'package:flutter/material.dart'
     show
+        AdaptiveTextSelectionToolbar,
         DropdownButtonBuilder,
         DropdownButtonFormField,
         DropdownMenuItem,
@@ -58,14 +59,16 @@ import 'package:flutter/widgets.dart'
     show
         AutovalidateMode,
         BuildContext,
+        EditableTextContextMenuBuilder,
+        EditableTextState,
         FocusNode,
         Localizations,
         ScrollController,
         ScrollPhysics,
+        TapRegionCallback,
         Text,
         TextEditingController,
         TextSelectionControls,
-        ToolbarOptions,
         Widget;
 
 import 'package:form_companion_presenter/form_companion_presenter.dart';
@@ -321,7 +324,6 @@ class $BulkAutoValidationVanillaFormAccountPresenterFieldFactory {
     TextAlignVertical? textAlignVertical,
     bool autofocus = false,
     bool readOnly = false,
-    ToolbarOptions? toolbarOptions,
     bool? showCursor,
     String obscuringCharacter = '•',
     bool obscureText = false,
@@ -336,6 +338,7 @@ class $BulkAutoValidationVanillaFormAccountPresenterFieldFactory {
     int? maxLength,
     ValueChanged<String>? onChanged,
     GestureTapCallback? onTap,
+    TapRegionCallback? onTapOutside,
     VoidCallback? onEditingComplete,
     ValueChanged<String>? onFieldSubmitted,
     List<TextInputFormatter>? inputFormatters,
@@ -356,6 +359,8 @@ class $BulkAutoValidationVanillaFormAccountPresenterFieldFactory {
     String? restorationId,
     bool enableIMEPersonalizedLearning = true,
     MouseCursor? mouseCursor,
+    EditableTextContextMenuBuilder? contextMenuBuilder =
+        _TextFormField_defaultContextMenuBuilder,
   }) {
     final property = _properties.descriptors.id;
     return TextFormField(
@@ -378,7 +383,6 @@ class $BulkAutoValidationVanillaFormAccountPresenterFieldFactory {
       textAlignVertical: textAlignVertical,
       autofocus: autofocus,
       readOnly: readOnly,
-      toolbarOptions: toolbarOptions,
       showCursor: showCursor,
       obscuringCharacter: obscuringCharacter,
       obscureText: obscureText,
@@ -393,6 +397,7 @@ class $BulkAutoValidationVanillaFormAccountPresenterFieldFactory {
       maxLength: maxLength,
       onChanged: onChanged,
       onTap: onTap,
+      onTapOutside: onTapOutside,
       onEditingComplete: onEditingComplete,
       onFieldSubmitted: onFieldSubmitted,
       onSaved: (v) => property.setFieldValue(
@@ -416,6 +421,7 @@ class $BulkAutoValidationVanillaFormAccountPresenterFieldFactory {
       restorationId: restorationId,
       enableIMEPersonalizedLearning: enableIMEPersonalizedLearning,
       mouseCursor: mouseCursor,
+      contextMenuBuilder: contextMenuBuilder,
     );
   }
 
@@ -435,7 +441,6 @@ class $BulkAutoValidationVanillaFormAccountPresenterFieldFactory {
     TextAlignVertical? textAlignVertical,
     bool autofocus = false,
     bool readOnly = false,
-    ToolbarOptions? toolbarOptions,
     bool? showCursor,
     String obscuringCharacter = '•',
     bool obscureText = false,
@@ -450,6 +455,7 @@ class $BulkAutoValidationVanillaFormAccountPresenterFieldFactory {
     int? maxLength,
     ValueChanged<String>? onChanged,
     GestureTapCallback? onTap,
+    TapRegionCallback? onTapOutside,
     VoidCallback? onEditingComplete,
     ValueChanged<String>? onFieldSubmitted,
     List<TextInputFormatter>? inputFormatters,
@@ -470,6 +476,8 @@ class $BulkAutoValidationVanillaFormAccountPresenterFieldFactory {
     String? restorationId,
     bool enableIMEPersonalizedLearning = true,
     MouseCursor? mouseCursor,
+    EditableTextContextMenuBuilder? contextMenuBuilder =
+        _TextFormField_defaultContextMenuBuilder,
   }) {
     final property = _properties.descriptors.name;
     return TextFormField(
@@ -492,7 +500,6 @@ class $BulkAutoValidationVanillaFormAccountPresenterFieldFactory {
       textAlignVertical: textAlignVertical,
       autofocus: autofocus,
       readOnly: readOnly,
-      toolbarOptions: toolbarOptions,
       showCursor: showCursor,
       obscuringCharacter: obscuringCharacter,
       obscureText: obscureText,
@@ -507,6 +514,7 @@ class $BulkAutoValidationVanillaFormAccountPresenterFieldFactory {
       maxLength: maxLength,
       onChanged: onChanged,
       onTap: onTap,
+      onTapOutside: onTapOutside,
       onEditingComplete: onEditingComplete,
       onFieldSubmitted: onFieldSubmitted,
       onSaved: (v) => property.setFieldValue(
@@ -530,6 +538,7 @@ class $BulkAutoValidationVanillaFormAccountPresenterFieldFactory {
       restorationId: restorationId,
       enableIMEPersonalizedLearning: enableIMEPersonalizedLearning,
       mouseCursor: mouseCursor,
+      contextMenuBuilder: contextMenuBuilder,
     );
   }
 
@@ -620,7 +629,6 @@ class $BulkAutoValidationVanillaFormAccountPresenterFieldFactory {
     TextAlignVertical? textAlignVertical,
     bool autofocus = false,
     bool readOnly = false,
-    ToolbarOptions? toolbarOptions,
     bool? showCursor,
     String obscuringCharacter = '•',
     bool obscureText = false,
@@ -635,6 +643,7 @@ class $BulkAutoValidationVanillaFormAccountPresenterFieldFactory {
     int? maxLength,
     ValueChanged<String>? onChanged,
     GestureTapCallback? onTap,
+    TapRegionCallback? onTapOutside,
     VoidCallback? onEditingComplete,
     ValueChanged<String>? onFieldSubmitted,
     List<TextInputFormatter>? inputFormatters,
@@ -655,6 +664,8 @@ class $BulkAutoValidationVanillaFormAccountPresenterFieldFactory {
     String? restorationId,
     bool enableIMEPersonalizedLearning = true,
     MouseCursor? mouseCursor,
+    EditableTextContextMenuBuilder? contextMenuBuilder =
+        _TextFormField_defaultContextMenuBuilder,
   }) {
     final property = _properties.descriptors.age;
     return TextFormField(
@@ -677,7 +688,6 @@ class $BulkAutoValidationVanillaFormAccountPresenterFieldFactory {
       textAlignVertical: textAlignVertical,
       autofocus: autofocus,
       readOnly: readOnly,
-      toolbarOptions: toolbarOptions,
       showCursor: showCursor,
       obscuringCharacter: obscuringCharacter,
       obscureText: obscureText,
@@ -692,6 +702,7 @@ class $BulkAutoValidationVanillaFormAccountPresenterFieldFactory {
       maxLength: maxLength,
       onChanged: onChanged,
       onTap: onTap,
+      onTapOutside: onTapOutside,
       onEditingComplete: onEditingComplete,
       onFieldSubmitted: onFieldSubmitted,
       onSaved: (v) => property.setFieldValue(
@@ -715,7 +726,14 @@ class $BulkAutoValidationVanillaFormAccountPresenterFieldFactory {
       restorationId: restorationId,
       enableIMEPersonalizedLearning: enableIMEPersonalizedLearning,
       mouseCursor: mouseCursor,
+      contextMenuBuilder: contextMenuBuilder,
     );
+  }
+
+  static Widget _TextFormField_defaultContextMenuBuilder(
+      BuildContext context, EditableTextState editableTextState) {
+    return AdaptiveTextSelectionToolbar.editableText(
+        editableTextState: editableTextState);
   }
 }
 

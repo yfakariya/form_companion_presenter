@@ -104,8 +104,7 @@ class _BulkAutoValidationVanillaFormAccountPane extends ConsumerWidget {
 @formCompanion
 @riverpod
 class BulkAutoValidationVanillaFormAccountPresenter
-    extends AutoDisposeAsyncNotifier<
-        $BulkAutoValidationVanillaFormAccountPresenterFormProperties>
+    extends _$BulkAutoValidationVanillaFormAccountPresenter
     with CompanionPresenterMixin, FormCompanionMixin {
   BulkAutoValidationVanillaFormAccountPresenter() {
     initializeCompanionMixin(

@@ -80,7 +80,7 @@ class _AutoValidationFormBuilderBookingPane extends ConsumerWidget {
                       'userName': userState?.name ?? 'Dummy User',
                     },
                   ),
-            style: Theme.of(context).textTheme.bodyText1,
+            style: Theme.of(context).textTheme.bodyLarge,
           ),
           state.value.fields.stay(
             context,
@@ -168,8 +168,7 @@ class _AutoValidationFormBuilderBookingPane extends ConsumerWidget {
 @formCompanion
 @riverpod
 class AutoValidationFormBuilderBookingPresenter
-    extends AutoDisposeAsyncNotifier<
-        $AutoValidationFormBuilderBookingPresenterFormProperties>
+    extends _$AutoValidationFormBuilderBookingPresenter
     with CompanionPresenterMixin, FormBuilderCompanionMixin {
   late Account _account;
 
