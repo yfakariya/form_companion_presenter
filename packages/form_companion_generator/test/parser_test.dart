@@ -2353,7 +2353,7 @@ final _expectedImports = {
     ),
     ExpectedImport(
       'package:flutter/painting.dart',
-      shows: ['EdgeInsets'],
+      shows: ['BorderSide', 'EdgeInsets', 'OutlinedBorder'],
     ),
     ExpectedImport(
       'package:flutter/widgets.dart',
@@ -2748,10 +2748,11 @@ final _expectedImports = {
     ExpectedImport(
       'package:flutter/widgets.dart',
       shows: [
+        'EditableTextContextMenuBuilder',
         'ScrollController',
         'ScrollPhysics',
         'TextEditingController',
-        'ToolbarOptions'
+        'TextMagnifierConfiguration',
       ],
     ),
     ExpectedImport(

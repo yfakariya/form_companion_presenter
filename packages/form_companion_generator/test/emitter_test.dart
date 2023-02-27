@@ -2289,7 +2289,6 @@ String textFormFieldFactory(
       textAlignVertical: textAlignVertical,
       autofocus: autofocus,
       readOnly: readOnly,
-      toolbarOptions: toolbarOptions,
       showCursor: showCursor,
       obscuringCharacter: obscuringCharacter,
       obscureText: obscureText,
@@ -2304,6 +2303,7 @@ String textFormFieldFactory(
       maxLength: maxLength,
       onChanged: onChanged,
       onTap: onTap,
+      onTapOutside: onTapOutside,
       onEditingComplete: onEditingComplete,
       onFieldSubmitted: onFieldSubmitted,
       onSaved: (v) => property.setFieldValue(v, Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
@@ -2326,6 +2326,7 @@ String textFormFieldFactory(
       restorationId: restorationId,
       enableIMEPersonalizedLearning: enableIMEPersonalizedLearning,
       mouseCursor: mouseCursor,
+      contextMenuBuilder: contextMenuBuilder,
     );
   }''';
 
@@ -2442,6 +2443,8 @@ String formBuilderCheckboxFactory(
     bool shouldRequestFocus = false,
     Widget? subtitle,
     bool tristate = false,
+    OutlinedBorder? shape,
+    BorderSide? side,
   }) {
     final property = _properties.descriptors.$propertyName;
     return FormBuilderCheckbox(
@@ -2467,6 +2470,8 @@ String formBuilderCheckboxFactory(
       shouldRequestFocus: shouldRequestFocus,
       subtitle: subtitle,
       tristate: tristate,
+      shape: shape,
+      side: side,
     );
   }''';
 
@@ -3444,11 +3449,12 @@ String formBuilderTextFieldFactory(
     ui.BoxWidthStyle selectionWidthStyle = ui.BoxWidthStyle.tight,
     SmartDashesType? smartDashesType,
     SmartQuotesType? smartQuotesType,
-    ToolbarOptions? toolbarOptions,
     ui.BoxHeightStyle selectionHeightStyle = ui.BoxHeightStyle.tight,
     Iterable<String>? autofillHints,
     String obscuringCharacter = '•',
     MouseCursor? mouseCursor,
+    EditableTextContextMenuBuilder? contextMenuBuilder,
+    TextMagnifierConfiguration? magnifierConfiguration,
   }) {
     final property = _properties.descriptors.$propertyName;
     return FormBuilderTextField(
@@ -3501,10 +3507,11 @@ String formBuilderTextFieldFactory(
       selectionWidthStyle: selectionWidthStyle,
       smartDashesType: smartDashesType,
       smartQuotesType: smartQuotesType,
-      toolbarOptions: toolbarOptions,
       selectionHeightStyle: selectionHeightStyle,
       autofillHints: autofillHints,
       obscuringCharacter: obscuringCharacter,
       mouseCursor: mouseCursor,
+      contextMenuBuilder: contextMenuBuilder,
+      magnifierConfiguration: magnifierConfiguration,
     );
   }''';
