@@ -32,6 +32,7 @@ void builtin() {
     ..enumerated(
       name: 'enumerated',
       initialValue: MyEnum.one,
+      enumValues: MyEnum.values,
     );
 }
 

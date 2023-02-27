@@ -31,6 +31,15 @@ class TestPresenterFeatures extends CompanionPresenterFeatures {
       super.handleCanceledAsyncValidationError(error);
     }
   }
+
+  @override
+  void restoreField(
+    BuildContext context,
+    String name,
+    Object? value, {
+    required bool hasError,
+  }) =>
+      throw UnimplementedError();
 }
 
 class TestPresenter with CompanionPresenterMixin {

@@ -321,6 +321,18 @@ abstract class CompanionPresenterFeatures<A extends FormStateAdapter> {
     formState.save();
   }
 
+  // TODO: breaking!
+
+  /// Do validation the [FormField] for specified [name].
+  @protected
+  @visibleForOverriding
+  void restoreField(
+    BuildContext context,
+    String name,
+    Object? value, {
+    required bool hasError,
+  });
+
   /// Returns a validation error message which is shown when the async validator
   /// failed to complete with an exception or an error.
   ///

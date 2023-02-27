@@ -25,8 +25,19 @@ export 'src/form_companion_mixin.dart'
         OnPropertiesChangedEvent,
         PropertyDescriptor,
         PropertyDescriptorsBuilder,
+        RestorableValueFactory,
         ValidatorCreationOptions,
-        createValidatorCreationOptions;
+        createValidatorCreationOptions,
+        bigIntRestorableValueFactory,
+        boolRestorableValueFactory,
+        dateTimeRestorableValueFactory,
+        dateTimeRangeRestorableValueFactory,
+        doubleRestorableValueFactory,
+        enumRestorableValueFactory,
+        enumListRestorableValueFactory,
+        intRestorableValueFactory,
+        rangeValuesRestorableValueFactory,
+        stringRestorableValueFactory;
 export 'src/future_invoker.dart'
     show
         AsyncErrorHandler,
@@ -41,6 +52,7 @@ export 'src/future_invoker.dart'
 export 'src/number_converter.dart'
     show bigIntDoubleConverter, intDoubleConverter;
 export 'src/property_value_traits.dart' show PropertyValueTraits;
+export 'src/restoration.dart' show FormPropertiesRestorationScope;
 export 'src/string_converter.dart'
     show
         ParseFailureMessageProvider,

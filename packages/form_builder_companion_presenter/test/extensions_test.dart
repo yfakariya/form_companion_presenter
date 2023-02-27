@@ -169,6 +169,15 @@ class _TestPresenterFeatures extends CompanionPresenterFeatures {
   void handleCanceledAsyncValidationError(AsyncError error) {
     printOnFailure(error.toString());
   }
+
+  @override
+  void restoreField(
+    BuildContext context,
+    String name,
+    Object? value, {
+    required bool hasError,
+  }) =>
+      throw UnimplementedError();
 }
 
 class Presenter with CompanionPresenterMixin {
@@ -298,8 +307,9 @@ void main() {
       final target = PropertyDescriptorsBuilder()
         ..enumeratedList(
           name: 'prop',
+          enumValues: _MyEnum.values,
         );
-      verifyPropertyDescriptor<List<Enum>, List<Enum>>(
+      verifyPropertyDescriptor<List<_MyEnum>, List<_MyEnum>>(
         target,
         name: 'prop',
         initialPropertyValue: null,
@@ -313,6 +323,7 @@ void main() {
         ..enumeratedList(
           name: 'prop',
           initialValues: [_MyEnum.one],
+          enumValues: _MyEnum.values,
         );
 
       verifyPropertyDescriptor<List<_MyEnum>, List<_MyEnum>>(
@@ -465,8 +476,9 @@ void main() {
       final target = PropertyDescriptorsBuilder()
         ..enumeratedListWithField(
           name: 'prop',
+          enumValues: _MyEnum.values,
         );
-      verifyPropertyDescriptor<List<Enum>, List<Enum>>(
+      verifyPropertyDescriptor<List<_MyEnum>, List<_MyEnum>>(
         target,
         name: 'prop',
         initialPropertyValue: null,
@@ -480,6 +492,7 @@ void main() {
         ..enumeratedListWithField(
           name: 'prop',
           initialValues: [_MyEnum.one],
+          enumValues: _MyEnum.values,
         );
 
       verifyPropertyDescriptor<List<_MyEnum>, List<_MyEnum>>(

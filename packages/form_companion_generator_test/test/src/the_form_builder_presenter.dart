@@ -20,28 +20,39 @@ class TheFormBuilderPresenter
     initializeCompanionMixin(
       PropertyDescriptorsBuilder()
         ..string(name: 'propString')
-        ..enumerated<MyEnum>(name: 'propEnum')
+        ..enumerated(
+          name: 'propEnum',
+          enumValues: MyEnum.values,
+        )
         ..boolean(name: 'propBool')
         ..dateTime(name: 'propDateTime')
         ..dateTimeRange(name: 'propDateTimeRange')
         ..rangeValues(name: 'propRangeValues')
-        ..enumeratedList<MyEnum>(name: 'propEnumList')
+        ..enumeratedList(
+          name: 'propEnumList',
+          enumValues: MyEnum.values,
+        )
         ..booleanList(name: 'propBoolList')
         ..booleanWithField<FormBuilderCheckbox>(name: 'propBoolCheckBox')
         ..enumeratedListWithField<MyEnum, FormBuilderCheckboxGroup<MyEnum>>(
           name: 'propEnumListCheckBoxGroup',
+          enumValues: MyEnum.values,
         )
         ..enumeratedWithField<MyEnum, FormBuilderChoiceChip<MyEnum>>(
           name: 'propEnumChoiceChip',
+          enumValues: MyEnum.values,
         )
         ..enumeratedListWithField<MyEnum, FormBuilderFilterChip<MyEnum>>(
           name: 'propEnumListFilterChip',
+          enumValues: MyEnum.values,
         )
         ..enumeratedWithField<MyEnum, FormBuilderRadioGroup<MyEnum>>(
           name: 'propEnumRadioGroup',
+          enumValues: MyEnum.values,
         )
         ..enumeratedWithField<MyEnum, FormBuilderSegmentedControl<MyEnum>>(
           name: 'propEnumSegmentedControl',
+          enumValues: MyEnum.values,
         )
         ..realWithField<FormBuilderSlider>(
           name: 'propDoubleSlider',

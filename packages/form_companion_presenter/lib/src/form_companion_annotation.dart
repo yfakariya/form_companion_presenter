@@ -1,7 +1,7 @@
 // See LICENCE file in the root.
 
 import 'package:collection/collection.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:meta/meta.dart';
 
 import '../form_companion_presenter.dart';
@@ -66,6 +66,7 @@ extension FormCompanionPropertyDescriptorBuilderExtensions
     Equality<P>? propertyValueEquality,
     ValueConverter<P, F>? valueConverter,
     PropertyValueTraits? valueTraits,
+    RestorableValueFactory<F>? restorableValueFactory,
   }) =>
       // NOTE: TField is not used in runtime.
       //       The parameter will be interpreted in form_companion_generator.
@@ -78,6 +79,7 @@ extension FormCompanionPropertyDescriptorBuilderExtensions
         propertyValueEquality: propertyValueEquality,
         valueConverter: valueConverter,
         valueTraits: valueTraits,
+        restorableValueFactory: restorableValueFactory,
       );
 
   /// Defines a new property with property value type [P]
@@ -102,6 +104,7 @@ extension FormCompanionPropertyDescriptorBuilderExtensions
         initialValue: initialValue,
         valueConverter: stringConverter,
         valueTraits: valueTraits,
+        restorableValueFactory: stringRestorableValueFactory,
       );
 
   /// Defines a new property with [bool] for both of property value type and
@@ -119,6 +122,7 @@ extension FormCompanionPropertyDescriptorBuilderExtensions
         name: name,
         initialValue: initialValue,
         valueTraits: valueTraits,
+        restorableValueFactory: boolRestorableValueFactory,
       );
 
   /// Defines a new property with enum type [T] for both of property value type
@@ -127,15 +131,21 @@ extension FormCompanionPropertyDescriptorBuilderExtensions
   /// {@macro pdb_add_remarks}
   ///
   /// [TField] affects `FormFieldFactory` generation by `form_companion_generator`.
+  ///
+  /// Use `values` static property of [T] for [enumValues] parameter like
+  /// [Brightness.values].
   void enumeratedWithField<T extends Enum, TField extends FormField<T>>({
     required String name,
     T? initialValue,
     PropertyValueTraits? valueTraits,
+    // TODO: breaking!
+    required Iterable<T> enumValues,
   }) =>
       addWithField<T, T, TField>(
         name: name,
         initialValue: initialValue,
         valueTraits: valueTraits,
+        restorableValueFactory: enumRestorableValueFactory(enumValues),
       );
 
   /// Defines a new property with property value type [int]
@@ -157,6 +167,7 @@ extension FormCompanionPropertyDescriptorBuilderExtensions
         asyncValidatorFactories: asyncValidatorFactories,
         initialValue: initialValue,
         valueTraits: valueTraits,
+        restorableValueFactory: intRestorableValueFactory,
       );
 
   /// Defines a new property with property value type [double]
@@ -178,6 +189,7 @@ extension FormCompanionPropertyDescriptorBuilderExtensions
         asyncValidatorFactories: asyncValidatorFactories,
         initialValue: initialValue,
         valueTraits: valueTraits,
+        restorableValueFactory: doubleRestorableValueFactory,
       );
 
   /// Defines a new property with property value type [BigInt]
@@ -199,5 +211,6 @@ extension FormCompanionPropertyDescriptorBuilderExtensions
         asyncValidatorFactories: asyncValidatorFactories,
         initialValue: initialValue,
         valueTraits: valueTraits,
+        restorableValueFactory: bigIntRestorableValueFactory,
       );
 }

@@ -69,6 +69,31 @@ class _FormCompanionFeatures
       };
     }
   }
+
+  @override
+  void restoreField(
+    BuildContext context,
+    String name,
+    Object? value, {
+    required bool hasError,
+  }) {
+    final formState = Form.maybeOf(context);
+    final fieldState = _presenter._fieldKeys[name]?.currentState;
+    assert(
+      fieldState != null,
+      'Failed to get valid key for $name', // Coverage:ignore-line
+    );
+    // This causes re-validation if auto-validation is enabled.
+    fieldState!.didChange(value);
+
+    if (hasError &&
+        (formState?.widget.autovalidateMode ?? AutovalidateMode.disabled) ==
+            AutovalidateMode.disabled &&
+        fieldState.widget.autovalidateMode == AutovalidateMode.disabled) {
+      // Re-validate to reflect error.
+      fieldState.validate();
+    }
+  }
 }
 
 /// Extended mixin of [CompanionPresenterMixin] for vanilla [Form].
@@ -105,11 +130,12 @@ mixin FormCompanionMixin on CompanionPresenterMixin {
   /// Binding keys for each field is required to [canSubmit] works correctly.
   Key getKey(String name, BuildContext context) {
     var key = _fieldKeys[name];
-    if (key != null) {
-      return key;
+    if (key != null && key.currentContext != null) {
+      return _checkKeyType(key, name, propertiesState);
     }
 
-    return key = _fieldKeys[name] = GlobalKey(debugLabel: '$runtimeType#$name');
+    key = _fieldKeys[name] = GlobalKey(debugLabel: '$runtimeType#$name');
+    return _checkKeyType(key, name, propertiesState);
   }
 
   @override
@@ -142,4 +168,25 @@ mixin FormCompanionMixin on CompanionPresenterMixin {
             .getAllDescriptors()
             .every((p) => !p.hasPendingAsyncValidations);
   }
+}
+
+Key _checkKeyType(
+  GlobalKey<FormFieldState<dynamic>> key,
+  String name,
+  FormProperties propertiesState,
+) {
+  assert(
+    key.currentState?.value == null ||
+        // ignore: avoid_dynamic_calls
+        key.currentState?.value.runtimeType ==
+            propertiesState.getFieldValueType(name),
+    "Key type of '$name' is not expected type. "
+    "Property's field type is defined as "
+    "'${propertiesState.getFieldValueType(name)}', "
+    // ignore: avoid_dynamic_calls
+    "but actual key's value type is '${key.currentState?.value.runtimeType}'. "
+    'This may be caused by wrong invocation of `FormCompanionMixin.getKey()`.',
+  );
+
+  return key;
 }

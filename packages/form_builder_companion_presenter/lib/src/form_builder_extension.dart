@@ -24,6 +24,7 @@ extension FormBuilderCompanionPropertyDescriptorsBuilderExtension
         name: name,
         initialValue: initialValues,
         valueTraits: valueTraits,
+        restorableValueFactory: boolListRestorableValueFactory,
       );
 
   /// Defines a new property with [List] of enum type [Enum] for both of
@@ -34,13 +35,22 @@ extension FormBuilderCompanionPropertyDescriptorsBuilderExtension
   /// validation framework requires live [BuildContext] to initialize validator,
   /// and current [Locale] of the application should be stored to
   /// [BuildContext].
+  ///
+  /// Use `values` static property of [T] for [enumValues] parameter like
+  /// [Brightness.values].
   void enumeratedList<T extends Enum>({
     required String name,
     List<T>? initialValues,
     PropertyValueTraits? valueTraits,
+    // TODO: breaking!
+    required Iterable<T> enumValues,
   }) =>
-      add<List<T>, List<T>>(name: name, initialValue: initialValues);
+      add<List<T>, List<T>>(
+        name: name,
+        initialValue: initialValues,
         valueTraits: valueTraits,
+        restorableValueFactory: enumListRestorableValueFactory(enumValues),
+      );
 
   /// Defines a new property with [DateTime] for both of
   /// property value type and form field value type.
@@ -63,6 +73,7 @@ extension FormBuilderCompanionPropertyDescriptorsBuilderExtension
         asyncValidatorFactories: asyncValidatorFactories,
         initialValue: initialValue,
         valueTraits: valueTraits,
+        restorableValueFactory: dateTimeRestorableValueFactory,
       );
 
   /// Defines a new property with [DateTimeRange] for both of
@@ -86,6 +97,7 @@ extension FormBuilderCompanionPropertyDescriptorsBuilderExtension
         asyncValidatorFactories: asyncValidatorFactories,
         initialValue: initialValue,
         valueTraits: valueTraits,
+        restorableValueFactory: dateTimeRangeRestorableValueFactory,
       );
 
   /// Defines a new property with [RangeValues] for both of
@@ -109,5 +121,6 @@ extension FormBuilderCompanionPropertyDescriptorsBuilderExtension
         asyncValidatorFactories: asyncValidatorFactories,
         initialValue: initialValue,
         valueTraits: valueTraits,
+        restorableValueFactory: rangeValuesRestorableValueFactory,
       );
 }

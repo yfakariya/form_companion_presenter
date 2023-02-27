@@ -12,6 +12,15 @@ class _TestCompanionPresenterFeatures extends CompanionPresenterFeatures {
   @override
   FormStateAdapter? maybeFormStateOf(BuildContext context) =>
       FixedFormStateAdapter();
+
+  @override
+  void restoreField(
+    BuildContext context,
+    String name,
+    Object? value, {
+    required bool hasError,
+  }) =>
+      throw UnimplementedError();
 }
 
 class TestPresenter with CompanionPresenterMixin {

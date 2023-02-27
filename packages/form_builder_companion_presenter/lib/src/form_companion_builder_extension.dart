@@ -27,6 +27,7 @@ extension FormCompanionBuilderCompanionPropertyDescriptorsBuilderExtension
         name: name,
         initialValue: initialValues,
         valueTraits: valueTraits,
+        restorableValueFactory: boolListRestorableValueFactory,
       );
 
   /// Defines a new property with [List] of enum type [T] for both of
@@ -40,15 +41,21 @@ extension FormCompanionBuilderCompanionPropertyDescriptorsBuilderExtension
   /// [BuildContext].
   ///
   /// [TField] affects `FormFieldFactory` generation by `form_companion_generator`.
+  ///
+  /// Use `values` static property of [T] for [enumValues] parameter like
+  /// [Brightness.values].
   void enumeratedListWithField<T extends Enum,
           TField extends FormField<List<T>>>({
     required String name,
     List<T>? initialValues,
     PropertyValueTraits? valueTraits,
+    // TODO: breaking!
+    required Iterable<T> enumValues,
   }) =>
       addWithField<List<T>, List<T>, TField>(
         name: name,
         initialValue: initialValues,
         valueTraits: valueTraits,
+        restorableValueFactory: enumListRestorableValueFactory(enumValues),
       );
 }

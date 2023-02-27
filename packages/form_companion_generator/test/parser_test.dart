@@ -1311,23 +1311,6 @@ Future<void> main() async {
           'is not specified and it cannot be inferred with parameters. '
           'Ensure specify type argument `P` explicitly.';
 
-      const fieldEnumValueWarning =
-          '`Enum` is used for field value type because type parameter `F` '
-          'is not specified and it cannot be inferred with parameters. '
-          'Ensure specify type argument `F` explicitly.';
-      const propertyEnumValueWarning =
-          '`Enum` is used for property value type because type parameter `P` '
-          'is not specified and it cannot be inferred with parameters. '
-          'Ensure specify type argument `P` explicitly.';
-      const fieldEnumListValueWarning =
-          '`List<Enum>` is used for field value type because type parameter '
-          '`F` is not specified and it cannot be inferred with parameters. '
-          'Ensure specify type argument `F` explicitly.';
-      const propertyEnumListValueWarning =
-          '`List<Enum>` is used for property value type because type parameter '
-          '`P` is not specified and it cannot be inferred with parameters. '
-          'Ensure specify type argument `P` explicitly.';
-
       const preferredFormFieldWarningBase =
           'is used for FormField type because type parameter `TField` is '
           'not specified and it cannot be inferred with parameters. '
@@ -1431,14 +1414,10 @@ Future<void> main() async {
           ),
           Tuple5(
             'EnumWithField',
-            'Enum',
-            'Enum',
-            'FormField<Enum>',
-            [
-              propertyEnumValueWarning,
-              fieldEnumValueWarning,
-              '`FormField<Enum>` $preferredFormFieldWarningBase'
-            ],
+            'MyEnum',
+            'MyEnum',
+            'FormField<MyEnum>',
+            ['`FormField<MyEnum>` $preferredFormFieldWarningBase'],
           ),
           Tuple5(
             'IntWithField',
@@ -1528,25 +1507,17 @@ Future<void> main() async {
           ),
           Tuple5(
             'EnumListWithField',
-            'List<Enum>',
-            'List<Enum>',
-            'FormField<List<Enum>>',
-            [
-              propertyEnumListValueWarning,
-              fieldEnumListValueWarning,
-              '`FormField<List<Enum>>` $preferredFormFieldWarningBase'
-            ],
+            'List<MyEnum>',
+            'List<MyEnum>',
+            'FormField<List<MyEnum>>',
+            ['`FormField<List<MyEnum>>` $preferredFormFieldWarningBase'],
           ),
           Tuple5(
             'EnumWithField',
-            'Enum',
-            'Enum',
-            'FormField<Enum>',
-            [
-              propertyEnumValueWarning,
-              fieldEnumValueWarning,
-              '`FormField<Enum>` $preferredFormFieldWarningBase'
-            ],
+            'MyEnum',
+            'MyEnum',
+            'FormField<MyEnum>',
+            ['`FormField<MyEnum>` $preferredFormFieldWarningBase'],
           ),
           Tuple5(
             'IntWithField',

@@ -89,6 +89,33 @@ class FormBuilderCompanionFeatures
           ?.setFieldValue(field.value, formState.locale);
     }
   }
+
+  @override
+  void restoreField(
+    BuildContext context,
+    String name,
+    Object? value, {
+    required bool hasError,
+  }) {
+    final formState = FormBuilder.of(context);
+    if (formState != null) {
+      final fieldState = formState.fields[name];
+      assert(
+        fieldState != null,
+        'Failed to get $name field from FormBuilder', // Coverage:ignore-line
+      );
+      // This causes re-validation if auto-validation is enabled.
+      fieldState!.didChange(value);
+
+      if (hasError &&
+          (formState.widget.autovalidateMode ?? AutovalidateMode.disabled) ==
+              AutovalidateMode.disabled &&
+          fieldState.widget.autovalidateMode == AutovalidateMode.disabled) {
+        // Re-validate to reflect error.
+        fieldState.validate();
+      }
+    }
+  }
 }
 
 /// Another [CompanionPresenterMixin] companion mixin

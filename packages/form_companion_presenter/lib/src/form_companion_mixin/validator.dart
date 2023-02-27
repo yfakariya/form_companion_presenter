@@ -44,6 +44,7 @@ class _AsyncValidatorEntry<T extends Object> {
 class _PropertyValidator<T extends Object> {
   final List<FormFieldValidator<T>> _validators;
   final _AsyncValidatorChain<T>? _asyncValidatorChain;
+  final PropertyDescriptor<dynamic, T> _property;
 
   _PropertyValidator(
     this._validators,
@@ -58,6 +59,7 @@ class _PropertyValidator<T extends Object> {
     _ValidationContextProvider presenterValidationContextProvider,
     _ValidationContextProvider propertyValidationContextProvider,
     _ValidationContextSupplier propertyValidationContextSupplier,
+    this._property,
   ) : _asyncValidatorChain = asyncValidators.isNotEmpty
             ? _AsyncValidatorChain(
                 locale,
@@ -73,6 +75,13 @@ class _PropertyValidator<T extends Object> {
               )
             : null;
 
+  String? _rememberError(String? validationError) {
+    if (validationError != null) {
+      _property._restorableFieldValue?.setHasError(true);
+    }
+    return validationError;
+  }
+
   FormFieldValidator<T> asValidtor() => (value) {
         _asyncValidatorChain?._log.fine('Start validation.');
         // The idea is borrowed from FormBuilderValidators.composite()
@@ -82,11 +91,12 @@ class _PropertyValidator<T extends Object> {
             _asyncValidatorChain?._log.fine(
               'Validation completed due to sync validator detected error: "$validationError".',
             );
-            return validationError;
+            return _rememberError(validationError);
           }
         }
 
-        return _asyncValidatorChain?.callValidator(value);
+        // Error remembering will be done in async validation chain.
+        return _rememberError(_asyncValidatorChain?.callValidator(value));
       };
 }
 
