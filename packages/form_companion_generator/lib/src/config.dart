@@ -544,10 +544,25 @@ class ArgumentTemplate {
         );
       }
 
+      if (templateValue == null && itemTemplateValue == null) {
+        return MapEntry(
+          key,
+          ArgumentTemplate(
+            null,
+            null,
+            TemplateImports.parse(
+              simpleOrStructuredTemplate[_importsKey],
+              "'$_importsKey' property of '$key' property of $context",
+            ),
+          ),
+        );
+      }
+
       throw AnalysisException(
         "'$key' property of $context must have "
         "string '$_templateKey' or '$_itemTemplateKey' "
-        "property, but the type of '$_templateKey' is ${_stringifyType(templateValue)}, "
+        'property, or needs that both of them are not specified, '
+        "but the type of '$_templateKey' is ${_stringifyType(templateValue)}, "
         "and the type of '$_itemTemplateKey' is ${_stringifyType(itemTemplateValue)}.",
       );
     } else {

@@ -535,23 +535,20 @@ void main() {
       final target = Config(<String, dynamic>{
         'argument_templates': {
           'AFormField': {
-            'empty': {'key': 'value'},
+            'scalar': {
+              'imports': {'p.Foo': 'package:foo/bar.dart'},
+            },
           }
         },
       });
-      expect(
-        () => target.argumentTemplates.get('AFormField', 'scalar'),
-        throwsA(
-          isA<AnalysisException>().having(
-            (e) => e.message,
-            'message',
-            "'empty' property of 'AFormField' property of "
-                "'argument_templates' must have string 'template' or 'item_template' "
-                "property, but the type of 'template' is null, "
-                "and the type of 'item_template' is null.",
-          ),
-        ),
-      );
+      final template = target.argumentTemplates.get('AFormField', 'scalar');
+      expect(template.itemTemplate, isNull);
+      expect(template.value, isNull);
+      expect(template.imports.length, 1);
+      final import = template.imports.single;
+      expect(import.prefix, 'p');
+      expect(import.types, ['Foo']);
+      expect(import.uri, 'package:foo/bar.dart');
     });
 
     test('object with invalid template and item_template in maps cause error',
@@ -571,7 +568,8 @@ void main() {
             'message',
             "'empty' property of 'AFormField' property of "
                 "'argument_templates' must have string 'template' or 'item_template' "
-                "property, but the type of 'template' is int, "
+                'property, or needs that both of them are not specified, '
+                "but the type of 'template' is int, "
                 "and the type of 'item_template' is bool.",
           ),
         ),
