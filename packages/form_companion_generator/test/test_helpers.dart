@@ -242,3 +242,7 @@ FutureOr<Config> readDefaultOptions([
 
   return Config(defaultOptions);
 }
+
+String removeQuestion(String mayBeNullable) => mayBeNullable.endsWith('?')
+    ? mayBeNullable.substring(0, mayBeNullable.length - 1)
+    : mayBeNullable;

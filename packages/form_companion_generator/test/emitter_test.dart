@@ -115,7 +115,7 @@ Future<void> main() async {
 
         return PropertyAndFormFieldDefinition(
           property: property,
-          formFieldTypeName: preferredFormFieldType?.toString() ??
+          formFieldTypeName: preferredFormFieldType?.rawType.element?.name ??
               formFieldClass?.name ??
               '<UNRESOLVED>', // This value is actually 'TextFormField' or 'FormBuilderTextField'.
           formFieldConstructors: formFieldClass == null
@@ -2354,7 +2354,7 @@ String dropdownButtonFieldFactory(
     DropdownButtonBuilder? selectedItemBuilder,
     Widget? hint,
     Widget? disabledHint,
-    ValueChanged<$propertyType?>? onChanged,
+    ValueChanged<${removeQuestion(propertyType)}?>? onChanged,
     VoidCallback? onTap,
     int elevation = 8,
     TextStyle? style,

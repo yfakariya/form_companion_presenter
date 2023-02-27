@@ -83,7 +83,7 @@ class TextFormField extends FormField<String> {}
       classFinder: (l) => l.getClass('TextFormField')!,
       valueTypeProvider: (l) => toGenericType(l.typeProvider.stringType),
       assertion: (x) {
-        expect(x.getMappedType('T'), 'T');
+        expect(x.getMappedType('FormField', 'T'), 'String');
       },
     ),
   );
@@ -99,7 +99,8 @@ class DropdownButtonFormField<T> extends FormField<T> {}
       valueTypeProvider: (l) => toGenericType(l.typeProvider.stringType),
       formFieldGenericArgumentsProvider: (t) => [toGenericType(t.stringType)],
       assertion: (x) {
-        expect(x.getMappedType('T'), 'String');
+        expect(x.getMappedType('DropdownButtonFormField', 'T'), 'String');
+        expect(x.getMappedType('FormField', 'T'), 'String');
       },
     ),
   );
@@ -116,7 +117,8 @@ class DropdownButtonFormField<T> extends FormField<T> {}
       formFieldGenericArgumentsProvider: (_) =>
           [toGenericType(nullableStringType)],
       assertion: (x) {
-        expect(x.getMappedType('T'), 'String?');
+        expect(x.getMappedType('DropdownButtonFormField', 'T'), 'String?');
+        expect(x.getMappedType('FormField', 'T'), 'String?');
       },
     ),
   );
@@ -133,7 +135,8 @@ class FormBuilderCheckBoxGroup<T> extends FormField<List<T>> {}
           toGenericType(l.typeProvider.listType(l.typeProvider.stringType)),
       formFieldGenericArgumentsProvider: (t) => [toGenericType(t.stringType)],
       assertion: (x) {
-        expect(x.getMappedType('T'), 'String');
+        expect(x.getMappedType('FormBuilderCheckBoxGroup', 'T'), 'String');
+        expect(x.getMappedType('FormField', 'T'), 'List<String>');
       },
     ),
   );
@@ -165,7 +168,8 @@ final ${spec.item2} callback = () {};
             return GenericType.fromDartType(variable.type, variable);
           },
           assertion: (x) {
-            expect(x.getMappedType('T'), 'T');
+            // Specified (field type) is always preferred.
+            expect(x.getMappedType('FormField', 'T'), spec.item2);
           },
         ),
       );
@@ -213,7 +217,8 @@ final ${spec.item2} callback = (_) => '';
           formFieldGenericArgumentsProvider: (t) =>
               [toGenericType(t.stringType)],
           assertion: (x) {
-            expect(x.getMappedType('T'), 'String');
+            expect(x.getMappedType('FunctionFormField', 'T'), 'String');
+            expect(x.getMappedType('FormField', 'T'), spec.item2);
           },
         ),
       );
@@ -259,7 +264,8 @@ final List<${spec.item2}> callback = [];
           formFieldGenericArgumentsProvider: (t) =>
               [toGenericType(t.stringType)],
           assertion: (x) {
-            expect(x.getMappedType('T'), 'String');
+            expect(x.getMappedType('FunctionFormField', 'T'), 'String');
+            expect(x.getMappedType('FormField', 'T'), 'List<${spec.item2}>');
           },
         ),
       );
@@ -307,7 +313,8 @@ final ${spec.item2} callback = () => '';
           formFieldGenericArgumentsProvider: (t) =>
               [toGenericType(t.stringType)],
           assertion: (x) {
-            expect(x.getMappedType('T'), 'String');
+            expect(x.getMappedType('FunctionFormField', 'T'), 'String');
+            expect(x.getMappedType('FormField', 'T'), spec.item2);
           },
         ),
       );
@@ -355,7 +362,8 @@ final ${spec.item2} callback = (_) {};
           formFieldGenericArgumentsProvider: (t) =>
               [toGenericType(t.stringType)],
           assertion: (x) {
-            expect(x.getMappedType('T'), 'String');
+            expect(x.getMappedType('FunctionFormField', 'T'), 'String');
+            expect(x.getMappedType('FormField', 'T'), spec.item2);
           },
         ),
       );

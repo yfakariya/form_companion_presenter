@@ -177,8 +177,8 @@ Future<void> main() async {
       });
     }
 
-    for (final parameterSpec in listConstructorParameters.entries) {
-      group(parameterSpec.key, () {
+    group('generic list', () {
+      for (final parameterSpec in listConstructorParameters.entries) {
         final description = 'generic list, ${parameterSpec.key}';
         final expected = listExpected[parameterSpec.key];
 
@@ -188,10 +188,10 @@ Future<void> main() async {
               .getElementDeclarationAsync<FormalParameter>(element);
           final context = TypeInstantiationContext.create(
             makeProperty(
-              library.typeProvider.boolType,
-              library.typeProvider.boolType,
+              library.typeProvider.listType(library.typeProvider.boolType),
+              library.typeProvider.listType(library.typeProvider.boolType),
             ),
-            holder.thisType,
+            listHolder.thisType,
             logger,
           );
           expect(
@@ -202,48 +202,47 @@ Future<void> main() async {
             equals(expected),
           );
         });
-      });
-    }
+      }
 
-    for (final parameterSpec in listConstructorParameters.entries) {
-      group(parameterSpec.key, () {
-        for (final parameterSpec in listMethodParameters.entries) {
-          final description = 'generic list, ${parameterSpec.key}';
-          final expected = listExpected[parameterSpec.key];
+      for (final methodSpec in listMethodParameters.entries) {
+        final description = 'generic list, ${methodSpec.key}';
+        final expected = listExpected[methodSpec.key];
 
-          test(description, () async {
-            final element = parameterSpec.value;
-            final node = await nodeProvider
-                .getElementDeclarationAsync<FormalParameter>(element);
-            final context = TypeInstantiationContext.create(
-              makeProperty(
-                library.typeProvider.listType(library.typeProvider.boolType),
-                library.typeProvider.listType(library.typeProvider.boolType),
-              ),
-              listHolder.thisType,
-              logger,
-            );
-            expect(
-              emitParameter(
-                context,
-                await ParameterInfo.fromNodeAsync(nodeProvider, node),
-              ),
-              equals(expected),
-            );
-          });
-        }
-      });
-    }
+        test(description, () async {
+          final element = methodSpec.value;
+          final node = await nodeProvider
+              .getElementDeclarationAsync<FormalParameter>(element);
+          final context = TypeInstantiationContext.create(
+            makeProperty(
+              library.typeProvider.listType(library.typeProvider.boolType),
+              library.typeProvider.listType(library.typeProvider.boolType),
+            ),
+            listHolder.thisType,
+            logger,
+          );
+          expect(
+            emitParameter(
+              context,
+              await ParameterInfo.fromNodeAsync(nodeProvider, node),
+            ),
+            equals(expected),
+          );
+        });
+      }
+    });
 
     group('instantiated preferredFieldType', () {
       Future<void> testPreferredFieldType(
         InterfaceType propertyAndFieldValueType,
         InterfaceType preferredFieldType,
         InterfaceType typeArgumentOfFormField,
+        String listOfTParameterName,
+        String listOfTParameterType,
       ) async {
-        final parameterElement = listConstructorParameters['nonPrefixed']!;
-        final expected =
-            'List<${typeArgumentOfFormField.getDisplayString(withNullability: true)}> nonPrefixed';
+        final parameterElement = preferredFieldType
+            .constructors.single.parameters
+            .singleWhere((p) => p.name == listOfTParameterName);
+        final expected = '$listOfTParameterType $listOfTParameterName';
         final node = await nodeProvider
             .getElementDeclarationAsync<FormalParameter>(parameterElement);
         final context = TypeInstantiationContext.create(
@@ -268,10 +267,11 @@ Future<void> main() async {
           preferredFieldType,
           logger,
         );
+        final parameter = await ParameterInfo.fromNodeAsync(nodeProvider, node);
         expect(
           emitParameter(
             context,
-            await ParameterInfo.fromNodeAsync(nodeProvider, node),
+            parameter,
           ),
           expected,
         );
@@ -283,6 +283,8 @@ Future<void> main() async {
           myEnumType,
           formBuilderDropdownOfMyEnum,
           myEnumType,
+          'onChanged',
+          'ValueChanged<${myEnumType.getDisplayString(withNullability: false)}?>?',
         ),
       );
 
@@ -292,6 +294,8 @@ Future<void> main() async {
           library.typeProvider.listType(myEnumType),
           formBuilderFilterChipOfMyEnum,
           myEnumType,
+          'onChanged',
+          'ValueChanged<List<${myEnumType.getDisplayString(withNullability: false)}>?>?',
         ),
       );
     });
@@ -362,6 +366,7 @@ Future<void> main() async {
 
           processTypeWithValueType(
             context,
+            element.thisOrAncestorOfType<InterfaceElement>()!.displayName,
             element.type,
             sink,
           );
@@ -394,6 +399,7 @@ Future<void> main() async {
 
           processTypeWithValueType(
             context,
+            element.thisOrAncestorOfType<InterfaceElement>()!.displayName,
             element.type,
             sink,
           );
@@ -426,6 +432,7 @@ Future<void> main() async {
 
         processTypeWithValueType(
           context,
+          element.thisOrAncestorOfType<InterfaceElement>()!.displayName,
           element.type,
           sink,
         );
@@ -459,6 +466,7 @@ Future<void> main() async {
 
         processTypeWithValueType(
           context,
+          element.thisOrAncestorOfType<InterfaceElement>()!.displayName,
           element.type,
           sink,
         );
@@ -484,6 +492,7 @@ Future<void> main() async {
 
         processTypeWithValueType(
           context,
+          element.thisOrAncestorOfType<InterfaceElement>()!.displayName,
           element.type,
           sink,
         );
@@ -517,6 +526,7 @@ Future<void> main() async {
 
           processTypeAnnotation(
             context,
+            parameterInfo.declaringTypeName,
             parameterInfo.typeAnnotation!,
             sink,
           );
@@ -553,6 +563,7 @@ Future<void> main() async {
           if (parameterInfo.functionTypedParameter != null) {
             processFunctionTypeFormalParameter(
               context,
+              parameterInfo.declaringTypeName,
               parameterInfo.functionTypedParameter!,
               EmitParameterContext.functionTypeParameter,
               sink,
@@ -560,6 +571,7 @@ Future<void> main() async {
           } else {
             processTypeAnnotation(
               context,
+              parameterInfo.declaringTypeName,
               parameterInfo.typeAnnotation!,
               sink,
             );
@@ -596,6 +608,7 @@ Future<void> main() async {
 
         processTypeAnnotation(
           context,
+          parameterInfo.declaringTypeName,
           parameterInfo.typeAnnotation!,
           sink,
         );
@@ -631,6 +644,7 @@ Future<void> main() async {
         if (parameterInfo.functionTypedParameter != null) {
           processFunctionTypeFormalParameter(
             context,
+            parameterInfo.declaringTypeName,
             parameterInfo.functionTypedParameter!,
             EmitParameterContext.functionTypeParameter,
             sink,
@@ -638,6 +652,7 @@ Future<void> main() async {
         } else {
           processTypeAnnotation(
             context,
+            parameterInfo.declaringTypeName,
             parameterInfo.typeAnnotation!,
             sink,
           );
@@ -668,6 +683,7 @@ Future<void> main() async {
         if (parameterInfo.functionTypedParameter != null) {
           processFunctionTypeFormalParameter(
             context,
+            parameterInfo.declaringTypeName,
             parameterInfo.functionTypedParameter!,
             EmitParameterContext.functionTypeParameter,
             sink,
@@ -675,6 +691,7 @@ Future<void> main() async {
         } else {
           processTypeAnnotation(
             context,
+            parameterInfo.declaringTypeName,
             parameterInfo.typeAnnotation!,
             sink,
           );

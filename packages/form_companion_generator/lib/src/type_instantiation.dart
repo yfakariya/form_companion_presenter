@@ -9,13 +9,13 @@ import 'model.dart';
 /// A context information holder of type instantiaion.
 @sealed
 class TypeInstantiationContext {
-  static final _formFieldPattern = RegExp(RegExp.escape('FormField<'));
-
-  final Map<String, String> _typeArgumentsMappings;
+  final Map<String, Map<String, GenericType>> _typeArgumentsMappings;
 
   TypeInstantiationContext._(
     this._typeArgumentsMappings,
   );
+
+  // TODO: testing
 
   /// Creates a new [TypeInstantiationContext] instance
   /// for the [PropertyDefinition].
@@ -24,120 +24,182 @@ class TypeInstantiationContext {
     InterfaceType formFieldType,
     Logger logger,
   ) {
-    // We cannot use supertype.element here because it may lose generic argument
-    // information in inheritance hierarchy, but origin should be
-    // element.thisType to erase instantiated information.
-    var currentType = formFieldType.element.thisType;
-    while (!currentType
-        .getDisplayString(withNullability: false)
-        .startsWith(_formFieldPattern)) {
-      currentType = currentType.superclass!;
+    // derived to super.
+    final typeChain = <InterfaceType>[];
+    {
+      for (var type = formFieldType;
+          type.element.name != 'FormField';
+          // We must erase type argument information chain from leaf here
+          // to traverse mapping information.
+          type = type.superclass!.element.thisType) {
+        typeChain.add(type);
+        assert(type.superclass != null, "type.superclass of '$type' is null.");
+      }
     }
 
-    // T, List<T>, or some type, which is specified as `T` of `FormField<T>`.
-    // This is `ParameterizedType` if 1) the `formFieldType` is non generic or
-    // 2) `T` is some generic type such as `List<E>`,
-    // else 3) it is `TypeParameterType` for generic `formFieldType`.
-    // Example of 1) is `TextFormField`, 2) is `FormBuilderCheckboxGroup`,
-    // and 3) is `DropdownButtonFormField` respectively.
-    final formFieldTypeArgument = currentType.typeArguments.single;
+    final mapping = <String, Map<String, GenericType>>{};
+    mapping['FormField'] = {'T': property.fieldType};
 
-    // We use element here to erase generic argument information, which may be
-    // specified via generic type argument of addWithField.
-    if (formFieldType.element.typeParameters.isEmpty) {
-      assert(
-        formFieldTypeArgument.getDisplayString(withNullability: true) ==
-            (property.fieldType.maybeAsInterfaceType ??
-                    (property.fieldType as GenericFunctionType).functionType)
-                .getDisplayString(withNullability: true),
-      );
-
-      logger.finer("Form field type '$formFieldType' is not generic.");
-
-      return TypeInstantiationContext._({});
+    // super to dervied
+    for (final type in typeChain.reversed) {
+      _buildTypeArgumentMappings(type, mapping);
     }
 
-    final mapping = <String, String>{};
-    _buildTypeArgumentMappings(
-      formFieldTypeArgument,
-      property.fieldType,
-      mapping,
-      property.name,
-      formFieldType,
-    );
+    // Follow-up for type arguments for leaf type which is not passed to the ancestor here.
+    {
+      final mappingOfLeafType =
+          mapping.putIfAbsent(formFieldType.element.name, () => {});
+      final typeParametersOfThis = formFieldType.element.thisType.typeArguments;
+      final typeArgumentsToThis = formFieldType.typeArguments;
+
+      for (var i = 0; i < formFieldType.typeArguments.length; i++) {
+        mappingOfLeafType.putIfAbsent(
+          typeParametersOfThis[i].element!.name!,
+          () => GenericType.fromDartType(
+            typeArgumentsToThis[i],
+            formFieldType.element,
+          ),
+        );
+      }
+    }
+
     logger.finer(
-      "Create type arguments mapping between field type argument '$formFieldTypeArgument' "
-      "and specified field value type '${property.fieldType}': $mapping",
+      "Create type arguments mapping between field type arguments of '$formFieldType': $mapping",
     );
     return TypeInstantiationContext._(mapping);
   }
 
+  // In this method, we just know following:
+  //   1. Generic type ARGUMENT to super type from current type.
+  //      For example, `List<T>` for `T` of super type Base<T>.
+  //      We can get them via `superType.typeArguments` because we erased
+  //      (potentially partial) instantiation in the type chain.
+  //   2. Real type to be passed to the super type.
+  //      For root type (`FormField<T>`), this is a field type of the property.
+  //      For other types, we can retrieve it from building mappings with
+  //      super type's type parameters.
+  //      We can simply get them via `superType.element.thisType.typeArguments`.
+  // We can compare types between the 1 and 2 now, so we can get mapping between
+  // type PARAMETER of the current type and REAL type of the current type.
+  //
+  // In addition, we can build mapping of super type parameter and type argument
+  // which is not passed to ancestor.
+
   static void _buildTypeArgumentMappings(
-    DartType parameter,
-    GenericType argument,
-    Map<String, String> mapping,
-    String propertyName,
-    DartType formFieldType,
+    InterfaceType currentType,
+    Map<String, Map<String, GenericType>> mapping,
   ) {
-    if (parameter is TypeParameterType) {
+    final superType = currentType.superclass!;
+    final typeParametersOfSuper = superType.element.thisType.typeArguments;
+    final typeArgumentsToSuper = superType.typeArguments;
+    assert(typeArgumentsToSuper.length == typeParametersOfSuper.length);
+
+    for (var i = 0; i < typeParametersOfSuper.length; i++) {
+      final realTypeArgumentToSuper = mapping[superType.element.name]
+          ?[typeParametersOfSuper[i].element?.name];
+      if (realTypeArgumentToSuper != null) {
+        // We can get mapping between
+        // type parameter of the current type and real type of the current type.
+        _buildTypeArgumentMapping(
+          currentType,
+          typeArgumentsToSuper[i],
+          realTypeArgumentToSuper,
+          mapping,
+        );
+      } else {
+        // We can build mapping of super type parameter and type argument
+        // which is not passed to ancestor here,
+        // because we know the actual type from the type argument.
+        final mappingOfSuperType =
+            mapping.putIfAbsent(superType.element.name, () => {});
+        mappingOfSuperType[typeParametersOfSuper[i].element!.name!] =
+            GenericType.fromDartType(
+          typeArgumentsToSuper[i],
+          superType.element,
+        );
+      }
+    }
+  }
+
+  static void _buildTypeArgumentMapping(
+    InterfaceType currentType,
+    DartType template,
+    GenericType instance,
+    Map<String, Map<String, GenericType>> mapping,
+  ) {
+    if (template is TypeParameterType) {
       // Map `Foo` to `T` here.
-      mapping[parameter.getDisplayString(withNullability: false)] =
-          argument.getDisplayString(withNullability: true);
+      final mappingForCurrentType =
+          mapping.putIfAbsent(currentType.element.name, () => {});
+      mappingForCurrentType[template.getDisplayString(withNullability: false)] =
+          instance;
       return;
     }
 
     // Start generic type comparsion like `Foo<T> extends FormField<List<T>>`
 
-    final parameterType = parameter.alias?.element.aliasedType ?? parameter;
+    final realTemplate = template.alias?.element.aliasedType ?? template;
 
-    if (parameterType is ParameterizedType) {
-      assert(argument.maybeAsInterfaceType != null);
-      assert(parameterType.element!.name == argument.rawType.element!.name);
+    if (realTemplate is ParameterizedType) {
+      // Do structural mapping here
       assert(
-        parameterType.typeArguments.length == argument.typeArguments.length,
+        realTemplate.element!.name == instance.rawType.element!.name,
+        '${realTemplate.element!.name} != ${instance.rawType.element!.name} in $currentType',
+      );
+      assert(
+        realTemplate.typeArguments.length == instance.typeArguments.length,
+        'Arity mismatch between $realTemplate and $instance',
       );
 
-      if (parameterType.typeArguments.isNotEmpty) {
-        final argumentTypeArguments = argument.typeArguments;
-        for (var i = 0; i < parameterType.typeArguments.length; i++) {
-          _buildTypeArgumentMappings(
-            parameterType.typeArguments[i],
-            argumentTypeArguments[i],
-            mapping,
-            propertyName,
-            formFieldType,
-          );
-        }
+      if (realTemplate.typeArguments.isEmpty) {
+        // Nothing to do.
+        // The mapping should be resolved in derviced type or final step.
+        return;
       }
 
+      for (var i = 0; i < realTemplate.typeArguments.length; i++) {
+        _buildTypeArgumentMapping(
+          currentType,
+          realTemplate.typeArguments[i],
+          instance.typeArguments[i],
+          mapping,
+        );
+      }
       return;
     }
 
-    if (parameterType is FunctionType) {
-      assert(argument is GenericFunctionType);
+    if (realTemplate is FunctionType) {
       assert(
-        parameterType.parameters.length ==
-            (argument as GenericFunctionType).functionType.parameters.length,
+        instance is GenericFunctionType,
+        '$instance is not GenericFunctionType',
+      );
+      final functionTypeArgument = instance as GenericFunctionType;
+      assert(
+        realTemplate.parameters.length ==
+            functionTypeArgument.parameterTypes.length,
+        'Parameter count mismatch between $realTemplate and $functionTypeArgument',
       );
 
-      _buildTypeArgumentMappings(
-        parameterType.returnType,
-        (argument as GenericFunctionType).returnType,
+      _buildTypeArgumentMapping(
+        currentType,
+        realTemplate.returnType,
+        functionTypeArgument.returnType,
         mapping,
-        propertyName,
-        formFieldType,
       );
 
-      final argumentParameterTypes = argument.parameterTypes.toList();
-      for (var i = 0; i < parameterType.parameters.length; i++) {
-        _buildTypeArgumentMappings(
-          parameterType.parameters[i].type,
-          argumentParameterTypes[i],
+      final functionTypeArgumentParameterTypes =
+          functionTypeArgument.parameterTypes.toList();
+
+      for (var i = 0; i < realTemplate.parameters.length; i++) {
+        _buildTypeArgumentMapping(
+          currentType,
+          realTemplate.parameters[i].type,
+          functionTypeArgumentParameterTypes[i],
           mapping,
-          propertyName,
-          formFieldType,
         );
       }
+
+      return;
     }
 
     // Do nothing for NeverType, DynamicType, and VoidType.
@@ -148,11 +210,21 @@ class TypeInstantiationContext {
   /// then its value will be returned.
   ///
   /// This method is a core of type instantiation.
-  String getMappedType(String mayBeTypeParameter) =>
-      _typeArgumentsMappings[mayBeTypeParameter] ?? mayBeTypeParameter;
+  String getMappedType(
+    String contextTypeName,
+    String mayBeTypeParameter,
+  ) =>
+      _typeArgumentsMappings[contextTypeName]?[mayBeTypeParameter]
+          ?.getDisplayString(withNullability: true) ??
+      mayBeTypeParameter;
 
   /// Returns `true` if this instance can return a mapped type string
   /// which was specified as type argument.
-  bool isMapped(String mayBeTypeParameter) =>
-      _typeArgumentsMappings.containsKey(mayBeTypeParameter);
+  bool isMapped(
+    String contextTypeName,
+    String mayBeTypeParameter,
+  ) =>
+      _typeArgumentsMappings[contextTypeName]
+          ?.containsKey(mayBeTypeParameter) ??
+      false;
 }

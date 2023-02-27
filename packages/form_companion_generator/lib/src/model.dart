@@ -6,6 +6,7 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
+import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
 import 'package:source_gen/source_gen.dart';
 
@@ -15,6 +16,12 @@ import 'node_provider.dart';
 import 'type_instantiation.dart';
 import 'utilities.dart';
 import 'utilities.dart' as u;
+
+class _FieldInfo {
+  final TypeAnnotation? typeAnnotation;
+  final DartType declaringType;
+  _FieldInfo(this.typeAnnotation, this.declaringType);
+}
 
 /// Represents a parameter.
 @sealed
@@ -30,6 +37,17 @@ class ParameterInfo {
 
   /// Gets a [FormalParameter] which holds syntax information of this parameter.
   final FormalParameter node;
+
+  /// Gets a name of type which declares this parameter.
+  ///
+  /// Normal, this is same as leaf type except super parameters.
+  /// Superparameters can be chained to ancestor type, and eventually declared
+  /// in the ancestor which might required difference generic type resolution.
+  /// For example, when `SomeFormField<T> extends FormField<List<T>>` uses
+  /// `super.onChanged`, the type paramter `T` of parameter type `ValueChanged<T>`
+  /// which is declared in `FormField<T>` should be resolved `List<I>` instead of
+  /// `I` where `I` is type argument for `SomeFormField<T>`.
+  final String declaringTypeName;
 
   /// Gets a declared [TypeAnnotation] of this parameter.
   ///
@@ -50,6 +68,10 @@ class ParameterInfo {
   /// Gets a default value of this parameter if exists.
   final String? defaultValue;
 
+  /// Gets a method declaration if and only if the [defaultValue] is identifier
+  /// of non public static method as default value of function typed parameter.
+  final MethodDeclaration? defaultTargetNonPublicMethod;
+
   /// Returns `true` if this parameter has default value.
   bool get hasDefaultValue => defaultValue != null;
 
@@ -60,8 +82,10 @@ class ParameterInfo {
     this.type,
     this.typeAnnotation,
     this.functionTypedParameter,
+    this.declaringTypeName,
     this.keyword,
     this.defaultValue,
+    this.defaultTargetNonPublicMethod,
     this.requirability, {
     required this.isCollectionType,
   });
@@ -75,16 +99,44 @@ class ParameterInfo {
       // Parse left side with recursive call.
       final base =
           await ParameterInfo.fromNodeAsync(nodeProvider, node.parameter);
-      // But, use original DefaultFormalParameter for node for DependencyCollector.
+
+      // TODO: testing!
+      // TODO: support super.p = _nonPublic in (intermediate) super type.
+      final defaultValueType = node.parameter.declaredElement?.type;
+      late final String? defaultValueCode;
+      late final MethodDeclaration? defaultTargetNonPublicMethod;
+
+      if (base.defaultValue != null &&
+          defaultValueType != null &&
+          base.defaultValue != 'null' &&
+          defaultValueType is FunctionType) {
+        if (base.defaultValue!.startsWith('_') ||
+            base.declaringTypeName.startsWith('_')) {
+          defaultValueCode = '_${base.declaringTypeName}${base.defaultValue}';
+          defaultTargetNonPublicMethod =
+              await nodeProvider.getElementDeclarationAsync(
+            (node.defaultValue! as Identifier).staticElement! as MethodElement,
+          );
+        } else {
+          defaultValueCode = '${base.declaringTypeName}.${base.defaultValue}';
+          defaultTargetNonPublicMethod = null;
+        }
+      } else {
+        defaultValueCode = base.defaultValue;
+        defaultTargetNonPublicMethod = null;
+      }
 
       return ParameterInfo._(
+        // Use original DefaultFormalParameter for `node` for DependencyCollector.
         node,
         base.name,
         base.type,
         base.typeAnnotation,
         base.functionTypedParameter,
+        base.declaringTypeName,
         base.keyword,
-        base.defaultValue,
+        defaultValueCode,
+        defaultTargetNonPublicMethod,
         // Existence of the default value is not considered here
         // because the requirability always be considered in named parameters
         // context.
@@ -101,8 +153,11 @@ class ParameterInfo {
         element.type,
         node.type,
         null,
+        // Empty string for top-level functions (abnormal, but it is useful in unit testing)
+        node.thisOrAncestorOfType<ClassDeclaration>()?.name.lexeme ?? '',
         node.keyword?.stringValue,
         element.defaultValueCode,
+        null,
         element.isRequiredNamed
             ? ParameterRequirability.required
             : ParameterRequirability.notRequired,
@@ -121,10 +176,12 @@ class ParameterInfo {
         node,
         node.name.lexeme,
         parameterElement.type,
-        fieldType,
+        fieldType.typeAnnotation,
         null,
+        node.thisOrAncestorOfType<ClassDeclaration>()!.name.lexeme,
         node.keyword?.stringValue,
         parameterElement.defaultValueCode,
+        null,
         parameterElement.isRequiredNamed
             ? ParameterRequirability.required
             : ParameterRequirability.notRequired,
@@ -143,8 +200,10 @@ class ParameterInfo {
         element.type,
         null,
         node,
+        node.thisOrAncestorOfType<ClassDeclaration>()!.name.lexeme,
         null,
         element.defaultValueCode,
+        null,
         element.isRequiredNamed
             ? ParameterRequirability.required
             : ParameterRequirability.notRequired,
@@ -154,7 +213,7 @@ class ParameterInfo {
 
     if (node is SuperFormalParameter) {
       final parameterElement = node.declaredElement!;
-      final fieldType = await _getSuperFieldTypeAnnotationAsync(
+      final fieldInfo = await _getSuperFieldTypeAnnotationAsync(
         nodeProvider,
         node,
         parameterElement,
@@ -163,10 +222,13 @@ class ParameterInfo {
         node,
         node.name.lexeme,
         parameterElement.type,
-        fieldType,
+        fieldInfo.typeAnnotation,
         null,
+        fieldInfo.declaringType.element?.name ??
+            fieldInfo.declaringType.getDisplayString(withNullability: false),
         node.keyword?.stringValue,
         parameterElement.defaultValueCode,
+        null,
         parameterElement.isRequiredNamed
             ? ParameterRequirability.required
             : ParameterRequirability.notRequired,
@@ -192,13 +254,15 @@ class ParameterInfo {
         type,
         typeAnnotation,
         functionTypedParameter,
+        declaringTypeName,
         keyword,
+        null,
         null,
         ParameterRequirability.forciblyOptional,
         isCollectionType: isCollectionType,
       );
 
-  static FutureOr<TypeAnnotation?> _getThisFieldTypeAnnotationAsync(
+  static FutureOr<_FieldInfo> _getThisFieldTypeAnnotationAsync(
     NodeProvider nodeProvider,
     FieldFormalParameter node,
     ParameterElement parameterElement,
@@ -217,37 +281,97 @@ class ParameterInfo {
     );
   }
 
-  static FutureOr<TypeAnnotation?> _getSuperFieldTypeAnnotationAsync(
+  static FutureOr<_FieldInfo> _getSuperFieldTypeAnnotationAsync(
     NodeProvider nodeProvider,
     SuperFormalParameter node,
     ParameterElement parameterElement,
   ) async {
-    InterfaceElement? targetClass =
-        parameterElement.thisOrAncestorOfType<ClassElement>();
-    while (targetClass != null) {
-      final fieldElement = targetClass.lookUpGetter(
-        node.name.lexeme,
-        parameterElement.library!,
-      );
-      if (fieldElement != null) {
-        return _getFieldTypeAnnotationCoreAsync(
-          nodeProvider,
-          targetClass,
-          node,
-          parameterElement,
-          fieldElement,
-        );
-      }
+    final targetClass = parameterElement.thisOrAncestorOfType<ClassElement>();
+    assert(
+      targetClass != null,
+      'Failed to find class declaration of $parameterElement',
+    );
 
-      targetClass = targetClass.supertype?.element;
-    }
+    final superClass = targetClass!.supertype?.element;
+    assert(
+      superClass != null,
+      'Failed to find super class of $targetClass',
+    );
 
-    throw Exception(
-      "Failed to get correspond field of super parameter '$parameterElement'.",
+    final superConstructor =
+        superClass!.constructors.singleWhereOrNull((c) => c.name.isEmpty);
+    assert(
+      superConstructor != null,
+      'Failed to find constructor of $superClass for $node',
+    );
+
+    final parameterOnSuperConstructor = superConstructor!.parameters
+        .singleWhereOrNull((p) => p.name == parameterElement.name);
+    assert(
+      parameterOnSuperConstructor != null,
+      "Failed to find parameter '${parameterElement.name}' in constructor of "
+      '$superClass',
+    );
+
+    return _getConstructorParameterTypeAnnotationAsync(
+      nodeProvider,
+      superClass,
+      await nodeProvider.getElementDeclarationAsync<FormalParameter>(
+        parameterOnSuperConstructor!,
+      ),
+      parameterOnSuperConstructor,
     );
   }
 
-  static FutureOr<TypeAnnotation?> _getFieldTypeAnnotationCoreAsync(
+  static FutureOr<_FieldInfo> _getConstructorParameterTypeAnnotationAsync(
+    NodeProvider nodeProvider,
+    InterfaceElement declaringClass,
+    FormalParameter parameterNode,
+    ParameterElement parameterElement,
+  ) async {
+    if (parameterNode is SimpleFormalParameter) {
+      return _FieldInfo(parameterNode.type, declaringClass.thisType);
+    }
+
+    if (parameterNode is FieldFormalParameter) {
+      return await _getFieldTypeAnnotationCoreAsync(
+        nodeProvider,
+        declaringClass,
+        parameterNode,
+        parameterElement,
+        declaringClass.lookUpGetter(
+          parameterNode.name.lexeme,
+          parameterElement.library!,
+        )!,
+      );
+    }
+
+    if (parameterNode is SuperFormalParameter) {
+      return await _getSuperFieldTypeAnnotationAsync(
+        nodeProvider,
+        parameterNode,
+        parameterElement,
+      );
+    }
+
+    if (parameterNode is DefaultFormalParameter) {
+      return await _getConstructorParameterTypeAnnotationAsync(
+        nodeProvider,
+        declaringClass,
+        parameterNode.parameter,
+        parameterNode.parameter.declaredElement!,
+      );
+    }
+
+    assert(
+      parameterNode is FunctionTypedFormalParameter,
+      'Unknown parameter type of $parameterNode: ${parameterNode.runtimeType}',
+    );
+
+    return _FieldInfo(null, declaringClass.thisType);
+  }
+
+  static FutureOr<_FieldInfo> _getFieldTypeAnnotationCoreAsync(
     NodeProvider nodeProvider,
     InterfaceElement classElement,
     FormalParameter node,
@@ -258,7 +382,10 @@ class ParameterInfo {
         .getElementDeclarationAsync(fieldElement.nonSynthetic);
     // Always become VariableDeclaration which is retrieved from FieldFormalParameter.
     assert(fieldNode is VariableDeclaration);
-    return (fieldNode.parent! as VariableDeclarationList).type;
+    return _FieldInfo(
+      (fieldNode.parent! as VariableDeclarationList).type,
+      classElement.thisType,
+    );
   }
 }
 
@@ -273,7 +400,8 @@ enum ParameterRequirability {
   /// their type, so all positional parameters should be [notRequired].
   notRequired,
 
-  /// Paramter should be treated as nullable and optional regardless its declaration.
+  /// Paramter shoul
+  /// d be treated as nullable and optional regardless its declaration.
   forciblyOptional,
 }
 
@@ -460,7 +588,20 @@ abstract class GenericType {
     // NOTE: currenty, `type` never be non-instantiated generic type.
 
     if (type is InterfaceType) {
-      assert(!type.typeArguments.any((t) => t is TypeParameterType));
+      if (type.typeArguments.isNotEmpty) {
+        // recursively parse it.
+        return GenericType.generic(
+          type,
+          type.typeArguments
+              .map(
+                (t) => GenericType.fromDartType(t, contextElement),
+              )
+              .toList(),
+          contextElement,
+        );
+      }
+
+      // else: fall-through to _NonGenericType().
     } else if (type is FunctionType) {
       final alias = type.alias;
       if (alias == null) {
