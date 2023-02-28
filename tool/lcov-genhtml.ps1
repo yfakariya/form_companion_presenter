@@ -66,8 +66,9 @@ try {
         }
 
         Write-Information "$lcovFilePath does not exist but some *.vm.json files are found. Converting..."
+        [string]$pacakageJsonPath = [Path]::GetFullPath("$inputPath\..\.dart_tool\package_config.json")
  
-        fvm dart pub global run coverage:format_coverage --packages=.packages --report-on=lib --lcov -i "$inputPath" -o $lcovFilePath
+        fvm dart pub global run coverage:format_coverage --packages=.packages --report-on=lib --lcov -i "$inputPath" -o $lcovFilePath --packages="$pacakageJsonPath"
         if ($LASTEXITCODE -ne 0) {
             throw 'Failed to run coverage:format_coverage to convert *.vm.json file(s) to lcov.info.'
         }
