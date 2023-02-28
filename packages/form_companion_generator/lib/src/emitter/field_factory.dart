@@ -81,7 +81,7 @@ Iterable<String> _emitFieldFactoriesClasses(
     yield* emitFieldFactory(nodeProvider, data, property, logger);
   }
 
-  yield* emitFunctionDefaults(
+  yield* _emitFunctionDefaults(
     data.properties.where((p) => p.isSimpleFormField),
   );
 
@@ -125,7 +125,7 @@ Iterable<String> _emitFieldFactoriesClasses(
       );
     }
 
-    yield* emitFunctionDefaults(
+    yield* _emitFunctionDefaults(
       data.properties.where((p) => !p.isSimpleFormField),
     );
 
@@ -319,10 +319,9 @@ String emitParameter(
   return sink.toString();
 }
 
-// TODO: testing!
 /// Emits default value of function typed parameter which require static method
 /// declaration. This method actually emits such (non-public) method decaration.
-Iterable<String> emitFunctionDefaults(
+Iterable<String> _emitFunctionDefaults(
   Iterable<PropertyAndFormFieldDefinition> properties,
 ) sync* {
   for (final entry in properties
@@ -339,6 +338,6 @@ Iterable<String> emitFunctionDefaults(
   }).entries) {
     final method = entry.value.defaultTargetNonPublicMethod!;
     yield '';
-    yield '  ${method.isStatic ? 'static' : ''} ${method.returnType} ${entry.key}(${method.parameters?.parameters.join(', ')}) ${method.body}';
+    yield '  static ${method.returnType} ${entry.key}(${method.parameters?.parameters.join(', ')}) ${method.body}';
   }
 }

@@ -13,6 +13,7 @@ import 'package:source_gen/source_gen.dart';
 import 'arguments_handler.dart';
 import 'dependency.dart';
 import 'node_provider.dart';
+import 'parser/parser_helpers.dart';
 import 'type_instantiation.dart';
 import 'utilities.dart';
 import 'utilities.dart' as u;
@@ -21,6 +22,63 @@ class _FieldInfo {
   final TypeAnnotation? typeAnnotation;
   final DartType declaringType;
   _FieldInfo(this.typeAnnotation, this.declaringType);
+}
+
+class _FunctionTypedParameterDefaultValueInfo {
+  final String defaultValueCode;
+  final FunctionTypedParameterDefaultValueMethod? method;
+
+  _FunctionTypedParameterDefaultValueInfo.withMethod(
+    FunctionTypedParameterDefaultValueMethod method,
+  )   : defaultValueCode = method.name,
+        method = method;
+
+  _FunctionTypedParameterDefaultValueInfo.withoutMethod(
+    this.defaultValueCode,
+  ) : method = null;
+}
+
+/// Represents a static method source to
+/// build function typed parameter's default value.
+class FunctionTypedParameterDefaultValueMethod {
+  /// Gets a name of the static method.
+  final String name;
+
+  /// Gets a return value type of the static method.
+  final TypeAnnotation returnType;
+
+  /// Gets parameters of the static method.
+  final FormalParameterList parameters;
+
+  /// Gets a function body of the static method.
+  final FunctionBody body;
+
+  FunctionTypedParameterDefaultValueMethod._(
+    this.name,
+    this.returnType,
+    this.parameters,
+    this.body,
+  );
+
+  FunctionTypedParameterDefaultValueMethod._fromFunction(
+    String name,
+    FunctionDeclaration function,
+  ) : this._(
+          name,
+          function.returnType!,
+          function.functionExpression.parameters!,
+          function.functionExpression.body,
+        );
+
+  FunctionTypedParameterDefaultValueMethod._fromMethod(
+    String name,
+    MethodDeclaration method,
+  ) : this._(
+          name,
+          method.returnType!,
+          method.parameters!,
+          method.body,
+        );
 }
 
 /// Represents a parameter.
@@ -70,7 +128,7 @@ class ParameterInfo {
 
   /// Gets a method declaration if and only if the [defaultValue] is identifier
   /// of non public static method as default value of function typed parameter.
-  final MethodDeclaration? defaultTargetNonPublicMethod;
+  final FunctionTypedParameterDefaultValueMethod? defaultTargetNonPublicMethod;
 
   /// Returns `true` if this parameter has default value.
   bool get hasDefaultValue => defaultValue != null;
@@ -100,30 +158,23 @@ class ParameterInfo {
       final base =
           await ParameterInfo.fromNodeAsync(nodeProvider, node.parameter);
 
-      // TODO: testing!
-      // TODO: support super.p = _nonPublic in (intermediate) super type.
       final defaultValueType = node.parameter.declaredElement?.type;
       late final String? defaultValueCode;
-      late final MethodDeclaration? defaultTargetNonPublicMethod;
+      late final FunctionTypedParameterDefaultValueMethod?
+          defaultTargetNonPublicMethod;
 
       if (base.defaultValue != null &&
-          defaultValueType != null &&
           base.defaultValue != 'null' &&
           defaultValueType is FunctionType) {
-        if (base.defaultValue!.startsWith('_') ||
-            base.declaringTypeName.startsWith('_')) {
-          defaultValueCode = '_${base.declaringTypeName}${base.defaultValue}';
-          defaultTargetNonPublicMethod =
-              await nodeProvider.getElementDeclarationAsync(
-            (node.defaultValue! as Identifier).staticElement! as MethodElement,
-          );
-        } else {
-          defaultValueCode = '${base.declaringTypeName}.${base.defaultValue}';
-          defaultTargetNonPublicMethod = null;
-        }
+        final lookupResult = await _lookupDefaultTargetNonPublicMethodAsync(
+          nodeProvider,
+          node,
+        );
+        defaultTargetNonPublicMethod = lookupResult.method;
+        defaultValueCode = lookupResult.defaultValueCode;
       } else {
-        defaultValueCode = base.defaultValue;
         defaultTargetNonPublicMethod = null;
+        defaultValueCode = base.defaultValue;
       }
 
       return ParameterInfo._(
@@ -244,6 +295,135 @@ class ParameterInfo {
           "Failed to parse complex parameter '$node' (${node.runtimeType}) at ${getNodeLocation(node, node.declaredElement!)} ",
       element: node.declaredElement,
     );
+  }
+
+  static FutureOr<_FunctionTypedParameterDefaultValueInfo>
+      _lookupDefaultTargetNonPublicMethodAsync(
+    NodeProvider nodeProvider,
+    DefaultFormalParameter parameter,
+  ) async {
+    FutureOr<_FunctionTypedParameterDefaultValueInfo> buildAsync(
+      String name,
+      ExecutableElement element,
+    ) async {
+      final node = await nodeProvider.getElementDeclarationAsync(element);
+      if (node is MethodDeclaration) {
+        return _FunctionTypedParameterDefaultValueInfo.withMethod(
+          FunctionTypedParameterDefaultValueMethod._fromMethod(
+            name,
+            node,
+          ),
+        );
+      } else {
+        assert(
+          node is FunctionDeclaration,
+          // coverage:ignore-start
+          "'$node' (${node.runtimeType}) is unknown AstNode for element "
+          "'$element'(${element.runtimeType}).",
+          // coverage:ignore-end
+        );
+        return _FunctionTypedParameterDefaultValueInfo.withMethod(
+          FunctionTypedParameterDefaultValueMethod._fromFunction(
+            name,
+            node as FunctionDeclaration,
+          ),
+        );
+      }
+    }
+
+    final parameterElement = parameter.declaredElement!;
+    late final Expression defaultValue;
+    if (parameter.defaultValue != null) {
+      defaultValue = parameter.defaultValue!;
+    } else {
+      // from left
+      // Caller should call when base.defaultValue is not null.
+      assert(parameter.parameter.declaredElement?.defaultValueCode != null);
+
+      // When the super parameter has default value which is declared in
+      // the super class, parameter.defaultValue is null
+      // but parameter.parameter.declaredElement?.defaultValueCode is not null.
+      // We can get the default value expression from AstNode for
+      // element.superConstructorParameter element here.
+      assert(
+        parameter.parameter.declaredElement is SuperFormalParameterElement,
+      );
+      final superElement =
+          parameter.parameter.declaredElement! as SuperFormalParameterElement;
+      assert(
+        superElement.superConstructorParameter != null,
+        // coverage:ignore-line
+        '$superElement in ${parameter.parent} does not have superConstructorParameter.',
+      );
+      final leftNode =
+          await nodeProvider.getElementDeclarationAsync<DefaultFormalParameter>(
+        superElement.superConstructorParameter!,
+      );
+      defaultValue = leftNode.defaultValue!;
+    }
+
+    if (defaultValue is SimpleIdentifier) {
+      final declaringClass =
+          parameterElement.thisOrAncestorOfType<InterfaceElement>()!;
+      final maybeThisMethod = declaringClass.lookUpMethod(
+        defaultValue.name,
+        parameterElement.library!,
+      );
+      if (!defaultValue.name.startsWith('_')) {
+        // public method or function
+        return _FunctionTypedParameterDefaultValueInfo.withoutMethod(
+          maybeThisMethod != null
+              // The building field factory is not "declaringClass",
+              // so class name prefix is required.
+              ? '${declaringClass.name}.${defaultValue.name}'
+              // Top level function, so prefix does not exist.
+              : defaultValue.name,
+        );
+      } else {
+        return await buildAsync(
+          maybeThisMethod == null
+              ? defaultValue.name
+              : '_default_${declaringClass.name}_${defaultValue.name}',
+          maybeThisMethod ??
+              lookupMethod(
+                parameterElement,
+                null,
+                defaultValue.name,
+                defaultValue,
+              ),
+        );
+      }
+    }
+
+    if (defaultValue is PrefixedIdentifier) {
+      final prefix = defaultValue.prefix;
+      final identifier = defaultValue.identifier;
+      if (!prefix.name.startsWith('_') && !identifier.name.startsWith('_')) {
+        // public method
+        return _FunctionTypedParameterDefaultValueInfo.withoutMethod(
+          defaultValue.name,
+        );
+      } else {
+        return await buildAsync(
+          '_default_${prefix.name}_${identifier.name}',
+          lookupMethod(
+            parameterElement,
+            parameterElement.library!.scope.lookup(prefix.name).getter!
+                as InterfaceElement,
+            identifier.name,
+            defaultValue,
+          ),
+        );
+      }
+    }
+
+    // coverage:ignore-start
+    assert(
+      false,
+      "Unexpected default value type of '$defaultValue': ${defaultValue.runtimeType}",
+    );
+    throwNotSupportedYet(node: parameter, contextElement: parameterElement);
+    // coverage:ignore-end
   }
 
   /// Returns a copy of this instance clearing [defaultValue] and setting

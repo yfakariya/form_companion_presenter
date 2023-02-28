@@ -2270,7 +2270,7 @@ String textFormFieldFactory(
     String? restorationId,
     bool enableIMEPersonalizedLearning = true,
     MouseCursor? mouseCursor,
-    EditableTextContextMenuBuilder? contextMenuBuilder = _TextFormField_defaultContextMenuBuilder,
+    EditableTextContextMenuBuilder? contextMenuBuilder = _default_TextFormField__defaultContextMenuBuilder,
   }) {
     final property = _properties.descriptors.$propertyName;
     return TextFormField(
@@ -2331,7 +2331,7 @@ String textFormFieldFactory(
   }''';
 
 const textFormFieldFunctionAuguments = '''
-  static Widget _TextFormField_defaultContextMenuBuilder(BuildContext context, EditableTextState editableTextState) {return AdaptiveTextSelectionToolbar.editableText(editableTextState: editableTextState);}''';
+  static Widget _default_TextFormField__defaultContextMenuBuilder(BuildContext context, EditableTextState editableTextState) {return AdaptiveTextSelectionToolbar.editableText(editableTextState: editableTextState);}''';
 
 String dropdownButtonFieldFactory(
   String propertyName,
