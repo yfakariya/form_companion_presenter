@@ -91,6 +91,24 @@ Future<void> easyL10n() async {
 Future<void> runBuildRunner() async {
   final command =
       context.invocation.arguments.getFlag('watch') ? 'watch' : 'build';
+
+  if (command != 'watch') {
+    await runAsync(
+      'fvm',
+      arguments: [
+        'flutter',
+        'pub',
+        'run',
+        'build_runner',
+        'clean',
+      ],
+      runOptions: RunOptions(
+        stdoutEncoding: utf8,
+        stderrEncoding: utf8,
+      ),
+    );
+  }
+
   await runAsync(
     'fvm',
     arguments: [
