@@ -17,49 +17,62 @@ class TypeInstantiationContext {
 
   /// Creates a new [TypeInstantiationContext] instance
   /// for the [PropertyDefinition].
+  ///
+  /// Note that [formFieldType] must be fully instantiated [InterfaceType]
+  /// if it is specified as `preferredFieldType` because it may have any
+  /// type argument(s) for its super which cannot be lead from
+  /// [PropertyDefinition.fieldType].
+  /// For example, the second type argument `bool` of
+  /// `Derived<T> extends Super<T, bool>` cannot be lead from the `fieldType`.
   factory TypeInstantiationContext.create(
     PropertyDefinition property,
     InterfaceType formFieldType,
     Logger logger,
   ) {
-    // derived to super.
-    final typeChain = <InterfaceType>[];
-    {
-      for (var type = formFieldType;
-          type.element.name != 'FormField';
-          // We must erase type argument information chain from leaf here
+    Iterable<InterfaceType> buildTypeChain(InterfaceType leafType) sync* {
+      // derived to super.
+      for (var type = leafType;
+          type.element.name !=
+              'FormField'; // We must erase type argument information chain from leaf here
           // to traverse mapping information.
           type = type.superclass!.element.thisType) {
-        typeChain.add(type);
+        yield type;
         assert(type.superclass != null, "type.superclass of '$type' is null.");
       }
     }
 
-    final mapping = <String, Map<String, GenericType>>{};
-    mapping['FormField'] = {'T': property.fieldType};
-
-    // super to dervied
-    for (final type in typeChain.reversed) {
-      _buildTypeArgumentMappings(type, mapping);
-    }
-
-    // Follow-up for type arguments for leaf type which is not passed to the ancestor here.
-    {
+    void buildLeafTypeMap(
+      InterfaceType leafType,
+      Map<String, Map<String, GenericType>> mapping,
+    ) {
+      // Follow-up for type arguments for leaf type which is not passed to the ancestor here.
       final mappingOfLeafType =
-          mapping.putIfAbsent(formFieldType.element.name, () => {});
-      final typeParametersOfThis = formFieldType.element.thisType.typeArguments;
-      final typeArgumentsToThis = formFieldType.typeArguments;
+          mapping.putIfAbsent(leafType.element.name, () => {});
+      final typeParametersOfThis = leafType.element.thisType.typeArguments;
+      final typeArgumentsToThis = leafType.typeArguments;
 
-      for (var i = 0; i < formFieldType.typeArguments.length; i++) {
+      for (var i = 0; i < leafType.typeArguments.length; i++) {
         mappingOfLeafType.putIfAbsent(
           typeParametersOfThis[i].element!.name!,
           () => GenericType.fromDartType(
             typeArgumentsToThis[i],
-            formFieldType.element,
+            leafType.element,
           ),
         );
       }
     }
+
+    final typeChain = buildTypeChain(formFieldType).toList();
+
+    final mapping = <String, Map<String, GenericType>>{};
+    mapping['FormField'] = {'T': property.fieldType};
+
+    // super to derived
+    for (final type in typeChain.reversed) {
+      _buildTypeArgumentMappings(type, mapping);
+    }
+
+    buildLeafTypeMap(formFieldType, mapping);
 
     logger.finer(
       "Create type arguments mapping between field type arguments of '$formFieldType': $mapping",
