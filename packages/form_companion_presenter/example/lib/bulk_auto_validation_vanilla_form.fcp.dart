@@ -360,7 +360,7 @@ class $BulkAutoValidationVanillaFormAccountPresenterFieldFactory {
     bool enableIMEPersonalizedLearning = true,
     MouseCursor? mouseCursor,
     EditableTextContextMenuBuilder? contextMenuBuilder =
-        _TextFormField_defaultContextMenuBuilder,
+        _default_TextFormField__defaultContextMenuBuilder,
   }) {
     final property = _properties.descriptors.id;
     return TextFormField(
@@ -477,7 +477,7 @@ class $BulkAutoValidationVanillaFormAccountPresenterFieldFactory {
     bool enableIMEPersonalizedLearning = true,
     MouseCursor? mouseCursor,
     EditableTextContextMenuBuilder? contextMenuBuilder =
-        _TextFormField_defaultContextMenuBuilder,
+        _default_TextFormField__defaultContextMenuBuilder,
   }) {
     final property = _properties.descriptors.name;
     return TextFormField(
@@ -665,7 +665,7 @@ class $BulkAutoValidationVanillaFormAccountPresenterFieldFactory {
     bool enableIMEPersonalizedLearning = true,
     MouseCursor? mouseCursor,
     EditableTextContextMenuBuilder? contextMenuBuilder =
-        _TextFormField_defaultContextMenuBuilder,
+        _default_TextFormField__defaultContextMenuBuilder,
   }) {
     final property = _properties.descriptors.age;
     return TextFormField(
@@ -730,7 +730,7 @@ class $BulkAutoValidationVanillaFormAccountPresenterFieldFactory {
     );
   }
 
-  static Widget _TextFormField_defaultContextMenuBuilder(
+  static Widget _default_TextFormField__defaultContextMenuBuilder(
       BuildContext context, EditableTextState editableTextState) {
     return AdaptiveTextSelectionToolbar.editableText(
         editableTextState: editableTextState);
