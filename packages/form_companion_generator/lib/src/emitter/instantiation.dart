@@ -7,7 +7,7 @@ import 'package:analyzer/dart/element/type.dart';
 
 import '../type_instantiation.dart';
 
-// TODO'yfakariya): generic type instantiation should be handled in parser instead of emitter.
+// TODO(yfakariya): generic type instantiation should be handled in parser instead of emitter.
 
 /// Represents context when the parameter is emitted.
 enum EmitParameterContext {

@@ -338,6 +338,6 @@ Iterable<String> _emitFunctionDefaults(
   }).entries) {
     final method = entry.value.defaultTargetNonPublicMethod!;
     yield '';
-    yield '  static ${method.returnType} ${entry.key}(${method.parameters?.parameters.join(', ')}) ${method.body}';
+    yield '  static ${method.returnType} ${entry.key}(${method.parameters.parameters.join(', ')}) ${method.body}';
   }
 }
