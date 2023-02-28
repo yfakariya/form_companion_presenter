@@ -554,6 +554,9 @@ abstract class GenericType {
   /// Whether this type is nullable or not.
   bool get isNullable;
 
+  /// Whether this type contains any non-instantiated generic type parameters or not.
+  bool get hasTypeParameter;
+
   /// Returns a new [GenericType] instance.
   factory GenericType.generic(
     DartType rawType,
@@ -722,6 +725,9 @@ class _NonGenericType extends GenericType {
   bool get isNullable => type.nullabilitySuffix != NullabilitySuffix.none;
 
   @override
+  bool get hasTypeParameter => false;
+
+  @override
   List<GenericType> get typeArguments {
     final type = this.type;
     return type is InterfaceType
@@ -832,6 +838,10 @@ class _InstantiatedGenericInterfaceType extends GenericType {
   bool get isNullable =>
       _interfaceType.nullabilitySuffix != NullabilitySuffix.none;
 
+  @override
+  bool get hasTypeParameter => typeArguments
+      .any((t) => t.rawType is TypeParameterType || t.hasTypeParameter);
+
   _InstantiatedGenericInterfaceType(
     this._interfaceType,
     this._rawType,
@@ -839,6 +849,8 @@ class _InstantiatedGenericInterfaceType extends GenericType {
   )   : assert(
           _rawType.typeArguments.whereType<TypeParameterType>().length ==
               typeArguments.length,
+          // coverage:ignore-line
+          "Arity mismatch between '$_rawType' and type arguments [${typeArguments.join(', ')}]",
         ),
         super._();
 
@@ -933,6 +945,10 @@ class _InstantiatedGenericFunctionType extends GenericFunctionType {
 
   @override
   GenericType? get collectionItemType => null;
+
+  @override
+  bool get hasTypeParameter => typeArguments
+      .any((t) => t.rawType is TypeParameterType || t.hasTypeParameter);
 
   _InstantiatedGenericFunctionType(
     FunctionType functionType,

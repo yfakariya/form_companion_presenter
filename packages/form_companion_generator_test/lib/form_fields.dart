@@ -28,6 +28,8 @@ const Type formBuilderTextField = FormBuilderTextField;
 const Type dateTime = DateTime;
 const Type dateTimeRange = DateTimeRange;
 
+const Type dropdownButtonFormFieldOfString = DropdownButtonFormField<String>;
+
 const Type formBuilderDropdownOfMyEnum = FormBuilderDropdown<MyEnum>;
 const Type formBuilderFilterChipOfMyEnum = FormBuilderFilterChip<MyEnum>;
 

@@ -161,3 +161,8 @@ bool isTypeName(String mayBeTypeName) {
   return codePoint >= _CodePoint.asciiUpperA &&
       codePoint <= _CodePoint.asciiUpperZ;
 }
+
+/// Determines that whether [type] has any uninsitantiated generic type parameters.
+bool isInstantiated(DartType type) =>
+    type is! TypeParameterType &&
+    (type is! ParameterizedType || type.typeArguments.every(isInstantiated));

@@ -15,8 +15,6 @@ class TypeInstantiationContext {
     this._typeArgumentsMappings,
   );
 
-  // TODO: testing
-
   /// Creates a new [TypeInstantiationContext] instance
   /// for the [PropertyDefinition].
   factory TypeInstantiationContext.create(
