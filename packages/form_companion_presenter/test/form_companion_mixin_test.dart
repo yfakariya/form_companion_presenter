@@ -738,7 +738,7 @@ void main() {
       expect(anotherValidatorCalled, equals(formShouldBeReevaluated));
 
       // reset causes validation only AutovalidateMode.always
-      Form.of(lastContext)!.reset();
+      Form.of(lastContext).reset();
       await tester.pump();
 
       // By resetting form

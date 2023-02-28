@@ -118,8 +118,7 @@ mixin FormBuilderCompanionMixin on CompanionPresenterMixin {
 
     // This is required to register this BuildContext source is depending
     // Form. Note that FormBuilder internally uses Form to set _FormScope.
-    final formState = Form.of(context);
-    assert(formState != null);
+    Form.of(context);
     return _FormBuilderStateAdapter(state, getLocale(context));
   }
 
