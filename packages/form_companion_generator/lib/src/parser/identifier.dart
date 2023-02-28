@@ -39,12 +39,19 @@ FutureOr<PropertyDescriptorsBuilding> _parsePropertyAccessAsync(
   assert(isPropertyDescriptorsBuilder(access.staticType));
 
   final target = access.target;
+  // NOTE: In analyzer 5.2, target is always PrefixedIdentifier
+  //       because x.y form is parsed to MethodInvocation or other constructs
+  //       rather than PropertyAccess.
+  //       But this code try to handle the analyzer implementation changes.
   final lookupContextElement = target is PrefixedIdentifier
       ? target.identifier.staticElement!
       : target is SimpleIdentifier
           ? target.staticElement!
           : contextElement;
 
+  // NOTE: In analyzer 5.2, class lookup always success because other constructs
+  //       are parsed as non-PropertyAccess.
+  //       But this code try to handle the analyzer implementation changes.
   final getter = lookupContextElement
           .thisOrAncestorOfType<ClassElement>()
           ?.lookUpGetter(access.propertyName.name, contextElement.library!) ??
@@ -97,10 +104,12 @@ FutureOr<PropertyDescriptorsBuilding> _parseGetterAsync(
 
     return building;
   } else {
+    // coverage:ignore-start
     throwNotSupportedYet(
       node: node,
       element: getter,
       contextElement: contextElement,
     );
+    // coverage:ignore-end
   }
 }

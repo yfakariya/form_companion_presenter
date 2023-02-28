@@ -422,6 +422,7 @@ class C extends B {
       required TypeKind kind,
       required bool isNullable,
       required String? collectionItemType,
+      required bool hasTypeParameter,
     }) async {
       if (sourceType is InterfaceType) {
         expect(
@@ -484,6 +485,12 @@ class C extends B {
         collectionItemType,
         reason: 'collectionItemType : ${target.runtimeType}',
       );
+      expect(
+        target.hasTypeParameter,
+        hasTypeParameter,
+        reason:
+            'hasTypeParameter : ${target.getDisplayString(withNullability: true)}',
+      );
     }
 
     Future<void> testGenericType({
@@ -496,6 +503,7 @@ class C extends B {
       required TypeKind kind,
       required bool isNullable,
       required String? collectionItemType,
+      required bool hasTypeParameter,
     }) async {
       final type = source.type;
       final target = typeArguments.isEmpty
@@ -511,6 +519,7 @@ class C extends B {
         kind: kind,
         isNullable: isNullable,
         collectionItemType: collectionItemType,
+        hasTypeParameter: hasTypeParameter,
       );
     }
 
@@ -615,6 +624,7 @@ class C extends B {
               collectionItemType: spec.collectionItemType != null
                   ? '${spec.collectionItemType}${nullable ? '?' : ''}'
                   : null,
+              hasTypeParameter: false,
             ),
           );
         }
@@ -731,6 +741,7 @@ class C extends B {
               kind: spec.kind,
               isNullable: nullable,
               collectionItemType: spec.collectionItemType,
+              hasTypeParameter: false,
             ),
           );
         }
@@ -777,6 +788,7 @@ class C extends B {
             kind: spec.kind,
             isNullable: true,
             collectionItemType: spec.collectionItemType,
+            hasTypeParameter: false,
           ),
         );
       } // complex function types
@@ -797,6 +809,7 @@ class C extends B {
             kind: TypeKind.stringType,
             collectionItemType: null,
             isNullable: false,
+            hasTypeParameter: false,
           );
         },
       );
@@ -817,6 +830,7 @@ class C extends B {
             kind: TypeKind.otherType,
             collectionItemType: null,
             isNullable: false,
+            hasTypeParameter: false,
           );
         },
       );
@@ -846,6 +860,7 @@ class C extends B {
             kind: TypeKind.otherType,
             collectionItemType: null,
             isNullable: false,
+            hasTypeParameter: false,
           );
         },
       );
@@ -871,6 +886,7 @@ class C extends B {
             kind: TypeKind.otherType,
             collectionItemType: null,
             isNullable: false,
+            hasTypeParameter: false,
           );
         },
       );
@@ -892,6 +908,7 @@ class C extends B {
             kind: TypeKind.otherType,
             collectionItemType: null,
             isNullable: false,
+            hasTypeParameter: false,
           );
         },
       );
@@ -913,6 +930,7 @@ class C extends B {
             kind: TypeKind.otherType,
             collectionItemType: null,
             isNullable: false,
+            hasTypeParameter: false,
           );
         },
       );
@@ -940,6 +958,7 @@ class C extends B {
             kind: TypeKind.otherType,
             collectionItemType: null,
             isNullable: false,
+            hasTypeParameter: false,
           );
         },
       );
@@ -967,6 +986,7 @@ class C extends B {
             kind: TypeKind.otherType,
             collectionItemType: null,
             isNullable: false,
+            hasTypeParameter: false,
           );
         },
       );
@@ -987,6 +1007,7 @@ class C extends B {
             kind: TypeKind.otherType,
             collectionItemType: null,
             isNullable: false,
+            hasTypeParameter: false,
           );
         },
       );
@@ -1007,6 +1028,7 @@ class C extends B {
             kind: TypeKind.otherType,
             collectionItemType: null,
             isNullable: false,
+            hasTypeParameter: false,
           );
         },
       );
@@ -1087,6 +1109,52 @@ class C extends B {
                     same(parameter),
                   ),
             ),
+          );
+        },
+      );
+
+      test(
+        'open generic interface type',
+        () async {
+          final element = parametersLibrary.scope
+              .lookup('AList')
+              .getter!
+              .thisOrAncestorOfType<TypeAliasElement>()!;
+          final type = element.aliasedType;
+          await assertGenericType(
+            sourceType: type,
+            target: GenericType.fromDartType(type, element),
+            expectedTypeArguments: ['E'],
+            rawTypeName: 'List<E>',
+            displayStringWithNullability: 'List<E>',
+            displayStringWithoutNullability: 'List<E>',
+            kind: TypeKind.otherType,
+            collectionItemType: 'E',
+            isNullable: false,
+            hasTypeParameter: true,
+          );
+        },
+      );
+
+      test(
+        'open generic function type',
+        () async {
+          final element = parametersLibrary.scope
+              .lookup('GenericCallback')
+              .getter!
+              .thisOrAncestorOfType<TypeAliasElement>()!;
+          final type = element.aliasedType;
+          await assertGenericType(
+            sourceType: type,
+            target: GenericType.fromDartType(type, element),
+            expectedTypeArguments: ['T'],
+            rawTypeName: 'void Function<T>(T)',
+            displayStringWithNullability: 'void Function<T>(T)',
+            displayStringWithoutNullability: 'void Function<T>(T)',
+            kind: TypeKind.otherType,
+            collectionItemType: null,
+            isNullable: false,
+            hasTypeParameter: true,
           );
         },
       );

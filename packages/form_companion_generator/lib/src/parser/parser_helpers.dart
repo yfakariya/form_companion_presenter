@@ -57,13 +57,13 @@ ExecutableElement lookupMethod(
           contextElement.library!.scope.lookup(methodName).getter
               as ExecutableElement?;
 
-  if (found == null) {
-    throwError(
-      message:
-          "Failed to lookup method or function '$invocation' in context of "
-          '${contextElement.library} at ${getNodeLocation(invocation, contextElement)}.',
-      element: contextElement,
-    );
-  }
-  return found;
+  assert(
+    found != null,
+    // coverage:ignore-start
+    "Failed to lookup method or function '$invocation' in context of "
+    '${contextElement.library} at ${getNodeLocation(invocation, contextElement)}.',
+    // coverage:ignore-end
+  );
+
+  return found!;
 }

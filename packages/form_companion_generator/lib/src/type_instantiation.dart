@@ -155,11 +155,11 @@ class TypeInstantiationContext {
       // Do structural mapping here
       assert(
         realTemplate.element!.name == instance.rawType.element!.name,
-        '${realTemplate.element!.name} != ${instance.rawType.element!.name} in $currentType',
+        '${realTemplate.element!.name} != ${instance.rawType.element!.name} in $currentType', // coverage:ignore-line
       );
       assert(
         realTemplate.typeArguments.length == instance.typeArguments.length,
-        'Arity mismatch between $realTemplate and $instance',
+        'Arity mismatch between $realTemplate and $instance', // coverage:ignore-line
       );
 
       if (realTemplate.typeArguments.isEmpty) {
@@ -182,13 +182,13 @@ class TypeInstantiationContext {
     if (realTemplate is FunctionType) {
       assert(
         instance is GenericFunctionType,
-        '$instance is not GenericFunctionType',
+        '$instance is not GenericFunctionType', // coverage:ignore-line
       );
       final functionTypeArgument = instance as GenericFunctionType;
       assert(
         realTemplate.parameters.length ==
             functionTypeArgument.parameterTypes.length,
-        'Parameter count mismatch between $realTemplate and $functionTypeArgument',
+        'Parameter count mismatch between $realTemplate and $functionTypeArgument', // coverage:ignore-line
       );
 
       _buildTypeArgumentMapping(

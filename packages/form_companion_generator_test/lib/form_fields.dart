@@ -7,8 +7,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 
 import 'enum.dart';
+import 'enum.dart' as e;
 
-// for allowing emitter testings loopup FormFields.
+// for allowing emitter testings lookup FormFields.
 
 const Type textFormField = TextFormField;
 const Type dropdownButtonFormField = DropdownButtonFormField;
@@ -55,4 +56,14 @@ class FormFieldWithPropertyParameter extends TextFormField {
           onSaved: onSaved,
           validator: validator,
         );
+}
+
+class FormFieldRefersConstants extends TextFormField {
+  final String withPrefix;
+  final String withoutPrefix;
+
+  FormFieldRefersConstants({
+    this.withPrefix = e.constVariable,
+    this.withoutPrefix = constVariable,
+  });
 }

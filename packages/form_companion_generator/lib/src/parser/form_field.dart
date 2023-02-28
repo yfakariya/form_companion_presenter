@@ -33,8 +33,7 @@ FutureOr<PropertyAndFormFieldDefinition> resolveFormFieldAsync(
   // `TypeInstantiationContext.create` below.
   assert(
     preferredFieldType == null || isInstantiated(preferredFieldType),
-    // coverage:ignore-line
-    "'$preferredFieldType' is not closed generic.",
+    "'$preferredFieldType' is not closed generic.", // coverage:ignore-line
   );
 
   final formFieldType = preferredFieldType ??

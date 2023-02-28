@@ -247,20 +247,26 @@ class DependentLibraryCollector {
         .toList();
 
     if (candidates.isEmpty) {
-      throw AnalysisException(
-        "Failed to resolve logical library for source library '$sourceLibraryId'"
-        " for '$targetElement' in the directory '$libraryDirectory'. ",
-      );
+      // coverage:ignore-start
+      final message =
+          "Failed to resolve logical library for source library '$sourceLibraryId'"
+          " for '$targetElement' in the directory '$libraryDirectory'. ";
+      assert(false, message);
+      throw AnalysisException(message);
+      // coverage:ignore-end
     }
 
     final result = candidates.first.identifier;
     if (candidates.length > 1) {
+      // coverage:ignore-start
       final message = "Library import '$result' may be incorrect because "
           'the locator failed to uniquely locate importing library for '
           "'$sourceLibraryId' for '$targetElement' in directory '$libraryDirectory'. "
           'Found libraries are: [${candidates.map((e) => e.identifier).join(', ')}]';
       _logger.warning(message);
       _warnings.add(message);
+      assert(false, message);
+      // coverage:ignore-end
     }
 
     _logger.fine('Found $result for $targetElement');
@@ -275,10 +281,12 @@ class DependentLibraryCollector {
       // it should call visitNamedType() eventually.
       _handleGenericFunctionType(type);
     } else {
-      throw AnalysisException(
-        "Type of '$type' (${type.runtimeType}) is unexpected "
-        'at ${getNodeLocation(type, _contextClass)}',
-      );
+      // coverage:ignore-start
+      final message = "Type of '$type' (${type.runtimeType}) is unexpected "
+          'at ${getNodeLocation(type, _contextClass)}';
+      assert(false, message);
+      throw AnalysisException(message);
+      // coverage:ignore-end
     }
   }
 
@@ -414,11 +422,14 @@ class DependentLibraryCollector {
       // Parse expression ('12' in above) recursively.
       _handleExpression(expression.element, expression.expression);
     } else {
-      throw AnalysisException(
-        "Unexpected parameter default value expression '$expression' "
-        'type: ${expression.runtimeType} '
-        'at ${getNodeLocation(expression, _contextClass)}',
-      );
+      // coverage:ignore-start
+      final message =
+          "Unexpected parameter default value expression '$expression' "
+          'type: ${expression.runtimeType} '
+          'at ${getNodeLocation(expression, _contextClass)}';
+      assert(false, message);
+      throw AnalysisException(message);
+      // coverage:ignore-end
     }
   }
 

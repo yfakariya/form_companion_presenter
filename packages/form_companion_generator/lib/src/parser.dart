@@ -249,7 +249,9 @@ FutureOr<List<PropertyAndFormFieldDefinition>> getPropertiesAsync(
     building = context.buildings[pdbArgument.name] ?? parsedBuilding!;
   } else if (parsedBuilding == null) {
     // Unexpected complex body.
+    // coverage:ignore-start
     throwNotSupportedYet(node: body, contextElement: initializer.element);
+    // coverage:ignore-end
   } else {
     building = parsedBuilding;
   }
@@ -318,9 +320,10 @@ Element _getDeclaringElement(MethodInvocation expression) {
     }
   }
 
-  throw Exception(
-    "Failed to get declered element of '$expression'.",
-  );
+  // coverage:ignore-start
+  assert(false, "Failed to get declered element of '$expression'.");
+  throw Exception("Failed to get declered element of '$expression'.");
+  // coverage:ignore-end
 }
 
 /// Collects dependencies as a list of [LibraryImport] from `FormField`s

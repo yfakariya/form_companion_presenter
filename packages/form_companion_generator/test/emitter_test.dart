@@ -790,6 +790,53 @@ Future<void> main() async {
       );
     });
 
+    test('2 properties of Strings, they have same default function values',
+        () async {
+      final properties = await makeProperties(
+        [
+          Tuple4(
+            'prop1',
+            library.typeProvider.stringType,
+            library.typeProvider.stringType,
+            textFormField,
+          ),
+          Tuple4(
+            'prop2',
+            library.typeProvider.stringType,
+            library.typeProvider.stringType,
+            textFormField,
+          ),
+        ],
+        isFormBuilder: false,
+      );
+      final data = PresenterDefinition(
+        name: 'Test03',
+        isFormBuilder: false,
+        doAutovalidate: false,
+        warnings: [],
+        imports: await collectDependenciesAsync(
+          library,
+          defaultConfig,
+          properties,
+          nodeProvider,
+          logger,
+          isFormBuilder: false,
+        ),
+        properties: properties,
+      );
+      await expectLater(
+        await emitFieldFactoriesAsync(nodeProvider, data, _emptyConfig, logger),
+        fieldFactories(
+          'Test03',
+          [
+            textFormFieldFactory('prop1'),
+            textFormFieldFactory('prop2'),
+            textFormFieldFunctionAuguments,
+          ],
+        ),
+      );
+    });
+
     group('multiple constructors', () {
       /// [construtorAndDescriptionAndKeyParameterNames] contains
       /// expected constructor name,

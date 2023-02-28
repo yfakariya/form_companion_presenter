@@ -290,11 +290,18 @@ class ParameterInfo {
       );
     }
 
+    // coverage:ignore-start
+    assert(
+      false,
+      "Failed to parse complex parameter '$node' (${node.runtimeType}) "
+      'at ${getNodeLocation(node, node.declaredElement!)} ',
+    );
     throwError(
       message:
           "Failed to parse complex parameter '$node' (${node.runtimeType}) at ${getNodeLocation(node, node.declaredElement!)} ",
       element: node.declaredElement,
     );
+    // coverage:ignore-end
   }
 
   static FutureOr<_FunctionTypedParameterDefaultValueInfo>
@@ -352,8 +359,7 @@ class ParameterInfo {
           parameter.parameter.declaredElement! as SuperFormalParameterElement;
       assert(
         superElement.superConstructorParameter != null,
-        // coverage:ignore-line
-        '$superElement in ${parameter.parent} does not have superConstructorParameter.',
+        '$superElement in ${parameter.parent} does not have superConstructorParameter.', // coverage:ignore-line
       );
       final leftNode =
           await nodeProvider.getElementDeclarationAsync<DefaultFormalParameter>(
@@ -469,28 +475,30 @@ class ParameterInfo {
     final targetClass = parameterElement.thisOrAncestorOfType<ClassElement>();
     assert(
       targetClass != null,
-      'Failed to find class declaration of $parameterElement',
+      'Failed to find class declaration of $parameterElement', // coverage:ignore-line
     );
 
     final superClass = targetClass!.supertype?.element;
     assert(
       superClass != null,
-      'Failed to find super class of $targetClass',
+      'Failed to find super class of $targetClass', // coverage:ignore-line
     );
 
     final superConstructor =
         superClass!.constructors.singleWhereOrNull((c) => c.name.isEmpty);
     assert(
       superConstructor != null,
-      'Failed to find constructor of $superClass for $node',
+      'Failed to find constructor of $superClass for $node', // coverage:ignore-line
     );
 
     final parameterOnSuperConstructor = superConstructor!.parameters
         .singleWhereOrNull((p) => p.name == parameterElement.name);
     assert(
       parameterOnSuperConstructor != null,
+      // coverage:ignore-start
       "Failed to find parameter '${parameterElement.name}' in constructor of "
       '$superClass',
+      // coverage:ignore-end
     );
 
     return _getConstructorParameterTypeAnnotationAsync(
@@ -545,7 +553,7 @@ class ParameterInfo {
 
     assert(
       parameterNode is FunctionTypedFormalParameter,
-      'Unknown parameter type of $parameterNode: ${parameterNode.runtimeType}',
+      'Unknown parameter type of $parameterNode: ${parameterNode.runtimeType}', // coverage:ignore-line
     );
 
     return _FieldInfo(null, declaringClass.thisType);
@@ -1029,8 +1037,7 @@ class _InstantiatedGenericInterfaceType extends GenericType {
   )   : assert(
           _rawType.typeArguments.whereType<TypeParameterType>().length ==
               typeArguments.length,
-          // coverage:ignore-line
-          "Arity mismatch between '$_rawType' and type arguments [${typeArguments.join(', ')}]",
+          "Arity mismatch between '$_rawType' and type arguments [${typeArguments.join(', ')}]", // coverage:ignore-line
         ),
         super._();
 

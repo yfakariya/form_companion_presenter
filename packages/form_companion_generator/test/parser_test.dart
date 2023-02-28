@@ -48,8 +48,14 @@ Future<void> main() async {
   final resolver = SessionResolver(presenterLibrary.element);
   final nodeProvider = NodeProvider(SessionResolver(presenterLibrary.element));
   final typeProvider = presenterLibrary.element.typeProvider;
-  final formFieldLocator =
-      await FormFieldLocator.createAsync(resolver, [], logger);
+  final formFieldLocator = await FormFieldLocator.createAsync(
+    resolver,
+    [
+      // for custom form fields for constants default value tests
+      'package:form_companion_generator_test_targets/form_fields.dart'
+    ],
+    logger,
+  );
   final myEnumType = await getMyEnumType();
   final dateTimeType = await getDateTimeType();
   final dateTimeRangeType = await getDateTimeRangeType();
@@ -431,14 +437,14 @@ Future<void> main() async {
 
     FutureOr<void> testGetPropertiesNoProperties(String name) =>
         testGetProperties(
-          'InlineWithNoAddition',
+          name,
           (props) => expect(props, isEmpty),
           warningsAssertion: (warnings) {
             expect(warnings.length, 1);
             expect(
               warnings[0],
               equals(
-                "initializeCompanionMixin(PropertyDescriptorsBuilder) is called with empty PropertyDescriptorsBuilder in class 'InlineWithNoAddition'.",
+                "initializeCompanionMixin(PropertyDescriptorsBuilder) is called with empty PropertyDescriptorsBuilder in class '$name'.",
               ),
             );
           },
@@ -2023,6 +2029,51 @@ Future<void> main() async {
         ExpectedImport('presenter.dart'),
       ]);
     });
+
+    test(
+      'refers constants',
+      () async {
+        final result = await collectDependenciesAsync(
+          presenterLibrary.element,
+          defaultConfig,
+          [
+            await makeProperty(
+              'FormFieldRefersConstants',
+              typeProvider.stringType,
+              typeProvider.stringType.element,
+              isFormBuilder: false,
+            ),
+          ],
+          nodeProvider,
+          logger,
+          isFormBuilder: false,
+        );
+
+        assertImports(result, [
+          ExpectedImport('dart:ui', shows: ['Locale']),
+          ExpectedImport(
+            'enum.dart',
+            shows: ['constVariable'],
+            prefixes: [
+              MapEntry('e', ['constVariable']),
+            ],
+          ),
+          ExpectedImport(
+            'package:flutter/widgets.dart',
+            shows: ['BuildContext', 'Localizations'],
+          ),
+          ExpectedImport(
+            'package:form_companion_generator_test_targets/form_fields.dart',
+            shows: ['FormFieldRefersConstants'],
+          ),
+          ExpectedImport(
+            'package:meta/meta.dart',
+            shows: ['immutable', 'sealed'],
+          ),
+          ExpectedImport('presenter.dart'),
+        ]);
+      },
+    );
   });
 
   group('parseElementAsync (integration tests)', () {
