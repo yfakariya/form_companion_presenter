@@ -320,6 +320,8 @@ String emitParameter(
 }
 
 // TODO: testing!
+/// Emits default value of function typed parameter which require static method
+/// declaration. This method actually emits such (non-public) method decaration.
 Iterable<String> emitFunctionDefaults(
   Iterable<PropertyAndFormFieldDefinition> properties,
 ) sync* {
