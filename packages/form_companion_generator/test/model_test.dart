@@ -379,30 +379,63 @@ class C extends B {
             '_default_DerivedFunctions__nonPublicMethod',
           ),
         ]) {
-          test('Default value in super parameter, ${spec.item1}', () async {
-            await testFunctionDefaultsAndSuperParametersCore(
-              spec.item2,
-              'parameter',
-              _functionWithDefaultInIntermediateTestCode,
-              (l, p) {
-                // always this.* declaration
-                expect(p.declaringTypeName, 'BaseFunctions');
-                expect(p.defaultValue, spec.item3);
-                expect(
-                  p.defaultTargetNonPublicMethod?.name,
-                  spec.item3,
-                );
-                expect(
-                  p.defaultTargetNonPublicMethod?.returnType.type,
-                  l.typeProvider.voidType,
-                );
-                expect(
-                  p.defaultTargetNonPublicMethod?.parameters.parameters.isEmpty,
-                  isTrue,
-                );
-              },
-            );
-          });
+          test(
+            'Default value in named super parameter, ${spec.item1}',
+            () async {
+              await testFunctionDefaultsAndSuperParametersCore(
+                spec.item2,
+                'parameter',
+                _functionWithDefaultInIntermediateTestCodeNamed,
+                (l, p) {
+                  // always this.* declaration
+                  expect(p.declaringTypeName, 'BaseFunctions');
+                  expect(p.defaultValue, spec.item3);
+                  expect(
+                    p.defaultTargetNonPublicMethod?.name,
+                    spec.item3,
+                  );
+                  expect(
+                    p.defaultTargetNonPublicMethod?.returnType.type,
+                    l.typeProvider.voidType,
+                  );
+                  expect(
+                    p.defaultTargetNonPublicMethod?.parameters.parameters
+                        .isEmpty,
+                    isTrue,
+                  );
+                },
+              );
+            },
+          );
+
+          test(
+            'Default value in function typed super parameter, ${spec.item1}',
+            () async {
+              await testFunctionDefaultsAndSuperParametersCore(
+                spec.item2,
+                'parameter',
+                _functionWithDefaultInIntermediateTestCodeFunctionTyped,
+                (l, p) {
+                  // always this.* declaration
+                  expect(p.declaringTypeName, 'BaseFunctions');
+                  expect(p.defaultValue, spec.item3);
+                  expect(
+                    p.defaultTargetNonPublicMethod?.name,
+                    spec.item3,
+                  );
+                  expect(
+                    p.defaultTargetNonPublicMethod?.returnType.type,
+                    l.typeProvider.voidType,
+                  );
+                  expect(
+                    p.defaultTargetNonPublicMethod?.parameters.parameters
+                        .isEmpty,
+                    isTrue,
+                  );
+                },
+              );
+            },
+          );
         }
       });
     });
@@ -1158,6 +1191,64 @@ class C extends B {
           );
         },
       );
+
+      test(
+        'open generic complex function type',
+        () async {
+          final element = parametersLibrary.scope
+              .lookup('ComplexGenericCallback')
+              .getter!
+              .thisOrAncestorOfType<TypeAliasElement>()!;
+          final type = element.aliasedType;
+          await assertGenericType(
+            sourceType: type,
+            target: GenericType.fromDartType(type, element),
+            expectedTypeArguments: ['T1', 'T2'],
+            rawTypeName: 'T2 Function<T1, T2>(T1)',
+            displayStringWithNullability: 'T2 Function<T1, T2>(T1)',
+            displayStringWithoutNullability: 'T2 Function<T1, T2>(T1)',
+            kind: TypeKind.otherType,
+            collectionItemType: null,
+            isNullable: false,
+            hasTypeParameter: true,
+          );
+        },
+      );
+
+      group('collectionItemType of non generic types', () {
+        for (final type in [
+          Tuple2(
+            'list',
+            parametersLibrary.getClass('StringList')!.thisType,
+          ),
+          Tuple2(
+            'iterable',
+            parametersLibrary.getClass('StringIterable')!.thisType,
+          ),
+        ]) {
+          test(
+            'collectionItemType of non generic ${type.item1}',
+            () async {
+              await assertGenericType(
+                sourceType: type.item2,
+                target:
+                    GenericType.fromDartType(type.item2, type.item2.element),
+                expectedTypeArguments: [],
+                rawTypeName: type.item2.element.thisType
+                    .getDisplayString(withNullability: false),
+                displayStringWithNullability:
+                    type.item2.getDisplayString(withNullability: true),
+                displayStringWithoutNullability:
+                    type.item2.getDisplayString(withNullability: false),
+                kind: TypeKind.otherType,
+                collectionItemType: 'String',
+                isNullable: false,
+                hasTypeParameter: false,
+              );
+            },
+          );
+        }
+      });
     });
   });
 
@@ -1231,11 +1322,31 @@ class Functions {
 }
 ''';
 
-const _functionWithDefaultInIntermediateTestCode = '''
-import 'dart:ui';
-
+const _functionWithDefaultInIntermediateTestCodeFunctionTyped = '''
 class BaseFunctions {
-  VoidCallback? parameter;
+  BaseFunctions([
+    void parameter()?,
+  ]);
+}
+
+class IntermediateFunctions extends BaseFunctions {
+  static void _nonPublicMethod() {}
+
+  IntermediateFunctions([
+    super.parameter = _nonPublicMethod,
+  ]);
+}
+
+class DerivedFunctions extends IntermediateFunctions {
+  DerivedFunctions([
+    super.parameter,
+  ]);
+}
+''';
+
+const _functionWithDefaultInIntermediateTestCodeNamed = '''
+class BaseFunctions {
+  void Function()? parameter;
 
   BaseFunctions({
     this.parameter,

@@ -9,11 +9,43 @@ import 'package:flutter/material.dart';
 
 typedef NonGenericCallback = int Function(String);
 typedef GenericCallback<T> = void Function<T>(T);
+typedef ComplexGenericCallback<T1, T2> = T2 Function<T1, T2>(T1);
 
 typedef AString = String;
 typedef AList<E> = List<E>;
 
 class SimpleClass {}
+
+class StringList extends col.ListBase<String> {
+  final List<String> _underlying;
+
+  @override
+  int get length => _underlying.length;
+
+  @override
+  void set length(int value) {
+    _underlying.length = value;
+  }
+
+  StringList([List<String>? underlying]) : _underlying = underlying ?? [];
+
+  @override
+  String operator [](int index) => _underlying[index];
+
+  @override
+  void operator []=(int index, String value) {
+    _underlying[index] = value;
+  }
+}
+
+class StringIterable extends col.IterableBase<String> {
+  final List<String> _underlying;
+
+  StringIterable([List<String>? underlying]) : _underlying = underlying ?? [];
+
+  @override
+  Iterator<String> get iterator => _underlying.iterator;
+}
 
 // dummy 'FormField'
 abstract class FormField<T> {}

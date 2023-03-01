@@ -807,7 +807,6 @@ abstract class GenericType {
           typeArgumentsMap.update(
             type.returnType.element!.name!,
             (_) => type.returnType,
-            ifAbsent: () => null,
           );
         }
 
@@ -815,7 +814,6 @@ abstract class GenericType {
               (p) => typeArgumentsMap.update(
                 p.type.element!.name!,
                 (_) => p.type,
-                ifAbsent: () => null,
               ),
             );
 
