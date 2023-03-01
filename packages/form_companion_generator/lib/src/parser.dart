@@ -220,24 +220,17 @@ FutureOr<List<PropertyAndFormFieldDefinition>> getPropertiesAsync(
   Initializer initializer,
 ) async {
   final body = initializer.ast;
-  if (body is BlockFunctionBody) {
-    // Parse block to find real pdb argument.
-    await _parseBlockAsync(
-      context,
-      initializer.element,
-      body.block,
-    );
-  } else {
-    // EmptyFunctionBody ans NativeFunctionBody cannot be come here
-    // because they never have `initializeCompanionMixin()` call.
-    assert(body is ExpressionFunctionBody);
+  assert(
+    body is BlockFunctionBody,
+    'initializeCompanionMixin() is called out of constructor.', // coverage:ignore-line
+  );
 
-    await _parseExpressionAsync(
-      context,
-      initializer.element,
-      (body as ExpressionFunctionBody).expression,
-    );
-  }
+  // Parse block to find real pdb argument.
+  await _parseBlockAsync(
+    context,
+    initializer.element,
+    (body as BlockFunctionBody).block,
+  );
 
   final pdbArgument = initializer.propertyDescriptorBuilderTypedArgument;
   final parsedBuilding = context.initializeCompanionMixinArgument;
@@ -406,16 +399,17 @@ FutureOr<List<LibraryImport>> collectDependenciesAsync(
             }
           }
         } else {
-          if (import.types.isEmpty) {
-            collector.recordLibraryImportWithPrefix(import.uri, import.prefix);
-          } else {
-            for (final type in import.types) {
-              collector.recordTypeIdDirectWithLibraryPrefix(
-                import.uri,
-                import.prefix,
-                type,
-              );
-            }
+          // NOTE: Currently, template imports in build.yaml cannot specify
+          //       library import with prefix, because prefixes are specified
+          //       in keys which represent types to be imported, so types
+          //       always specified when any prefixes are specified.
+          assert(import.types.isNotEmpty);
+          for (final type in import.types) {
+            collector.recordTypeIdDirectWithLibraryPrefix(
+              import.uri,
+              import.prefix,
+              type,
+            );
           }
         }
       }

@@ -28,8 +28,6 @@ class LibraryImport {
   bool get shouldEmitSimpleImports =>
       _importsAllTypes || (_types.isEmpty && _prefixes.isEmpty);
 
-  final _allTypesImportedPrefixes = <String>{};
-
   /// A collection of type names which should be specified in `show`
   /// namespace combinator of a non-prefixed `import` directive.
   ///
@@ -42,13 +40,8 @@ class LibraryImport {
 
   /// A collection of prefixes to emit prefixed `import` directives.
   Iterable<MapEntry<String, Iterable<String>>> get prefixes sync* {
-    for (final key in [..._prefixes.keys]..sort()) {
-      if (_allTypesImportedPrefixes.contains(key)) {
-        yield MapEntry(key, []);
-      } else {
-        yield MapEntry(key, _prefixes[key]!.toList()..sort());
-      }
-    }
+    yield* ([..._prefixes.keys]..sort())
+        .map((k) => MapEntry(k, _prefixes[k]!.toList()..sort()));
   }
 
   /// Creates a new [LibraryImport] instance.
@@ -82,12 +75,6 @@ class LibraryImport {
   /// Marks this library should not have `show` namespace combinator.
   void markImport() {
     _importsAllTypes = true;
-  }
-
-  /// Marks this library should not have `show` namespace combinator
-  /// for specified [prefix].
-  void markImportAsPrefixed(String prefix) {
-    _allTypesImportedPrefixes.add(prefix);
   }
 }
 
@@ -319,15 +306,6 @@ class DependentLibraryCollector {
   /// Records non resitricted import for the library specified as [libraryIdentifier].
   void recordLibraryImport(String libraryIdentifier) =>
       _getLibraryImportEntryDirect(libraryIdentifier, null)?.markImport();
-
-  /// Records non resitricted import for
-  /// the library specified as [libraryIdentifier] with [libraryPrefix].
-  void recordLibraryImportWithPrefix(
-    String libraryIdentifier,
-    String libraryPrefix,
-  ) =>
-      _getLibraryImportEntryDirect(libraryIdentifier, null)
-          ?.markImportAsPrefixed(libraryPrefix);
 
   /// Collects depencendies from specified [ParameterInfo].
   void collectDependencyForParameter(ParameterInfo parameter) {
