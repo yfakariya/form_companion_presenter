@@ -147,6 +147,7 @@ DartType? getCollectionElementType(DartType type, Element element) {
 }
 
 class _CodePoint {
+  static const dollar = 0x24;
   static const underScore = 0x5F;
   static const asciiUpperA = 0x41;
   static const asciiUpperZ = 0x5A;
@@ -154,10 +155,18 @@ class _CodePoint {
 
 /// Determines that whether specified identifier may be type name or not.
 bool isTypeName(String mayBeTypeName) {
-  final codePoint = (mayBeTypeName.length > 1 &&
-          mayBeTypeName.codeUnitAt(0) == _CodePoint.underScore)
-      ? mayBeTypeName.codeUnitAt(1)
-      : mayBeTypeName.codeUnitAt(0);
+  int? codePoint;
+  for (final c in mayBeTypeName.codeUnits) {
+    if (c != _CodePoint.underScore && c != _CodePoint.dollar) {
+      codePoint = c;
+      break;
+    }
+  }
+
+  if (codePoint == null) {
+    return false;
+  }
+
   return codePoint >= _CodePoint.asciiUpperA &&
       codePoint <= _CodePoint.asciiUpperZ;
 }
