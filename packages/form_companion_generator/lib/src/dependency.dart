@@ -333,8 +333,14 @@ class DependentLibraryCollector {
       _logger.finer(
         'Identifier $expression should be constant. Element is ${element}.',
       );
+      // type
       recordTypeId(
         expression.staticType?.element ?? element!,
+        expression,
+      );
+      // constant itself
+      recordTypeId(
+        expression.staticElement,
         expression,
       );
     } else if (expression is PrefixedIdentifier) {
