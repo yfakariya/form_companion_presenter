@@ -1,6 +1,7 @@
 // See LICENCE file in the root.
 
 import 'dart:async';
+import 'dart:collection';
 
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
@@ -796,12 +797,50 @@ abstract class GenericType {
     } else if (type is FunctionType) {
       final alias = type.alias;
       if (alias == null) {
-        assert(type.typeFormals.isEmpty);
+        final typeArgumentsMap = LinkedHashMap<String, DartType?>();
+        final typeFormals = {for (final f in type.typeFormals) f.name: f};
+        for (final typeFormal in type.typeFormals) {
+          typeArgumentsMap[typeFormal.name] = null;
+        }
+
+        if (type.returnType is TypeParameterType) {
+          typeArgumentsMap.update(
+            type.returnType.element!.name!,
+            (_) => type.returnType,
+            ifAbsent: () => null,
+          );
+        }
+
+        type.parameters.where((p) => p.type is TypeParameterType).forEach(
+              (p) => typeArgumentsMap.update(
+                p.type.element!.name!,
+                (_) => p.type,
+                ifAbsent: () => null,
+              ),
+            );
+
+        assert(
+          typeArgumentsMap.values.every((v) => v != null),
+          // coverage:ignore-start
+          "Unmapped type formals of '$type': "
+          "[${typeArgumentsMap.entries.where((e) => e.value == null).map((e) => e.key).join(', ')}]",
+          // coverage:ignore-end
+        );
+
+        final typeArguments = typeArgumentsMap.entries
+            .map(
+              (e) => GenericType.fromDartType(e.value!, typeFormals[e.key]!),
+            )
+            .toList();
         return _InstantiatedGenericFunctionType(
           type,
           _toRawFunctionType(type),
-          [],
-          {},
+          typeArguments,
+          _buildFunctionTypeGenericArguments(
+            type,
+            typeArguments,
+            contextElement,
+          ),
           contextElement,
         );
       } else {
@@ -1171,46 +1210,67 @@ class _InstantiatedGenericFunctionType extends GenericFunctionType {
 
     sink
       ..write(returnType.getDisplayString(withNullability: withNullability))
-      ..write(' Function(');
+      ..write(' Function');
 
-    var isFirst = true;
-    var isRequiredPositional = true;
-    var isNamed = false;
-    final parameterTypes = this.parameterTypes.toList();
-    for (var i = 0; i < functionType.parameters.length; i++) {
-      final parameter = functionType.parameters[i];
-      if (isFirst) {
-        isFirst = false;
-      } else {
-        sink.write(', ');
+    if (hasTypeParameter) {
+      var isFirst = true;
+      sink.write('<');
+      for (final typeArgument
+          in typeArguments.where((t) => t.rawType is TypeParameterType)) {
+        if (isFirst) {
+          isFirst = false;
+        } else {
+          sink.write(', ');
+        }
+
+        sink.write(
+          typeArgument.getDisplayString(withNullability: withNullability),
+        );
       }
-
-      if (!parameter.isRequiredPositional && isRequiredPositional) {
-        isRequiredPositional = false;
-        if (parameter.isNamed) {
-          isNamed = true;
-        } else {}
-
-        sink.write(isNamed ? '{' : '[');
-      }
-
-      if (parameter.isRequiredNamed) {
-        sink.write('required ');
-      }
-
-      sink.write(
-        parameterTypes[i].getDisplayString(withNullability: withNullability),
-      );
-
-      if (parameter.isNamed) {
-        sink
-          ..write(' ')
-          ..write(parameter.name);
-      }
+      sink.write('>');
     }
 
-    if (!isRequiredPositional) {
-      sink.write(isNamed ? '}' : ']');
+    sink.write('(');
+    {
+      var isFirst = true;
+      var isRequiredPositional = true;
+      var isNamed = false;
+      final parameterTypes = this.parameterTypes.toList();
+      for (var i = 0; i < functionType.parameters.length; i++) {
+        final parameter = functionType.parameters[i];
+        if (isFirst) {
+          isFirst = false;
+        } else {
+          sink.write(', ');
+        }
+
+        if (!parameter.isRequiredPositional && isRequiredPositional) {
+          isRequiredPositional = false;
+          if (parameter.isNamed) {
+            isNamed = true;
+          } else {}
+
+          sink.write(isNamed ? '{' : '[');
+        }
+
+        if (parameter.isRequiredNamed) {
+          sink.write('required ');
+        }
+
+        sink.write(
+          parameterTypes[i].getDisplayString(withNullability: withNullability),
+        );
+
+        if (parameter.isNamed) {
+          sink
+            ..write(' ')
+            ..write(parameter.name);
+        }
+      }
+
+      if (!isRequiredPositional) {
+        sink.write(isNamed ? '}' : ']');
+      }
     }
 
     sink.write(')');
