@@ -7,3 +7,5 @@
 // can be testable.
 
 enum MyEnum { one, two }
+
+const constVariable = 'VALUE';

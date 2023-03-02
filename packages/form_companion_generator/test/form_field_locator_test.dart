@@ -23,7 +23,19 @@ Future<void> main() async {
       await FormFieldLocator.createAsync(resolver, [], logger);
     });
 
-    test('package is not in presenter dependency', () async {
+    test('package is in presenter dependency can be resolved', () async {
+      final result = await FormFieldLocator.createAsync(
+        resolver,
+        ['package:flutter/material.dart'],
+        logger,
+      );
+      expect(
+        result.resolveFormFieldType('InputDecoration'),
+        isNotNull,
+      );
+    });
+
+    test('package is not in presenter dependency causes exception', () async {
       await expectLater(
         FormFieldLocator.createAsync(
           resolver,

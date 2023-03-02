@@ -45,8 +45,6 @@ Future<void> main() async {
     'String': typeProvider.stringType,
     'Object': typeProvider.objectType,
   };
-  final dropdownButtonFormField =
-      library.lookupClass('DropdownButtonFormField');
   final formBuilderCheckbox = library.lookupClass('FormBuilderCheckbox');
   final parametersLibrary = await getParametersLibrary();
 
@@ -106,7 +104,12 @@ Future<void> main() async {
     expect(result.propertyValueType, same(input.propertyType));
     expect(result.warnings, same(input.warnings));
     if (input.preferredFormFieldType != null) {
-      expect(result.formFieldType, same(input.preferredFormFieldType!.rawType));
+      expect(
+        result.formFieldType,
+        same(
+          input.preferredFormFieldType!.maybeAsInterfaceType,
+        ),
+      );
     } else {
       expect(result.formFieldType, isNotNull);
       // getDisplayString() may contain <T>, so we use startsWith here.
@@ -193,10 +196,11 @@ Future<void> main() async {
       () => testResolveFormFieldAsync(
         typeProvider.stringType,
         typeProvider.stringType,
-        GenericType.generic(
-          dropdownButtonFormField.thisType,
-          [toGenericType(typeProvider.stringType)],
-          dropdownButtonFormField,
+        GenericType.fromDartType(
+          library.lookupTypeFromTopLevelVariable(
+            'dropdownButtonFormFieldOfString',
+          ),
+          library,
         ),
         'DropdownButtonFormField',
         isFormBuilder: false,

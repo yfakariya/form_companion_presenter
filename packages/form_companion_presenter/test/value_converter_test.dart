@@ -74,7 +74,7 @@ void main() {
     test('non-null - non-null, compatible', () {
       final value = DateTime.now().microsecond;
       testPropertyToFieldSuccess<int, num>(
-        () => DefaultValueConverter<int, num>(),
+        DefaultValueConverter<int, num>.new,
         value,
         value,
         defaultLocale,
@@ -84,7 +84,7 @@ void main() {
     test('non-null <- non-null, compatible', () {
       final value = DateTime.now().microsecond;
       testFieldToPropertySuccess<int, num>(
-        () => DefaultValueConverter<int, num>(),
+        DefaultValueConverter<int, num>.new,
         value,
         value,
         defaultLocale,
@@ -94,7 +94,7 @@ void main() {
     test('non-null - non-null, incompatible', () {
       final value = DateTime.now().microsecond;
       testPropertyToFieldFailure<int, bool, StateError>(
-        () => DefaultValueConverter<int, bool>(),
+        DefaultValueConverter<int, bool>.new,
         value,
         defaultLocale,
         (e) => e.having(
@@ -108,7 +108,7 @@ void main() {
     test(
       'non-null <- non-null, incompatible',
       () => testFieldToPropertyFailure<int, bool>(
-        () => DefaultValueConverter<int, bool>(),
+        DefaultValueConverter<int, bool>.new,
         true,
         defaultLocale,
         message: 'bool is not compatible with int.',
@@ -119,7 +119,7 @@ void main() {
     test(
       'null - null, compatible',
       () => testPropertyToFieldSuccess<int, num>(
-        () => DefaultValueConverter<int, num>(),
+        DefaultValueConverter<int, num>.new,
         null,
         null,
         defaultLocale,
@@ -129,7 +129,7 @@ void main() {
     test(
       'null <- null, compatible',
       () => testFieldToPropertySuccess<int, num>(
-        () => DefaultValueConverter<int, num>(),
+        DefaultValueConverter<int, num>.new,
         null,
         null,
         defaultLocale,
@@ -139,7 +139,7 @@ void main() {
     test(
       'null - null, incompatible',
       () => testPropertyToFieldSuccess<int, bool>(
-        () => DefaultValueConverter<int, bool>(),
+        DefaultValueConverter<int, bool>.new,
         null,
         null,
         defaultLocale,
@@ -149,7 +149,7 @@ void main() {
     test(
       'null <- null, incompatible',
       () => testFieldToPropertySuccess<int, bool>(
-        () => DefaultValueConverter<int, bool>(),
+        DefaultValueConverter<int, bool>.new,
         null,
         null,
         defaultLocale,

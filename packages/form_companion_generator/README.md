@@ -185,7 +185,8 @@ If you specify map for the parameter, you can specify following properties:
 * `item_template` string, described below.
 * `imports`, described below.
 
-Note that either `template` or `item_template` properties are required.
+Note that both of `template` and `item_template` properties are omittable.
+(This is useful to specify extra imports for some reason such as importing dependent types used in static method which is used for default value of function typed parameters and the method is not public.)
 
 When you not configure any template for the parameter, default template (`#ARGUMENT#`) will be used.
 

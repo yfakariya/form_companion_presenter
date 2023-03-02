@@ -56,6 +56,9 @@ class DummyBuildContext extends BuildContext {
   bool get debugDoingBuild => throw UnimplementedError();
 
   @override
+  bool get mounted => throw UnimplementedError();
+
+  @override
   InheritedWidget dependOnInheritedElement(
     InheritedElement ancestor, {
     Object? aspect,

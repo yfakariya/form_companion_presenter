@@ -205,6 +205,7 @@ class _PropertyState {
 
   _PropertyState reincarnateIfNeeded(Object? newValue) {
     if (descriptor._propertyValueEquality.equals(valueSnapshot, newValue)) {
+      // ignore: avoid_returning_this
       return this;
     }
 
@@ -328,6 +329,7 @@ class FormProperties {
   FormProperties copyWithProperty(String name, Object? newValue) {
     final newState = _tryCopyWithProperty(name, newValue);
     if (newState == null) {
+      // ignore: avoid_returning_this
       return this;
     }
 
@@ -346,6 +348,7 @@ class FormProperties {
   /// are all same as current values.
   FormProperties copyWithProperties(Map<String, Object?> newValues) {
     if (newValues.isEmpty) {
+      // ignore: avoid_returning_this
       return this;
     }
 

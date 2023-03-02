@@ -6,53 +6,27 @@ part of 'bulk_auto_validation_form_builder_account.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-// ignore_for_file: avoid_private_typedef_functions, non_constant_identifier_names, subtype_of_sealed_class, invalid_use_of_internal_member, unused_element, constant_identifier_names, unnecessary_raw_strings, library_private_types_in_public_api
-
-/// Copied from Dart SDK
-class _SystemHash {
-  _SystemHash._();
-
-  static int combine(int hash, int value) {
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + value);
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + ((0x0007ffff & hash) << 10));
-    return hash ^ (hash >> 6);
-  }
-
-  static int finish(int hash) {
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + ((0x03ffffff & hash) << 3));
-    // ignore: parameter_assignments
-    hash = hash ^ (hash >> 11);
-    return 0x1fffffff & (hash + ((0x00003fff & hash) << 15));
-  }
-}
-
-String _$BulkAutoValidationFormBuilderAccountPresenterHash() =>
-    r'26443d9cc76a70fd590ff3d3b4ead91d73640ff8';
+String _$bulkAutoValidationFormBuilderAccountPresenterHash() =>
+    r'8157c7dd1f7f8c905d52ab09e277ef12f6e32497';
 
 /// Presenter which holds form properties.
 ///
 /// Copied from [BulkAutoValidationFormBuilderAccountPresenter].
+@ProviderFor(BulkAutoValidationFormBuilderAccountPresenter)
 final bulkAutoValidationFormBuilderAccountPresenterProvider =
     AutoDisposeAsyncNotifierProvider<
         BulkAutoValidationFormBuilderAccountPresenter,
-        $BulkAutoValidationFormBuilderAccountPresenterFormProperties>(
+        $BulkAutoValidationFormBuilderAccountPresenterFormProperties>.internal(
   BulkAutoValidationFormBuilderAccountPresenter.new,
   name: r'bulkAutoValidationFormBuilderAccountPresenterProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
       ? null
-      : _$BulkAutoValidationFormBuilderAccountPresenterHash,
+      : _$bulkAutoValidationFormBuilderAccountPresenterHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
 );
-typedef BulkAutoValidationFormBuilderAccountPresenterRef
-    = AutoDisposeAsyncNotifierProviderRef<
-        $BulkAutoValidationFormBuilderAccountPresenterFormProperties>;
 
-abstract class _$BulkAutoValidationFormBuilderAccountPresenter
-    extends AutoDisposeAsyncNotifier<
-        $BulkAutoValidationFormBuilderAccountPresenterFormProperties> {
-  @override
-  FutureOr<$BulkAutoValidationFormBuilderAccountPresenterFormProperties>
-      build();
-}
+typedef _$BulkAutoValidationFormBuilderAccountPresenter
+    = AutoDisposeAsyncNotifier<
+        $BulkAutoValidationFormBuilderAccountPresenterFormProperties>;
+// ignore_for_file: unnecessary_raw_strings, subtype_of_sealed_class, invalid_use_of_internal_member, do_not_use_environment, prefer_const_constructors, public_member_api_docs, avoid_private_typedef_functions

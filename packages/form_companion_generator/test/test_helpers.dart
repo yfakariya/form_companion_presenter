@@ -178,11 +178,7 @@ FutureOr<ClassElement> lookupFormBuilderClass(String name) async =>
 FutureOr<InterfaceType> lookupFormFieldTypeInstance(String name) async =>
     (await getResolvedLibraryResult('form_fields.dart'))
         .element
-        .topLevelElements
-        .whereType<TopLevelVariableElement>()
-        .singleWhere((e) => e.name == name)
-        .computeConstantValue()!
-        .toTypeValue()! as InterfaceType;
+        .lookupTypeFromTopLevelVariable(name);
 
 extension LibraryElementExtensions on LibraryElement {
   ClassElement lookupClass(String className) =>
@@ -192,6 +188,12 @@ extension LibraryElementExtensions on LibraryElement {
       .getter!
       .thisOrAncestorOfType<InterfaceElement>()!
       .thisType;
+  InterfaceType lookupTypeFromTopLevelVariable(String variableName) =>
+      topLevelElements
+          .whereType<TopLevelVariableElement>()
+          .singleWhere((e) => e.name == variableName)
+          .computeConstantValue()!
+          .toTypeValue()! as InterfaceType;
 }
 
 String pascalize(String value) {
@@ -242,3 +244,7 @@ FutureOr<Config> readDefaultOptions([
 
   return Config(defaultOptions);
 }
+
+String removeQuestion(String mayBeNullable) => mayBeNullable.endsWith('?')
+    ? mayBeNullable.substring(0, mayBeNullable.length - 1)
+    : mayBeNullable;

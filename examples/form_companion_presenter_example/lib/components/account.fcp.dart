@@ -68,13 +68,14 @@ import 'package:flutter/widgets.dart'
     show
         AutovalidateMode,
         BuildContext,
+        EditableTextContextMenuBuilder,
         FocusNode,
         Localizations,
         ScrollController,
         ScrollPhysics,
         Text,
         TextEditingController,
-        ToolbarOptions,
+        TextMagnifierConfiguration,
         Widget;
 
 import 'package:flutter_form_builder/flutter_form_builder.dart'
@@ -361,11 +362,12 @@ class $AccountPresenterTemplateFieldFactory {
     ui.BoxWidthStyle selectionWidthStyle = ui.BoxWidthStyle.tight,
     SmartDashesType? smartDashesType,
     SmartQuotesType? smartQuotesType,
-    ToolbarOptions? toolbarOptions,
     ui.BoxHeightStyle selectionHeightStyle = ui.BoxHeightStyle.tight,
     Iterable<String>? autofillHints,
     String obscuringCharacter = '•',
     MouseCursor? mouseCursor,
+    EditableTextContextMenuBuilder? contextMenuBuilder,
+    TextMagnifierConfiguration? magnifierConfiguration,
   }) {
     final property = _properties.descriptors.id;
     return FormBuilderTextField(
@@ -422,11 +424,12 @@ class $AccountPresenterTemplateFieldFactory {
       selectionWidthStyle: selectionWidthStyle,
       smartDashesType: smartDashesType,
       smartQuotesType: smartQuotesType,
-      toolbarOptions: toolbarOptions,
       selectionHeightStyle: selectionHeightStyle,
       autofillHints: autofillHints,
       obscuringCharacter: obscuringCharacter,
       mouseCursor: mouseCursor,
+      contextMenuBuilder: contextMenuBuilder,
+      magnifierConfiguration: magnifierConfiguration,
     );
   }
 
@@ -479,11 +482,12 @@ class $AccountPresenterTemplateFieldFactory {
     ui.BoxWidthStyle selectionWidthStyle = ui.BoxWidthStyle.tight,
     SmartDashesType? smartDashesType,
     SmartQuotesType? smartQuotesType,
-    ToolbarOptions? toolbarOptions,
     ui.BoxHeightStyle selectionHeightStyle = ui.BoxHeightStyle.tight,
     Iterable<String>? autofillHints,
     String obscuringCharacter = '•',
     MouseCursor? mouseCursor,
+    EditableTextContextMenuBuilder? contextMenuBuilder,
+    TextMagnifierConfiguration? magnifierConfiguration,
   }) {
     final property = _properties.descriptors.name;
     return FormBuilderTextField(
@@ -540,11 +544,12 @@ class $AccountPresenterTemplateFieldFactory {
       selectionWidthStyle: selectionWidthStyle,
       smartDashesType: smartDashesType,
       smartQuotesType: smartQuotesType,
-      toolbarOptions: toolbarOptions,
       selectionHeightStyle: selectionHeightStyle,
       autofillHints: autofillHints,
       obscuringCharacter: obscuringCharacter,
       mouseCursor: mouseCursor,
+      contextMenuBuilder: contextMenuBuilder,
+      magnifierConfiguration: magnifierConfiguration,
     );
   }
 
@@ -674,11 +679,12 @@ class $AccountPresenterTemplateFieldFactory {
     ui.BoxWidthStyle selectionWidthStyle = ui.BoxWidthStyle.tight,
     SmartDashesType? smartDashesType,
     SmartQuotesType? smartQuotesType,
-    ToolbarOptions? toolbarOptions,
     ui.BoxHeightStyle selectionHeightStyle = ui.BoxHeightStyle.tight,
     Iterable<String>? autofillHints,
     String obscuringCharacter = '•',
     MouseCursor? mouseCursor,
+    EditableTextContextMenuBuilder? contextMenuBuilder,
+    TextMagnifierConfiguration? magnifierConfiguration,
   }) {
     final property = _properties.descriptors.age;
     return FormBuilderTextField(
@@ -735,11 +741,12 @@ class $AccountPresenterTemplateFieldFactory {
       selectionWidthStyle: selectionWidthStyle,
       smartDashesType: smartDashesType,
       smartQuotesType: smartQuotesType,
-      toolbarOptions: toolbarOptions,
       selectionHeightStyle: selectionHeightStyle,
       autofillHints: autofillHints,
       obscuringCharacter: obscuringCharacter,
       mouseCursor: mouseCursor,
+      contextMenuBuilder: contextMenuBuilder,
+      magnifierConfiguration: magnifierConfiguration,
     );
   }
 

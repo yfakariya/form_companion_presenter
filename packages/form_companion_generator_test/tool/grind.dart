@@ -97,6 +97,7 @@ import 'package:flutter/painting.dart'
         AlignmentGeometry,
         Axis,
         BorderRadius,
+        BorderSide,
         CircleBorder,
         EdgeInsets,
         EdgeInsetsGeometry,
@@ -122,6 +123,7 @@ import 'package:flutter/widgets.dart'
     show
         AutovalidateMode,
         BuildContext,
+        EditableTextContextMenuBuilder,
         FocusNode,
         Icon,
         Localizations,
@@ -130,7 +132,7 @@ import 'package:flutter/widgets.dart'
         ScrollPhysics,
         Text,
         TextEditingController,
-        ToolbarOptions,
+        TextMagnifierConfiguration,
         TransitionBuilder,
         Widget;
 '''

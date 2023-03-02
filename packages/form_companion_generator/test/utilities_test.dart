@@ -136,4 +136,91 @@ Future<void> main() async {
       ),
     );
   });
+
+  group('isTypeName', () {
+    test(
+      'Starts with upper case -> true',
+      () => expect(isTypeName('Ab'), isTrue),
+    );
+
+    test(
+      'Starts with lower case -> false',
+      () => expect(isTypeName('ab'), isFalse),
+    );
+
+    test(
+      'Starts with underscore following upper case -> true',
+      () => expect(isTypeName('_Ab'), isTrue),
+    );
+
+    test(
+      'Starts with underscore following lower case -> false',
+      () => expect(isTypeName('_ab'), isFalse),
+    );
+
+    test(
+      'One upper case -> true',
+      () => expect(isTypeName('A'), isTrue),
+    );
+
+    test(
+      'One lower case -> false',
+      () => expect(isTypeName('a'), isFalse),
+    );
+
+    test(
+      'One underscore -> false',
+      () => expect(isTypeName('_'), isFalse),
+    );
+
+    test(
+      'One dollar -> false',
+      () => expect(isTypeName('\$'), isFalse),
+    );
+
+    test(
+      'Dollars and underscores only -> false',
+      () => expect(isTypeName('\$__\$'), isFalse),
+    );
+
+    test(
+      'Starts with dollar following upper case -> true',
+      () => expect(isTypeName('\$Ab'), isTrue),
+    );
+
+    test(
+      'Starts with dollar following lower case -> false',
+      () => expect(isTypeName('\$ab'), isFalse),
+    );
+
+    test(
+      'Starts with dollar and underscore following upper case -> true',
+      () => expect(isTypeName('_\$Ab'), isTrue),
+    );
+
+    test(
+      'Starts with dollar and underscore following lower case -> false',
+      () => expect(isTypeName('_\$ab'), isFalse),
+    );
+
+    test(
+      'Starts with double dollar following upper case -> true',
+      () => expect(isTypeName('\$\$Ab'), isTrue),
+    );
+
+    test(
+      'Starts with double dollar following lower case -> false',
+      () => expect(isTypeName('\$\$ab'), isFalse),
+    );
+
+    test(
+      'Starts with double dollar and double underscore following upper case -> true',
+      () => expect(isTypeName('__\$\$Ab'), isTrue),
+    );
+
+    test(
+      'Starts with double dollar and double underscore following lower case -> false',
+      () => expect(isTypeName('__\$\$ab'), isFalse),
+    );
+  });
 }

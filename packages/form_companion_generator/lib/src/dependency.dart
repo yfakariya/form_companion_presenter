@@ -28,8 +28,6 @@ class LibraryImport {
   bool get shouldEmitSimpleImports =>
       _importsAllTypes || (_types.isEmpty && _prefixes.isEmpty);
 
-  final _allTypesImportedPrefixes = <String>{};
-
   /// A collection of type names which should be specified in `show`
   /// namespace combinator of a non-prefixed `import` directive.
   ///
@@ -42,13 +40,8 @@ class LibraryImport {
 
   /// A collection of prefixes to emit prefixed `import` directives.
   Iterable<MapEntry<String, Iterable<String>>> get prefixes sync* {
-    for (final key in [..._prefixes.keys]..sort()) {
-      if (_allTypesImportedPrefixes.contains(key)) {
-        yield MapEntry(key, []);
-      } else {
-        yield MapEntry(key, _prefixes[key]!.toList()..sort());
-      }
-    }
+    yield* ([..._prefixes.keys]..sort())
+        .map((k) => MapEntry(k, _prefixes[k]!.toList()..sort()));
   }
 
   /// Creates a new [LibraryImport] instance.
@@ -82,12 +75,6 @@ class LibraryImport {
   /// Marks this library should not have `show` namespace combinator.
   void markImport() {
     _importsAllTypes = true;
-  }
-
-  /// Marks this library should not have `show` namespace combinator
-  /// for specified [prefix].
-  void markImportAsPrefixed(String prefix) {
-    _allTypesImportedPrefixes.add(prefix);
   }
 }
 
@@ -247,20 +234,26 @@ class DependentLibraryCollector {
         .toList();
 
     if (candidates.isEmpty) {
-      throw AnalysisException(
-        "Failed to resolve logical library for source library '$sourceLibraryId'"
-        " for '$targetElement' in the directory '$libraryDirectory'. ",
-      );
+      // coverage:ignore-start
+      final message =
+          "Failed to resolve logical library for source library '$sourceLibraryId'"
+          " for '$targetElement' in the directory '$libraryDirectory'. ";
+      assert(false, message);
+      throw AnalysisException(message);
+      // coverage:ignore-end
     }
 
     final result = candidates.first.identifier;
     if (candidates.length > 1) {
+      // coverage:ignore-start
       final message = "Library import '$result' may be incorrect because "
           'the locator failed to uniquely locate importing library for '
           "'$sourceLibraryId' for '$targetElement' in directory '$libraryDirectory'. "
           'Found libraries are: [${candidates.map((e) => e.identifier).join(', ')}]';
       _logger.warning(message);
       _warnings.add(message);
+      assert(false, message);
+      // coverage:ignore-end
     }
 
     _logger.fine('Found $result for $targetElement');
@@ -275,10 +268,12 @@ class DependentLibraryCollector {
       // it should call visitNamedType() eventually.
       _handleGenericFunctionType(type);
     } else {
-      throw AnalysisException(
-        "Type of '$type' (${type.runtimeType}) is unexpected "
-        'at ${getNodeLocation(type, _contextClass)}',
-      );
+      // coverage:ignore-start
+      final message = "Type of '$type' (${type.runtimeType}) is unexpected "
+          'at ${getNodeLocation(type, _contextClass)}';
+      assert(false, message);
+      throw AnalysisException(message);
+      // coverage:ignore-end
     }
   }
 
@@ -312,15 +307,6 @@ class DependentLibraryCollector {
   void recordLibraryImport(String libraryIdentifier) =>
       _getLibraryImportEntryDirect(libraryIdentifier, null)?.markImport();
 
-  /// Records non resitricted import for
-  /// the library specified as [libraryIdentifier] with [libraryPrefix].
-  void recordLibraryImportWithPrefix(
-    String libraryIdentifier,
-    String libraryPrefix,
-  ) =>
-      _getLibraryImportEntryDirect(libraryIdentifier, null)
-          ?.markImportAsPrefixed(libraryPrefix);
-
   /// Collects depencendies from specified [ParameterInfo].
   void collectDependencyForParameter(ParameterInfo parameter) {
     if (parameter.typeAnnotation != null) {
@@ -340,15 +326,21 @@ class DependentLibraryCollector {
   }
 
   void _handleExpression(Element? element, Expression expression) {
-    if (expression is Literal) {
-      // Nothing to do
+    if (expression is Literal || expression.staticType is FunctionType) {
+      // Nothing to do -- we do not have to import literals and function types.
       return;
     } else if (expression is SimpleIdentifier) {
       _logger.finer(
         'Identifier $expression should be constant. Element is ${element}.',
       );
+      // type
       recordTypeId(
         expression.staticType?.element ?? element!,
+        expression,
+      );
+      // constant itself
+      recordTypeId(
+        expression.staticElement,
         expression,
       );
     } else if (expression is PrefixedIdentifier) {
@@ -414,11 +406,14 @@ class DependentLibraryCollector {
       // Parse expression ('12' in above) recursively.
       _handleExpression(expression.element, expression.expression);
     } else {
-      throw AnalysisException(
-        "Unexpected parameter default value expression '$expression' "
-        'type: ${expression.runtimeType} '
-        'at ${getNodeLocation(expression, _contextClass)}',
-      );
+      // coverage:ignore-start
+      final message =
+          "Unexpected parameter default value expression '$expression' "
+          'type: ${expression.runtimeType} '
+          'at ${getNodeLocation(expression, _contextClass)}';
+      assert(false, message);
+      throw AnalysisException(message);
+      // coverage:ignore-end
     }
   }
 

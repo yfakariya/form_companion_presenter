@@ -113,10 +113,12 @@ FutureOr<void> _parseBlockAsync(
           context.markAsReturned();
         }
       } else {
+        // coverage:ignore-start
         throwNotSupportedYet(
           node: statement,
           contextElement: contextElement,
         );
+        // coverage:ignore-end
       }
     }
   } finally {

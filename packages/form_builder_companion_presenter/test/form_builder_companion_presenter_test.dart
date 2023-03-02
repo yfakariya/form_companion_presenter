@@ -9,7 +9,6 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:form_builder_companion_presenter/form_builder_companion_presenter.dart';
-import 'package:form_companion_presenter/form_companion_extension.dart';
 import 'package:form_companion_presenter/form_companion_presenter.dart';
 
 Widget _buildChilren(
@@ -704,7 +703,7 @@ void main() {
       expect(anotherValidatorCalled, equals(formShouldBeReevaluated));
 
       // reset causes validation only AutovalidateMode.always
-      Form.of(lastContext)!.reset();
+      Form.of(lastContext).reset();
       await tester.pump();
 
       // By resetting form

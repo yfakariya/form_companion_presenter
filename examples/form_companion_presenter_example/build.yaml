@@ -5,6 +5,15 @@ targets:
         generate_for:
           include:
             - lib/models.dart
+          exclude:
+            - lib/**/*.g.dart
+            - lib/**/*.fcp.dart
+            - lib/**/*.freezed.dart
+      riverpod_generator:
+        generate_for:
+          exclude:
+            - lib/**/*.fcp.dart
+            - lib/**/*.freezed.dart
       form_companion_generator:
         enabled: true
         generate_for:
@@ -17,6 +26,7 @@ targets:
             - lib/screen.dart
             - lib/validators.dart
             - lib/*.freezed.dart
+            - lib/**/*.g.dart
             - lib/**/*.freezed.dart
           include:
             - lib/*.dart

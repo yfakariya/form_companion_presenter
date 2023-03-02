@@ -81,6 +81,10 @@ Iterable<String> _emitFieldFactoriesClasses(
     yield* emitFieldFactory(nodeProvider, data, property, logger);
   }
 
+  yield* _emitFunctionDefaults(
+    data.properties.where((p) => p.isSimpleFormField),
+  );
+
   yield '}';
 
   if (propertyWithComplexFormFields.isEmpty) {
@@ -120,6 +124,10 @@ Iterable<String> _emitFieldFactoriesClasses(
         logger,
       );
     }
+
+    yield* _emitFunctionDefaults(
+      data.properties.where((p) => !p.isSimpleFormField),
+    );
 
     yield '}';
   }
@@ -180,6 +188,7 @@ Iterable<String> _emitFieldFactoryCore(
   final sink = StringBuffer();
   processTypeWithValueType(
     instantiationContext,
+    property.formFieldTypeName,
     property.formFieldType!,
     sink,
   );
@@ -273,6 +282,7 @@ String emitParameter(
   if (functionTypedParameter != null) {
     processFunctionTypeFormalParameter(
       context,
+      parameter.declaringTypeName,
       functionTypedParameter,
       EmitParameterContext.methodOrFunctionParameter,
       sink,
@@ -285,6 +295,7 @@ String emitParameter(
   } else {
     processTypeAnnotation(
       context,
+      parameter.declaringTypeName,
       parameter.typeAnnotation!,
       sink,
     );
@@ -306,4 +317,27 @@ String emitParameter(
   }
 
   return sink.toString();
+}
+
+/// Emits default value of function typed parameter which require static method
+/// declaration. This method actually emits such (non-public) method decaration.
+Iterable<String> _emitFunctionDefaults(
+  Iterable<PropertyAndFormFieldDefinition> properties,
+) sync* {
+  for (final entry in properties
+      .expand((p) => p.formFieldConstructors)
+      .expand((c) => c.argumentsHandler.callerSuppliableParameters)
+      .where((p) => p.defaultTargetNonPublicMethod != null)
+      .groupFoldBy((p) => p.defaultValue, (previous, element) {
+    assert(
+      previous == null ||
+          (previous is ParameterInfo &&
+              previous.defaultValue == element.defaultValue),
+    );
+    return element;
+  }).entries) {
+    final method = entry.value.defaultTargetNonPublicMethod!;
+    yield '';
+    yield '  static ${method.returnType} ${entry.key}(${method.parameters.parameters.join(', ')}) ${method.body}';
+  }
 }

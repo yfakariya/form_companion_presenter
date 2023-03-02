@@ -71,7 +71,7 @@ class _BookingPaneTemplate extends ConsumerWidget {
                       'userName': userState?.name ?? 'Dummy User',
                     },
                   ),
-            style: Theme.of(context).textTheme.bodyText1,
+            style: Theme.of(context).textTheme.bodyLarge,
           ),
           state.value.fields.stay(
             context,
@@ -160,8 +160,7 @@ class _BookingPaneTemplate extends ConsumerWidget {
 /// Presenter which holds form properties.
 @formCompanion
 @riverpod
-class BookingPresenterTemplate
-    extends AutoDisposeAsyncNotifier<$BookingPresenterTemplateFormProperties>
+class BookingPresenterTemplate extends _$BookingPresenterTemplate
     with CompanionPresenterMixin, FormBuilderCompanionMixin {
   late Account _account;
 

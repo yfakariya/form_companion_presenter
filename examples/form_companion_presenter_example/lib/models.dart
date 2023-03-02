@@ -167,7 +167,7 @@ class Booking with _$Booking {
 
 /// Application wide state of [Account].
 @Riverpod(keepAlive: true)
-class AccountState extends AsyncNotifier<Account> {
+class AccountState extends _$AccountState {
   // In real app, this should be restored from local cache asynchronously.
   @override
   FutureOr<Account> build() => Account.empty();
@@ -182,7 +182,7 @@ class AccountState extends AsyncNotifier<Account> {
 
 /// Application wide state of [Booking].
 @Riverpod(keepAlive: true)
-class BookingState extends AsyncNotifier<Booking> {
+class BookingState extends _$BookingState {
   // In real app, this should be restored from server API asynchronously.
   @override
   FutureOr<Booking> build() => Booking.empty();

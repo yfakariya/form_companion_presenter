@@ -115,7 +115,7 @@ Future<void> main() async {
 
         return PropertyAndFormFieldDefinition(
           property: property,
-          formFieldTypeName: preferredFormFieldType?.toString() ??
+          formFieldTypeName: preferredFormFieldType?.rawType.element?.name ??
               formFieldClass?.name ??
               '<UNRESOLVED>', // This value is actually 'TextFormField' or 'FormBuilderTextField'.
           formFieldConstructors: formFieldClass == null
@@ -453,10 +453,10 @@ Future<void> main() async {
             '',
             "import 'package:flutter/foundation.dart' show ValueChanged;",
             "import 'package:flutter/gestures.dart' show GestureTapCallback;",
-            "import 'package:flutter/material.dart' show InputCounterWidgetBuilder, InputDecoration, TextFormField;",
+            "import 'package:flutter/material.dart' show AdaptiveTextSelectionToolbar, InputCounterWidgetBuilder, InputDecoration, TextFormField;",
             "import 'package:flutter/painting.dart' show EdgeInsets, StrutStyle, TextAlignVertical, TextStyle;",
             "import 'package:flutter/services.dart' show MaxLengthEnforcement, MouseCursor, SmartDashesType, SmartQuotesType, TextCapitalization, TextInputAction, TextInputFormatter, TextInputType;",
-            "import 'package:flutter/widgets.dart' show AutovalidateMode, BuildContext, FocusNode, Localizations, ScrollController, ScrollPhysics, TextEditingController, TextSelectionControls, ToolbarOptions;",
+            "import 'package:flutter/widgets.dart' show AutovalidateMode, BuildContext, EditableTextContextMenuBuilder, EditableTextState, FocusNode, Localizations, ScrollController, ScrollPhysics, TapRegionCallback, TextEditingController, TextSelectionControls;",
             "import 'package:form_companion_presenter/form_companion_presenter.dart';",
             "import 'package:meta/meta.dart' show immutable, sealed;",
             '',
@@ -734,7 +734,13 @@ Future<void> main() async {
       );
       await expectLater(
         await emitFieldFactoriesAsync(nodeProvider, data, _emptyConfig, logger),
-        fieldFactories('Test01', [textFormFieldFactory('prop')]),
+        fieldFactories(
+          'Test01',
+          [
+            textFormFieldFactory('prop'),
+            textFormFieldFunctionAuguments,
+          ],
+        ),
       );
     });
 
@@ -778,6 +784,54 @@ Future<void> main() async {
           [
             textFormFieldFactory('prop1'),
             dropdownButtonFieldFactory('prop2', 'bool', usesEnumName: true),
+            textFormFieldFunctionAuguments,
+          ],
+        ),
+      );
+    });
+
+    test('2 properties of Strings, they have same default function values',
+        () async {
+      final properties = await makeProperties(
+        [
+          Tuple4(
+            'prop1',
+            library.typeProvider.stringType,
+            library.typeProvider.stringType,
+            textFormField,
+          ),
+          Tuple4(
+            'prop2',
+            library.typeProvider.stringType,
+            library.typeProvider.stringType,
+            textFormField,
+          ),
+        ],
+        isFormBuilder: false,
+      );
+      final data = PresenterDefinition(
+        name: 'Test03',
+        isFormBuilder: false,
+        doAutovalidate: false,
+        warnings: [],
+        imports: await collectDependenciesAsync(
+          library,
+          defaultConfig,
+          properties,
+          nodeProvider,
+          logger,
+          isFormBuilder: false,
+        ),
+        properties: properties,
+      );
+      await expectLater(
+        await emitFieldFactoriesAsync(nodeProvider, data, _emptyConfig, logger),
+        fieldFactories(
+          'Test03',
+          [
+            textFormFieldFactory('prop1'),
+            textFormFieldFactory('prop2'),
+            textFormFieldFunctionAuguments,
           ],
         ),
       );
@@ -1129,6 +1183,8 @@ class \$TestFieldFactory {
 ${textFormFieldFactory('prop1')}
 
 ${dropdownButtonFieldFactory('prop3', 'bool', usesEnumName: true)}
+
+$textFormFieldFunctionAuguments
 }
 
 /// A [FormField] factory for `p` property of [Test].
@@ -2226,7 +2282,6 @@ String textFormFieldFactory(
     TextAlignVertical? textAlignVertical,
     bool autofocus = false,
     bool readOnly = false,
-    ToolbarOptions? toolbarOptions,
     bool? showCursor,
     String obscuringCharacter = '•',
     bool obscureText = false,
@@ -2241,6 +2296,7 @@ String textFormFieldFactory(
     int? maxLength,
     ValueChanged<String>? onChanged,
     GestureTapCallback? onTap,
+    TapRegionCallback? onTapOutside,
     VoidCallback? onEditingComplete,
     ValueChanged<String>? onFieldSubmitted,
     List<TextInputFormatter>? inputFormatters,
@@ -2261,6 +2317,7 @@ String textFormFieldFactory(
     String? restorationId,
     bool enableIMEPersonalizedLearning = true,
     MouseCursor? mouseCursor,
+    EditableTextContextMenuBuilder? contextMenuBuilder = _default_TextFormField__defaultContextMenuBuilder,
   }) {
     final property = _properties.descriptors.$propertyName;
     return TextFormField(
@@ -2279,7 +2336,6 @@ String textFormFieldFactory(
       textAlignVertical: textAlignVertical,
       autofocus: autofocus,
       readOnly: readOnly,
-      toolbarOptions: toolbarOptions,
       showCursor: showCursor,
       obscuringCharacter: obscuringCharacter,
       obscureText: obscureText,
@@ -2294,6 +2350,7 @@ String textFormFieldFactory(
       maxLength: maxLength,
       onChanged: onChanged,
       onTap: onTap,
+      onTapOutside: onTapOutside,
       onEditingComplete: onEditingComplete,
       onFieldSubmitted: onFieldSubmitted,
       onSaved: (v) => property.setFieldValue(v, Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
@@ -2316,8 +2373,12 @@ String textFormFieldFactory(
       restorationId: restorationId,
       enableIMEPersonalizedLearning: enableIMEPersonalizedLearning,
       mouseCursor: mouseCursor,
+      contextMenuBuilder: contextMenuBuilder,
     );
   }''';
+
+const textFormFieldFunctionAuguments = '''
+  static Widget _default_TextFormField__defaultContextMenuBuilder(BuildContext context, EditableTextState editableTextState) {return AdaptiveTextSelectionToolbar.editableText(editableTextState: editableTextState);}''';
 
 String dropdownButtonFieldFactory(
   String propertyName,
@@ -2340,7 +2401,7 @@ String dropdownButtonFieldFactory(
     DropdownButtonBuilder? selectedItemBuilder,
     Widget? hint,
     Widget? disabledHint,
-    ValueChanged<$propertyType?>? onChanged,
+    ValueChanged<${removeQuestion(propertyType)}?>? onChanged,
     VoidCallback? onTap,
     int elevation = 8,
     TextStyle? style,
@@ -2429,6 +2490,8 @@ String formBuilderCheckboxFactory(
     bool shouldRequestFocus = false,
     Widget? subtitle,
     bool tristate = false,
+    OutlinedBorder? shape,
+    BorderSide? side,
   }) {
     final property = _properties.descriptors.$propertyName;
     return FormBuilderCheckbox(
@@ -2454,6 +2517,8 @@ String formBuilderCheckboxFactory(
       shouldRequestFocus: shouldRequestFocus,
       subtitle: subtitle,
       tristate: tristate,
+      shape: shape,
+      side: side,
     );
   }''';
 
@@ -3431,11 +3496,12 @@ String formBuilderTextFieldFactory(
     ui.BoxWidthStyle selectionWidthStyle = ui.BoxWidthStyle.tight,
     SmartDashesType? smartDashesType,
     SmartQuotesType? smartQuotesType,
-    ToolbarOptions? toolbarOptions,
     ui.BoxHeightStyle selectionHeightStyle = ui.BoxHeightStyle.tight,
     Iterable<String>? autofillHints,
     String obscuringCharacter = '•',
     MouseCursor? mouseCursor,
+    EditableTextContextMenuBuilder? contextMenuBuilder,
+    TextMagnifierConfiguration? magnifierConfiguration,
   }) {
     final property = _properties.descriptors.$propertyName;
     return FormBuilderTextField(
@@ -3488,10 +3554,11 @@ String formBuilderTextFieldFactory(
       selectionWidthStyle: selectionWidthStyle,
       smartDashesType: smartDashesType,
       smartQuotesType: smartQuotesType,
-      toolbarOptions: toolbarOptions,
       selectionHeightStyle: selectionHeightStyle,
       autofillHints: autofillHints,
       obscuringCharacter: obscuringCharacter,
       mouseCursor: mouseCursor,
+      contextMenuBuilder: contextMenuBuilder,
+      magnifierConfiguration: magnifierConfiguration,
     );
   }''';

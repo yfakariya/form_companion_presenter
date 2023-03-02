@@ -27,6 +27,15 @@ FutureOr<PropertyAndFormFieldDefinition> resolveFormFieldAsync(
   final preferredFieldType =
       property.preferredFormFieldType?.maybeAsInterfaceType;
 
+  // We know all pre-defined FormField types do not have generic types
+  // which cannot be lead from field type, but preferredFieldType may have
+  // such type arguments. So, we must pass to fully instantiated InterfaceType to
+  // `TypeInstantiationContext.create` below.
+  assert(
+    preferredFieldType == null || isInstantiated(preferredFieldType),
+    "'$preferredFieldType' is not closed generic.", // coverage:ignore-line
+  );
+
   final formFieldType = preferredFieldType ??
       context.formFieldLocator.resolveFormFieldType(
         formFieldRawTypeName,

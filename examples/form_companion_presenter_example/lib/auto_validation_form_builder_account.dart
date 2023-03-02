@@ -108,8 +108,7 @@ class _AutoValidationFormBuilderAccountPane extends ConsumerWidget {
 @formCompanion
 @riverpod
 class AutoValidationFormBuilderAccountPresenter
-    extends AutoDisposeAsyncNotifier<
-        $AutoValidationFormBuilderAccountPresenterFormProperties>
+    extends _$AutoValidationFormBuilderAccountPresenter
     with CompanionPresenterMixin, FormBuilderCompanionMixin {
   AutoValidationFormBuilderAccountPresenter() {
     initializeCompanionMixin(

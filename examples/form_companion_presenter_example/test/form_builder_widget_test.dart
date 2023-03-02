@@ -1,15 +1,20 @@
 // See LICENCE file in the root.
 
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:form_companion_presenter_examples/app.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'widget_test_helpers.dart';
 
 Future<void> main() async {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  DartPluginRegistrant.ensureInitialized();
+  SharedPreferences.setMockInitialValues({});
   await EasyLocalization.ensureInitialized();
 
   const fieldPredicate = formBuilderFieldPredicate;

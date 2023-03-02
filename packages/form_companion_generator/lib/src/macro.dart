@@ -89,6 +89,7 @@ class ArgumentMacroContext {
           parameterType.getDisplayString(withNullability: false);
     }
 
+    // ignore: avoid_returning_this
     return this;
   }
 

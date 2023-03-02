@@ -37,16 +37,16 @@ class _FormStateAdapter implements FormStateAdapter {
 }
 
 /// Extended mixin of [CompanionPresenterFeatures] for vanilla [Form].
-class FormCompanionFeatures
+class _FormCompanionFeatures
     extends CompanionPresenterFeatures<_FormStateAdapter> {
   final FormCompanionMixin _presenter;
 
-  FormCompanionFeatures._(this._presenter);
+  _FormCompanionFeatures._(this._presenter);
 
   @override
   @nonVirtual
   FormStateAdapter? maybeFormStateOf(BuildContext context) {
-    final state = Form.of(context);
+    final state = Form.maybeOf(context);
     return state == null ? null : _FormStateAdapter(state, getLocale(context));
   }
 
@@ -93,7 +93,7 @@ class FormCompanionFeatures
 ///   is ready for "submit" or `null` otherwise. This class checks validation
 ///   results of [FormField]s and existance of pending async validations.
 mixin FormCompanionMixin on CompanionPresenterMixin {
-  late final FormCompanionFeatures _presenterFeatures;
+  late final _FormCompanionFeatures _presenterFeatures;
 
   @override
   CompanionPresenterFeatures get presenterFeatures => _presenterFeatures;
@@ -115,7 +115,7 @@ mixin FormCompanionMixin on CompanionPresenterMixin {
   @override
   @nonVirtual
   void initializeCompanionMixin(PropertyDescriptorsBuilder properties) {
-    _presenterFeatures = FormCompanionFeatures._(this);
+    _presenterFeatures = _FormCompanionFeatures._(this);
     super.initializeCompanionMixin(
       properties,
     );

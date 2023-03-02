@@ -372,7 +372,7 @@ void main() {
             test(
               'sync',
               () async => doTest(
-                (v) => Future.value(v),
+                Future.value,
               ),
             );
           });
@@ -460,7 +460,7 @@ void main() {
             test(
               'sync',
               () async => doTest(
-                (v) => Future.value(v),
+                Future.value,
               ),
             );
           });
@@ -585,7 +585,7 @@ void main() {
             test(
               'sync',
               () async => doTest(
-                (v) => Future.value(v),
+                Future.value,
               ),
             );
           });

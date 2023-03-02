@@ -20,6 +20,7 @@ export 'src/form_companion_mixin.dart'
         FormCompanionPropertyDescriptorsBuilderExtension,
         FormFieldValidatorFactory,
         FormProperties,
+        FormPropertiesExtension,
         FormStateAdapter,
         OnPropertiesChangedEvent,
         PropertyDescriptor,

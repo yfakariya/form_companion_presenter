@@ -227,6 +227,44 @@ void main() {
       );
     });
 
+    test('non map causes error', () {
+      final target = Config(<String, dynamic>{
+        'named_templates': 0,
+      });
+      expect(
+        () => target.namedTemplates,
+        throwsA(
+          isA<AnalysisException>().having(
+            (e) => e.message,
+            'message',
+            "Unexpected value type of 'named_templates'. "
+                'Value must be mapping of string key and NamedTemplate value, but int.',
+          ),
+        ),
+      );
+    });
+
+    test('error message is cached', () {
+      final target = Config(<String, dynamic>{
+        'named_templates': 0,
+      });
+      late final AnalysisException firstError;
+      late final StackTrace firstStackTrace;
+      try {
+        final _ = target.namedTemplates;
+      } on AnalysisException catch (e, s) {
+        firstError = e;
+        firstStackTrace = s;
+      }
+
+      try {
+        final _ = target.namedTemplates;
+      } on AnalysisException catch (e, s) {
+        expect(e.message, firstError.message);
+        expect(s.toString(), isNot(firstStackTrace.toString()));
+      }
+    });
+
     test('non string keys cause error', () {
       final target = Config(<String, dynamic>{
         'named_templates': {
@@ -259,6 +297,25 @@ void main() {
             'message',
             "Unexpected value type of 'map' property of 'named_templates'. "
                 'Value must be String or mapping, but int.',
+          ),
+        ),
+      );
+    });
+
+    test('non string template value cause error', () {
+      final target = Config(<String, dynamic>{
+        'named_templates': {
+          'map': {'template': 0},
+        },
+      });
+      expect(
+        () => target.namedTemplates['map'],
+        throwsA(
+          isA<AnalysisException>().having(
+            (e) => e.message,
+            'message',
+            "'map' property of 'named_templates' must have String 'template' "
+                "property, but the type of 'template' is int.",
           ),
         ),
       );
@@ -432,6 +489,24 @@ void main() {
       );
     });
 
+    test('non map causes error', () {
+      final target = Config(<String, dynamic>{
+        'argument_templates': 0,
+      });
+      expect(
+        () => target.argumentTemplates,
+        throwsA(
+          isA<AnalysisException>().having(
+            (e) => e.message,
+            'message',
+            "Unexpected value type of 'argument_templates'. "
+                'Value must be mapping of string key and '
+                'Map<String, ArgumentTemplate> value, but int.',
+          ),
+        ),
+      );
+    });
+
     test('non string keys cause error', () {
       final target = Config(<String, dynamic>{
         'argument_templates': <dynamic, dynamic>{
@@ -468,6 +543,27 @@ void main() {
           ),
         ),
       );
+    });
+
+    test('error message is cached', () {
+      final target = Config(<String, dynamic>{
+        'argument_templates': 0,
+      });
+      late final AnalysisException firstError;
+      late final StackTrace firstStackTrace;
+      try {
+        final _ = target.argumentTemplates;
+      } on AnalysisException catch (e, s) {
+        firstError = e;
+        firstStackTrace = s;
+      }
+
+      try {
+        final _ = target.argumentTemplates;
+      } on AnalysisException catch (e, s) {
+        expect(e.message, firstError.message);
+        expect(s.toString(), isNot(firstStackTrace.toString()));
+      }
     });
 
     test('string maps can be parsed', () {
@@ -535,23 +631,20 @@ void main() {
       final target = Config(<String, dynamic>{
         'argument_templates': {
           'AFormField': {
-            'empty': {'key': 'value'},
+            'scalar': {
+              'imports': {'p.Foo': 'package:foo/bar.dart'},
+            },
           }
         },
       });
-      expect(
-        () => target.argumentTemplates.get('AFormField', 'scalar'),
-        throwsA(
-          isA<AnalysisException>().having(
-            (e) => e.message,
-            'message',
-            "'empty' property of 'AFormField' property of "
-                "'argument_templates' must have string 'template' or 'item_template' "
-                "property, but the type of 'template' is null, "
-                "and the type of 'item_template' is null.",
-          ),
-        ),
-      );
+      final template = target.argumentTemplates.get('AFormField', 'scalar');
+      expect(template.itemTemplate, isNull);
+      expect(template.value, isNull);
+      expect(template.imports.length, 1);
+      final import = template.imports.single;
+      expect(import.prefix, 'p');
+      expect(import.types, ['Foo']);
+      expect(import.uri, 'package:foo/bar.dart');
     });
 
     test('object with invalid template and item_template in maps cause error',
@@ -571,7 +664,8 @@ void main() {
             'message',
             "'empty' property of 'AFormField' property of "
                 "'argument_templates' must have string 'template' or 'item_template' "
-                "property, but the type of 'template' is int, "
+                'property, or needs that both of them are not specified, '
+                "but the type of 'template' is int, "
                 "and the type of 'item_template' is bool.",
           ),
         ),
@@ -931,6 +1025,45 @@ void main() {
         'custom_namings': <String, String>{},
       });
       expect(target.customNamings, isNotNull);
+    });
+
+    test('non map causes error', () {
+      final target = Config(<String, dynamic>{
+        'custom_namings': 0,
+      });
+      expect(
+        () => target.customNamings,
+        throwsA(
+          isA<AnalysisException>().having(
+            (e) => e.message,
+            'message',
+            "Unexpected value type of 'custom_namings'. "
+                'Value must be mapping of string key and '
+                'PresenterCustomNamings value, but int.',
+          ),
+        ),
+      );
+    });
+
+    test('error message is cached', () {
+      final target = Config(<String, dynamic>{
+        'custom_namings': 0,
+      });
+      late final AnalysisException firstError;
+      late final StackTrace firstStackTrace;
+      try {
+        final _ = target.customNamings;
+      } on AnalysisException catch (e, s) {
+        firstError = e;
+        firstStackTrace = s;
+      }
+
+      try {
+        final _ = target.customNamings;
+      } on AnalysisException catch (e, s) {
+        expect(e.message, firstError.message);
+        expect(s.toString(), isNot(firstStackTrace.toString()));
+      }
     });
 
     test('can access undefined type and name', () {
