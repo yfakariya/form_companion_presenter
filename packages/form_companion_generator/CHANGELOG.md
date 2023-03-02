@@ -1,3 +1,13 @@
+## 0.4.0
+
+ - **FIX**: Fix non-aliased function type handling.
+ - **FIX**: Fix source libraries of constants are not imported.
+ - **FIX**: Improve internal type name detection.
+ - **FIX**: Fix super parameter generics handling.
+ - **FIX**: Update and relax dependencies.
+ - **FEAT**: Support non-public default value.
+ - **FEAT**: Allow argument templates which contain `imports` only.
+
 ## 0.3.0
 
 > Note: This release has breaking changes.

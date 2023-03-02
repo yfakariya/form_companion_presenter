@@ -1,3 +1,11 @@
+## 0.4.0
+
+> Note: This release has breaking changes.
+
+ - **FIX**: Expose `FormPropertiesExtension`.
+ - **FIX**: Support Flutter 3.7.
+ - **BREAKING** **FIX**: Minimum Flutter version is now 3.7.
+
 ## 0.3.0
 
 > Note: This release has breaking changes.
