@@ -13,6 +13,7 @@ import 'test_helpers.dart';
 Future<void> main() async {
   final logger = Logger('form_field_locator_test');
   Logger.root.level = Level.INFO;
+  // ignore: avoid_print
   logger.onRecord.listen(print);
 
   final library = await getParametersLibrary();

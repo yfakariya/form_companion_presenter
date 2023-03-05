@@ -18,6 +18,7 @@ import 'test_helpers.dart';
 Future<void> main() async {
   final logger = Logger('emitter_parameter_test');
   Logger.root.level = Level.INFO;
+  // ignore: avoid_print
   logger.onRecord.listen(print);
 
   final library = await getParametersLibrary();

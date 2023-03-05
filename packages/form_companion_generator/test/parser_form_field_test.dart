@@ -27,6 +27,7 @@ class FailureFormFieldLocator implements FormFieldLocator {
 Future<void> main() async {
   final logger = Logger('parser_test');
   Logger.root.level = Level.INFO;
+  // ignore: avoid_print
   logger.onRecord.listen(print);
 
   final library = await getFormFieldsLibrary();
