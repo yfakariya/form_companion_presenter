@@ -42,8 +42,11 @@ builders:
           FormBuilderSegmentedControl:
             options:
               item_template: 'FormBuilderFieldOption<#ITEM_VALUE_TYPE#>(value: #ITEM_VALUE#, child: #ITEM_WIDGET_TEMPLATE#)'
+          FormBuilderTextField:
+            obscureText : '#ARGUMENT# ?? #PROPERTY#.valueTraits.isSensitive'
           TextFormField:
             contextMenuBuilder:
               imports:
                 'AdaptiveTextSelectionToolbar': 'package:flutter/material.dart'
                 'EditableTextState': 'package:flutter/widgets.dart'
+            obscureText : '#ARGUMENT# ?? #PROPERTY#.valueTraits.isSensitive'
