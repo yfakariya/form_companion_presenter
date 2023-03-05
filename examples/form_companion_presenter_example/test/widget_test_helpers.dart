@@ -235,11 +235,11 @@ FutureOr<void> verifyPersistedBookingAsync(
 bool Function(FormField<dynamic>) formFieldPredicate<T>(String fieldName) =>
     (widget) {
       final key = widget.key;
-      if (key is! GlobalObjectKey) {
+      if (key is! LabeledGlobalKey) {
         return false;
       }
 
-      return key.value == fieldName;
+      return key.toString().endsWith('Presenter#$fieldName]');
     };
 
 bool Function(FormField<dynamic>) formBuilderFieldPredicate<T>(

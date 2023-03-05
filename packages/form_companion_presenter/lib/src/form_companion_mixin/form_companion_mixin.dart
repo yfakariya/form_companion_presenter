@@ -109,7 +109,7 @@ mixin FormCompanionMixin on CompanionPresenterMixin {
       return key;
     }
 
-    return key = _fieldKeys[name] = GlobalObjectKey(name);
+    return key = _fieldKeys[name] = GlobalKey(debugLabel: '$runtimeType#$name');
   }
 
   @override
