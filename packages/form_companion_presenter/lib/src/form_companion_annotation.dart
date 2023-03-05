@@ -65,6 +65,7 @@ extension FormCompanionPropertyDescriptorBuilderExtensions
     Equality<F>? fieldValueEquality,
     Equality<P>? propertyValueEquality,
     ValueConverter<P, F>? valueConverter,
+    PropertyValueTraits? valueTraits,
   }) =>
       // NOTE: TField is not used in runtime.
       //       The parameter will be interpreted in form_companion_generator.
@@ -76,6 +77,7 @@ extension FormCompanionPropertyDescriptorBuilderExtensions
         fieldValueEquality: fieldValueEquality,
         propertyValueEquality: propertyValueEquality,
         valueConverter: valueConverter,
+        valueTraits: valueTraits,
       );
 
   /// Defines a new property with property value type [P]
@@ -91,6 +93,7 @@ extension FormCompanionPropertyDescriptorBuilderExtensions
     List<AsyncValidatorFactory<String>>? asyncValidatorFactories,
     P? initialValue,
     required StringConverter<P>? stringConverter,
+    PropertyValueTraits? valueTraits,
   }) =>
       addWithField<P, String, TField>(
         name: name,
@@ -98,6 +101,7 @@ extension FormCompanionPropertyDescriptorBuilderExtensions
         asyncValidatorFactories: asyncValidatorFactories,
         initialValue: initialValue,
         valueConverter: stringConverter,
+        valueTraits: valueTraits,
       );
 
   /// Defines a new property with [bool] for both of property value type and
@@ -109,10 +113,12 @@ extension FormCompanionPropertyDescriptorBuilderExtensions
   void booleanWithField<TField extends FormField<bool>>({
     required String name,
     bool initialValue = false,
+    PropertyValueTraits? valueTraits,
   }) =>
       addWithField<bool, bool, TField>(
         name: name,
         initialValue: initialValue,
+        valueTraits: valueTraits,
       );
 
   /// Defines a new property with enum type [T] for both of property value type
@@ -124,10 +130,12 @@ extension FormCompanionPropertyDescriptorBuilderExtensions
   void enumeratedWithField<T extends Enum, TField extends FormField<T>>({
     required String name,
     T? initialValue,
+    PropertyValueTraits? valueTraits,
   }) =>
       addWithField<T, T, TField>(
         name: name,
         initialValue: initialValue,
+        valueTraits: valueTraits,
       );
 
   /// Defines a new property with property value type [int]
@@ -141,12 +149,14 @@ extension FormCompanionPropertyDescriptorBuilderExtensions
     List<FormFieldValidatorFactory<int>>? validatorFactories,
     List<AsyncValidatorFactory<int>>? asyncValidatorFactories,
     int? initialValue,
+    PropertyValueTraits? valueTraits,
   }) =>
       addWithField<int, int, TField>(
         name: name,
         validatorFactories: validatorFactories,
         asyncValidatorFactories: asyncValidatorFactories,
         initialValue: initialValue,
+        valueTraits: valueTraits,
       );
 
   /// Defines a new property with property value type [double]
@@ -160,12 +170,14 @@ extension FormCompanionPropertyDescriptorBuilderExtensions
     List<FormFieldValidatorFactory<double>>? validatorFactories,
     List<AsyncValidatorFactory<double>>? asyncValidatorFactories,
     double? initialValue,
+    PropertyValueTraits? valueTraits,
   }) =>
       addWithField<double, double, TField>(
         name: name,
         validatorFactories: validatorFactories,
         asyncValidatorFactories: asyncValidatorFactories,
         initialValue: initialValue,
+        valueTraits: valueTraits,
       );
 
   /// Defines a new property with property value type [BigInt]
@@ -179,11 +191,13 @@ extension FormCompanionPropertyDescriptorBuilderExtensions
     List<FormFieldValidatorFactory<BigInt>>? validatorFactories,
     List<AsyncValidatorFactory<BigInt>>? asyncValidatorFactories,
     BigInt? initialValue,
+    PropertyValueTraits? valueTraits,
   }) =>
       addWithField<BigInt, BigInt, TField>(
         name: name,
         validatorFactories: validatorFactories,
         asyncValidatorFactories: asyncValidatorFactories,
         initialValue: initialValue,
+        valueTraits: valueTraits,
       );
 }

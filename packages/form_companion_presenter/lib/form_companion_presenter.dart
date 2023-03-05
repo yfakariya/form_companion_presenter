@@ -40,6 +40,7 @@ export 'src/future_invoker.dart'
         FutureInvoker;
 export 'src/number_converter.dart'
     show bigIntDoubleConverter, intDoubleConverter;
+export 'src/property_value_traits.dart' show PropertyValueTraits;
 export 'src/string_converter.dart'
     show
         ParseFailureMessageProvider,

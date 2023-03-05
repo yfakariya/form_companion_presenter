@@ -18,10 +18,12 @@ extension FormBuilderCompanionPropertyDescriptorsBuilderExtension
   void booleanList({
     required String name,
     List<bool>? initialValues,
+    PropertyValueTraits? valueTraits,
   }) =>
       add<List<bool>, List<bool>>(
         name: name,
         initialValue: initialValues,
+        valueTraits: valueTraits,
       );
 
   /// Defines a new property with [List] of enum type [Enum] for both of
@@ -35,8 +37,10 @@ extension FormBuilderCompanionPropertyDescriptorsBuilderExtension
   void enumeratedList<T extends Enum>({
     required String name,
     List<T>? initialValues,
+    PropertyValueTraits? valueTraits,
   }) =>
       add<List<T>, List<T>>(name: name, initialValue: initialValues);
+        valueTraits: valueTraits,
 
   /// Defines a new property with [DateTime] for both of
   /// property value type and form field value type.
@@ -51,12 +55,14 @@ extension FormBuilderCompanionPropertyDescriptorsBuilderExtension
     List<FormFieldValidatorFactory<DateTime>>? validatorFactories,
     List<AsyncValidatorFactory<DateTime>>? asyncValidatorFactories,
     DateTime? initialValue,
+    PropertyValueTraits? valueTraits,
   }) =>
       add<DateTime, DateTime>(
         name: name,
         validatorFactories: validatorFactories,
         asyncValidatorFactories: asyncValidatorFactories,
         initialValue: initialValue,
+        valueTraits: valueTraits,
       );
 
   /// Defines a new property with [DateTimeRange] for both of
@@ -72,12 +78,14 @@ extension FormBuilderCompanionPropertyDescriptorsBuilderExtension
     List<FormFieldValidatorFactory<DateTimeRange>>? validatorFactories,
     List<AsyncValidatorFactory<DateTimeRange>>? asyncValidatorFactories,
     DateTimeRange? initialValue,
+    PropertyValueTraits? valueTraits,
   }) =>
       add<DateTimeRange, DateTimeRange>(
         name: name,
         validatorFactories: validatorFactories,
         asyncValidatorFactories: asyncValidatorFactories,
         initialValue: initialValue,
+        valueTraits: valueTraits,
       );
 
   /// Defines a new property with [RangeValues] for both of
@@ -93,11 +101,13 @@ extension FormBuilderCompanionPropertyDescriptorsBuilderExtension
     List<FormFieldValidatorFactory<RangeValues>>? validatorFactories,
     List<AsyncValidatorFactory<RangeValues>>? asyncValidatorFactories,
     RangeValues? initialValue,
+    PropertyValueTraits? valueTraits,
   }) =>
       add<RangeValues, RangeValues>(
         name: name,
         validatorFactories: validatorFactories,
         asyncValidatorFactories: asyncValidatorFactories,
         initialValue: initialValue,
+        valueTraits: valueTraits,
       );
 }

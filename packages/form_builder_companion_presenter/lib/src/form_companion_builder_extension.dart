@@ -21,10 +21,12 @@ extension FormCompanionBuilderCompanionPropertyDescriptorsBuilderExtension
   void booleanListWithField<TField extends FormField<List<bool>>>({
     required String name,
     List<bool>? initialValues,
+    PropertyValueTraits? valueTraits,
   }) =>
       addWithField<List<bool>, List<bool>, TField>(
         name: name,
         initialValue: initialValues,
+        valueTraits: valueTraits,
       );
 
   /// Defines a new property with [List] of enum type [T] for both of
@@ -42,9 +44,11 @@ extension FormCompanionBuilderCompanionPropertyDescriptorsBuilderExtension
           TField extends FormField<List<T>>>({
     required String name,
     List<T>? initialValues,
+    PropertyValueTraits? valueTraits,
   }) =>
       addWithField<List<T>, List<T>, TField>(
         name: name,
         initialValue: initialValues,
+        valueTraits: valueTraits,
       );
 }

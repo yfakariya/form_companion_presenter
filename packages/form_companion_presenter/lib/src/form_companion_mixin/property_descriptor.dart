@@ -40,6 +40,9 @@ class PropertyDescriptor<P extends Object, F extends Object> {
   /// Connected presenter object which implements [CompanionPresenterMixin].
   final CompanionPresenterMixin presenter;
 
+  /// Represents traits of [PropertyDescriptor] this property's value.
+  final PropertyValueTraits valueTraits;
+
   // The reason of using factories instead of validators theirselves is some
   // validator framework requires BuildContext to localize their messages.
   // In addition, it is good for the sake of injection of Completer to await
@@ -120,6 +123,7 @@ class PropertyDescriptor<P extends Object, F extends Object> {
     required Equality<F?>? fieldValueEquality,
     required Equality<P?>? propertyValueEquality,
     required ValueConverter<P, F>? valueConverter,
+    required this.valueTraits,
   })  : _propertyValueEquality = propertyValueEquality ?? Equality<P?>(),
         _onPropertyChanged = onPropertyChanged,
         _valueConverter = valueConverter ?? DefaultValueConverter<P, F>(),
