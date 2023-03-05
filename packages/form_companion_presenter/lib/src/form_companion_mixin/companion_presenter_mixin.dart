@@ -247,7 +247,7 @@ mixin CompanionPresenterMixin {
 /// can call methods in this class via [CompanionPresenterMixinExtension]'s
 /// extension methods instead of calling methods of this class directly.
 ///
-/// `form_companion_presenter` uses templated method pattern to allow developers
+/// `form_companion_presenter` uses template method pattern to allow developers
 /// extend features of [CompanionPresenterMixin], but in dart, this is hard to
 /// avoid method conflict between methods which were added by such subtypes's
 /// developers or application developers who mix-ins the mixin type, because
