@@ -494,4 +494,12 @@ extension CompanionPresenterMixinInternalExtension on CompanionPresenterMixin {
     String name,
   ) =>
       propertiesState.getDescriptor(name)._pendingAsyncValidations;
+
+  /// For testing, reset async validator states, namely invalidates caches.
+  @visibleForTesting
+  void resetAsyncValidators() {
+    this._properties.getAllDescriptors().forEach((p) {
+      p._resetAsyncValidators();
+    });
+  }
 }
