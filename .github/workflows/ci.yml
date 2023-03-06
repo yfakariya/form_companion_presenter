@@ -23,6 +23,8 @@ jobs:
     timeout-minutes: 15
 
     steps:
+      # actions/checkout@v3.3.0
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
       - uses: ./.github/actions/build-and-test
 
   # Enables when newer stable version is released -- test each versions.
@@ -32,6 +34,8 @@ jobs:
   #   timeout-minutes: 15
 
   #   steps:
+  #     # actions/checkout@v3.3.0
+  #     - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
   #     - uses: ./.github/workflows/actions/build-and-test
   #       with:
   #         flutter-version: '3.7'

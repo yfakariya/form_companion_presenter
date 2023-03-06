@@ -10,9 +10,6 @@ inputs:
 runs:
   using: composite
   steps:
-    # actions/checkout@v3.3.0
-    - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
-
     # subosito/flutter-action@v2.8.0
     - uses: subosito/flutter-action@dbf1fa04f4d2e52c33185153d06cdb5443aa189d
       with:
