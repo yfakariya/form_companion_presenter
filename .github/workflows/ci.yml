@@ -6,74 +6,36 @@ on:
       - '**.dart'
       - 'pubspec.*'
       - 'analysis_options.yaml'
-      - '.github/workflows/ci.yaml'
+      - '.github/workflows/*.yml'
+      - '.github/actions/**/*.yml'
   pull_request:
     paths:
       - '**.dart'
       - 'pubspec.*'
       - 'analysis_options.yaml'
-      - '.github/workflows/ci.yaml'
+      - '.github/workflows/*.yml'
+      - '.github/actions/**/*.yml'
 
 jobs:
-  build:
+  build-latest:
     runs-on: ubuntu-latest
 
     timeout-minutes: 15
 
     steps:
-      # actions/checkout@v2.4.0
-      - uses: actions/checkout@ec3a7ce113134d7a93b817d10a8272cb61118579
+      # actions/checkout@v3.3.0
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
+      - uses: ./.github/actions/build-and-test
 
-      # subosito/flutter-action@v1.5.3
-      - uses: subosito/flutter-action@4389e6cbc6cb8a4b18c628ff96ff90be0e926aa8
-        with:
-          channel: stable
+  # Enables when newer stable version is released -- test each versions.
+  # build-3_7:
+  #   runs-on: ubuntu-latest
 
-      - name: Add pub cache bin to PATH
-        run: echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
+  #   timeout-minutes: 15
 
-      - name: Add pub cache to PATH
-        run: echo "PUB_CACHE="$HOME/.pub-cache"" >> $GITHUB_ENV
-
-      - name: Install melos
-        run: dart pub global activate melos
-
-      - name: Install fvm
-        run: dart pub global activate fvm
-
-      - name: Install grinder
-        run: dart pub global activate grinder
-
-      - name: Setup fvm
-        run: fvm install
-
-      - name: Initialize grinder project
-        run: fvm flutter pub get
-        working-directory: tool/dev_env
-
-      - name: Format sources
-        run: grind format
-        working-directory: tool/dev_env
-
-      - name: Initialize projects
-        run: melos run pubget
-
-      - name: Analyze sources
-        run: melos run analyze --no-select
-
-      # "melos run test" is hang on github actions, so run each test explicitly
-
-      - run: fvm flutter test --reporter=expanded --coverage
-        working-directory: packages/form_builder_companion_presenter
-
-      - run: fvm flutter test --reporter=expanded --coverage
-        working-directory: packages/form_companion_presenter
-
-      - run: fvm dart test --reporter=expanded --coverage=coverage
-        working-directory: packages/form_companion_generator
-
-      - run: grind
-        working-directory: packages/form_companion_generator_test
-
-      - run: fvm flutter test --reporter=expanded --coverage
-        working-directory: examples/form_companion_presenter_example
+  #   steps:
+  #     # actions/checkout@v3.3.0
+  #     - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
+  #     - uses: ./.github/workflows/actions/build-and-test
+  #       with:
+  #         flutter-version: '3.7'

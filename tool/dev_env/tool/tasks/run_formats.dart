@@ -39,7 +39,7 @@ Future<void> runFormats({
     await runAsync(
       'fvm',
       arguments: [
-        'flutter',
+        'dart',
         'format',
         '--set-exit-if-changed',
         ...sources,

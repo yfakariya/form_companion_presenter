@@ -12,7 +12,7 @@ Future<dynamic> main(List<String> args) => grind(args);
 Future<dynamic> checkEnv() => checkDevEnv();
 
 @Task(
-  'Run `flutter format` for all project but except *.g.dart, *.freezed.dart, and .dart_tools/**/*.dart',
+  'Run `dart format` for all project but except *.g.dart, *.freezed.dart, and .dart_tools/**/*.dart',
 )
 Future<void> format() => formatCore();
 

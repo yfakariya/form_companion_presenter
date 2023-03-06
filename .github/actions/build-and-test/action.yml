@@ -1,0 +1,79 @@
+name: Build and Test
+description: Build and Test as pure Flutter library
+
+inputs:
+  flutter-version:
+    description: Flutter version to build and test such as '3.7'
+    required: false
+    default: any
+
+runs:
+  using: composite
+  steps:
+    # subosito/flutter-action@v2.8.0
+    - uses: subosito/flutter-action@dbf1fa04f4d2e52c33185153d06cdb5443aa189d
+      with:
+        channel: stable
+        flutter-version: ${{ inputs.flutter-version }}
+        cache: true
+
+    - name: Add pub cache bin to PATH
+      run: echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
+      shell: bash
+
+    - name: Add pub cache to PATH
+      run: echo "PUB_CACHE="$HOME/.pub-cache"" >> $GITHUB_ENV
+      shell: bash
+
+    - name: Install melos
+      run: dart pub global activate melos
+      shell: bash
+
+    - name: Install fvm
+      run: dart pub global activate fvm
+      shell: bash
+
+    - name: Install grinder
+      run: dart pub global activate grinder
+      shell: bash
+
+    - name: Setup fvm
+      run: fvm install
+      shell: bash
+
+    - name: Initialize grinder project
+      run: fvm flutter pub get
+      working-directory: tool/dev_env
+      shell: bash
+
+    - name: Format sources
+      run: grind format
+      working-directory: tool/dev_env
+      shell: bash
+
+    - name: Initialize projects
+      run: melos run pubget
+      shell: bash
+
+    - name: Analyze sources
+      run: melos run analyze --no-select
+      shell: bash
+
+    - name: Run melos test
+      run: melos run test
+      shell: bash
+    # "melos run test" is hang on github actions, so run each test explicitly
+    # - run: fvm flutter test --reporter=expanded --coverage
+    #   working-directory: packages/form_builder_companion_presenter
+
+    # - run: fvm flutter test --reporter=expanded --coverage
+    #   working-directory: packages/form_companion_presenter
+
+    # - run: fvm dart test --reporter=expanded --coverage=coverage
+    #   working-directory: packages/form_companion_generator
+
+    # - run: grind
+    #   working-directory: packages/form_companion_generator_test
+
+    # - run: fvm flutter test --reporter=expanded --coverage
+    #   working-directory: examples/form_companion_presenter_example
