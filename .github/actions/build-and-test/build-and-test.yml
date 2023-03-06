@@ -1,0 +1,69 @@
+name: "Build and Test"
+
+inputs:
+  flutter-version:
+    required: false
+    default: 'any'
+
+runs:
+  using: 'composite'
+  steps:
+    # actions/checkout@v3.3.0
+    - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
+
+    # subosito/flutter-action@v2.8.0
+    - uses: subosito/flutter-action@dbf1fa04f4d2e52c33185153d06cdb5443aa189d
+      with:
+        channel: stable
+        flutter-version: ${{ inputs.flutter-version }}
+        cache: true
+
+    - name: Add pub cache bin to PATH
+      run: echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
+
+    - name: Add pub cache to PATH
+      run: echo "PUB_CACHE="$HOME/.pub-cache"" >> $GITHUB_ENV
+
+    - name: Install melos
+      run: dart pub global activate melos
+
+    - name: Install fvm
+      run: dart pub global activate fvm
+
+    - name: Install grinder
+      run: dart pub global activate grinder
+
+    - name: Setup fvm
+      run: fvm install
+
+    - name: Initialize grinder project
+      run: fvm flutter pub get
+      working-directory: tool/dev_env
+
+    - name: Format sources
+      run: grind format
+      working-directory: tool/dev_env
+
+    - name: Initialize projects
+      run: melos run pubget
+
+    - name: Analyze sources
+      run: melos run analyze --no-select
+
+    - name: Run melos test
+      run: melos run test
+    # "melos run test" is hang on github actions, so run each test explicitly
+    # - run: fvm flutter test --reporter=expanded --coverage
+    #   working-directory: packages/form_builder_companion_presenter
+
+    # - run: fvm flutter test --reporter=expanded --coverage
+    #   working-directory: packages/form_companion_presenter
+
+    # - run: fvm dart test --reporter=expanded --coverage=coverage
+    #   working-directory: packages/form_companion_generator
+
+    # - run: grind
+    #   working-directory: packages/form_companion_generator_test
+
+    # - run: fvm flutter test --reporter=expanded --coverage
+    #   working-directory: examples/form_companion_presenter_example
