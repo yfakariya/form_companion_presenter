@@ -6,13 +6,15 @@ on:
       - '**.dart'
       - 'pubspec.*'
       - 'analysis_options.yaml'
-      - '.github/workflows/ci.yaml'
+      - '.github/workflows/*.yml'
+      - '.github/actions/**/*.yml'
   pull_request:
     paths:
       - '**.dart'
       - 'pubspec.*'
       - 'analysis_options.yaml'
-      - '.github/workflows/ci.yaml'
+      - '.github/workflows/*.yml'
+      - '.github/actions/**/*.yml'
 
 jobs:
   build-latest:
