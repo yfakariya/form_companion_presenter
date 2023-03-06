@@ -23,7 +23,7 @@ jobs:
     timeout-minutes: 15
 
     steps:
-      - uses: ./.github/workflows/actions/build-and-test
+      - uses: ./.github/actions/build-and-test
 
   # Enables when newer stable version is released -- test each versions.
   # build-3_7:
