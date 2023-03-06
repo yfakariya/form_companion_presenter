@@ -1,0 +1,16 @@
+version: 2
+updates:
+  - directory: /
+    open-pull-requests-limit: 5
+    package-ecosystem: github-actions
+    rebase-strategy: auto
+    schedule:
+      interval: weekly
+      day: friday
+  - directory: /
+    open-pull-requests-limit: 5
+    package-ecosystem: pub
+    rebase-strategy: auto
+    schedule:
+      interval: weekly
+      day: friday
