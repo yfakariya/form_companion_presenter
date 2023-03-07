@@ -74,10 +74,14 @@ class _PropertyValidator<T extends Object> {
             : null;
 
   FormFieldValidator<T> asValidtor() => (value) {
+        _asyncValidatorChain?._log.fine('Start validation.');
         // The idea is borrowed from FormBuilderValidators.composite()
         for (final validator in _validators) {
           final validationError = validator(value);
           if (validationError != null) {
+            _asyncValidatorChain?._log.fine(
+              'Validation completed due to sync validator detected error: "$validationError".',
+            );
             return validationError;
           }
         }
@@ -91,6 +95,7 @@ class _PropertyValidator<T extends Object> {
 ///
 /// This class assumes that the tail of the chain is presenter's completion handler.
 class _AsyncValidatorChain<T extends Object> {
+  late final Logger _log;
   final Locale _locale;
   final AsyncValidationCompletionCallback _transitToAsyncValidationConfirmation;
   final VoidCallback _onAsyncValidationStarted;
@@ -124,6 +129,7 @@ class _AsyncValidatorChain<T extends Object> {
     this._propertyValidationContextProvider,
     this._propertyValidationContextSupplier,
   ) {
+    _log = Logger(name: 'AsyncValidatorChain<$T>');
     _first = _buildChain(validators);
   }
 
@@ -134,6 +140,7 @@ class _AsyncValidatorChain<T extends Object> {
     // ignore: omit_local_variable_types
     _ChainedAsyncValidation<T> callNext =
         (_, result, error, {required isSync}) {
+      _log.fine('Reached to tail of async validators chain.');
       _notifyOnChainCompleted(result, error, isSync: isSync);
       return result;
     };
@@ -144,6 +151,9 @@ class _AsyncValidatorChain<T extends Object> {
       callNext = (value, result, error, {required isSync}) {
         if (result != null) {
           // report validation error and abort chain with error.
+          _log.fine(
+            'Async validation chain is intruppeted with error: "$result".',
+          );
           _notifyOnChainCompleted(result, error, isSync: isSync);
           return result;
         }
@@ -175,6 +185,10 @@ class _AsyncValidatorChain<T extends Object> {
     AsyncError? error, {
     required bool isSync,
   }) {
+    _log.info(
+      'Complete async validation with result: "$result", error: "$error", '
+      'isSync: $isSync, context: ${_validationContext.name})',
+    );
     if (_validationContext == _ValidationContext.confirmingResult) {
       // This line refers current late initialized field rather than the field value when getValidator is called.
       // Note that "error" is not handled here -- error handling should be implemented in the handler
@@ -225,12 +239,14 @@ class _AsyncValidatorChain<T extends Object> {
   ) {
     // Cancels previous validation -- it might be hanged-up
     if (executor.validating) {
+      _log.fine('Cancels previous validation.');
       executor.cancel();
       _onAsyncValidationCompleted();
     }
 
     if (_validationContext == _ValidationContext.doValidationOnSubmit) {
       // Clears cached error to ensure new async invocation is initiated.
+      _log.fine('Resets previous validation cache.');
       executor.reset(null);
     }
     // invoke next validator
@@ -245,12 +261,14 @@ class _AsyncValidatorChain<T extends Object> {
     if (validationResult != null) {
       // Synchrnous failure -- stop chaining and notify it as final result,
       // and then return the error.
+      _log.fine('Cached validation result is used: "$validationResult".');
       _notifyOnChainCompleted(validationResult, null, isSync: true);
       return validationResult;
     }
 
     if (!executor.validating) {
       // Synchronous success -- go to next chain.
+      _log.fine('Cached validation success is used.');
       return callNext(value, null, null, isSync: true);
     }
 
@@ -259,12 +277,18 @@ class _AsyncValidatorChain<T extends Object> {
     _isAsyncStarted = true;
     // Return default 'null', which means that async invocation is in-progress.
     // The async invocation should call "onCompleted" callback in future.
+    _log.fine('Returns null because async validation is pending.');
     return null;
   }
 
   /// Invoke this validator chain for specified value.
   String? callValidator(T? value) {
     final presenterContext = _presenterValidationContextProvider();
+    _log.info(
+      'Start async validation chain. '
+      'PresenterContext: ${presenterContext.name}, '
+      'CurrentContext: ${_validationContext.name}',
+    );
     if (presenterContext == _ValidationContext.doValidationOnSubmit &&
         _validationContext == _ValidationContext.unspecified) {
       _validationContext = _ValidationContext.doValidationOnSubmit;
