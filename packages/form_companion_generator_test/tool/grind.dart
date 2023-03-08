@@ -126,7 +126,6 @@ import 'package:flutter/widgets.dart'
         EditableTextContextMenuBuilder,
         FocusNode,
         Icon,
-        Localizations,
         RouteSettings,
         ScrollController,
         ScrollPhysics,

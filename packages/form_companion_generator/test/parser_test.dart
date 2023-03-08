@@ -2264,7 +2264,7 @@ const _vanillaCommonImports = [
 const _builderCommonImports = [
   ExpectedImport(
     'dart:ui',
-    shows: ['Color', 'Locale', 'VoidCallback'],
+    shows: ['Color', 'VoidCallback'],
   ),
   ExpectedImport(
     'package:flutter/foundation.dart',
@@ -2280,7 +2280,6 @@ const _builderCommonImports = [
       'AutovalidateMode',
       'BuildContext',
       'FocusNode',
-      'Localizations',
     ],
   ),
   ExpectedImport(

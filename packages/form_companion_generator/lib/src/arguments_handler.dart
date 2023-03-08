@@ -287,7 +287,7 @@ String _assignValueCore(
           context.parameterType.nullabilitySuffix == NullabilitySuffix.none)
       ? '!'
       : '';
-  return "${context.property}.getFieldValue(Localizations.maybeLocaleOf(${context.buildContext}) ?? const Locale('en', 'US'))$nullabilitySuffix";
+  return '${context.property}.getInitialValue(${context.buildContext})$nullabilitySuffix';
 }
 
 Iterable<String> _assignValidator(ArgumentMacroContext context) =>
