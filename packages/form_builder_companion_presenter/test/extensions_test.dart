@@ -273,36 +273,6 @@ void main() {
   }
 
   group('FormBuilderCompanionPropertyDescriptorsBuilderExtension', () {
-    test('booleanList default', () {
-      final target = PropertyDescriptorsBuilder()
-        ..booleanList(
-          name: 'prop',
-        );
-      verifyPropertyDescriptor<List<bool>, List<bool>>(
-        target,
-        name: 'prop',
-        initialPropertyValue: null,
-        initialFieldValue: null,
-        value: [true],
-      );
-    });
-
-    test('booleanList fully specified', () async {
-      final target = PropertyDescriptorsBuilder()
-        ..booleanList(
-          name: 'prop',
-          initialValues: [true],
-        );
-
-      verifyPropertyDescriptor<List<bool>, List<bool>>(
-        target,
-        name: 'prop',
-        initialPropertyValue: [true],
-        initialFieldValue: [true],
-        value: [true],
-      );
-    });
-
     test('enumeratedList default', () {
       final target = PropertyDescriptorsBuilder()
         ..enumeratedList(
@@ -442,36 +412,6 @@ void main() {
   });
 
   group('FormCompanionBuilderCompanionPropertyDescriptorsBuilderExtension', () {
-    test('booleanListWithField default', () {
-      final target = PropertyDescriptorsBuilder()
-        ..booleanListWithField(
-          name: 'prop',
-        );
-      verifyPropertyDescriptor<List<bool>, List<bool>>(
-        target,
-        name: 'prop',
-        initialPropertyValue: null,
-        initialFieldValue: null,
-        value: [true],
-      );
-    });
-
-    test('booleanListWithField fully specified', () async {
-      final target = PropertyDescriptorsBuilder()
-        ..booleanListWithField(
-          name: 'prop',
-          initialValues: [true],
-        );
-
-      verifyPropertyDescriptor<List<bool>, List<bool>>(
-        target,
-        name: 'prop',
-        initialPropertyValue: [true],
-        initialFieldValue: [true],
-        value: [true],
-      );
-    });
-
     test('enumeratedListWithField default', () {
       final target = PropertyDescriptorsBuilder()
         ..enumeratedListWithField(

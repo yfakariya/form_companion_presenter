@@ -7,25 +7,7 @@ import 'package:form_companion_presenter/form_companion_presenter.dart';
 /// define typical type combinations with `flutter_form_builder`.
 extension FormBuilderCompanionPropertyDescriptorsBuilderExtension
     on PropertyDescriptorsBuilder {
-  /// Defines a new property with [List] of [bool] for both of
-  /// property value type and form field value type.
-  ///
-  /// Note that [name] must be unique, and validators are registered as
-  /// factories instead of normal closures (function objects) because some
-  /// validation framework requires live [BuildContext] to initialize validator,
-  /// and current [Locale] of the application should be stored to
-  /// [BuildContext].
-  void booleanList({
-    required String name,
-    List<bool>? initialValues,
-    PropertyValueTraits? valueTraits,
-  }) =>
-      add<List<bool>, List<bool>>(
-        name: name,
-        initialValue: initialValues,
-        valueTraits: valueTraits,
-        restorableValueFactory: boolListRestorableValueFactory,
-      );
+  // TODO: breaking! REMOVE booleanList
 
   /// Defines a new property with [List] of enum type [Enum] for both of
   /// property value type and form field value type.

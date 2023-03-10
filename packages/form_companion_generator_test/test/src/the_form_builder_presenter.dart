@@ -32,7 +32,6 @@ class TheFormBuilderPresenter
           name: 'propEnumList',
           enumValues: MyEnum.values,
         )
-        ..booleanList(name: 'propBoolList')
         ..booleanWithField<FormBuilderCheckbox>(name: 'propBoolCheckBox')
         ..enumeratedListWithField<MyEnum, FormBuilderCheckboxGroup<MyEnum>>(
           name: 'propEnumListCheckBoxGroup',

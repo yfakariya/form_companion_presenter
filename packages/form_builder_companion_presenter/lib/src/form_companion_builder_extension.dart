@@ -7,28 +7,7 @@ import 'package:form_companion_presenter/form_companion_presenter.dart';
 /// when you use [FormCompanion] annotation and `flutter_form_builder`.
 extension FormCompanionBuilderCompanionPropertyDescriptorsBuilderExtension
     on PropertyDescriptorsBuilder {
-  /// Defines a new property with [List] of [bool] for both of
-  /// property value type and form field value type,
-  /// and preferred form field type [TField].
-  ///
-  /// Note that [name] must be unique, and validators are registered as
-  /// factories instead of normal closures (function objects) because some
-  /// validation framework requires live [BuildContext] to initialize validator,
-  /// and current [Locale] of the application should be stored to
-  /// [BuildContext].
-  ///
-  /// [TField] affects `FormFieldFactory` generation by `form_companion_generator`.
-  void booleanListWithField<TField extends FormField<List<bool>>>({
-    required String name,
-    List<bool>? initialValues,
-    PropertyValueTraits? valueTraits,
-  }) =>
-      addWithField<List<bool>, List<bool>, TField>(
-        name: name,
-        initialValue: initialValues,
-        valueTraits: valueTraits,
-        restorableValueFactory: boolListRestorableValueFactory,
-      );
+  // TODO: breaking! REMOVE booleanListWithField
 
   /// Defines a new property with [List] of enum type [T] for both of
   /// property value type and form field value type,

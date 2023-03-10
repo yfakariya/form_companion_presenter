@@ -472,19 +472,6 @@ class RawAddBigIntWithFieldFormBuilder
 }
 
 @formCompanion
-class RawAddBoolListWithFieldFormBuilder
-    with CompanionPresenterMixin, FormBuilderCompanionMixin {
-  RawAddBoolListWithFieldFormBuilder() {
-    initializeCompanionMixin(
-      PropertyDescriptorsBuilder()..booleanListWithField(name: 'propRaw'),
-    );
-  }
-
-  @override
-  FutureOr<void> doSubmit() {}
-}
-
-@formCompanion
 class RawAddBoolWithFieldFormBuilder
     with CompanionPresenterMixin, FormBuilderCompanionMixin {
   RawAddBoolWithFieldFormBuilder() {
