@@ -45,10 +45,17 @@ class AutoValidationFormBuilderBookingPage extends Screen {
   String get title => LocaleKeys.auto_flutterFormBuilderBooking_title.tr();
 
   @override
-  Widget buildPage(BuildContext context, WidgetRef ref) => FormBuilder(
-        autovalidateMode: AutovalidateMode.disabled,
+  Widget buildPage(BuildContext context, WidgetRef ref) {
+    final presenter =
+        ref.read(autoValidationFormBuilderBookingPresenterProvider.notifier);
+    return FormBuilder(
+      autovalidateMode: AutovalidateMode.disabled,
+      child: FormPropertiesRestorationScope(
+        presenter: presenter,
         child: _AutoValidationFormBuilderBookingPane(),
-      );
+      ),
+    );
+  }
 }
 
 class _AutoValidationFormBuilderBookingPane extends ConsumerWidget {
@@ -183,9 +190,11 @@ class AutoValidationFormBuilderBookingPresenter
         )
         ..enumeratedWithField<RoomType, FormBuilderRadioGroup<RoomType>>(
           name: 'roomType',
+          enumValues: RoomType.values,
         )
-        ..enumeratedList<MealType>(
+        ..enumeratedList(
           name: 'mealOffers',
+          enumValues: MealType.values,
         )
         ..boolean(
           name: 'smoking',

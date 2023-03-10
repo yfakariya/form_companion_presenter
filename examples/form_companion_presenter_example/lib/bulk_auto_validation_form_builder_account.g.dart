@@ -7,7 +7,7 @@ part of 'bulk_auto_validation_form_builder_account.dart';
 // **************************************************************************
 
 String _$bulkAutoValidationFormBuilderAccountPresenterHash() =>
-    r'8157c7dd1f7f8c905d52ab09e277ef12f6e32497';
+    r'bbd8f3c5fa38ba50480f7e4150302f2cecdef27e';
 
 /// Presenter which holds form properties.
 ///

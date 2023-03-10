@@ -7,7 +7,7 @@ part of 'bulk_auto_validation_vanilla_form.dart';
 // **************************************************************************
 
 String _$bulkAutoValidationVanillaFormAccountPresenterHash() =>
-    r'3057ed66750ed13927d0bac46d9130f15fcf2cad';
+    r'71b4c64baa103320c42cf38ca4aad7260031b1cf';
 
 /// Presenter which holds form properties.
 ///

@@ -326,7 +326,7 @@ class $BulkAutoValidationVanillaFormAccountPresenterFieldFactory {
     bool readOnly = false,
     bool? showCursor,
     String obscuringCharacter = '•',
-    bool obscureText = false,
+    bool? obscureText,
     bool autocorrect = true,
     SmartDashesType? smartDashesType,
     SmartQuotesType? smartQuotesType,
@@ -366,8 +366,7 @@ class $BulkAutoValidationVanillaFormAccountPresenterFieldFactory {
     return TextFormField(
       key: _properties.presenter.getKey(property.name, context),
       controller: controller,
-      initialValue: property.getFieldValue(
-          Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
+      initialValue: property.getInitialValue(context),
       focusNode: focusNode,
       decoration: decoration ??
           const InputDecoration().copyWith(
@@ -385,7 +384,7 @@ class $BulkAutoValidationVanillaFormAccountPresenterFieldFactory {
       readOnly: readOnly,
       showCursor: showCursor,
       obscuringCharacter: obscuringCharacter,
-      obscureText: obscureText,
+      obscureText: obscureText ?? property.valueTraits.isSensitive,
       autocorrect: autocorrect,
       smartDashesType: smartDashesType,
       smartQuotesType: smartQuotesType,
@@ -395,7 +394,7 @@ class $BulkAutoValidationVanillaFormAccountPresenterFieldFactory {
       minLines: minLines,
       expands: expands,
       maxLength: maxLength,
-      onChanged: onChanged,
+      onChanged: property.onChangedNonNull(context, onChanged),
       onTap: onTap,
       onTapOutside: onTapOutside,
       onEditingComplete: onEditingComplete,
@@ -443,7 +442,7 @@ class $BulkAutoValidationVanillaFormAccountPresenterFieldFactory {
     bool readOnly = false,
     bool? showCursor,
     String obscuringCharacter = '•',
-    bool obscureText = false,
+    bool? obscureText,
     bool autocorrect = true,
     SmartDashesType? smartDashesType,
     SmartQuotesType? smartQuotesType,
@@ -483,8 +482,7 @@ class $BulkAutoValidationVanillaFormAccountPresenterFieldFactory {
     return TextFormField(
       key: _properties.presenter.getKey(property.name, context),
       controller: controller,
-      initialValue: property.getFieldValue(
-          Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
+      initialValue: property.getInitialValue(context),
       focusNode: focusNode,
       decoration: decoration ??
           const InputDecoration().copyWith(
@@ -502,7 +500,7 @@ class $BulkAutoValidationVanillaFormAccountPresenterFieldFactory {
       readOnly: readOnly,
       showCursor: showCursor,
       obscuringCharacter: obscuringCharacter,
-      obscureText: obscureText,
+      obscureText: obscureText ?? property.valueTraits.isSensitive,
       autocorrect: autocorrect,
       smartDashesType: smartDashesType,
       smartQuotesType: smartQuotesType,
@@ -512,7 +510,7 @@ class $BulkAutoValidationVanillaFormAccountPresenterFieldFactory {
       minLines: minLines,
       expands: expands,
       maxLength: maxLength,
-      onChanged: onChanged,
+      onChanged: property.onChangedNonNull(context, onChanged),
       onTap: onTap,
       onTapOutside: onTapOutside,
       onEditingComplete: onEditingComplete,
@@ -579,11 +577,10 @@ class $BulkAutoValidationVanillaFormAccountPresenterFieldFactory {
               value: x, child: Text('gender.${x.name}'.tr())))
           .toList(),
       selectedItemBuilder: selectedItemBuilder,
-      value: property.getFieldValue(
-          Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
+      value: property.getInitialValue(context),
       hint: hint,
       disabledHint: disabledHint,
-      onChanged: onChanged ?? (_) {},
+      onChanged: property.onChanged(context, onChanged),
       onTap: onTap,
       elevation: elevation,
       style: style,
@@ -631,7 +628,7 @@ class $BulkAutoValidationVanillaFormAccountPresenterFieldFactory {
     bool readOnly = false,
     bool? showCursor,
     String obscuringCharacter = '•',
-    bool obscureText = false,
+    bool? obscureText,
     bool autocorrect = true,
     SmartDashesType? smartDashesType,
     SmartQuotesType? smartQuotesType,
@@ -671,8 +668,7 @@ class $BulkAutoValidationVanillaFormAccountPresenterFieldFactory {
     return TextFormField(
       key: _properties.presenter.getKey(property.name, context),
       controller: controller,
-      initialValue: property.getFieldValue(
-          Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
+      initialValue: property.getInitialValue(context),
       focusNode: focusNode,
       decoration: decoration ??
           const InputDecoration().copyWith(
@@ -690,7 +686,7 @@ class $BulkAutoValidationVanillaFormAccountPresenterFieldFactory {
       readOnly: readOnly,
       showCursor: showCursor,
       obscuringCharacter: obscuringCharacter,
-      obscureText: obscureText,
+      obscureText: obscureText ?? property.valueTraits.isSensitive,
       autocorrect: autocorrect,
       smartDashesType: smartDashesType,
       smartQuotesType: smartQuotesType,
@@ -700,7 +696,7 @@ class $BulkAutoValidationVanillaFormAccountPresenterFieldFactory {
       minLines: minLines,
       expands: expands,
       maxLength: maxLength,
-      onChanged: onChanged,
+      onChanged: property.onChangedNonNull(context, onChanged),
       onTap: onTap,
       onTapOutside: onTapOutside,
       onEditingComplete: onEditingComplete,

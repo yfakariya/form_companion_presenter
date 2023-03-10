@@ -37,10 +37,16 @@ class BookingPageTemplate extends Screen {
   String get title => 'TITLE_TEMPLATE';
 
   @override
-  Widget buildPage(BuildContext context, WidgetRef ref) => FormBuilder(
-        //!macro formValidateMode
+  Widget buildPage(BuildContext context, WidgetRef ref) {
+    final presenter = ref.read(bookingPresenterTemplateProvider.notifier);
+    return FormBuilder(
+      //!macro formValidateMode
+      child: FormPropertiesRestorationScope(
+        presenter: presenter,
         child: _BookingPaneTemplate(),
-      );
+      ),
+    );
+  }
 }
 
 class _BookingPaneTemplate extends ConsumerWidget {
@@ -175,9 +181,11 @@ class BookingPresenterTemplate extends _$BookingPresenterTemplate
         )
         ..enumeratedWithField<RoomType, FormBuilderRadioGroup<RoomType>>(
           name: 'roomType',
+          enumValues: RoomType.values,
         )
-        ..enumeratedList<MealType>(
+        ..enumeratedList(
           name: 'mealOffers',
+          enumValues: MealType.values,
         )
         ..boolean(
           name: 'smoking',

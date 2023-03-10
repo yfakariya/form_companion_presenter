@@ -50,17 +50,22 @@ class BulkAutoValidationFormBuilderAccountPage extends Screen {
   String get title => LocaleKeys.bulk_auto_flutterFormBuilderAccount_title.tr();
 
   @override
-  Widget buildPage(BuildContext context, WidgetRef ref) => FormBuilder(
-        autovalidateMode: AutovalidateMode.onUserInteraction,
+  Widget buildPage(BuildContext context, WidgetRef ref) {
+    final presenter = ref
+        .read(bulkAutoValidationFormBuilderAccountPresenterProvider.notifier);
+    return FormBuilder(
+      autovalidateMode: AutovalidateMode.onUserInteraction,
+      child: FormPropertiesRestorationScope(
+        presenter: presenter,
         child: _BulkAutoValidationFormBuilderAccountPane(),
-      );
+      ),
+    );
+  }
 }
 
 class _BulkAutoValidationFormBuilderAccountPane extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final presenter = ref
-        .watch(bulkAutoValidationFormBuilderAccountPresenterProvider.notifier);
     final state =
         ref.watch(bulkAutoValidationFormBuilderAccountPresenterProvider);
 
@@ -78,7 +83,7 @@ class _BulkAutoValidationFormBuilderAccountPane extends ConsumerWidget {
               labelText: LocaleKeys.id_label.tr(),
               hintText: LocaleKeys.id_hint.tr(),
               suffix: AsyncValidationIndicator(
-                presenter: presenter,
+                presenter: state.value.presenter,
                 propertyName: 'id',
               ),
             ),
@@ -132,8 +137,9 @@ class BulkAutoValidationFormBuilderAccountPresenter
             (_) => FormBuilderValidators.required(),
           ],
         )
-        ..enumerated<Gender>(
+        ..enumerated(
           name: 'gender',
+          enumValues: Gender.values,
         )
         ..integerText(
           name: 'age',
@@ -142,8 +148,9 @@ class BulkAutoValidationFormBuilderAccountPresenter
             (_) => FormBuilderValidators.min(0),
           ],
         )
-        ..enumeratedList<Region>(
+        ..enumeratedList(
           name: 'preferredRegions',
+          enumValues: Region.values,
         ),
     );
   }

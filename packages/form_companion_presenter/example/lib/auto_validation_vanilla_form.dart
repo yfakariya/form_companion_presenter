@@ -44,17 +44,22 @@ class AutoValidationVanillaFormAccountPage extends Screen {
   String get title => LocaleKeys.auto_vanilla_title.tr();
 
   @override
-  Widget buildPage(BuildContext context, WidgetRef ref) => Form(
-        autovalidateMode: AutovalidateMode.disabled,
+  Widget buildPage(BuildContext context, WidgetRef ref) {
+    final presenter =
+        ref.read(autoValidationVanillaFormAccountPresenterProvider.notifier);
+    return Form(
+      autovalidateMode: AutovalidateMode.disabled,
+      child: FormPropertiesRestorationScope(
+        presenter: presenter,
         child: _AutoValidationVanillaFormAccountPane(),
-      );
+      ),
+    );
+  }
 }
 
 class _AutoValidationVanillaFormAccountPane extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final presenter =
-        ref.watch(autoValidationVanillaFormAccountPresenterProvider.notifier);
     final state = ref.watch(autoValidationVanillaFormAccountPresenterProvider);
 
     if (state is! AsyncData<
@@ -71,7 +76,7 @@ class _AutoValidationVanillaFormAccountPane extends ConsumerWidget {
               labelText: LocaleKeys.id_label.tr(),
               hintText: LocaleKeys.id_hint.tr(),
               suffix: AsyncValidationIndicator(
-                presenter: presenter,
+                presenter: state.value.presenter,
                 propertyName: 'id',
               ),
             ),
@@ -122,8 +127,9 @@ class AutoValidationVanillaFormAccountPresenter
             Validator.required,
           ],
         )
-        ..enumerated<Gender>(
+        ..enumerated(
           name: 'gender',
+          enumValues: Gender.values,
         )
         ..integerText(
           name: 'age',

@@ -46,17 +46,22 @@ class ManualValidationFormBuilderAccountPage extends Screen {
   String get title => LocaleKeys.manual_flutterFormBuilderAccount_title.tr();
 
   @override
-  Widget buildPage(BuildContext context, WidgetRef ref) => FormBuilder(
-        autovalidateMode: AutovalidateMode.disabled,
+  Widget buildPage(BuildContext context, WidgetRef ref) {
+    final presenter =
+        ref.read(manualValidationFormBuilderAccountPresenterProvider.notifier);
+    return FormBuilder(
+      autovalidateMode: AutovalidateMode.disabled,
+      child: FormPropertiesRestorationScope(
+        presenter: presenter,
         child: _ManualValidationFormBuilderAccountPane(),
-      );
+      ),
+    );
+  }
 }
 
 class _ManualValidationFormBuilderAccountPane extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final presenter =
-        ref.watch(manualValidationFormBuilderAccountPresenterProvider.notifier);
     final state =
         ref.watch(manualValidationFormBuilderAccountPresenterProvider);
 
@@ -74,7 +79,7 @@ class _ManualValidationFormBuilderAccountPane extends ConsumerWidget {
               labelText: LocaleKeys.id_label.tr(),
               hintText: LocaleKeys.id_hint.tr(),
               suffix: AsyncValidationIndicator(
-                presenter: presenter,
+                presenter: state.value.presenter,
                 propertyName: 'id',
               ),
             ),
@@ -128,8 +133,9 @@ class ManualValidationFormBuilderAccountPresenter
             (_) => FormBuilderValidators.required(),
           ],
         )
-        ..enumerated<Gender>(
+        ..enumerated(
           name: 'gender',
+          enumValues: Gender.values,
         )
         ..integerText(
           name: 'age',
@@ -138,8 +144,9 @@ class ManualValidationFormBuilderAccountPresenter
             (_) => FormBuilderValidators.min(0),
           ],
         )
-        ..enumeratedList<Region>(
+        ..enumeratedList(
           name: 'preferredRegions',
+          enumValues: Region.values,
         ),
     );
   }

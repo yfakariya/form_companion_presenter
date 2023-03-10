@@ -81,7 +81,6 @@ import 'package:flutter/widgets.dart'
         EditableTextContextMenuBuilder,
         FocusNode,
         Icon,
-        Localizations,
         RouteSettings,
         ScrollController,
         ScrollPhysics,
@@ -437,7 +436,7 @@ class $BulkAutoValidationFormBuilderBookingPresenterFieldFactory {
     required DateTime lastDate,
     intl.DateFormat? format,
     int maxLines = 1,
-    bool obscureText = false,
+    bool? obscureText,
     TextCapitalization textCapitalization = TextCapitalization.none,
     EdgeInsets scrollPadding = const EdgeInsets.all(20.0),
     bool enableInteractiveSelection = true,
@@ -489,13 +488,12 @@ class $BulkAutoValidationFormBuilderBookingPresenterFieldFactory {
       key: key,
       name: property.name,
       validator: property.getValidator(context),
-      initialValue: property.getFieldValue(
-          Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
+      initialValue: property.getInitialValue(context),
       decoration: decoration ??
           const InputDecoration().copyWith(
               labelText: LocaleKeys.stay_label.tr(),
               hintText: LocaleKeys.stay_hint.tr()),
-      onChanged: onChanged,
+      onChanged: property.onChanged(context, onChanged),
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.onUserInteraction,
@@ -505,7 +503,7 @@ class $BulkAutoValidationFormBuilderBookingPresenterFieldFactory {
       lastDate: lastDate,
       format: format,
       maxLines: maxLines,
-      obscureText: obscureText,
+      obscureText: obscureText ?? property.valueTraits.isSensitive,
       textCapitalization: textCapitalization,
       scrollPadding: scrollPadding,
       enableInteractiveSelection: enableInteractiveSelection,
@@ -574,7 +572,7 @@ class $BulkAutoValidationFormBuilderBookingPresenterFieldFactory {
     TextInputType keyboardType = TextInputType.text,
     TextAlign textAlign = TextAlign.start,
     bool autofocus = false,
-    bool obscureText = false,
+    bool? obscureText,
     bool autocorrect = true,
     int? maxLines = 1,
     bool expands = false,
@@ -624,13 +622,12 @@ class $BulkAutoValidationFormBuilderBookingPresenterFieldFactory {
       key: key,
       name: property.name,
       validator: property.getValidator(context),
-      initialValue: property.getFieldValue(
-          Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
+      initialValue: property.getInitialValue(context),
       decoration: decoration ??
           const InputDecoration().copyWith(
               labelText: LocaleKeys.specialOfferDate_label.tr(),
               hintText: LocaleKeys.specialOfferDate_hint.tr()),
-      onChanged: onChanged,
+      onChanged: property.onChanged(context, onChanged),
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.onUserInteraction,
@@ -645,7 +642,7 @@ class $BulkAutoValidationFormBuilderBookingPresenterFieldFactory {
       keyboardType: keyboardType,
       textAlign: textAlign,
       autofocus: autofocus,
-      obscureText: obscureText,
+      obscureText: obscureText ?? property.valueTraits.isSensitive,
       autocorrect: autocorrect,
       maxLines: maxLines,
       expands: expands,
@@ -738,8 +735,7 @@ class $BulkAutoValidationFormBuilderBookingPresenterFieldFactory {
           .map((x) => FormBuilderFieldOption<RoomType>(
               value: x, child: Text('roomType.${x.name}'.tr())))
           .toList(),
-      initialValue: property.getFieldValue(
-          Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
+      initialValue: property.getInitialValue(context),
       shouldRadioRequestFocus: shouldRadioRequestFocus,
       activeColor: activeColor,
       controlAffinity: controlAffinity,
@@ -757,7 +753,7 @@ class $BulkAutoValidationFormBuilderBookingPresenterFieldFactory {
       wrapSpacing: wrapSpacing,
       wrapTextDirection: wrapTextDirection,
       wrapVerticalDirection: wrapVerticalDirection,
-      onChanged: onChanged,
+      onChanged: property.onChanged(context, onChanged),
       valueTransformer: valueTransformer,
       onReset: onReset,
     );
@@ -813,8 +809,7 @@ class $BulkAutoValidationFormBuilderBookingPresenterFieldFactory {
               labelText: LocaleKeys.mealOffers_label.tr(),
               hintText: LocaleKeys.mealOffers_hint.tr()),
       key: key,
-      initialValue: property.getFieldValue(
-          Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
+      initialValue: property.getInitialValue(context),
       name: property.name,
       options: [MealType.vegan, MealType.halal]
           .map((x) => FormBuilderChipOption<MealType>(
@@ -846,7 +841,7 @@ class $BulkAutoValidationFormBuilderBookingPresenterFieldFactory {
       spacing: spacing,
       textDirection: textDirection,
       verticalDirection: verticalDirection,
-      onChanged: onChanged,
+      onChanged: property.onChanged(context, onChanged),
       valueTransformer: valueTransformer,
       onReset: onReset,
     );
@@ -883,13 +878,12 @@ class $BulkAutoValidationFormBuilderBookingPresenterFieldFactory {
       key: key,
       name: property.name,
       validator: property.getValidator(context),
-      initialValue: property.getFieldValue(
-          Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
+      initialValue: property.getInitialValue(context),
       decoration: decoration ??
           const InputDecoration().copyWith(
               labelText: LocaleKeys.smoking_label.tr(),
               hintText: LocaleKeys.smoking_hint.tr()),
-      onChanged: onChanged,
+      onChanged: property.onChanged(context, onChanged),
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.onUserInteraction,
@@ -946,13 +940,12 @@ class $BulkAutoValidationFormBuilderBookingPresenterFieldFactory {
       key: key,
       name: property.name,
       validator: property.getValidator(context),
-      initialValue: property.getFieldValue(
-          Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))!,
+      initialValue: property.getInitialValue(context)!,
       decoration: decoration ??
           const InputDecoration().copyWith(
               labelText: LocaleKeys.persons_label.tr(),
               hintText: LocaleKeys.persons_hint.tr()),
-      onChanged: onChanged,
+      onChanged: property.onChanged(context, onChanged),
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.onUserInteraction,
@@ -1002,13 +995,12 @@ class $BulkAutoValidationFormBuilderBookingPresenterFieldFactory {
       key: key,
       name: property.name,
       validator: property.getValidator(context),
-      initialValue: property.getFieldValue(
-          Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
+      initialValue: property.getInitialValue(context),
       decoration: decoration ??
           const InputDecoration().copyWith(
               labelText: LocaleKeys.babyBeds_label.tr(),
               hintText: LocaleKeys.babyBeds_hint.tr()),
-      onChanged: onChanged,
+      onChanged: property.onChanged(context, onChanged),
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.onUserInteraction,
@@ -1056,13 +1048,12 @@ class $BulkAutoValidationFormBuilderBookingPresenterFieldFactory {
       key: key,
       name: property.name,
       validator: property.getValidator(context),
-      initialValue: property.getFieldValue(
-          Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
+      initialValue: property.getInitialValue(context),
       decoration: decoration ??
           const InputDecoration().copyWith(
               labelText: LocaleKeys.preferredPrice_label.tr(),
               hintText: LocaleKeys.preferredPrice_hint.tr()),
-      onChanged: onChanged,
+      onChanged: property.onChanged(context, onChanged),
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.onUserInteraction,
@@ -1099,7 +1090,7 @@ class $BulkAutoValidationFormBuilderBookingPresenterFieldFactory {
     VoidCallback? onReset,
     FocusNode? focusNode,
     int? maxLines = 1,
-    bool obscureText = false,
+    bool? obscureText,
     TextCapitalization textCapitalization = TextCapitalization.none,
     EdgeInsets scrollPadding = const EdgeInsets.all(20.0),
     bool enableInteractiveSelection = true,
@@ -1147,21 +1138,20 @@ class $BulkAutoValidationFormBuilderBookingPresenterFieldFactory {
       key: key,
       name: property.name,
       validator: property.getValidator(context),
-      initialValue: property.getFieldValue(
-          Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
+      initialValue: property.getInitialValue(context),
       readOnly: readOnly,
       decoration: decoration ??
           const InputDecoration().copyWith(
               labelText: LocaleKeys.donation_label.tr(),
               hintText: LocaleKeys.donation_hint.tr()),
-      onChanged: onChanged,
+      onChanged: property.onChanged(context, onChanged),
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.onUserInteraction,
       onReset: onReset,
       focusNode: focusNode,
       maxLines: maxLines,
-      obscureText: obscureText,
+      obscureText: obscureText ?? property.valueTraits.isSensitive,
       textCapitalization: textCapitalization,
       scrollPadding: scrollPadding,
       enableInteractiveSelection: enableInteractiveSelection,
@@ -1219,7 +1209,7 @@ class $BulkAutoValidationFormBuilderBookingPresenterFieldFactory {
     VoidCallback? onReset,
     FocusNode? focusNode,
     int? maxLines = 1,
-    bool obscureText = false,
+    bool? obscureText,
     TextCapitalization textCapitalization = TextCapitalization.none,
     EdgeInsets scrollPadding = const EdgeInsets.all(20.0),
     bool enableInteractiveSelection = true,
@@ -1267,21 +1257,20 @@ class $BulkAutoValidationFormBuilderBookingPresenterFieldFactory {
       key: key,
       name: property.name,
       validator: property.getValidator(context),
-      initialValue: property.getFieldValue(
-          Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
+      initialValue: property.getInitialValue(context),
       readOnly: readOnly,
       decoration: decoration ??
           const InputDecoration().copyWith(
               labelText: LocaleKeys.note_label.tr(),
               hintText: LocaleKeys.note_hint.tr()),
-      onChanged: onChanged,
+      onChanged: property.onChanged(context, onChanged),
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.onUserInteraction,
       onReset: onReset,
       focusNode: focusNode,
       maxLines: maxLines,
-      obscureText: obscureText,
+      obscureText: obscureText ?? property.valueTraits.isSensitive,
       textCapitalization: textCapitalization,
       scrollPadding: scrollPadding,
       enableInteractiveSelection: enableInteractiveSelection,

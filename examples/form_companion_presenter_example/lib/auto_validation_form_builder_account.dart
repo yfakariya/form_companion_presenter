@@ -48,17 +48,22 @@ class AutoValidationFormBuilderAccountPage extends Screen {
   String get title => LocaleKeys.auto_flutterFormBuilderAccount_title.tr();
 
   @override
-  Widget buildPage(BuildContext context, WidgetRef ref) => FormBuilder(
-        autovalidateMode: AutovalidateMode.disabled,
+  Widget buildPage(BuildContext context, WidgetRef ref) {
+    final presenter =
+        ref.read(autoValidationFormBuilderAccountPresenterProvider.notifier);
+    return FormBuilder(
+      autovalidateMode: AutovalidateMode.disabled,
+      child: FormPropertiesRestorationScope(
+        presenter: presenter,
         child: _AutoValidationFormBuilderAccountPane(),
-      );
+      ),
+    );
+  }
 }
 
 class _AutoValidationFormBuilderAccountPane extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final presenter =
-        ref.watch(autoValidationFormBuilderAccountPresenterProvider.notifier);
     final state = ref.watch(autoValidationFormBuilderAccountPresenterProvider);
 
     if (state is! AsyncData<
@@ -75,7 +80,7 @@ class _AutoValidationFormBuilderAccountPane extends ConsumerWidget {
               labelText: LocaleKeys.id_label.tr(),
               hintText: LocaleKeys.id_hint.tr(),
               suffix: AsyncValidationIndicator(
-                presenter: presenter,
+                presenter: state.value.presenter,
                 propertyName: 'id',
               ),
             ),
@@ -129,8 +134,9 @@ class AutoValidationFormBuilderAccountPresenter
             (_) => FormBuilderValidators.required(),
           ],
         )
-        ..enumerated<Gender>(
+        ..enumerated(
           name: 'gender',
+          enumValues: Gender.values,
         )
         ..integerText(
           name: 'age',
@@ -139,8 +145,9 @@ class AutoValidationFormBuilderAccountPresenter
             (_) => FormBuilderValidators.min(0),
           ],
         )
-        ..enumeratedList<Region>(
+        ..enumeratedList(
           name: 'preferredRegions',
+          enumValues: Region.values,
         ),
     );
   }

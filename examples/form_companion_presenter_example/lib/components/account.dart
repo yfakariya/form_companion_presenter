@@ -40,16 +40,21 @@ class AccountPageTemplate extends Screen {
   String get title => 'TITLE_TEMPLATE';
 
   @override
-  Widget buildPage(BuildContext context, WidgetRef ref) => FormBuilder(
-        //!macro formValidateMode
+  Widget buildPage(BuildContext context, WidgetRef ref) {
+    final presenter = ref.read(accountPresenterTemplateProvider.notifier);
+    return FormBuilder(
+      //!macro formValidateMode
+      child: FormPropertiesRestorationScope(
+        presenter: presenter,
         child: _AccountPaneTemplate(),
-      );
+      ),
+    );
+  }
 }
 
 class _AccountPaneTemplate extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final presenter = ref.watch(accountPresenterTemplateProvider.notifier);
     final state = ref.watch(accountPresenterTemplateProvider);
 
     if (state is! AsyncData<$AccountPresenterTemplateFormProperties>) {
@@ -65,7 +70,7 @@ class _AccountPaneTemplate extends ConsumerWidget {
               labelText: LocaleKeys.id_label.tr(),
               hintText: LocaleKeys.id_hint.tr(),
               suffix: AsyncValidationIndicator(
-                presenter: presenter,
+                presenter: state.value.presenter,
                 propertyName: 'id',
               ),
             ),
@@ -131,8 +136,9 @@ class AccountPresenterTemplate extends _$AccountPresenterTemplate
             //!macro endBuilderOnly
           ],
         )
-        ..enumerated<Gender>(
+        ..enumerated(
           name: 'gender',
+          enumValues: Gender.values,
         )
         ..integerText(
           name: 'age',
@@ -148,8 +154,9 @@ class AccountPresenterTemplate extends _$AccountPresenterTemplate
           ],
         )
         //!macro beginBuilderOnly
-        ..enumeratedList<Region>(
+        ..enumeratedList(
           name: 'preferredRegions',
+          enumValues: Region.values,
         )
       //!macro endBuilderOnly
       ,

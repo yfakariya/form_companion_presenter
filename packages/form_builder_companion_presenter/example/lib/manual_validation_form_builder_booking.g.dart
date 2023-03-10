@@ -7,7 +7,7 @@ part of 'manual_validation_form_builder_booking.dart';
 // **************************************************************************
 
 String _$manualValidationFormBuilderBookingPresenterHash() =>
-    r'ad64df9d747e763254e3f3cb323b8f19fdbea487';
+    r'fbd9d85fc7bcf7bf55f9c72f02739de0bb57fc95';
 
 /// Presenter which holds form properties.
 ///

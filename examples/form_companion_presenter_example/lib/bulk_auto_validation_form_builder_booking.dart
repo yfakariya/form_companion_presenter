@@ -47,10 +47,17 @@ class BulkAutoValidationFormBuilderBookingPage extends Screen {
   String get title => LocaleKeys.bulk_auto_flutterFormBuilderBooking_title.tr();
 
   @override
-  Widget buildPage(BuildContext context, WidgetRef ref) => FormBuilder(
-        autovalidateMode: AutovalidateMode.onUserInteraction,
+  Widget buildPage(BuildContext context, WidgetRef ref) {
+    final presenter = ref
+        .read(bulkAutoValidationFormBuilderBookingPresenterProvider.notifier);
+    return FormBuilder(
+      autovalidateMode: AutovalidateMode.onUserInteraction,
+      child: FormPropertiesRestorationScope(
+        presenter: presenter,
         child: _BulkAutoValidationFormBuilderBookingPane(),
-      );
+      ),
+    );
+  }
 }
 
 class _BulkAutoValidationFormBuilderBookingPane extends ConsumerWidget {
@@ -185,9 +192,11 @@ class BulkAutoValidationFormBuilderBookingPresenter
         )
         ..enumeratedWithField<RoomType, FormBuilderRadioGroup<RoomType>>(
           name: 'roomType',
+          enumValues: RoomType.values,
         )
-        ..enumeratedList<MealType>(
+        ..enumeratedList(
           name: 'mealOffers',
+          enumValues: MealType.values,
         )
         ..boolean(
           name: 'smoking',

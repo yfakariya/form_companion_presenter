@@ -24,6 +24,7 @@ class _App extends ConsumerWidget {
         FormBuilderLocalizations.delegate,
       ],
       supportedLocales: context.supportedLocales,
+      restorationScopeId: 'app',
     );
   }
 }
