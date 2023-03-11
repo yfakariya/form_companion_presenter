@@ -2,4 +2,7 @@
 
 library form_builder_companion_presenter;
 
+// Re-export
+export 'package:form_companion_presenter/form_companion_presenter.dart';
+
 export 'src/form_builder_companion_mixin.dart' show FormBuilderCompanionMixin;
