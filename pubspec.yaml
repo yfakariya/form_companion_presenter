@@ -1,0 +1,10 @@
+# This file is for melos 3.0.
+name: form_companion_presenter_workspace
+
+# Do not publish anywhere!
+publish_to: none
+
+environment: 
+  sdk: ">=2.18.0 <3.0.0"
+dev_dependencies:
+  melos: ^3.0.0
