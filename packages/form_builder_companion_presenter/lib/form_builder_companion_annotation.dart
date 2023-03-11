@@ -2,5 +2,7 @@
 
 library form_builder_companion_annotation;
 
+export 'src/form_builder_extension.dart'
+    show FormBuilderCompanionPropertyDescriptorsBuilderExtension;
 export 'src/form_companion_builder_extension.dart'
     show FormCompanionBuilderCompanionPropertyDescriptorsBuilderExtension;
