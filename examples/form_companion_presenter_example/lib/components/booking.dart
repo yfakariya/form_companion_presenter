@@ -2,11 +2,12 @@
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+//!macro beginBuilderOnly
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+//!macro endBuilderOnly
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:form_builder_companion_presenter/form_builder_companion_annotation.dart';
 import 'package:form_builder_companion_presenter/form_builder_companion_presenter.dart';
-import 'package:form_companion_presenter/form_companion_annotation.dart';
-import 'package:form_companion_presenter/form_companion_presenter.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 //!macro beginNotManualOnly

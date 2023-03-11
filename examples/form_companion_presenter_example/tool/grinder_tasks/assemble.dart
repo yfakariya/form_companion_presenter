@@ -212,14 +212,6 @@ Future<void> assembleCore(
 
         final macroMap = _setupMacro(mode, model, flavor, destinationFileName);
 
-        final removalImports = flavor == _Flavor.formBuilder
-            ? <String>{}
-            : {
-                "import 'package:flutter_form_builder/flutter_form_builder.dart';",
-                "import 'package:form_builder_companion_presenter/form_builder_companion_presenter.dart';",
-                "import 'package:form_builder_validators/form_builder_validators.dart';",
-              };
-
         // read
         final source = File('$sourceDirectory/${model.toLowerCase()}.dart');
         final destinationFile = File(
@@ -229,8 +221,29 @@ Future<void> assembleCore(
         try {
           final output = _OutputController(destination);
           for (var line in await source.readAsLines()) {
-            if (removalImports.contains(line)) {
-              continue;
+            // Replace re-exports to original exports.
+            if (flavor == _Flavor.vanillaForm) {
+              if (line.startsWith(
+                "import 'package:form_builder_companion_presenter/form_builder_",
+              )) {
+                output.sink.writeln(
+                  line.replaceAll(
+                    'package:form_builder_companion_presenter/form_builder_',
+                    'package:form_companion_presenter/form_',
+                  ),
+                );
+                continue;
+              } else if (line.startsWith(
+                "import 'package:form_builder_companion_presenter/",
+              )) {
+                output.sink.writeln(
+                  line.replaceAll(
+                    'package:form_builder_companion_presenter/',
+                    'package:form_companion_presenter/',
+                  ),
+                );
+                continue;
+              }
             }
 
             // process macro with regexp
