@@ -1485,13 +1485,6 @@ Future<void> main() async {
             ['`FormField<BigInt>` $preferredFormFieldWarningBase'],
           ),
           Tuple5(
-            'BoolListWithField',
-            'List<bool>',
-            'List<bool>',
-            'FormField<List<bool>>',
-            ['`FormField<List<bool>>` $preferredFormFieldWarningBase'],
-          ),
-          Tuple5(
             'BoolWithField',
             'bool',
             'bool',
