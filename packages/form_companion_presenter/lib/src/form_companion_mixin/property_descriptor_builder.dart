@@ -133,7 +133,6 @@ extension FormCompanionPropertyDescriptorsBuilderExtension
     required String name,
     T? initialValue,
     PropertyValueTraits? valueTraits,
-    // TODO: breaking!
     required Iterable<T> enumValues,
   }) =>
       add<T, T>(

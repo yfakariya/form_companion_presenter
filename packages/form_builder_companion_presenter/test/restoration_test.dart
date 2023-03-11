@@ -1000,8 +1000,6 @@ void main() {
   }
 }
 
-// TODO: documentation on Readme
-
 class Spec {
   final Type type;
   final String label;

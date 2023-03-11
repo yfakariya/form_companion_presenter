@@ -7,8 +7,6 @@ import 'package:form_companion_presenter/form_companion_presenter.dart';
 /// define typical type combinations with `flutter_form_builder`.
 extension FormBuilderCompanionPropertyDescriptorsBuilderExtension
     on PropertyDescriptorsBuilder {
-  // TODO: breaking! REMOVE booleanList
-
   /// Defines a new property with [List] of enum type [Enum] for both of
   /// property value type and form field value type.
   ///
@@ -24,7 +22,6 @@ extension FormBuilderCompanionPropertyDescriptorsBuilderExtension
     required String name,
     List<T>? initialValues,
     PropertyValueTraits? valueTraits,
-    // TODO: breaking!
     required Iterable<T> enumValues,
   }) =>
       add<List<T>, List<T>>(

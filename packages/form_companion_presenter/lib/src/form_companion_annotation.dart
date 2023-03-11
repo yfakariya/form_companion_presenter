@@ -138,7 +138,6 @@ extension FormCompanionPropertyDescriptorBuilderExtensions
     required String name,
     T? initialValue,
     PropertyValueTraits? valueTraits,
-    // TODO: breaking!
     required Iterable<T> enumValues,
   }) =>
       addWithField<T, T, TField>(

@@ -944,8 +944,6 @@ void main() {
   });
 }
 
-// TODO: documentation on Readme
-
 class Presenter with CompanionPresenterMixin, FormCompanionMixin {
   Presenter([AsyncValidatorFactory<String>? asyncValidatorFactory]) {
     initializeCompanionMixin(

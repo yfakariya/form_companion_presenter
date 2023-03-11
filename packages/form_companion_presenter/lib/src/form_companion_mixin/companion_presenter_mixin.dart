@@ -321,8 +321,6 @@ abstract class CompanionPresenterFeatures<A extends FormStateAdapter> {
     formState.save();
   }
 
-  // TODO: breaking!
-
   /// Do validation the [FormField] for specified [name].
   @protected
   @visibleForOverriding
