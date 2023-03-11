@@ -149,7 +149,7 @@ Just run `fvm flutter run global grinder`, which runs above scripts in right ord
 
 #### libraries in example
 
-We use [riverpod](https://pub.dev/packages/riverpod) and [state notifier](https://pub.dev/packages/state_notifier) to implement examples.
+We use [riverpod](https://pub.dev/packages/riverpod) to implement examples.
 
 #### Example package's source code generation
 
