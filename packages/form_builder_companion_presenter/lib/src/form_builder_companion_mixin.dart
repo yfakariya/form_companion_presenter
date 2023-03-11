@@ -102,7 +102,7 @@ class FormBuilderCompanionFeatures
       final fieldState = formState.fields[name];
       assert(
         fieldState != null,
-        'Failed to get $name field from FormBuilder', // Coverage:ignore-line
+        'Failed to get $name field from FormBuilder', // coverage:ignore-line
       );
       // This causes re-validation if auto-validation is enabled.
       fieldState!.didChange(value);

@@ -81,7 +81,7 @@ class _FormCompanionFeatures
     final fieldState = _presenter._fieldKeys[name]?.currentState;
     assert(
       fieldState != null,
-      'Failed to get valid key for $name', // Coverage:ignore-line
+      'Failed to get valid key for $name', // coverage:ignore-line
     );
     // This causes re-validation if auto-validation is enabled.
     fieldState!.didChange(value);
