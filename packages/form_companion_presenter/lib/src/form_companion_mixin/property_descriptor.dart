@@ -628,8 +628,4 @@ extension FormPropertiesExtension on FormProperties {
 extension FormPropertiesInternalExtension on FormProperties {
   /// Gets a field value type of specified [PropertyDescriptor].
   Type getFieldValueType(String name) => getDescriptor(name)._fieldValueType;
-
-  /// Resets async validator status, namely invalidates caches.
-  void resetAsyncValidators(String name) =>
-      getDescriptor(name)._resetAsyncValidators();
 }
