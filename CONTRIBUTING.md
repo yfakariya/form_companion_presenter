@@ -161,3 +161,10 @@ Do not forget to run this command when you modify files under `examples/form_com
 
 Example files under each package in `packages/` directory are basically copies of `examples/form_companion_presenter/`. You can refresh these copies with running `grind distribute` command in the `examples/form_companion_presenter/` directory.
 Note that you should modify files in `examples/form_companion_presenter/lib/components` and then run `grind assemble` before distributing to each packages' `example` directories.
+
+## Publish
+
+* Use `melos version --no-git-tag-version` on dedicated branch, push, and make PR for `CHANGELOG.md` and `pubspec.yaml` update.
+* After merge, run `melos publish -t` in main branch.
+  * Note that `flutter publish --dry-run` (runs internally) can show error because it does not consider `pubspec_override.yaml`, so it thinks dependent package does not exist (namely, `form_companion_presenter` for `form_builder_companion_presenter`).
+  * Do `melos publish -t --no-dry-run` to do real publish.
