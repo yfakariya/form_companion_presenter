@@ -1,6 +1,7 @@
 // See LICENCE file in the root.
 
 @Timeout(Duration(seconds: 3))
+library;
 
 import 'dart:async';
 
@@ -25,9 +26,9 @@ Widget _buildChilren(
 class InlineForm extends StatelessWidget {
   final void Function(BuildContext) onBuilding;
   const InlineForm({
+    super.key,
     required this.onBuilding,
-    Key? key,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -45,11 +46,10 @@ class _InlineChildren extends StatelessWidget {
   final void Function(BuildContext) onBuilding;
   const _InlineChildren({
     required this.onBuilding,
-    Key? key,
     this.fieldKeyFactory,
     this.onSaved,
     this.validatorFactory,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -68,9 +68,8 @@ class _DynamicChildren extends StatelessWidget {
   final List<Widget> Function(BuildContext) _widgetsFactory;
   const _DynamicChildren(
     this._widgetsFactory,
-    this._onBuilding, {
-    Key? key,
-  }) : super(key: key);
+    this._onBuilding,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -90,7 +89,7 @@ class HierarchicalForm extends StatelessWidget {
   final List<Widget> Function(BuildContext)? _childrenFactory;
 
   const HierarchicalForm._({
-    Key? key,
+    super.key,
     required void Function(BuildContext) onBuilding,
     required AutovalidateMode autovalidateMode,
     Key Function(BuildContext)? fieldKeyFactory,
@@ -102,8 +101,7 @@ class HierarchicalForm extends StatelessWidget {
         _fieldKeyFactory = fieldKeyFactory,
         _onSaved = onSaved,
         _validatorFactory = validatorFactory,
-        _childrenFactory = childrenFactory,
-        super(key: key);
+        _childrenFactory = childrenFactory;
 
   // ignore: sort_unnamed_constructors_first
   factory HierarchicalForm({

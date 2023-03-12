@@ -6,5 +6,5 @@ library;
 export 'src/form_companion_annotation.dart'
     show
         FormCompanion,
-        formCompanion,
-        FormCompanionPropertyDescriptorBuilderExtensions;
+        FormCompanionPropertyDescriptorBuilderExtensions,
+        formCompanion;

@@ -121,13 +121,13 @@ class AsyncValidatorExecutor<T extends Object>
   /// logging or reporting. Note that most users do not have any interest about
   /// error for canceled validation.
   ///
-  /// [debugLabel] will be used as internal logger name, it will be passed as
+  /// `debugLabel` will be used as internal logger name, it will be passed as
   /// `name` parameter of `loggerSink`. Default is a string representation of
   /// [runtimeType].
   AsyncValidatorExecutor({
     Equality<T?>? equality,
     AsyncErrorHandler? canceledValidationErrorHandler,
-    String? debugLabel,
+    super.debugLabel,
   }) : super(
           defaultResult: null,
           parameterEquality: EqualityBy<ValidationInvocation<T?>, T?>(
@@ -135,7 +135,6 @@ class AsyncValidatorExecutor<T extends Object>
             equality ?? const Equality(),
           ),
           canceledOperationErrorHandler: canceledValidationErrorHandler,
-          debugLabel: debugLabel,
         );
 
   @override

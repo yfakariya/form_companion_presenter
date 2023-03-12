@@ -20,7 +20,7 @@ import 'validators.dart';
 
 class SimpleAccountPage extends Screen {
   /// Constructor.
-  const SimpleAccountPage({Key? key}) : super(key: key);
+  const SimpleAccountPage();
 
   @override
   String get title => LocaleKeys.simple_title.tr();

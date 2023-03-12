@@ -36,7 +36,7 @@ part 'manual_validation_vanilla_form.g.dart';
 /// [Form] exists in ancestor of element tree ([BuildContext]).
 class ManualValidationVanillaFormAccountPage extends Screen {
   /// Constructor.
-  const ManualValidationVanillaFormAccountPage({Key? key}) : super(key: key);
+  const ManualValidationVanillaFormAccountPage();
 
   @override
   String get title => LocaleKeys.manual_vanilla_title.tr();

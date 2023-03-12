@@ -1,4 +1,5 @@
 // See LICENCE file in the root.
+// ignore_for_file: unreachable_from_main
 
 import 'package:grinder/grinder.dart';
 

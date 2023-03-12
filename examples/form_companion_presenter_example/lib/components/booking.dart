@@ -32,7 +32,7 @@ part 'booking.g.dart';
 /// //!macro pageDocument
 class BookingPageTemplate extends Screen {
   /// Constructor.
-  const BookingPageTemplate({Key? key}) : super(key: key);
+  const BookingPageTemplate();
 
   @override
   String get title => 'TITLE_TEMPLATE';

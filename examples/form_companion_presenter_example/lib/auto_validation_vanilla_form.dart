@@ -38,7 +38,7 @@ part 'auto_validation_vanilla_form.g.dart';
 /// [Form] exists in ancestor of element tree ([BuildContext]).
 class AutoValidationVanillaFormAccountPage extends Screen {
   /// Constructor.
-  const AutoValidationVanillaFormAccountPage({Key? key}) : super(key: key);
+  const AutoValidationVanillaFormAccountPage();
 
   @override
   String get title => LocaleKeys.auto_vanilla_title.tr();

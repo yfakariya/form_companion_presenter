@@ -36,7 +36,7 @@ part 'manual_validation_form_builder_booking.g.dart';
 /// [FormBuilder] exists in ancestor of element tree ([BuildContext]).
 class ManualValidationFormBuilderBookingPage extends Screen {
   /// Constructor.
-  const ManualValidationFormBuilderBookingPage({Key? key}) : super(key: key);
+  const ManualValidationFormBuilderBookingPage();
 
   @override
   String get title => LocaleKeys.manual_flutterFormBuilderBooking_title.tr();

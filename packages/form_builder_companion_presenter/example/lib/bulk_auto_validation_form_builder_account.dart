@@ -43,7 +43,7 @@ part 'bulk_auto_validation_form_builder_account.g.dart';
 /// [FormBuilder] exists in ancestor of element tree ([BuildContext]).
 class BulkAutoValidationFormBuilderAccountPage extends Screen {
   /// Constructor.
-  const BulkAutoValidationFormBuilderAccountPage({Key? key}) : super(key: key);
+  const BulkAutoValidationFormBuilderAccountPage();
 
   @override
   String get title => LocaleKeys.bulk_auto_flutterFormBuilderAccount_title.tr();

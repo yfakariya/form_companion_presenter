@@ -42,20 +42,14 @@ const Type stringComparison = _StringComparison;
 
 class FormFieldWithPropertyParameter extends TextFormField {
   FormFieldWithPropertyParameter({
-    Key? key,
-    String? initialValue,
-    InputDecoration? decoration = const InputDecoration(),
-    FormFieldSetter<String>? onSaved,
-    FormFieldValidator<String>? validator,
+    super.key,
+    super.initialValue,
+    super.decoration = const InputDecoration(),
+    super.onSaved,
+    super.validator,
     // ignore: avoid_unused_constructor_parameters
     String? property,
-  }) : super(
-          key: key,
-          initialValue: initialValue,
-          decoration: decoration,
-          onSaved: onSaved,
-          validator: validator,
-        );
+  });
 }
 
 class FormFieldRefersConstants extends TextFormField {

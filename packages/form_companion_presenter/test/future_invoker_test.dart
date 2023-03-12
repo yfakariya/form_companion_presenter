@@ -1,6 +1,7 @@
 // See LICENCE file in the root.
 
 @Timeout(Duration(seconds: 3))
+library;
 
 import 'dart:async';
 
@@ -67,16 +68,13 @@ class TestTarget<R, P> extends FutureInvoker<Parameter<R, P>, R, P> {
 
   TestTarget({
     required Future<R> Function(Parameter<R, P>) callback,
-    required R defaultResult,
-    AsyncErrorHandler? canceledOperationErrorHandler,
+    required super.defaultResult,
+    super.canceledOperationErrorHandler,
     Equality<Parameter<R, P>>? parameterEquality,
-    String? debugLabel,
+    super.debugLabel,
   })  : _callback = callback,
         super(
-          defaultResult: defaultResult,
-          canceledOperationErrorHandler: canceledOperationErrorHandler,
           parameterEquality: parameterEquality ?? EqualityBy((p) => p.value),
-          debugLabel: debugLabel,
         );
 
   @override

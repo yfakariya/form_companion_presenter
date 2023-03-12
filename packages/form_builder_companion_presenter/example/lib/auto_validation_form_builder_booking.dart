@@ -38,7 +38,7 @@ part 'auto_validation_form_builder_booking.g.dart';
 /// [FormBuilder] exists in ancestor of element tree ([BuildContext]).
 class AutoValidationFormBuilderBookingPage extends Screen {
   /// Constructor.
-  const AutoValidationFormBuilderBookingPage({Key? key}) : super(key: key);
+  const AutoValidationFormBuilderBookingPage();
 
   @override
   String get title => LocaleKeys.auto_flutterFormBuilderBooking_title.tr();
