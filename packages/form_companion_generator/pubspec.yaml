@@ -3,6 +3,7 @@ description: >
   Code generator for form_companion_presenter and form_builder_companion_presenter to reduce boilerplate of forms.
 version: 0.5.0
 repository: https://github.com/yfakariya/form_companion_presenter
+issue_tracker: https://github.com/yfakariya/form_companion_presenter/issues
 
 environment:
   sdk: ">=2.13.0 <3.0.0"
