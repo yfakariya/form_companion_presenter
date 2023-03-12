@@ -80,9 +80,6 @@ class RestorableFieldValues<T extends Object> {
     RestorableFieldValues<T>? previous,
   )   : _value = valueFactory()..initWithValue(previous?.value),
         _hasError = RestorableBoolN(previous?._hasError.value);
-
-  @override
-  String toString() => '{value: ${_value.value}, hasError: ${_hasError.value}}';
 }
 
 /// {@template FormPropertiesRestorationScope}
