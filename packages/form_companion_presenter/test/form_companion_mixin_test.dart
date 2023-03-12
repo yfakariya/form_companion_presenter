@@ -166,7 +166,7 @@ Widget _app(
       ],
     );
 
-class Presenter with CompanionPresenterMixin, FormCompanionMixin {
+class Presenter extends TestFormCompanionPresenter {
   final FutureOr<void> Function() _doSubmitCalled;
   final void Function(OnPropertiesChangedEvent) _onPropertiesChangedCalled;
 

@@ -116,7 +116,7 @@ class _RestorableEnumList<T extends Enum> extends RestorableValue<List<T>?> {
       values.contains(value),
       'Attempted to set an unknown enum value "$value" '
       'that is not in the valid set of enum values for the $T type: '
-      '${values.map<String>((value) => value.name).toSet()}',
+      '${values.map<String>((value) => value.name).toSet()}', // coverage:ignore-line
     );
 
     return value;

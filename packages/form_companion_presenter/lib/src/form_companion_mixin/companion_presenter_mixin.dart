@@ -513,3 +513,9 @@ extension CompanionPresenterMixinInternalExtension on CompanionPresenterMixin {
     });
   }
 }
+
+/// Default class with [CompanionPresenterMixin] for testing to support
+/// test coverage.
+@internal
+@visibleForTesting
+abstract class TestCompanionPresenter with CompanionPresenterMixin {}

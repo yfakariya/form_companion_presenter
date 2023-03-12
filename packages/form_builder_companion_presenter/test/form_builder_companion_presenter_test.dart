@@ -151,7 +151,7 @@ class HierarchicalForm extends StatelessWidget {
 
 Widget _app(Widget child) => MaterialApp(home: Scaffold(body: child));
 
-class Presenter with CompanionPresenterMixin, FormBuilderCompanionMixin {
+class Presenter extends TestFormBuilderCompanionPresenter {
   final FutureOr<void> Function() _doSubmitCalled;
   final void Function(OnPropertiesChangedEvent) _onPropertiesChangedCalled;
 

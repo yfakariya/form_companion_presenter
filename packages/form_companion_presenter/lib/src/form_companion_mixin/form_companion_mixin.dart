@@ -180,13 +180,22 @@ Key _checkKeyType(
         // ignore: avoid_dynamic_calls
         key.currentState?.value.runtimeType ==
             propertiesState.getFieldValueType(name),
+    // coverage:ignore-start
     "Key type of '$name' is not expected type. "
     "Property's field type is defined as "
     "'${propertiesState.getFieldValueType(name)}', "
     // ignore: avoid_dynamic_calls
     "but actual key's value type is '${key.currentState?.value.runtimeType}'. "
     'This may be caused by wrong invocation of `FormCompanionMixin.getKey()`.',
+    // coverage:ignore-end
   );
 
   return key;
 }
+
+/// Default class with [FormCompanionMixin] for testing to support
+/// test coverage.
+@internal
+@visibleForTesting
+abstract class TestFormCompanionPresenter
+    with CompanionPresenterMixin, FormCompanionMixin {}

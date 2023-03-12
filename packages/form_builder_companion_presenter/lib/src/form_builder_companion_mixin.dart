@@ -170,3 +170,10 @@ mixin FormBuilderCompanionMixin on CompanionPresenterMixin {
             .every((p) => !p.hasPendingAsyncValidations);
   }
 }
+
+/// Default class with [FormCompanionMixin] for testing to support
+/// test coverage.
+@internal
+@visibleForTesting
+abstract class TestFormBuilderCompanionPresenter
+    with CompanionPresenterMixin, FormBuilderCompanionMixin {}
