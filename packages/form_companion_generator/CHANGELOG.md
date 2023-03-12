@@ -1,3 +1,10 @@
+## 0.5.0
+
+> Note: This release has breaking changes.
+
+ - **FEAT**: Add restoration support. ([8d91ddc9](https://github.com/yfakariya/form_companion_presenter/commit/8d91ddc96d1fd1166052b64afd595adf2bb6bd6f))
+ - **FEAT**: Add `PropertyValueTraits.isSensitive` support. ([b61ec117](https://github.com/yfakariya/form_companion_presenter/commit/b61ec1175c3989234f6130fb000137280cfe5985))
+
 ## 0.4.0
 
  - **FIX**: Fix non-aliased function type handling.

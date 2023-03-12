@@ -1,4 +1,6 @@
 name: form_companion_presenter
+repository: https://github.com/yfakariya/form_companion_presenter
+sdkPath: .fvm/flutter_sdk
 
 command:
   bootstrap:
