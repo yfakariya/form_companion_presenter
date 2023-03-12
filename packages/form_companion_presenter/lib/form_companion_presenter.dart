@@ -1,6 +1,8 @@
 // See LICENCE file in the root.
 
-library form_companion_presenter;
+/// Defines mixin and helpers to build presenter of form widget which uses
+/// flutter native form field classes.
+library;
 
 export 'src/async_validator_executor.dart'
     show

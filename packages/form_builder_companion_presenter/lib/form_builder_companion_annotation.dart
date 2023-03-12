@@ -1,6 +1,7 @@
 // See LICENCE file in the root.
 
-library form_builder_companion_annotation;
+/// Defines annotations and supporting extensions used for `form_companion_generator`.
+library;
 
 // Re-export
 export 'package:form_companion_presenter/form_companion_annotation.dart';
