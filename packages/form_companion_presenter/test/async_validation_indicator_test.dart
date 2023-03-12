@@ -1,6 +1,7 @@
 // See LICENCE file in the root.
 
 @Timeout(Duration(seconds: 3))
+library;
 
 import 'dart:async';
 
@@ -16,8 +17,8 @@ class FormHost extends StatelessWidget {
   const FormHost(
     this._child,
     this._onBuilding, {
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) => Form(
@@ -31,8 +32,8 @@ class WidgetHost extends StatelessWidget {
   const WidgetHost(
     this._child,
     this._onBuilding, {
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {

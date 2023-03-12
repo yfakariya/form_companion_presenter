@@ -10,7 +10,7 @@ import 'screen.dart';
 
 /// Home page which shows persisted models.
 class HomePage extends Screen {
-  const HomePage({Key? key}) : super(key: key);
+  const HomePage();
 
   @override
   Widget buildPage(BuildContext context, WidgetRef ref) {

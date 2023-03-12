@@ -31,14 +31,13 @@ class AsyncValidationIndicator extends StatelessWidget {
   /// The [propertyName] should be used for the form field which handles input
   /// for the property.
   AsyncValidationIndicator({
-    Key? key,
+    super.key,
     required CompanionPresenterMixin presenter,
     required String propertyName,
     this.text,
     this.height,
-  })  : _hasPendingAsyncValidationListener =
-            presenter.getPropertyPendingAsyncValidationsListener(propertyName),
-        super(key: key);
+  }) : _hasPendingAsyncValidationListener =
+            presenter.getPropertyPendingAsyncValidationsListener(propertyName);
 
   @override
   Widget build(BuildContext context) {

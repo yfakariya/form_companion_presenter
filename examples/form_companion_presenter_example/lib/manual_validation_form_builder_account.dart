@@ -39,7 +39,7 @@ part 'manual_validation_form_builder_account.g.dart';
 /// [FormBuilder] exists in ancestor of element tree ([BuildContext]).
 class ManualValidationFormBuilderAccountPage extends Screen {
   /// Constructor.
-  const ManualValidationFormBuilderAccountPage({Key? key}) : super(key: key);
+  const ManualValidationFormBuilderAccountPage();
 
   @override
   String get title => LocaleKeys.manual_flutterFormBuilderAccount_title.tr();

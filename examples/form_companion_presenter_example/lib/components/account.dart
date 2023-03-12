@@ -37,7 +37,7 @@ part 'account.g.dart';
 /// //!macro pageDocument
 class AccountPageTemplate extends Screen {
   /// Constructor.
-  const AccountPageTemplate({Key? key}) : super(key: key);
+  const AccountPageTemplate();
 
   @override
   String get title => 'TITLE_TEMPLATE';

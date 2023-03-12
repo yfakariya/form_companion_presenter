@@ -1,6 +1,7 @@
 // See LICENCE file in the root.
 
 @Timeout(Duration(seconds: 3))
+library;
 
 import 'dart:async';
 
@@ -196,35 +197,6 @@ class Presenter with CompanionPresenterMixin {
 
   @override
   bool canSubmit(BuildContext context) => true;
-}
-
-class ValidatorTester<F extends Object> {
-  final _completer = Completer<void>();
-  F? _passedToValidator;
-  F? _passedToAsyncValidator;
-
-  F? get passedToValidator => _passedToValidator;
-  F? get passedToAsyncValidator => _passedToAsyncValidator;
-
-  String? Function(F?) Function(BuildContext) get validator => (_) => (v) {
-        _passedToValidator = v;
-        return null;
-      };
-
-  Future<String?> Function(F?, AsyncValidatorOptions) Function(BuildContext)
-      get asyncValidator => (_) => (v, o) async {
-            _passedToAsyncValidator = v;
-            if (!_completer.isCompleted) {
-              _completer.complete();
-            }
-            return null;
-          };
-
-  Future<void> waitForPendingValidation() async {
-    await _completer.future;
-    // pump
-    await Future<void>.delayed(Duration.zero);
-  }
 }
 
 const defaultLocale = Locale('en', 'US');

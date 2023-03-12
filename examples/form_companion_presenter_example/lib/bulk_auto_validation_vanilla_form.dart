@@ -40,7 +40,7 @@ part 'bulk_auto_validation_vanilla_form.g.dart';
 /// [Form] exists in ancestor of element tree ([BuildContext]).
 class BulkAutoValidationVanillaFormAccountPage extends Screen {
   /// Constructor.
-  const BulkAutoValidationVanillaFormAccountPage({Key? key}) : super(key: key);
+  const BulkAutoValidationVanillaFormAccountPage();
 
   @override
   String get title => LocaleKeys.bulk_auto_vanilla_title.tr();

@@ -1,14 +1,16 @@
 // See LICENCE file in the root.
 
-library form_companion_presenter;
+/// Defines mixin and helpers to build presenter of form widget which uses
+/// flutter native form field classes.
+library;
 
 export 'src/async_validator_executor.dart'
     show
-        AsyncValidator,
-        AsyncValidatorOptions,
         AsyncValidationCompletionCallback,
         AsyncValidationFailureHandler,
+        AsyncValidator,
         AsyncValidatorExecutor,
+        AsyncValidatorOptions,
         ValidationInvocation;
 export 'src/form_companion_mixin.dart'
     show
@@ -27,14 +29,14 @@ export 'src/form_companion_mixin.dart'
         PropertyDescriptorsBuilder,
         RestorableValueFactory,
         ValidatorCreationOptions,
-        createValidatorCreationOptions,
         bigIntRestorableValueFactory,
         boolRestorableValueFactory,
-        dateTimeRestorableValueFactory,
+        createValidatorCreationOptions,
         dateTimeRangeRestorableValueFactory,
+        dateTimeRestorableValueFactory,
         doubleRestorableValueFactory,
-        enumRestorableValueFactory,
         enumListRestorableValueFactory,
+        enumRestorableValueFactory,
         intRestorableValueFactory,
         rangeValuesRestorableValueFactory,
         stringRestorableValueFactory;
@@ -44,9 +46,9 @@ export 'src/future_invoker.dart'
         AsyncInvocationFailureContext,
         AsyncOperationCompletedCallback,
         AsyncOperationFailedCallback,
-        AsyncOperationProgressCallback,
         AsyncOperationFailureHandler,
         AsyncOperationNotifier,
+        AsyncOperationProgressCallback,
         AsyncOperationStatus,
         FutureInvoker;
 export 'src/number_converter.dart'

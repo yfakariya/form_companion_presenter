@@ -1175,22 +1175,3 @@ class FormView extends StatelessWidget {
     return formFieldFactory(mode, context);
   }
 }
-
-class AsyncValidation {
-  Completer<String>? _completer;
-
-  void prepare() {
-    assert(_completer == null || _completer!.isCompleted);
-    _completer = Completer();
-  }
-
-  Future<void> goAhead(String token) async {
-    _completer!.complete(token);
-  }
-
-  AsyncValidator<String> getValidator(ValidatorCreationOptions _) =>
-      (value, options) async {
-        final token = await _completer!.future;
-        return '$value:error:$token';
-      };
-}

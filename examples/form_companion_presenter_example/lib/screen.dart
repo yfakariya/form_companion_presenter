@@ -12,7 +12,7 @@ import 'routes.dart';
 /// This class provides basic structure, menu, and navigation.
 abstract class Screen extends ConsumerWidget {
   /// Constructor.
-  const Screen({Key? key}) : super(key: key);
+  const Screen({super.key});
 
   /// Gets a title of the page.
   String get title;

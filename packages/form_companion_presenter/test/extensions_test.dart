@@ -1,6 +1,7 @@
 // See LICENCE file in the root.
 
 @Timeout(Duration(seconds: 3))
+library;
 
 import 'dart:async';
 

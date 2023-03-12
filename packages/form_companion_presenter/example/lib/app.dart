@@ -10,7 +10,7 @@ import 'routes.dart';
 /// This is required to work
 /// [BuildContextEasyLocalizationExtension.localizationDelegates] correctly.
 class _App extends ConsumerWidget {
-  const _App({Key? key}) : super(key: key);
+  const _App();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -29,7 +29,7 @@ class _App extends ConsumerWidget {
 /// Application.
 class App extends StatelessWidget {
   /// Constructor.
-  const App({Key? key}) : super(key: key);
+  const App();
 
   @override
   Widget build(BuildContext context) => ProviderScope(
