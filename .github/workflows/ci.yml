@@ -2,19 +2,17 @@ name: ci
 
 on:
   push:
-    paths:
-      - '**.dart'
-      - 'pubspec.*'
-      - 'analysis_options.yaml'
-      - '.github/workflows/*.yml'
-      - '.github/actions/**/*.yml'
+    branches:
+      - master
+      - main
+    paths-ignore:
+      - '**.md'
   pull_request:
-    paths:
-      - '**.dart'
-      - 'pubspec.*'
-      - 'analysis_options.yaml'
-      - '.github/workflows/*.yml'
-      - '.github/actions/**/*.yml'
+    paths-ignore:
+      - '**.md'
+  schedule:
+    # everyday at 09:00 (UTC) 
+    - cron: "0 9 * * *"
 
 jobs:
   build-latest:
