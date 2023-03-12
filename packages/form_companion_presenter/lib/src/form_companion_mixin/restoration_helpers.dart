@@ -77,9 +77,11 @@ class _RestorableBigIntN extends RestorableValue<BigInt?> {
     if (data == null) {
       return null;
     }
+
     if (data is String) {
-      return BigInt.parse(data);
+      return BigInt.tryParse(data);
     }
+
     return _defaultValue;
   }
 
@@ -120,18 +122,20 @@ class _RestorableEnumList<T extends Enum> extends RestorableValue<List<T>?> {
     return value;
   }
 
-  T _mapEnumValue(String stringValue) {
-    for (final enumValue in values) {
-      if (enumValue.name == stringValue) {
-        return enumValue;
-      }
+  Iterable<T> _filterEnumValue(Iterable<Object?>? entries) sync* {
+    if (entries == null) {
+      return;
     }
 
-    throw FlutterError(
-      'Attempted to restore an unknown enum value "$stringValue" '
-      'that is not in the valid set of enum values for the $T type: '
-      '${values.map<String>((value) => value.name).toSet()}',
-    );
+    for (final entry in entries) {
+      if (entry is String) {
+        for (final enumValue in values) {
+          if (enumValue.name == entry) {
+            yield enumValue;
+          }
+        }
+      }
+    }
   }
 
   @override
@@ -139,6 +143,7 @@ class _RestorableEnumList<T extends Enum> extends RestorableValue<List<T>?> {
     if (value != null) {
       value.forEach(_verifyEnumValue);
     }
+
     super.value = value;
   }
 
@@ -147,12 +152,11 @@ class _RestorableEnumList<T extends Enum> extends RestorableValue<List<T>?> {
     if (data == null) {
       return null;
     }
-    if (data is List<String>) {
-      return data.map(_mapEnumValue).toList();
-    }
+
     if (data is List) {
-      return data.cast<String>().map(_mapEnumValue).toList();
+      return _filterEnumValue(data).toList();
     }
+
     return _defaultValue;
   }
 
@@ -178,18 +182,14 @@ class _RestorableDateTimeRangeN extends RestorableValue<DateTimeRange?> {
     if (data == null) {
       return null;
     }
-    if (data is List<int> && data.length == 2) {
-      return DateTimeRange(
-        start: DateTime.fromMillisecondsSinceEpoch(data[0]),
-        end: DateTime.fromMillisecondsSinceEpoch(data[1]),
-      );
-    }
-    if (data is List && data.length == 2) {
+
+    if (data is List && data.length == 2 && data[0] is int && data[1] is int) {
       return DateTimeRange(
         start: DateTime.fromMillisecondsSinceEpoch(data[0] as int),
         end: DateTime.fromMillisecondsSinceEpoch(data[1] as int),
       );
     }
+
     return _defaultValue;
   }
 
@@ -220,12 +220,14 @@ class _RestorableRangeValuesN extends RestorableValue<RangeValues?> {
     if (data == null) {
       return null;
     }
-    if (data is List<double> && data.length == 2) {
-      return RangeValues(data[0], data[1]);
-    }
-    if (data is List && data.length == 2) {
+
+    if (data is List &&
+        data.length == 2 &&
+        data[0] is double &&
+        data[1] is double) {
       return RangeValues(data[0] as double, data[1] as double);
     }
+
     return _defaultValue;
   }
 
