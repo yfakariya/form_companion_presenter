@@ -10,6 +10,17 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:form_companion_presenter/src/async_validator_executor.dart';
 import 'package:form_companion_presenter/src/internal_utils.dart';
 
+class DerivedValidationInvocation<T> extends ValidationInvocation<T> {
+  DerivedValidationInvocation({
+    required super.validator,
+    required super.value,
+    required super.locale,
+    required super.onCompleted,
+    required super.onFailed,
+    required super.failureHandler,
+  });
+}
+
 void main() {
   group('AsyncValidatorExecutor', () {
     group('constructor', () {
@@ -348,6 +359,22 @@ void main() {
         // ignore: deprecated_member_use_from_same_package
         target.onProgress(null);
       });
+    });
+
+    test('toString()', () {
+      final target = DerivedValidationInvocation(
+        validator: (v, o) => null,
+        value: 'Something',
+        locale: defaultLocale,
+        onCompleted: (_) {},
+        onFailed: (_) {},
+        failureHandler: (_) {},
+      );
+
+      expect(
+        target.toString(),
+        '${target.runtimeType}: Something',
+      );
     });
   });
 }

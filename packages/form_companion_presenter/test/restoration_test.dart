@@ -7,7 +7,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:form_companion_presenter/form_companion_presenter.dart';
 import 'package:form_companion_presenter/src/form_companion_mixin.dart';
-import 'package:form_companion_presenter/src/internal_utils.dart';
 
 typedef WrapperFormFieldFactory = Widget Function(
   Key,
@@ -142,36 +141,36 @@ final _formFieldFactoriesForPresenter =
 
 void main() {
   // For debugging
-  loggerSink = (
-    name,
-    level,
-    message,
-    zone,
-    error,
-    stackTrace,
-  ) {
-    String messageString;
-    if (message is String Function()) {
-      messageString = message();
-    } else if (message is String) {
-      messageString = message;
-    } else {
-      messageString = message?.toString() ?? '';
-    }
+  // loggerSink = (
+  //   name,
+  //   level,
+  //   message,
+  //   zone,
+  //   error,
+  //   stackTrace,
+  // ) {
+  //   String messageString;
+  //   if (message is String Function()) {
+  //     messageString = message();
+  //   } else if (message is String) {
+  //     messageString = message;
+  //   } else {
+  //     messageString = message?.toString() ?? '';
+  //   }
 
-    String errorString;
-    if (error != null) {
-      if (stackTrace != null) {
-        errorString = ' $error\n$stackTrace';
-      } else {
-        errorString = ' $error';
-      }
-    } else {
-      errorString = '';
-    }
+  //   String errorString;
+  //   if (error != null) {
+  //     if (stackTrace != null) {
+  //       errorString = ' $error\n$stackTrace';
+  //     } else {
+  //       errorString = ' $error';
+  //     }
+  //   } else {
+  //     errorString = '';
+  //   }
 
-    printOnFailure('[${level.name}] $name: $messageString$errorString');
-  };
+  //   printOnFailure('[${level.name}] $name: $messageString$errorString');
+  // };
 
   FutureOr<void> testValueCore<T extends Object>(
     WidgetTester tester,
