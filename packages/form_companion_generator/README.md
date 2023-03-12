@@ -8,7 +8,7 @@ Code generator for `form_companion_presenter` and `form_builder_companion_preset
 
 ```yaml
   dev_dependencies:
-    form_companion_generator: ^x.y.z
+    form_companion_generator:
 ```
 
 (2) Add `build.yaml` in your package, next to `pubspec.yaml`:
@@ -208,7 +208,7 @@ In addition, some macro keys are only available in Item Templates. See below for
 
 ##### Example of Argument Templates
 
-The following code list shows sample `argument_templates` in `build.yaml`:
+The following code list shows example `argument_templates` in `build.yaml`:
 
 ```yaml
 builders:
@@ -357,3 +357,7 @@ enum (nullable) | Dart SDK version >= 2.15 or `uses_enum_name` option is set to 
 enum (nullable) | Dart SDK version < 2.15 or `uses_enum_name` option is set to `false` | `#ITEM_VALUE#?.toString() ?? ''`
 other types | - | `#IETM_VALUE#.toString()`
 other types (nullable) | - | `#IETM_VALUE#?.toString() ?? ''`
+
+## Breaking Changes
+
+See [https://github.com/yfakariya/form_companion_presenter/blob/main/BREAKING_CHANGES.md] to check breaking changes.

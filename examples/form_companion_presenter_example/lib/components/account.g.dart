@@ -7,7 +7,7 @@ part of 'account.dart';
 // **************************************************************************
 
 String _$accountPresenterTemplateHash() =>
-    r'37c5fad754b51b217d802d814120f2e020397e5f';
+    r'0053374dcfd1faa7a8270a68949416d4fb443962';
 
 /// Presenter which holds form properties.
 ///

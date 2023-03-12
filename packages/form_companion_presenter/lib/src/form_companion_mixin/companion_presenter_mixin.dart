@@ -247,7 +247,7 @@ mixin CompanionPresenterMixin {
 /// can call methods in this class via [CompanionPresenterMixinExtension]'s
 /// extension methods instead of calling methods of this class directly.
 ///
-/// `form_companion_presenter` uses templated method pattern to allow developers
+/// `form_companion_presenter` uses template method pattern to allow developers
 /// extend features of [CompanionPresenterMixin], but in dart, this is hard to
 /// avoid method conflict between methods which were added by such subtypes's
 /// developers or application developers who mix-ins the mixin type, because
@@ -320,6 +320,16 @@ abstract class CompanionPresenterFeatures<A extends FormStateAdapter> {
   void saveFields(A formState) {
     formState.save();
   }
+
+  /// Do validation the [FormField] for specified [name].
+  @protected
+  @visibleForOverriding
+  void restoreField(
+    BuildContext context,
+    String name,
+    Object? value, {
+    required bool hasError,
+  });
 
   /// Returns a validation error message which is shown when the async validator
   /// failed to complete with an exception or an error.
@@ -494,4 +504,18 @@ extension CompanionPresenterMixinInternalExtension on CompanionPresenterMixin {
     String name,
   ) =>
       propertiesState.getDescriptor(name)._pendingAsyncValidations;
+
+  /// For testing, reset async validator states, namely invalidates caches.
+  @visibleForTesting
+  void resetAsyncValidators() {
+    this._properties.getAllDescriptors().forEach((p) {
+      p._resetAsyncValidators();
+    });
+  }
 }
+
+/// Default class with [CompanionPresenterMixin] for testing to support
+/// test coverage.
+@internal
+@visibleForTesting
+abstract class TestCompanionPresenter with CompanionPresenterMixin {}

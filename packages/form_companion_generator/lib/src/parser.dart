@@ -379,13 +379,16 @@ FutureOr<List<LibraryImport>> collectDependenciesAsync(
         // Add property value
         ..processGenericType(property.propertyValueType)
         // Add field value
-        ..processGenericType(property.fieldValueType)
+        ..processGenericType(property.fieldValueType);
+      if (!isFormBuilder) {
         // Add getFieldValue/setFieldValue related.
-        ..recordTypeIdDirect('dart:ui', 'Locale')
-        ..recordTypeIdDirect(
-          'package:flutter/widgets.dart',
-          'Localizations',
-        );
+        collector
+          ..recordTypeIdDirect('dart:ui', 'Locale')
+          ..recordTypeIdDirect(
+            'package:flutter/widgets.dart',
+            'Localizations',
+          );
+      }
 
       for (final import in argumentsHandler.allParameters.expand(
         (p) => getImports(property, p),

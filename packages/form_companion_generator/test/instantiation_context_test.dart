@@ -18,6 +18,7 @@ import 'test_helpers.dart';
 Future<void> main() async {
   final logger = Logger('instantiation_context_test');
   Logger.root.level = Level.INFO;
+  // ignore: avoid_print
   logger.onRecord.listen(print);
 
   final nullableStringType = await getNullableStringType();

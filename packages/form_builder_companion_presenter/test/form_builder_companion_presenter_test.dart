@@ -7,8 +7,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:form_builder_companion_presenter/src/form_builder_companion_mixin.dart';
 
-import 'package:form_builder_companion_presenter/form_builder_companion_presenter.dart';
 import 'package:form_companion_presenter/form_companion_presenter.dart';
 
 Widget _buildChilren(
@@ -151,7 +151,7 @@ class HierarchicalForm extends StatelessWidget {
 
 Widget _app(Widget child) => MaterialApp(home: Scaffold(body: child));
 
-class Presenter with CompanionPresenterMixin, FormBuilderCompanionMixin {
+class Presenter extends TestFormBuilderCompanionPresenter {
   final FutureOr<void> Function() _doSubmitCalled;
   final void Function(OnPropertiesChangedEvent) _onPropertiesChangedCalled;
 

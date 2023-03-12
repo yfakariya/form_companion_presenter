@@ -1,5 +1,15 @@
 name: form_companion_presenter
 
+command:
+  bootstrap:
+    usePubspecOverrides: true
+  version:
+    message: |
+      chore: bump version
+
+      {new_package_versions}
+    includeCommitId: true
+
 packages:
   - examples/**
   - packages/**
@@ -13,7 +23,7 @@ scripts:
   analyze:core:
     run: melos exec -c 1 -- fvm flutter analyze .
     description: Run `flutter analyze` in all packages.
-    select-package:
+    packageFilters:
       flutter: true
       scope: '*'
       ignore: dev_env
@@ -25,7 +35,7 @@ scripts:
   pubget:flutter:
     run: melos exec -c 1 -- fvm flutter pub get
     description: Run `flutter pub get` in all packages.
-    select-package:
+    packageFilters:
       flutter: true
       scope: '*'
       ignore: dev_env
@@ -33,7 +43,7 @@ scripts:
   pubget:dart:
     run: melos exec -c 1 -- fvm dart pub get
     description: Run `dart pub get` in all packages.
-    select-package:
+    packageFilters:
       flutter: false
       scope: '*'
       ignore: dev_env
@@ -45,27 +55,27 @@ scripts:
   test:flutter:
     run: melos exec -c 1 --fail-fast -- fvm flutter test --reporter=expanded --coverage
     description: Run Flutter tests for a specific package in this project.
-    select-package:
+    packageFilters:
       flutter: true
-      dir-exists: test
+      dirExists: test
       ignore:
         - 'form_companion_generator_test_targets'
 
   test:grind:
     run: melos exec -c 1 --fail-fast -- grind 
     description: Run grind tests for a specific package in this project.
-    select-package:
+    packageFilters:
       flutter: true
-      dir-exists: tool
+      dirExists: tool
       ignore:
         - 'form_companion_presenter_examples'
 
   test:dart:
     run: melos exec -c 1 --fail-fast -- fvm dart test --reporter=expanded --coverage=coverage
     description: Run Dart tests for a specific package in this project.
-    select-package:
+    packageFilters:
       flutter: false
-      dir-exists: test
+      dirExists: test
 
   build_runner:
     run: melos run build_runner:core --no-select
@@ -73,9 +83,9 @@ scripts:
   
   build_runner:core:
     run: melos exec -c 1 --fail-fast -- fvm flutter pub run build_runner build --delete-conflicting-outputs
-    select-package:
+    packageFilters:
       flutter: true
-      depends-on:
+      dependOn:
         - build_runner
 
   easy_localization:
@@ -84,14 +94,14 @@ scripts:
 
   easy_localization:json:
     run: melos exec -c 1 --fail-fast -- fvm flutter pub run easy_localization:generate -O lib/l10n -f json
-    select-package:
+    packageFilters:
       flutter: true
-      dir-exists: resources/langs
-      depends-on: easy_localization
+      dirExists: resources/langs
+      dependsOn: easy_localization
 
   easy_localization:keys:
     run: melos exec -c 1 --fail-fast -- fvm flutter pub run easy_localization:generate -O lib/l10n -f keys -o locale_keys.g.dart
-    select-package:
+    packageFilters:
       flutter: true
-      dir-exists: resources/langs
-      depends-on: easy_localization
+      dirExists: resources/langs
+      dependsOn: easy_localization

@@ -46,17 +46,22 @@ class BulkAutoValidationVanillaFormAccountPage extends Screen {
   String get title => LocaleKeys.bulk_auto_vanilla_title.tr();
 
   @override
-  Widget buildPage(BuildContext context, WidgetRef ref) => Form(
-        autovalidateMode: AutovalidateMode.onUserInteraction,
+  Widget buildPage(BuildContext context, WidgetRef ref) {
+    final presenter = ref
+        .read(bulkAutoValidationVanillaFormAccountPresenterProvider.notifier);
+    return Form(
+      autovalidateMode: AutovalidateMode.onUserInteraction,
+      child: FormPropertiesRestorationScope(
+        presenter: presenter,
         child: _BulkAutoValidationVanillaFormAccountPane(),
-      );
+      ),
+    );
+  }
 }
 
 class _BulkAutoValidationVanillaFormAccountPane extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final presenter = ref
-        .watch(bulkAutoValidationVanillaFormAccountPresenterProvider.notifier);
     final state =
         ref.watch(bulkAutoValidationVanillaFormAccountPresenterProvider);
 
@@ -74,7 +79,7 @@ class _BulkAutoValidationVanillaFormAccountPane extends ConsumerWidget {
               labelText: LocaleKeys.id_label.tr(),
               hintText: LocaleKeys.id_hint.tr(),
               suffix: AsyncValidationIndicator(
-                presenter: presenter,
+                presenter: state.value.presenter,
                 propertyName: 'id',
               ),
             ),
@@ -125,8 +130,9 @@ class BulkAutoValidationVanillaFormAccountPresenter
             Validator.required,
           ],
         )
-        ..enumerated<Gender>(
+        ..enumerated(
           name: 'gender',
+          enumValues: Gender.values,
         )
         ..integerText(
           name: 'age',

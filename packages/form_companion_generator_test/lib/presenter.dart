@@ -9,8 +9,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_companion_presenter/form_builder_companion_annotation.dart';
 import 'package:form_builder_companion_presenter/form_builder_companion_presenter.dart';
-import 'package:form_companion_presenter/form_companion_annotation.dart';
-import 'package:form_companion_presenter/form_companion_presenter.dart';
 import 'package:form_companion_presenter/form_companion_presenter.dart' as fcp;
 
 import 'enum.dart';
@@ -49,6 +47,15 @@ class _BaseCompanionFeatures extends CompanionPresenterFeatures {
 
   @override
   FormStateAdapter? maybeFormStateOf(BuildContext context) =>
+      throw UnimplementedError();
+
+  @override
+  void restoreField(
+    BuildContext context,
+    String name,
+    Object? value, {
+    required bool hasError,
+  }) =>
       throw UnimplementedError();
 }
 
@@ -92,6 +99,16 @@ class InvalidCompanionPresenterFeatures extends CompanionPresenterFeatures {
 
   @override
   FormStateAdapter? maybeFormStateOf(BuildContext context) => null;
+
+  @override
+  void restoreField(
+    BuildContext context,
+    String name,
+    Object? value, {
+    required bool hasError,
+  }) {
+    // nop
+  }
 }
 
 @formCompanion
@@ -286,10 +303,12 @@ class InferredTypes with CompanionPresenterMixin, FormBuilderCompanionMixin {
         ..enumerated(
           name: 'addEnumWithInitialValue',
           initialValue: MyEnum.one,
+          enumValues: MyEnum.values,
         )
         ..enumeratedList(
           name: 'addEnumListWithInitialValue',
           initialValues: [MyEnum.one],
+          enumValues: MyEnum.values,
         ),
     );
   }
@@ -366,7 +385,11 @@ class RawAddEnumWithFieldVanilla
     with CompanionPresenterMixin, FormCompanionMixin {
   RawAddEnumWithFieldVanilla() {
     initializeCompanionMixin(
-      PropertyDescriptorsBuilder()..enumeratedWithField(name: 'propRaw'),
+      PropertyDescriptorsBuilder()
+        ..enumeratedWithField(
+          name: 'propRaw',
+          enumValues: MyEnum.values,
+        ),
     );
   }
 
@@ -447,19 +470,6 @@ class RawAddBigIntWithFieldFormBuilder
 }
 
 @formCompanion
-class RawAddBoolListWithFieldFormBuilder
-    with CompanionPresenterMixin, FormBuilderCompanionMixin {
-  RawAddBoolListWithFieldFormBuilder() {
-    initializeCompanionMixin(
-      PropertyDescriptorsBuilder()..booleanListWithField(name: 'propRaw'),
-    );
-  }
-
-  @override
-  FutureOr<void> doSubmit() {}
-}
-
-@formCompanion
 class RawAddBoolWithFieldFormBuilder
     with CompanionPresenterMixin, FormBuilderCompanionMixin {
   RawAddBoolWithFieldFormBuilder() {
@@ -490,7 +500,11 @@ class RawAddEnumListWithFieldFormBuilder
     with CompanionPresenterMixin, FormBuilderCompanionMixin {
   RawAddEnumListWithFieldFormBuilder() {
     initializeCompanionMixin(
-      PropertyDescriptorsBuilder()..enumeratedListWithField(name: 'propRaw'),
+      PropertyDescriptorsBuilder()
+        ..enumeratedListWithField(
+          name: 'propRaw',
+          enumValues: MyEnum.values,
+        ),
     );
   }
 
@@ -503,7 +517,11 @@ class RawAddEnumWithFieldFormBuilder
     with CompanionPresenterMixin, FormBuilderCompanionMixin {
   RawAddEnumWithFieldFormBuilder() {
     initializeCompanionMixin(
-      PropertyDescriptorsBuilder()..enumeratedWithField(name: 'propRaw'),
+      PropertyDescriptorsBuilder()
+        ..enumeratedWithField(
+          name: 'propRaw',
+          enumValues: MyEnum.values,
+        ),
     );
   }
 
@@ -553,11 +571,18 @@ class ConvinientExtensionMethod
         ..integerText(name: 'propInt')
         ..string(name: 'propString')
         ..boolean(name: 'propBool')
-        ..enumerated<MyEnum>(name: 'propEnum')
-        ..enumeratedList<MyEnum>(name: 'propEnumList')
+        ..enumerated(
+          name: 'propEnum',
+          enumValues: MyEnum.values,
+        )
+        ..enumeratedList(
+          name: 'propEnumList',
+          enumValues: MyEnum.values,
+        )
         ..realWithField<FormBuilderSlider>(name: 'propDouble')
         ..enumeratedListWithField<MyEnum, FormBuilderCheckboxGroup<MyEnum>>(
           name: 'propEnumList2',
+          enumValues: MyEnum.values,
         ),
     );
   }

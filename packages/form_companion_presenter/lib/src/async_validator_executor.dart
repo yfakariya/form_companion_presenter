@@ -86,6 +86,9 @@ class ValidationInvocation<T> implements AsyncOperationNotifier<String?, void> {
   }) :
         // ignore: deprecated_member_use_from_same_package
         onProgress = ((_) {});
+
+  @override
+  String toString() => '$runtimeType: $value';
 }
 
 /// Callback of completion of [AsyncValidator].

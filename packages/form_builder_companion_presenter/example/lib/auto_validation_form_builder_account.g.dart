@@ -7,7 +7,7 @@ part of 'auto_validation_form_builder_account.dart';
 // **************************************************************************
 
 String _$autoValidationFormBuilderAccountPresenterHash() =>
-    r'a6e054a054eef0aec58a950a5d422b49964a4742';
+    r'4034eece1e386a207cb63d1a1b5edd9e8d65083d';
 
 /// Presenter which holds form properties.
 ///

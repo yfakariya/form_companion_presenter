@@ -7,23 +7,6 @@ import 'package:form_companion_presenter/form_companion_presenter.dart';
 /// define typical type combinations with `flutter_form_builder`.
 extension FormBuilderCompanionPropertyDescriptorsBuilderExtension
     on PropertyDescriptorsBuilder {
-  /// Defines a new property with [List] of [bool] for both of
-  /// property value type and form field value type.
-  ///
-  /// Note that [name] must be unique, and validators are registered as
-  /// factories instead of normal closures (function objects) because some
-  /// validation framework requires live [BuildContext] to initialize validator,
-  /// and current [Locale] of the application should be stored to
-  /// [BuildContext].
-  void booleanList({
-    required String name,
-    List<bool>? initialValues,
-  }) =>
-      add<List<bool>, List<bool>>(
-        name: name,
-        initialValue: initialValues,
-      );
-
   /// Defines a new property with [List] of enum type [Enum] for both of
   /// property value type and form field value type.
   ///
@@ -32,11 +15,21 @@ extension FormBuilderCompanionPropertyDescriptorsBuilderExtension
   /// validation framework requires live [BuildContext] to initialize validator,
   /// and current [Locale] of the application should be stored to
   /// [BuildContext].
+  ///
+  /// Use `values` static property of [T] for [enumValues] parameter like
+  /// [Brightness.values].
   void enumeratedList<T extends Enum>({
     required String name,
     List<T>? initialValues,
+    PropertyValueTraits? valueTraits,
+    required Iterable<T> enumValues,
   }) =>
-      add<List<T>, List<T>>(name: name, initialValue: initialValues);
+      add<List<T>, List<T>>(
+        name: name,
+        initialValue: initialValues,
+        valueTraits: valueTraits,
+        restorableValueFactory: enumListRestorableValueFactory(enumValues),
+      );
 
   /// Defines a new property with [DateTime] for both of
   /// property value type and form field value type.
@@ -51,12 +44,15 @@ extension FormBuilderCompanionPropertyDescriptorsBuilderExtension
     List<FormFieldValidatorFactory<DateTime>>? validatorFactories,
     List<AsyncValidatorFactory<DateTime>>? asyncValidatorFactories,
     DateTime? initialValue,
+    PropertyValueTraits? valueTraits,
   }) =>
       add<DateTime, DateTime>(
         name: name,
         validatorFactories: validatorFactories,
         asyncValidatorFactories: asyncValidatorFactories,
         initialValue: initialValue,
+        valueTraits: valueTraits,
+        restorableValueFactory: dateTimeRestorableValueFactory,
       );
 
   /// Defines a new property with [DateTimeRange] for both of
@@ -72,12 +68,15 @@ extension FormBuilderCompanionPropertyDescriptorsBuilderExtension
     List<FormFieldValidatorFactory<DateTimeRange>>? validatorFactories,
     List<AsyncValidatorFactory<DateTimeRange>>? asyncValidatorFactories,
     DateTimeRange? initialValue,
+    PropertyValueTraits? valueTraits,
   }) =>
       add<DateTimeRange, DateTimeRange>(
         name: name,
         validatorFactories: validatorFactories,
         asyncValidatorFactories: asyncValidatorFactories,
         initialValue: initialValue,
+        valueTraits: valueTraits,
+        restorableValueFactory: dateTimeRangeRestorableValueFactory,
       );
 
   /// Defines a new property with [RangeValues] for both of
@@ -93,11 +92,14 @@ extension FormBuilderCompanionPropertyDescriptorsBuilderExtension
     List<FormFieldValidatorFactory<RangeValues>>? validatorFactories,
     List<AsyncValidatorFactory<RangeValues>>? asyncValidatorFactories,
     RangeValues? initialValue,
+    PropertyValueTraits? valueTraits,
   }) =>
       add<RangeValues, RangeValues>(
         name: name,
         validatorFactories: validatorFactories,
         asyncValidatorFactories: asyncValidatorFactories,
         initialValue: initialValue,
+        valueTraits: valueTraits,
+        restorableValueFactory: rangeValuesRestorableValueFactory,
       );
 }

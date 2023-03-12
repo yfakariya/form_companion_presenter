@@ -31,9 +31,18 @@ class TestPresenterFeatures extends CompanionPresenterFeatures {
       super.handleCanceledAsyncValidationError(error);
     }
   }
+
+  @override
+  void restoreField(
+    BuildContext context,
+    String name,
+    Object? value, {
+    required bool hasError,
+  }) =>
+      throw UnimplementedError();
 }
 
-class TestPresenter with CompanionPresenterMixin {
+class TestPresenter extends TestCompanionPresenter {
   late final CompanionPresenterFeatures _presenterFeatures;
   @override
   CompanionPresenterFeatures get presenterFeatures => _presenterFeatures;
@@ -62,8 +71,11 @@ class TestPresenter with CompanionPresenterMixin {
   }
 
   @override
-  void onPropertiesChanged(OnPropertiesChangedEvent event) =>
-      _onPropertiesChangedCalled(event);
+  void onPropertiesChanged(OnPropertiesChangedEvent event) {
+    _onPropertiesChangedCalled(event);
+    // call super to test harmless
+    super.onPropertiesChanged(event);
+  }
 
   @override
   FutureOr<void> doSubmit() async {
@@ -567,6 +579,44 @@ void main() {
       expect(values, equals([0, 1]));
     });
 
+    test('normal validation failure prevents async validation', () async {
+      final context = DummyBuildContext();
+      FormFieldValidator<int?>? validator;
+      const dummyMessage = 'DUMMY_ERROR';
+
+      final values = <int?>[];
+      final target = TestPresenter(
+        properties: PropertyDescriptorsBuilder()
+          ..add<int, int>(
+            name: 'prop',
+            validatorFactories: [
+              (context) => (_) => dummyMessage,
+            ],
+            asyncValidatorFactories: [
+              (context) => (value, options) {
+                    values.add(value);
+                    throw Exception('DUMMY');
+                  },
+            ],
+          ),
+        maybeFormStateOfCalled: (x) => FixedFormStateAdapter(
+          onValidate: () {
+            // Simulate validator call on callback.
+            validator!(0);
+            return true;
+          },
+        ),
+      );
+
+      final property = target.propertiesState.getDescriptor<int, int>('prop');
+      validator = property.getValidator(context);
+      expect(validator(0), dummyMessage);
+      expect(values, isEmpty);
+      expect(property.hasPendingAsyncValidations, isFalse);
+      // Try call following validation again
+      expect(validator(0), dummyMessage);
+    });
+
     test('validation failure on head is ignored', () async {
       final context = DummyBuildContext();
       final asyncOperationCompletion = Completer<void>();
@@ -1045,6 +1095,66 @@ void main() {
       expect(asyncValue2, equals(value));
       expect(asyncLocale1, equals(locale));
       expect(asyncLocale2, equals(locale));
+    });
+
+    test('onChanged chains to passed onChanged', () {
+      const name = 'property';
+      final target = TestPresenter(
+        properties: PropertyDescriptorsBuilder()
+          ..add<int, int>(
+            name: name,
+          ),
+      );
+
+      final property = target.propertiesState.getDescriptor<int, int>(name);
+      int? passedValue;
+      final chainedOnChanged = property.onChanged(DummyBuildContext(), (value) {
+        passedValue = value;
+      });
+      final value = DateTime.now().microsecondsSinceEpoch;
+
+      chainedOnChanged(value);
+      expect(passedValue, value);
+    });
+
+    test('onChanged chains to passed onChanged even if null', () {
+      const name = 'property';
+      final target = TestPresenter(
+        properties: PropertyDescriptorsBuilder()
+          ..add<int, int>(
+            name: name,
+          ),
+      );
+
+      final property = target.propertiesState.getDescriptor<int, int>(name);
+      int? passedValue = 0;
+      final chainedOnChanged = property.onChanged(DummyBuildContext(), (value) {
+        passedValue = value;
+      });
+
+      chainedOnChanged(null);
+      expect(passedValue, isNull);
+    });
+
+    test('onChangedNonNull chains to passed onChanged', () {
+      const name = 'property';
+      final target = TestPresenter(
+        properties: PropertyDescriptorsBuilder()
+          ..add<int, int>(
+            name: name,
+          ),
+      );
+
+      final property = target.propertiesState.getDescriptor<int, int>(name);
+      int? passedValue;
+      final chainedOnChanged =
+          property.onChangedNonNull(DummyBuildContext(), (value) {
+        passedValue = value;
+      });
+      final value = DateTime.now().microsecondsSinceEpoch;
+
+      chainedOnChanged(value);
+      expect(passedValue, value);
     });
   });
 

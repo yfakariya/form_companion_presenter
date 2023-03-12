@@ -40,6 +40,7 @@ class ExpectedImport {
 Future<void> main() async {
   final logger = Logger('parser_test');
   Logger.root.level = Level.INFO;
+  // ignore: avoid_print
   logger.onRecord.listen(print);
 
   final presenterLibrary = LibraryReader(
@@ -1310,23 +1311,6 @@ Future<void> main() async {
           'is not specified and it cannot be inferred with parameters. '
           'Ensure specify type argument `P` explicitly.';
 
-      const fieldEnumValueWarning =
-          '`Enum` is used for field value type because type parameter `F` '
-          'is not specified and it cannot be inferred with parameters. '
-          'Ensure specify type argument `F` explicitly.';
-      const propertyEnumValueWarning =
-          '`Enum` is used for property value type because type parameter `P` '
-          'is not specified and it cannot be inferred with parameters. '
-          'Ensure specify type argument `P` explicitly.';
-      const fieldEnumListValueWarning =
-          '`List<Enum>` is used for field value type because type parameter '
-          '`F` is not specified and it cannot be inferred with parameters. '
-          'Ensure specify type argument `F` explicitly.';
-      const propertyEnumListValueWarning =
-          '`List<Enum>` is used for property value type because type parameter '
-          '`P` is not specified and it cannot be inferred with parameters. '
-          'Ensure specify type argument `P` explicitly.';
-
       const preferredFormFieldWarningBase =
           'is used for FormField type because type parameter `TField` is '
           'not specified and it cannot be inferred with parameters. '
@@ -1430,14 +1414,10 @@ Future<void> main() async {
           ),
           Tuple5(
             'EnumWithField',
-            'Enum',
-            'Enum',
-            'FormField<Enum>',
-            [
-              propertyEnumValueWarning,
-              fieldEnumValueWarning,
-              '`FormField<Enum>` $preferredFormFieldWarningBase'
-            ],
+            'MyEnum',
+            'MyEnum',
+            'FormField<MyEnum>',
+            ['`FormField<MyEnum>` $preferredFormFieldWarningBase'],
           ),
           Tuple5(
             'IntWithField',
@@ -1505,13 +1485,6 @@ Future<void> main() async {
             ['`FormField<BigInt>` $preferredFormFieldWarningBase'],
           ),
           Tuple5(
-            'BoolListWithField',
-            'List<bool>',
-            'List<bool>',
-            'FormField<List<bool>>',
-            ['`FormField<List<bool>>` $preferredFormFieldWarningBase'],
-          ),
-          Tuple5(
             'BoolWithField',
             'bool',
             'bool',
@@ -1527,25 +1500,17 @@ Future<void> main() async {
           ),
           Tuple5(
             'EnumListWithField',
-            'List<Enum>',
-            'List<Enum>',
-            'FormField<List<Enum>>',
-            [
-              propertyEnumListValueWarning,
-              fieldEnumListValueWarning,
-              '`FormField<List<Enum>>` $preferredFormFieldWarningBase'
-            ],
+            'List<MyEnum>',
+            'List<MyEnum>',
+            'FormField<List<MyEnum>>',
+            ['`FormField<List<MyEnum>>` $preferredFormFieldWarningBase'],
           ),
           Tuple5(
             'EnumWithField',
-            'Enum',
-            'Enum',
-            'FormField<Enum>',
-            [
-              propertyEnumValueWarning,
-              fieldEnumValueWarning,
-              '`FormField<Enum>` $preferredFormFieldWarningBase'
-            ],
+            'MyEnum',
+            'MyEnum',
+            'FormField<MyEnum>',
+            ['`FormField<MyEnum>` $preferredFormFieldWarningBase'],
           ),
           Tuple5(
             'IntWithField',
@@ -2292,7 +2257,7 @@ const _vanillaCommonImports = [
 const _builderCommonImports = [
   ExpectedImport(
     'dart:ui',
-    shows: ['Color', 'Locale', 'VoidCallback'],
+    shows: ['Color', 'VoidCallback'],
   ),
   ExpectedImport(
     'package:flutter/foundation.dart',
@@ -2308,7 +2273,6 @@ const _builderCommonImports = [
       'AutovalidateMode',
       'BuildContext',
       'FocusNode',
-      'Localizations',
     ],
   ),
   ExpectedImport(

@@ -38,6 +38,7 @@ Config get _emptyConfig => Config(<String, dynamic>{});
 Future<void> main() async {
   final logger = Logger('emitter_test');
   Logger.root.level = Level.INFO;
+  // ignore: avoid_print
   logger.onRecord.listen(print);
 
   final library = await getFormFieldsLibrary();
@@ -499,7 +500,7 @@ Future<void> main() async {
             "import 'package:flutter/material.dart' show DatePickerEntryMode, DatePickerMode, EntryModeChangeCallback, Icons, InputCounterWidgetBuilder, InputDecoration, SelectableDayPredicate, TimeOfDay, TimePickerEntryMode;",
             "import 'package:flutter/painting.dart' show EdgeInsets, StrutStyle, TextAlignVertical, TextStyle;",
             "import 'package:flutter/services.dart' show MaxLengthEnforcement, TextCapitalization, TextInputAction, TextInputFormatter, TextInputType;",
-            "import 'package:flutter/widgets.dart' show AutovalidateMode, BuildContext, FocusNode, Icon, Localizations, RouteSettings, TextEditingController, TransitionBuilder, Widget;",
+            "import 'package:flutter/widgets.dart' show AutovalidateMode, BuildContext, FocusNode, Icon, RouteSettings, TextEditingController, TransitionBuilder, Widget;",
             "import 'package:flutter_form_builder/flutter_form_builder.dart' show FormBuilderDateTimePicker, InputType, ValueTransformer;",
             "import 'package:form_companion_presenter/form_companion_presenter.dart';",
             "import 'package:intl/intl.dart' show DateFormat;",
@@ -641,7 +642,7 @@ Future<void> main() async {
             "import 'package:flutter/material.dart' show DatePickerEntryMode, DatePickerMode, EntryModeChangeCallback, Icons, InputCounterWidgetBuilder, InputDecoration, SelectableDayPredicate, TimeOfDay, TimePickerEntryMode;",
             "import 'package:flutter/painting.dart' show EdgeInsets, StrutStyle, TextAlignVertical, TextStyle;",
             "import 'package:flutter/services.dart' show MaxLengthEnforcement, TextCapitalization, TextInputAction, TextInputFormatter, TextInputType;",
-            "import 'package:flutter/widgets.dart' show AutovalidateMode, BuildContext, FocusNode, Icon, Localizations, RouteSettings, TextEditingController, TransitionBuilder, Widget;",
+            "import 'package:flutter/widgets.dart' show AutovalidateMode, BuildContext, FocusNode, Icon, RouteSettings, TextEditingController, TransitionBuilder, Widget;",
             "import 'package:flutter_form_builder/flutter_form_builder.dart' show FormBuilderDateTimePicker, InputType, ValueTransformer;",
             "import 'package:form_companion_presenter/form_companion_presenter.dart';",
             "import 'package:intl/intl.dart' show DateFormat;",
@@ -697,7 +698,7 @@ Future<void> main() async {
             "// import 'package:flutter/material.dart' show DatePickerEntryMode, DatePickerMode, EntryModeChangeCallback, Icons, InputCounterWidgetBuilder, InputDecoration, SelectableDayPredicate, TimeOfDay, TimePickerEntryMode;",
             "// import 'package:flutter/painting.dart' show EdgeInsets, StrutStyle, TextAlignVertical, TextStyle;",
             "// import 'package:flutter/services.dart' show MaxLengthEnforcement, TextCapitalization, TextInputAction, TextInputFormatter, TextInputType;",
-            "// import 'package:flutter/widgets.dart' show AutovalidateMode, BuildContext, FocusNode, Icon, Localizations, RouteSettings, TextEditingController, TransitionBuilder, Widget;",
+            "// import 'package:flutter/widgets.dart' show AutovalidateMode, BuildContext, FocusNode, Icon, RouteSettings, TextEditingController, TransitionBuilder, Widget;",
             "// import 'package:flutter_form_builder/flutter_form_builder.dart' show FormBuilderDateTimePicker, InputType, ValueTransformer;",
             "// import 'package:intl/intl.dart' show DateFormat;",
             "// import 'package:meta/meta.dart' show immutable, sealed;",
@@ -1752,7 +1753,7 @@ extension \$TestFormPropertiesFieldFactoryExtension on \$TestFormProperties {
     final property_ = _properties.descriptors.prop;
     return FormFieldWithPropertyParameter(
       key: _properties.presenter.getKey(property_.name, context),
-      initialValue: property_.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
+      initialValue: property_.getInitialValue(context),
       decoration: decoration ?? const InputDecoration().copyWith(labelText: property_.name, hintText: null),
       onSaved: (v) => property_.setFieldValue(v, Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
       validator: property_.getValidator(context),
@@ -2245,18 +2246,18 @@ String itemsExpression(
 
   switch (fieldValueType) {
     case 'String?':
-      return "property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))?.map((x) => $itemWidgetType<$fieldValueType>(value: x, child: Text(x ?? ''))).toList() ?? []";
+      return "property.getInitialValue(context)?.map((x) => $itemWidgetType<$fieldValueType>(value: x, child: Text(x ?? ''))).toList() ?? []";
     case 'String':
-      return "property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))?.map((x) => $itemWidgetType<$fieldValueType>(value: x, child: Text(x))).toList() ?? []";
+      return 'property.getInitialValue(context)?.map((x) => $itemWidgetType<$fieldValueType>(value: x, child: Text(x))).toList() ?? []';
     case 'MyEnum':
       return '[MyEnum.one, MyEnum.two].map((x) => $itemWidgetType<$fieldValueType>(value: x, child: Text(x.$enumToString))).toList()';
     case 'MyEnum?':
       return "[MyEnum.one, MyEnum.two, null].map((x) => $itemWidgetType<$fieldValueType>(value: x, child: Text(x?.$enumToString ?? ''))).toList()";
     default:
       if (fieldValueType.endsWith('?')) {
-        return "property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))?.map((x) => $itemWidgetType<$fieldValueType>(value: x, child: Text(x?.toString() ?? ''))).toList() ?? []";
+        return "property.getInitialValue(context)?.map((x) => $itemWidgetType<$fieldValueType>(value: x, child: Text(x?.toString() ?? ''))).toList() ?? []";
       } else {
-        return "property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))?.map((x) => $itemWidgetType<$fieldValueType>(value: x, child: Text(x.toString()))).toList() ?? []";
+        return 'property.getInitialValue(context)?.map((x) => $itemWidgetType<$fieldValueType>(value: x, child: Text(x.toString()))).toList() ?? []';
       }
   }
 }
@@ -2284,7 +2285,7 @@ String textFormFieldFactory(
     bool readOnly = false,
     bool? showCursor,
     String obscuringCharacter = '•',
-    bool obscureText = false,
+    bool? obscureText,
     bool autocorrect = true,
     SmartDashesType? smartDashesType,
     SmartQuotesType? smartQuotesType,
@@ -2323,7 +2324,7 @@ String textFormFieldFactory(
     return TextFormField(
       key: _properties.presenter.getKey(property.name, context),
       controller: controller,
-      initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
+      initialValue: property.getInitialValue(context),
       focusNode: focusNode,
       decoration: decoration ?? const InputDecoration().copyWith(labelText: property.name, hintText: null),
       keyboardType: keyboardType,
@@ -2338,7 +2339,7 @@ String textFormFieldFactory(
       readOnly: readOnly,
       showCursor: showCursor,
       obscuringCharacter: obscuringCharacter,
-      obscureText: obscureText,
+      obscureText: obscureText ?? property.valueTraits.isSensitive,
       autocorrect: autocorrect,
       smartDashesType: smartDashesType,
       smartQuotesType: smartQuotesType,
@@ -2348,7 +2349,7 @@ String textFormFieldFactory(
       minLines: minLines,
       expands: expands,
       maxLength: maxLength,
-      onChanged: onChanged,
+      onChanged: property.onChangedNonNull(context, onChanged),
       onTap: onTap,
       onTapOutside: onTapOutside,
       onEditingComplete: onEditingComplete,
@@ -2434,10 +2435,10 @@ String dropdownButtonFieldFactory(
 '''}'
     '''
       selectedItemBuilder: selectedItemBuilder,
-      value: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
+      value: property.getInitialValue(context),
       hint: hint,
       disabledHint: disabledHint,
-      onChanged: onChanged ?? (_) {},
+      onChanged: property.onChanged(context, onChanged),
       onTap: onTap,
       elevation: elevation,
       style: style,
@@ -2498,9 +2499,9 @@ String formBuilderCheckboxFactory(
       key: key,
       name: property.name,
       validator: property.getValidator(context),
-      initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
+      initialValue: property.getInitialValue(context),
       decoration: decoration ?? const InputDecoration(border: InputBorder.none, focusedBorder: InputBorder.none, enabledBorder: InputBorder.none, errorBorder: InputBorder.none, disabledBorder: InputBorder.none).copyWith(labelText: property.name, hintText: null),
-      onChanged: onChanged,
+      onChanged: property.onChanged(context, onChanged),
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.${isAutovalidate ? 'onUserInteraction' : 'disabled'},
@@ -2566,9 +2567,9 @@ String formBuilderCheckboxGroupFactory(
       key: key,
       name: property.name,
       validator: property.getValidator(context),
-      initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
+      initialValue: property.getInitialValue(context),
       decoration: decoration ?? const InputDecoration().copyWith(labelText: property.name, hintText: null),
-      onChanged: onChanged,
+      onChanged: property.onChanged(context, onChanged),
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.${isAutovalidate ? 'onUserInteraction' : 'disabled'},
@@ -2650,7 +2651,7 @@ String formBuilderChoiceChipFactory(
       key: key,
       name: property.name,
       options: ${itemsExpression('FormBuilderChipOption', propertyType, usesEnumName: usesEnumName)},
-      initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
+      initialValue: property.getInitialValue(context),
       alignment: alignment,
       avatarBorder: avatarBorder,
       backgroundColor: backgroundColor,
@@ -2674,7 +2675,7 @@ String formBuilderChoiceChipFactory(
       textDirection: textDirection,
       verticalDirection: verticalDirection,
       visualDensity: visualDensity,
-      onChanged: onChanged,
+      onChanged: property.onChanged(context, onChanged),
       valueTransformer: valueTransformer,
       onReset: onReset,
     );
@@ -2700,7 +2701,7 @@ String formBuilderDateRangePickerFactory(
     required DateTime lastDate,
     intl.DateFormat? format,
     int maxLines = 1,
-    bool obscureText = false,
+    bool? obscureText,
     TextCapitalization textCapitalization = TextCapitalization.none,
     EdgeInsets scrollPadding = const EdgeInsets.all(20.0),
     bool enableInteractiveSelection = true,
@@ -2752,9 +2753,9 @@ String formBuilderDateRangePickerFactory(
       key: key,
       name: property.name,
       validator: property.getValidator(context),
-      initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
+      initialValue: property.getInitialValue(context),
       decoration: decoration ?? const InputDecoration().copyWith(labelText: property.name, hintText: null),
-      onChanged: onChanged,
+      onChanged: property.onChanged(context, onChanged),
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.${isAutovalidate ? 'onUserInteraction' : 'disabled'},
@@ -2764,7 +2765,7 @@ String formBuilderDateRangePickerFactory(
       lastDate: lastDate,
       format: format,
       maxLines: maxLines,
-      obscureText: obscureText,
+      obscureText: obscureText ?? property.valueTraits.isSensitive,
       textCapitalization: textCapitalization,
       scrollPadding: scrollPadding,
       enableInteractiveSelection: enableInteractiveSelection,
@@ -2838,7 +2839,7 @@ String formBuilderDateTimePickerFactory(
     TextInputType keyboardType = TextInputType.text,
     TextAlign textAlign = TextAlign.start,
     bool autofocus = false,
-    bool obscureText = false,
+    bool? obscureText,
     bool autocorrect = true,
     int? maxLines = 1,
     bool expands = false,
@@ -2888,9 +2889,9 @@ String formBuilderDateTimePickerFactory(
       key: key,
       name: property.name,
       validator: property.getValidator(context),
-      initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
+      initialValue: property.getInitialValue(context),
       decoration: decoration ?? const InputDecoration().copyWith(labelText: property.name, hintText: null),
-      onChanged: onChanged,
+      onChanged: property.onChanged(context, onChanged),
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.${isAutovalidate ? 'onUserInteraction' : 'disabled'},
@@ -2905,7 +2906,7 @@ String formBuilderDateTimePickerFactory(
       keyboardType: keyboardType,
       textAlign: textAlign,
       autofocus: autofocus,
-      obscureText: obscureText,
+      obscureText: obscureText ?? property.valueTraits.isSensitive,
       autocorrect: autocorrect,
       maxLines: maxLines,
       expands: expands,
@@ -3004,9 +3005,9 @@ String formBuilderDropdownFactory(
       key: key,
       name: property.name,
       validator: property.getValidator(context),
-      initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
+      initialValue: property.getInitialValue(context),
       decoration: decoration ?? const InputDecoration().copyWith(labelText: property.name, hintText: null),
-      onChanged: onChanged ?? (_) {},
+      onChanged: property.onChanged(context, onChanged),
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.${isAutovalidate ? 'onUserInteraction' : 'disabled'},
@@ -3096,7 +3097,7 @@ String formBuilderFilterChipFactory(
       validator: property.getValidator(context),
       decoration: decoration ?? const InputDecoration().copyWith(labelText: property.name, hintText: null),
       key: key,
-      initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
+      initialValue: property.getInitialValue(context),
       name: property.name,
       options: ${itemsExpression('FormBuilderChipOption', propertyElementType, isCollection: true, usesEnumName: usesEnumName)},
       alignment: alignment,
@@ -3125,7 +3126,7 @@ String formBuilderFilterChipFactory(
       spacing: spacing,
       textDirection: textDirection,
       verticalDirection: verticalDirection,
-      onChanged: onChanged,
+      onChanged: property.onChanged(context, onChanged),
       valueTransformer: valueTransformer,
       onReset: onReset,
     );
@@ -3178,7 +3179,7 @@ String formBuilderRadioGroupFactory(
       key: key,
       name: property.name,
       options: ${itemsExpression('FormBuilderFieldOption', propertyType, usesEnumName: usesEnumName)},
-      initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
+      initialValue: property.getInitialValue(context),
       shouldRadioRequestFocus: shouldRadioRequestFocus,
       activeColor: activeColor,
       controlAffinity: controlAffinity,
@@ -3196,7 +3197,7 @@ String formBuilderRadioGroupFactory(
       wrapSpacing: wrapSpacing,
       wrapTextDirection: wrapTextDirection,
       wrapVerticalDirection: wrapVerticalDirection,
-      onChanged: onChanged,
+      onChanged: property.onChanged(context, onChanged),
       valueTransformer: valueTransformer,
       onReset: onReset,
     );
@@ -3239,9 +3240,9 @@ String formBuilderRangeSliderFactory(
       key: key,
       name: property.name,
       validator: property.getValidator(context),
-      initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
+      initialValue: property.getInitialValue(context),
       decoration: decoration ?? const InputDecoration().copyWith(labelText: property.name, hintText: null),
-      onChanged: onChanged,
+      onChanged: property.onChanged(context, onChanged),
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.${isAutovalidate ? 'onUserInteraction' : 'disabled'},
@@ -3296,9 +3297,9 @@ String formBuilderSegmentedControlFactory(
       key: key,
       name: property.name,
       validator: property.getValidator(context),
-      initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
+      initialValue: property.getInitialValue(context),
       decoration: decoration ?? const InputDecoration().copyWith(labelText: property.name, hintText: null),
-      onChanged: onChanged,
+      onChanged: property.onChanged(context, onChanged),
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.${isAutovalidate ? 'onUserInteraction' : 'disabled'},
@@ -3353,9 +3354,9 @@ String formBuilderSliderFactory(
       key: key,
       name: property.name,
       validator: property.getValidator(context),
-      initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US'))!,
+      initialValue: property.getInitialValue(context)!,
       decoration: decoration ?? const InputDecoration().copyWith(labelText: property.name, hintText: null),
-      onChanged: onChanged,
+      onChanged: property.onChanged(context, onChanged),
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.${isAutovalidate ? 'onUserInteraction' : 'disabled'},
@@ -3417,9 +3418,9 @@ String formBuilderSwitchFactory(
       key: key,
       name: property.name,
       validator: property.getValidator(context),
-      initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
+      initialValue: property.getInitialValue(context),
       decoration: decoration ?? const InputDecoration().copyWith(labelText: property.name, hintText: null),
-      onChanged: onChanged,
+      onChanged: property.onChanged(context, onChanged),
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.${isAutovalidate ? 'onUserInteraction' : 'disabled'},
@@ -3460,7 +3461,7 @@ String formBuilderTextFieldFactory(
     VoidCallback? onReset,
     FocusNode? focusNode,
     int? maxLines = 1,
-    bool obscureText = false,
+    bool? obscureText,
     TextCapitalization textCapitalization = TextCapitalization.none,
     EdgeInsets scrollPadding = const EdgeInsets.all(20.0),
     bool enableInteractiveSelection = true,
@@ -3508,17 +3509,17 @@ String formBuilderTextFieldFactory(
       key: key,
       name: property.name,
       validator: property.getValidator(context),
-      initialValue: property.getFieldValue(Localizations.maybeLocaleOf(context) ?? const Locale('en', 'US')),
+      initialValue: property.getInitialValue(context),
       readOnly: readOnly,
       decoration: decoration ?? const InputDecoration().copyWith(labelText: property.name, hintText: null),
-      onChanged: onChanged,
+      onChanged: property.onChanged(context, onChanged),
       valueTransformer: valueTransformer,
       enabled: enabled,
       autovalidateMode: autovalidateMode ?? AutovalidateMode.${isAutovalidate ? 'onUserInteraction' : 'disabled'},
       onReset: onReset,
       focusNode: focusNode,
       maxLines: maxLines,
-      obscureText: obscureText,
+      obscureText: obscureText ?? property.valueTraits.isSensitive,
       textCapitalization: textCapitalization,
       scrollPadding: scrollPadding,
       enableInteractiveSelection: enableInteractiveSelection,

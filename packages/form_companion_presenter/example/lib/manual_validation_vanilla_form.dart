@@ -42,17 +42,22 @@ class ManualValidationVanillaFormAccountPage extends Screen {
   String get title => LocaleKeys.manual_vanilla_title.tr();
 
   @override
-  Widget buildPage(BuildContext context, WidgetRef ref) => Form(
-        autovalidateMode: AutovalidateMode.disabled,
+  Widget buildPage(BuildContext context, WidgetRef ref) {
+    final presenter =
+        ref.read(manualValidationVanillaFormAccountPresenterProvider.notifier);
+    return Form(
+      autovalidateMode: AutovalidateMode.disabled,
+      child: FormPropertiesRestorationScope(
+        presenter: presenter,
         child: _ManualValidationVanillaFormAccountPane(),
-      );
+      ),
+    );
+  }
 }
 
 class _ManualValidationVanillaFormAccountPane extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final presenter =
-        ref.watch(manualValidationVanillaFormAccountPresenterProvider.notifier);
     final state =
         ref.watch(manualValidationVanillaFormAccountPresenterProvider);
 
@@ -70,7 +75,7 @@ class _ManualValidationVanillaFormAccountPane extends ConsumerWidget {
               labelText: LocaleKeys.id_label.tr(),
               hintText: LocaleKeys.id_hint.tr(),
               suffix: AsyncValidationIndicator(
-                presenter: presenter,
+                presenter: state.value.presenter,
                 propertyName: 'id',
               ),
             ),
@@ -121,8 +126,9 @@ class ManualValidationVanillaFormAccountPresenter
             Validator.required,
           ],
         )
-        ..enumerated<Gender>(
+        ..enumerated(
           name: 'gender',
+          enumValues: Gender.values,
         )
         ..integerText(
           name: 'age',

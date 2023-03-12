@@ -7,7 +7,7 @@ part of 'manual_validation_vanilla_form.dart';
 // **************************************************************************
 
 String _$manualValidationVanillaFormAccountPresenterHash() =>
-    r'41f35eb9aad066ae67c73ecb0123de274d9c5b7a';
+    r'27fe2c614684e987878eaa8aac8fccdf40973e4e';
 
 /// Presenter which holds form properties.
 ///

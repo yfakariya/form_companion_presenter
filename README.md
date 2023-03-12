@@ -217,8 +217,7 @@ In addition, in most cases, they subscribe dependent state change on `build()` a
 ```dart
 @formCompanion
 @riverpod
-class MyPresenter
-  extends AutoDisposeAsyncNotifier<$MyPresenterFormProperties>
+class MyPresenter extends _$MyPresenter
   with CompanionPresenterMixin, FormBuilderCompanionMixin {
     ...
 
@@ -245,8 +244,7 @@ The following examples are code with riverpod, please check "Work with `Notifier
 ```dart
 @formCompanion
 @riverpod
-class MyPresenter
-  extends AutoDisposeAsyncNotifier<$MyPresenterFormProperties>
+class MyPresenter extends _$MyPresenter
   with CompanionPresenterMixin, FormBuilderCompanionMixin {
     ...
 }
@@ -254,7 +252,7 @@ class MyPresenter
 // in ConsumerWidget 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final presenter = ref.watch(myPresenterProvider.notifier);
+    final presenter = ref.read(myPresenterProvider.notifier);
     final state = ref.watch(myPresenterProvider);
 
     if (state is! AsyncData<$MyPresenterFormProperties>) {
@@ -262,6 +260,7 @@ class MyPresenter
     }
 
     // actual widget building here...
+  }
 ```
 
 #### Helper extensions
@@ -279,8 +278,29 @@ PropertyDescriptorsBuilder()
   // If you use form_builder_companion_presenter, you can use `DateTime` (`FormBuilderDatePicker` will be used).
   // Note that you must mix `FormBuilderCompanionMixin`.
   ..dateTime(name: 'birthDay')
-  // Customize form field type for enum (default is `DropdownButtonFormField` or `FormBuilderDropdown`)
-  ..enumeratedWithField<Sex, Sex, FormBuilderChoiceChip<Sex>>(name: 'sex'),
+  // Customize form field type for enum (default is `DropdownButtonFormField` or `FormBuilderChoiceChip`)
+  ..enumeratedWithField<Sex, FormBuilderChoiceChip<Sex>>(name: 'sex', enumValues: Sex.values),
+```
+
+#### State Restoration
+
+[State restoration](https://api.flutter.dev/flutter/services/RestorationManager-class.html) improves form input experience because it restores inputting data for the form when the app was killed on background by mobile operating systems. Is it very frustrated if you lose inputting data during open browser to find how to fill the form fields correctly? The browser tends to use large memory, so your app could be terminated frequently.
+
+To enable state restoration, just put `FormPropertiesRestorationScope` under your `Form` like following:
+
+```dart
+class MyForm extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final presenter = ref.read(myPresenterProvider.notifier);
+    return Form(
+      child: FormPropertiesRestorationScope(
+        presenter: presenter,
+        child: MyFormFields(),
+      ),
+    );
+  }
+}
 ```
 
 ## Related packages

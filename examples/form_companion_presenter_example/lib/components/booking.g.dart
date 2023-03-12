@@ -7,7 +7,7 @@ part of 'booking.dart';
 // **************************************************************************
 
 String _$bookingPresenterTemplateHash() =>
-    r'aad72b4b0b2f797225d1022266df3a9e25880037';
+    r'02eaecdd09729bab3735e3906c492e7e38eb3fec';
 
 /// Presenter which holds form properties.
 ///

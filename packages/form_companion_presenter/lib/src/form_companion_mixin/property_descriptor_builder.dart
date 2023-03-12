@@ -25,6 +25,8 @@ class PropertyDescriptorsBuilder {
     Equality<F>? fieldValueEquality,
     Equality<P>? propertyValueEquality,
     ValueConverter<P, F>? valueConverter,
+    PropertyValueTraits? valueTraits,
+    RestorableValueFactory<F>? restorableValueFactory,
   }) {
     final descriptor = _PropertyDescriptorSource<P, F>(
       name: name,
@@ -34,6 +36,8 @@ class PropertyDescriptorsBuilder {
       fieldValueEquality: fieldValueEquality,
       propertyValueEquality: propertyValueEquality,
       valueConverter: valueConverter,
+      valueTraits: valueTraits ?? PropertyValueTraits.none,
+      restorableValueFactory: restorableValueFactory,
     );
     final oldOrNew = _properties.putIfAbsent(name, () => descriptor);
     assert(oldOrNew == descriptor, '$name is already registered.');
@@ -70,6 +74,7 @@ extension FormCompanionPropertyDescriptorsBuilderExtension
     List<AsyncValidatorFactory<String>>? asyncValidatorFactories,
     P? initialValue,
     required StringConverter<P>? stringConverter,
+    PropertyValueTraits? valueTraits,
   }) =>
       add<P, String>(
         name: name,
@@ -77,6 +82,8 @@ extension FormCompanionPropertyDescriptorsBuilderExtension
         asyncValidatorFactories: asyncValidatorFactories,
         initialValue: initialValue,
         valueConverter: stringConverter,
+        valueTraits: valueTraits,
+        restorableValueFactory: stringRestorableValueFactory,
       );
 
   /// Defines a new property with [String] for both of property value type and
@@ -88,12 +95,15 @@ extension FormCompanionPropertyDescriptorsBuilderExtension
     List<FormFieldValidatorFactory<String>>? validatorFactories,
     List<AsyncValidatorFactory<String>>? asyncValidatorFactories,
     String? initialValue,
+    PropertyValueTraits? valueTraits,
   }) =>
       add<String, String>(
         name: name,
         validatorFactories: validatorFactories,
         asyncValidatorFactories: asyncValidatorFactories,
         initialValue: initialValue,
+        valueTraits: valueTraits,
+        restorableValueFactory: stringRestorableValueFactory,
       );
 
   /// Defines a new property with [bool] for both of property value type and
@@ -103,18 +113,34 @@ extension FormCompanionPropertyDescriptorsBuilderExtension
   void boolean({
     required String name,
     bool initialValue = false,
+    PropertyValueTraits? valueTraits,
   }) =>
-      add<bool, bool>(name: name, initialValue: initialValue);
+      add<bool, bool>(
+        name: name,
+        initialValue: initialValue,
+        valueTraits: valueTraits,
+        restorableValueFactory: boolRestorableValueFactory,
+      );
 
   /// Defines a new property with enum type [T] for both of property value type
   /// and form field value type.
   ///
   /// {@macro pdb_add_remarks}
+  ///
+  /// Use `values` static property of [T] for [enumValues] parameter like
+  /// [Brightness.values].
   void enumerated<T extends Enum>({
     required String name,
     T? initialValue,
+    PropertyValueTraits? valueTraits,
+    required Iterable<T> enumValues,
   }) =>
-      add<T, T>(name: name, initialValue: initialValue);
+      add<T, T>(
+        name: name,
+        initialValue: initialValue,
+        valueTraits: valueTraits,
+        restorableValueFactory: enumRestorableValueFactory(enumValues),
+      );
 
   /// Defines a new property with property value type [int] and
   /// form field value type [String].
@@ -126,6 +152,7 @@ extension FormCompanionPropertyDescriptorsBuilderExtension
     List<AsyncValidatorFactory<String>>? asyncValidatorFactories,
     int? initialValue,
     StringConverter<int>? stringConverter,
+    PropertyValueTraits? valueTraits,
   }) =>
       add<int, String>(
         name: name,
@@ -133,6 +160,8 @@ extension FormCompanionPropertyDescriptorsBuilderExtension
         asyncValidatorFactories: asyncValidatorFactories,
         initialValue: initialValue,
         valueConverter: stringConverter ?? intStringConverter,
+        valueTraits: valueTraits,
+        restorableValueFactory: stringRestorableValueFactory,
       );
 
   /// Defines a new property with property value type [double] and
@@ -145,6 +174,7 @@ extension FormCompanionPropertyDescriptorsBuilderExtension
     List<AsyncValidatorFactory<String>>? asyncValidatorFactories,
     double? initialValue,
     StringConverter<double>? stringConverter,
+    PropertyValueTraits? valueTraits,
   }) =>
       add<double, String>(
         name: name,
@@ -152,6 +182,8 @@ extension FormCompanionPropertyDescriptorsBuilderExtension
         asyncValidatorFactories: asyncValidatorFactories,
         initialValue: initialValue,
         valueConverter: stringConverter ?? doubleStringConverter,
+        valueTraits: valueTraits,
+        restorableValueFactory: stringRestorableValueFactory,
       );
 
   /// Defines a new property with property value type [BigInt] and
@@ -164,6 +196,7 @@ extension FormCompanionPropertyDescriptorsBuilderExtension
     List<AsyncValidatorFactory<String>>? asyncValidatorFactories,
     BigInt? initialValue,
     StringConverter<BigInt>? stringConverter,
+    PropertyValueTraits? valueTraits,
   }) =>
       add<BigInt, String>(
         name: name,
@@ -171,6 +204,8 @@ extension FormCompanionPropertyDescriptorsBuilderExtension
         asyncValidatorFactories: asyncValidatorFactories,
         initialValue: initialValue,
         valueConverter: stringConverter ?? bigIntStringConverter,
+        valueTraits: valueTraits,
+        restorableValueFactory: stringRestorableValueFactory,
       );
 
   /// Defines a new property with property value type [Uri] and
@@ -183,6 +218,7 @@ extension FormCompanionPropertyDescriptorsBuilderExtension
     List<AsyncValidatorFactory<String>>? asyncValidatorFactories,
     Uri? initialValue,
     StringConverter<Uri>? stringConverter,
+    PropertyValueTraits? valueTraits,
   }) =>
       add<Uri, String>(
         name: name,
@@ -190,6 +226,8 @@ extension FormCompanionPropertyDescriptorsBuilderExtension
         asyncValidatorFactories: asyncValidatorFactories,
         initialValue: initialValue,
         valueConverter: stringConverter ?? uriStringConverter,
+        valueTraits: valueTraits,
+        restorableValueFactory: stringRestorableValueFactory,
       );
 }
 
@@ -202,6 +240,8 @@ class _PropertyDescriptorSource<P extends Object, F extends Object> {
   final Equality<F>? fieldValueEquality;
   final Equality<P>? propertyValueEquality;
   final ValueConverter<P, F>? valueConverter;
+  final PropertyValueTraits valueTraits;
+  final RestorableValueFactory<F>? restorableValueFactory;
 
   _PropertyDescriptorSource({
     required this.name,
@@ -211,6 +251,8 @@ class _PropertyDescriptorSource<P extends Object, F extends Object> {
     required this.fieldValueEquality,
     required this.propertyValueEquality,
     required this.valueConverter,
+    required this.valueTraits,
+    required this.restorableValueFactory,
   });
 
   /// Build [PropertyDescriptor] which is connected with specified [presenter].
@@ -226,5 +268,7 @@ class _PropertyDescriptorSource<P extends Object, F extends Object> {
         fieldValueEquality: fieldValueEquality,
         propertyValueEquality: propertyValueEquality,
         valueConverter: valueConverter,
+        valueTraits: valueTraits,
+        restorableValueFactory: restorableValueFactory,
       );
 }

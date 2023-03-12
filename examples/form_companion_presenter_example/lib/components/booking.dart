@@ -2,11 +2,12 @@
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+//!macro beginBuilderOnly
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+//!macro endBuilderOnly
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:form_builder_companion_presenter/form_builder_companion_annotation.dart';
 import 'package:form_builder_companion_presenter/form_builder_companion_presenter.dart';
-import 'package:form_companion_presenter/form_companion_annotation.dart';
-import 'package:form_companion_presenter/form_companion_presenter.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 //!macro beginNotManualOnly
@@ -37,10 +38,16 @@ class BookingPageTemplate extends Screen {
   String get title => 'TITLE_TEMPLATE';
 
   @override
-  Widget buildPage(BuildContext context, WidgetRef ref) => FormBuilder(
-        //!macro formValidateMode
+  Widget buildPage(BuildContext context, WidgetRef ref) {
+    final presenter = ref.read(bookingPresenterTemplateProvider.notifier);
+    return FormBuilder(
+      //!macro formValidateMode
+      child: FormPropertiesRestorationScope(
+        presenter: presenter,
         child: _BookingPaneTemplate(),
-      );
+      ),
+    );
+  }
 }
 
 class _BookingPaneTemplate extends ConsumerWidget {
@@ -175,9 +182,11 @@ class BookingPresenterTemplate extends _$BookingPresenterTemplate
         )
         ..enumeratedWithField<RoomType, FormBuilderRadioGroup<RoomType>>(
           name: 'roomType',
+          enumValues: RoomType.values,
         )
-        ..enumeratedList<MealType>(
+        ..enumeratedList(
           name: 'mealOffers',
+          enumValues: MealType.values,
         )
         ..boolean(
           name: 'smoking',

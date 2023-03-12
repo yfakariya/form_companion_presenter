@@ -59,6 +59,7 @@ Config get _emptyConfig => Config(<String, dynamic>{});
 Future<void> main() async {
   final logger = Logger('parser_resolve_property_test');
   Logger.root.level = Level.INFO;
+  // ignore: avoid_print
   logger.onRecord.listen(print);
 
   final libraryResult =

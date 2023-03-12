@@ -40,6 +40,9 @@ class PropertyDescriptor<P extends Object, F extends Object> {
   /// Connected presenter object which implements [CompanionPresenterMixin].
   final CompanionPresenterMixin presenter;
 
+  /// Represents traits of [PropertyDescriptor] this property's value.
+  final PropertyValueTraits valueTraits;
+
   // The reason of using factories instead of validators theirselves is some
   // validator framework requires BuildContext to localize their messages.
   // In addition, it is good for the sake of injection of Completer to await
@@ -57,6 +60,13 @@ class PropertyDescriptor<P extends Object, F extends Object> {
 
   final Equality<P?> _propertyValueEquality;
 
+  final RestorableValueFactory<F>? _restorableFieldValueFactory;
+
+  RestorableFieldValues<F>? _restorableFieldValue;
+
+  /// Gets a field value type.
+  Type get _fieldValueType => F;
+
   /// [Completer] to notify [CompanionPresenterMixin] with
   /// non-autovalidation mode which should run and wait asynchronous validators
   /// in its submit method.
@@ -65,14 +75,115 @@ class PropertyDescriptor<P extends Object, F extends Object> {
   /// State automaton node of validation.
   _ValidationContext _validationContext = _ValidationContext.unspecified;
 
+  /// Resets async validator status, namely invalidates caches.
+  void _resetAsyncValidators() {
+    _asynvValidatorEntries.forEach((e) {
+      e._executor.reset(null);
+    });
+  }
+
+  RestorableFieldValues<F> _createRestorableFieldValues() {
+    assert(
+      _restorableFieldValueFactory != null,
+      'Called when F is not primitive.', // coverage:ignore-line
+    );
+
+    return RestorableFieldValues(
+      _restorableFieldValueFactory!,
+      _restorableFieldValue,
+    );
+  }
+
+  /// Wraps specified [onChanged], which takes nullable value,
+  /// with infrastructure support logic for state restoration.
+  ///
+  /// This is usually used in `form_companion_generator` to support restoration,
+  /// but you can use this even if you write [FormField] creation code by hand.
+  /// When you write yourself, use this method to wrap your argument for
+  /// `onChanged` like following:
+  ///
+  /// ```dart
+  /// DropdownButtonFormField(
+  ///   ...
+  ///   onChanged: property.onChanged(context, yourOnChangedArgument);
+  /// )
+  /// ```
+  ValueSetter<F?> onChanged(
+    BuildContext context, // reserved for future use
+    ValueSetter<F?>? onChanged,
+  ) =>
+      (v) {
+        _restorableFieldValue?.setValue(v);
+        onChanged?.call(v);
+      };
+
+  /// Wraps specified [onChanged], which takes non-nullable value,
+  /// with infrastructure support logic for state restoration.
+  ///
+  /// This is usually used in `form_companion_generator` to support restoration,
+  /// but you can use this even if you write [FormField] creation code by hand.
+  /// When you write yourself, use this method to wrap your argument for
+  /// `onChanged` like following:
+  ///
+  /// ```dart
+  /// TextFormField(
+  ///   ...
+  ///   onChanged: property.onChangedNonNull(context, yourOnChangedArgument);
+  /// )
+  /// ```
+  ValueSetter<F> onChangedNonNull(
+    BuildContext context, // reserved for future use
+    ValueSetter<F>? onChanged,
+  ) =>
+      (v) {
+        _restorableFieldValue?.setValue(v);
+        onChanged?.call(v);
+      };
+
+  /// Wraps `initialValue`, which is taken from [getFieldValue],
+  /// with infrastructure support logic for state restoration.
+  ///
+  /// This is usually used in `form_companion_generator` to support restoration,
+  /// but you can use this even if you write [FormField] creation code by hand.
+  /// When you write yourself, use this method to wrap your argument for
+  /// `initialValue` like following:
+  ///
+  /// ```dart
+  /// TextFormField(
+  ///   ...
+  ///   initialValue: property.getInitialValue(context);
+  /// )
+  /// ```
+  F? getInitialValue(BuildContext context) {
+    final initialValue = getFieldValue(
+      Localizations.maybeLocaleOf(context) ?? const Locale('en-US'),
+    );
+    _restorableFieldValue?.tryScheduleRestoration(
+      initialValue,
+      (restoredValue, hasError) {
+        presenter.presenterFeatures.restoreField(
+          context,
+          name,
+          restoredValue,
+          hasError: hasError,
+        );
+      },
+    );
+
+    return initialValue;
+  }
+
   /// Gets a field value (rather than property value) for form field.
   ///
   /// This value calls [ValueConverter.toFieldValue]
   /// with the property value and [locale].
-  F? getFieldValue(Locale locale) => _valueConverter.toFieldValue(
-        presenter._properties.getValue(name) as P?,
-        locale,
-      );
+  F? getFieldValue(Locale locale) {
+    final value = _valueConverter.toFieldValue(
+      presenter._properties.getValue(name) as P?,
+      locale,
+    );
+    return value;
+  }
 
   /// Set a field value (rather than property value) from form field.
   ///
@@ -102,7 +213,8 @@ class PropertyDescriptor<P extends Object, F extends Object> {
   }
 
   /// State of pending async validations.
-  final _PendingAsyncValidations _pendingAsyncValidations;
+  final _PendingAsyncValidations _pendingAsyncValidations =
+      _PendingAsyncValidations();
 
   /// Whether any asynchronous validations is running now.
   bool get hasPendingAsyncValidations => _pendingAsyncValidations.value;
@@ -120,6 +232,8 @@ class PropertyDescriptor<P extends Object, F extends Object> {
     required Equality<F?>? fieldValueEquality,
     required Equality<P?>? propertyValueEquality,
     required ValueConverter<P, F>? valueConverter,
+    required this.valueTraits,
+    required RestorableValueFactory<F>? restorableValueFactory,
   })  : _propertyValueEquality = propertyValueEquality ?? Equality<P?>(),
         _onPropertyChanged = onPropertyChanged,
         _valueConverter = valueConverter ?? DefaultValueConverter<P, F>(),
@@ -133,7 +247,7 @@ class PropertyDescriptor<P extends Object, F extends Object> {
               ),
             )
             .toList(),
-        _pendingAsyncValidations = _PendingAsyncValidations() {
+        _restorableFieldValueFactory = restorableValueFactory {
     _validatorFactories.add(
       createValidatorFactoryFromConverter<P, F>(_valueConverter),
     );
@@ -168,6 +282,7 @@ class PropertyDescriptor<P extends Object, F extends Object> {
         () => presenter._validationContext,
         () => _validationContext,
         (v) => _validationContext = v,
+        this,
       ).asValidtor();
 }
 
@@ -305,6 +420,7 @@ class FormProperties {
     return property;
   }
 
+  @protected
   _PropertyState _getState(String name) {
     final state = _states[name];
     if (state == null) {
@@ -442,4 +558,74 @@ extension FormPropertiesExtension on FormProperties {
   /// input auto completion friendly syntax.
   bool hasPendingAsyncValidations(String name) =>
       getDescriptor(name).hasPendingAsyncValidations;
+
+  /// Wraps specified [onChanged], which takes nullable value,
+  /// with infrastructure support logic for state restoration.
+  ///
+  /// This is usually used in `form_companion_generator` to support restoration,
+  /// but you can use this even if you write [FormField] creation code by hand.
+  /// When you write yourself, use this method to wrap your argument for
+  /// `onChanged` like following:
+  ///
+  /// ```dart
+  /// DropdownButtonFormField(
+  ///   ...
+  ///   onChanged: presenter.propertiesState.onChanged(context, 'property-name', yourOnChangedArgument);
+  /// )
+  /// ```
+  ValueSetter<F?> onChanged<F extends Object>(
+    BuildContext context,
+    String name, [
+    ValueSetter<F?>? onChanged,
+  ]) =>
+      getDescriptor<Object, F>(name).onChanged(context, onChanged);
+
+  /// Wraps specified [onChanged], which takes non-nullable value,
+  /// with infrastructure support logic for state restoration.
+  ///
+  /// This is usually used in `form_companion_generator` to support restoration,
+  /// but you can use this even if you write [FormField] creation code by hand.
+  /// When you write yourself, use this method to wrap your argument for
+  /// `onChanged` like following:
+  ///
+  /// ```dart
+  /// TextFormField(
+  ///   ...
+  ///   onChanged: presenter.propertiesState.onChangedNonNull('property', yourOnChangedArgument);
+  /// )
+  /// ```
+  ValueSetter<F> onChangedNonNull<F extends Object>(
+    BuildContext context,
+    String name, [
+    ValueSetter<F>? onChanged,
+  ]) =>
+      getDescriptor<Object, F>(name).onChangedNonNull(context, onChanged);
+
+  /// Wraps specified `initialValue`,
+  /// which is taken from [PropertyDescriptor.getFieldValue],
+  /// with infrastructure support logic for state restoration.
+  ///
+  /// This is usually used in `form_companion_generator` to support restoration,
+  /// but you can use this even if you write [FormField] creation code by hand.
+  /// When you write yourself, use this method to wrap your argument for
+  /// `initialValue` like following:
+  ///
+  /// ```dart
+  /// TextFormField(
+  ///   ...
+  ///   initialValue: presenter.propertiesState.getInitialValue(context, 'property-name');
+  /// )
+  /// ```
+  F? getInitialValue<F extends Object>(
+    BuildContext context,
+    String name,
+  ) =>
+      getDescriptor<Object, F>(name).getInitialValue(context);
+}
+
+/// **DO NOT EXPORT** Internal extensions of [FormProperties].
+@internal
+extension FormPropertiesInternalExtension on FormProperties {
+  /// Gets a field value type of specified [PropertyDescriptor].
+  Type getFieldValueType(String name) => getDescriptor(name)._fieldValueType;
 }

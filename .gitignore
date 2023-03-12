@@ -82,3 +82,7 @@ build/
 # `pubspec.lock` should be ignored because these are library packages
 # rather than application packages.
 pubspec.lock
+
+# ...but, committing root pubspec.lock is recommented as
+# https://melos.invertase.dev/guides/migrations#versioning-of-melos-in-workspaces
+!/pubspec.lock

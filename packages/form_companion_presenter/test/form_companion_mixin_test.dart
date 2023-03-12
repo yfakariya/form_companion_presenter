@@ -166,7 +166,7 @@ Widget _app(
       ],
     );
 
-class Presenter with CompanionPresenterMixin, FormCompanionMixin {
+class Presenter extends TestFormCompanionPresenter {
   final FutureOr<void> Function() _doSubmitCalled;
   final void Function(OnPropertiesChangedEvent) _onPropertiesChangedCalled;
 
@@ -818,7 +818,7 @@ void main() {
       );
 
       final key = presenter.getKey('prop', lastContext)
-          as GlobalObjectKey<FormFieldState<dynamic>>;
+          as GlobalKey<FormFieldState<dynamic>>;
 
       await widgetTester.enterText(
         find.byType(TextFormField),
@@ -879,7 +879,7 @@ void main() {
       );
 
       final key = presenter.getKey('prop', lastContext)
-          as GlobalObjectKey<FormFieldState<dynamic>>;
+          as GlobalKey<FormFieldState<dynamic>>;
 
       await widgetTester.enterText(
         find.byType(TextFormField),
@@ -952,7 +952,7 @@ void main() {
       );
 
       final key = presenter.getKey('prop', lastContext)
-          as GlobalObjectKey<FormFieldState<dynamic>>;
+          as GlobalKey<FormFieldState<dynamic>>;
 
       presenter.submit(lastContext)!();
       expect(
@@ -1026,7 +1026,7 @@ void main() {
       );
 
       final key = presenter.getKey('prop', lastContext)
-          as GlobalObjectKey<FormFieldState<dynamic>>;
+          as GlobalKey<FormFieldState<dynamic>>;
       final submit = presenter.submit(lastContext);
       expect(submit, isNotNull);
 
@@ -1141,7 +1141,7 @@ void main() {
         );
 
         final key = presenter.getKey('prop1', lastContext)
-            as GlobalObjectKey<FormFieldState<dynamic>>;
+            as GlobalKey<FormFieldState<dynamic>>;
 
         await widgetTester.enterText(
           find.byType(TextFormField).first,
@@ -1252,9 +1252,9 @@ void main() {
         );
 
         final key1 = presenter.getKey('prop1', lastContext)
-            as GlobalObjectKey<FormFieldState<dynamic>>;
+            as GlobalKey<FormFieldState<dynamic>>;
         final key2 = presenter.getKey('prop2', lastContext)
-            as GlobalObjectKey<FormFieldState<dynamic>>;
+            as GlobalKey<FormFieldState<dynamic>>;
         final submit = presenter.submit(lastContext);
         expect(submit, isNotNull);
 
@@ -1391,7 +1391,7 @@ void main() {
       );
 
       final fieldState = presenter.getKey('prop', lastContext)
-          as GlobalObjectKey<FormFieldState<dynamic>>;
+          as GlobalKey<FormFieldState<dynamic>>;
 
       if (isSubmitTest) {
         presenter.submit(lastContext)!();

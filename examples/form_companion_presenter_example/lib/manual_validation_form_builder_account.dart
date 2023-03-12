@@ -4,11 +4,10 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:form_builder_companion_presenter/async_validation_indicator.dart';
+import 'package:form_builder_companion_presenter/form_builder_companion_annotation.dart';
 import 'package:form_builder_companion_presenter/form_builder_companion_presenter.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
-import 'package:form_companion_presenter/async_validation_indicator.dart';
-import 'package:form_companion_presenter/form_companion_annotation.dart';
-import 'package:form_companion_presenter/form_companion_presenter.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'l10n/locale_keys.g.dart';
@@ -46,17 +45,22 @@ class ManualValidationFormBuilderAccountPage extends Screen {
   String get title => LocaleKeys.manual_flutterFormBuilderAccount_title.tr();
 
   @override
-  Widget buildPage(BuildContext context, WidgetRef ref) => FormBuilder(
-        autovalidateMode: AutovalidateMode.disabled,
+  Widget buildPage(BuildContext context, WidgetRef ref) {
+    final presenter =
+        ref.read(manualValidationFormBuilderAccountPresenterProvider.notifier);
+    return FormBuilder(
+      autovalidateMode: AutovalidateMode.disabled,
+      child: FormPropertiesRestorationScope(
+        presenter: presenter,
         child: _ManualValidationFormBuilderAccountPane(),
-      );
+      ),
+    );
+  }
 }
 
 class _ManualValidationFormBuilderAccountPane extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final presenter =
-        ref.watch(manualValidationFormBuilderAccountPresenterProvider.notifier);
     final state =
         ref.watch(manualValidationFormBuilderAccountPresenterProvider);
 
@@ -74,7 +78,7 @@ class _ManualValidationFormBuilderAccountPane extends ConsumerWidget {
               labelText: LocaleKeys.id_label.tr(),
               hintText: LocaleKeys.id_hint.tr(),
               suffix: AsyncValidationIndicator(
-                presenter: presenter,
+                presenter: state.value.presenter,
                 propertyName: 'id',
               ),
             ),
@@ -128,8 +132,9 @@ class ManualValidationFormBuilderAccountPresenter
             (_) => FormBuilderValidators.required(),
           ],
         )
-        ..enumerated<Gender>(
+        ..enumerated(
           name: 'gender',
+          enumValues: Gender.values,
         )
         ..integerText(
           name: 'age',
@@ -138,8 +143,9 @@ class ManualValidationFormBuilderAccountPresenter
             (_) => FormBuilderValidators.min(0),
           ],
         )
-        ..enumeratedList<Region>(
+        ..enumeratedList(
           name: 'preferredRegions',
+          enumValues: Region.values,
         ),
     );
   }

@@ -1,5 +1,6 @@
 // See LICENCE file in the root.
 
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'auto_validation_form_builder_account.dart';
 import 'auto_validation_form_builder_booking.dart';
@@ -13,62 +14,80 @@ import 'manual_validation_form_builder_booking.dart';
 import 'manual_validation_vanilla_form.dart';
 import 'simple_form.dart';
 
+// We use pageBuilder due to go-router state retoration issue:
+//   https://github.com/flutter/flutter/issues/117683
+// (It is because internally created Page object have restoration ID with hashCode of GoRoute!)
+GoRoute _route({
+  required String path,
+  required String name,
+  required Widget Function(BuildContext, GoRouterState) builder,
+}) =>
+    GoRoute(
+      path: path,
+      name: name,
+      pageBuilder: (context, state) => MaterialPage<void>(
+        name: name,
+        restorationId: path,
+        child: builder(context, state),
+      ),
+    );
+
 final routes = [
-  GoRoute(
+  _route(
     path: '/',
     name: 'home',
     builder: (context, state) => HomePage(),
   ),
-  GoRoute(
+  _route(
     path: '/vanilla/manual/account',
     name: 'manual.vanilla',
     builder: (context, state) => ManualValidationVanillaFormAccountPage(),
   ),
-  GoRoute(
+  _route(
     path: '/vanilla/bulk-auto/account',
     name: 'bulk_auto.vanilla',
     builder: (context, state) => BulkAutoValidationVanillaFormAccountPage(),
   ),
-  GoRoute(
+  _route(
     path: '/vanilla/auto/account',
     name: 'auto.vanilla',
     builder: (context, state) => AutoValidationVanillaFormAccountPage(),
   ),
-  GoRoute(
+  _route(
     path: '/form-builder/manual/account',
     name: 'manual.flutterFormBuilderAccount',
     builder: (context, state) => ManualValidationFormBuilderAccountPage(),
   ),
-  GoRoute(
+  _route(
     path: '/form-builder/manual/booking',
     name: 'manual.flutterFormBuilderBooking',
     builder: (context, state) => ManualValidationFormBuilderBookingPage(),
   ),
-  GoRoute(
+  _route(
     path: '/form-builder/bulk-auto/account',
     name: 'bulk_auto.flutterFormBuilderAccount',
     builder: (context, state) => BulkAutoValidationFormBuilderAccountPage(),
   ),
-  GoRoute(
+  _route(
     path: '/form-builder/bulk-auto/booking',
     name: 'bulk_auto.flutterFormBuilderBooking',
     builder: (context, state) => BulkAutoValidationFormBuilderBookingPage(),
   ),
-  GoRoute(
+  _route(
     path: '/form-builder/auto/account',
     name: 'auto.flutterFormBuilderAccount',
     builder: (context, state) => AutoValidationFormBuilderAccountPage(),
   ),
-  GoRoute(
+  _route(
     path: '/form-builder/auto/booking',
     name: 'auto.flutterFormBuilderBooking',
     builder: (context, state) => AutoValidationFormBuilderBookingPage(),
   ),
-  GoRoute(
+  _route(
     path: '/simple',
     name: 'simple',
     builder: (context, state) => SimpleAccountPage(),
   ),
 ];
 
-final router = GoRouter(routes: routes);
+final router = GoRouter(routes: routes, restorationScopeId: 'route');

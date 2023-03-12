@@ -19,20 +19,23 @@ builders:
           default:
             autovalidateMode: '#ARGUMENT# ?? #AUTO_VALIDATE_MODE#'
             decoration: '#ARGUMENT# ?? #DEFAULT_VALUE_COPY_OR_NEW#(labelText: #LABEL_TEMPLATE#, hintText: #HINT_TEMPLATE#)'
+            onChanged: '#PROPERTY#.onChanged(#BUILD_CONTEXT#, #ARGUMENT#)'
           DropdownButtonFormField:
             items:
               item_template: 'DropdownMenuItem<#ITEM_VALUE_TYPE#>(value: #ITEM_VALUE#, child: #ITEM_WIDGET_TEMPLATE#)'
-            onChanged: '#ARGUMENT# ?? (_) {}' # Tip: required to work correctly
           FormBuilderDropdown:
             items:
               item_template: 'DropdownMenuItem<#ITEM_VALUE_TYPE#>(value: #ITEM_VALUE#, child: #ITEM_WIDGET_TEMPLATE#)'
-            onChanged: '#ARGUMENT# ?? (_) {}' # Tip: required to work correctly
           FormBuilderCheckboxGroup:
             options:
               item_template: 'FormBuilderFieldOption<#ITEM_VALUE_TYPE#>(value: #ITEM_VALUE#, child: #ITEM_WIDGET_TEMPLATE#)'
           FormBuilderChoiceChip:
             options:
               item_template: 'FormBuilderChipOption<#ITEM_VALUE_TYPE#>(value: #ITEM_VALUE#, child: #ITEM_WIDGET_TEMPLATE#)'
+          FormBuilderDateRangePicker:
+              obscureText : '#ARGUMENT# ?? #PROPERTY#.valueTraits.isSensitive'
+          FormBuilderDateTimePicker:
+              obscureText : '#ARGUMENT# ?? #PROPERTY#.valueTraits.isSensitive'
           FormBuilderFilterChip:
             options:
               item_template: 'FormBuilderChipOption<#ITEM_VALUE_TYPE#>(value: #ITEM_VALUE#, child: #ITEM_WIDGET_TEMPLATE#)'
@@ -42,8 +45,12 @@ builders:
           FormBuilderSegmentedControl:
             options:
               item_template: 'FormBuilderFieldOption<#ITEM_VALUE_TYPE#>(value: #ITEM_VALUE#, child: #ITEM_WIDGET_TEMPLATE#)'
+          FormBuilderTextField:
+            obscureText : '#ARGUMENT# ?? #PROPERTY#.valueTraits.isSensitive'
           TextFormField:
             contextMenuBuilder:
               imports:
                 'AdaptiveTextSelectionToolbar': 'package:flutter/material.dart'
                 'EditableTextState': 'package:flutter/widgets.dart'
+            obscureText : '#ARGUMENT# ?? #PROPERTY#.valueTraits.isSensitive'
+            onChanged: '#PROPERTY#.onChangedNonNull(#BUILD_CONTEXT#, #ARGUMENT#)'

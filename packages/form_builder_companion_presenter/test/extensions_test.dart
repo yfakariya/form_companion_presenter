@@ -169,6 +169,15 @@ class _TestPresenterFeatures extends CompanionPresenterFeatures {
   void handleCanceledAsyncValidationError(AsyncError error) {
     printOnFailure(error.toString());
   }
+
+  @override
+  void restoreField(
+    BuildContext context,
+    String name,
+    Object? value, {
+    required bool hasError,
+  }) =>
+      throw UnimplementedError();
 }
 
 class Presenter with CompanionPresenterMixin {
@@ -264,42 +273,13 @@ void main() {
   }
 
   group('FormBuilderCompanionPropertyDescriptorsBuilderExtension', () {
-    test('booleanList default', () {
-      final target = PropertyDescriptorsBuilder()
-        ..booleanList(
-          name: 'prop',
-        );
-      verifyPropertyDescriptor<List<bool>, List<bool>>(
-        target,
-        name: 'prop',
-        initialPropertyValue: null,
-        initialFieldValue: null,
-        value: [true],
-      );
-    });
-
-    test('booleanList fully specified', () async {
-      final target = PropertyDescriptorsBuilder()
-        ..booleanList(
-          name: 'prop',
-          initialValues: [true],
-        );
-
-      verifyPropertyDescriptor<List<bool>, List<bool>>(
-        target,
-        name: 'prop',
-        initialPropertyValue: [true],
-        initialFieldValue: [true],
-        value: [true],
-      );
-    });
-
     test('enumeratedList default', () {
       final target = PropertyDescriptorsBuilder()
         ..enumeratedList(
           name: 'prop',
+          enumValues: _MyEnum.values,
         );
-      verifyPropertyDescriptor<List<Enum>, List<Enum>>(
+      verifyPropertyDescriptor<List<_MyEnum>, List<_MyEnum>>(
         target,
         name: 'prop',
         initialPropertyValue: null,
@@ -313,6 +293,7 @@ void main() {
         ..enumeratedList(
           name: 'prop',
           initialValues: [_MyEnum.one],
+          enumValues: _MyEnum.values,
         );
 
       verifyPropertyDescriptor<List<_MyEnum>, List<_MyEnum>>(
@@ -431,42 +412,13 @@ void main() {
   });
 
   group('FormCompanionBuilderCompanionPropertyDescriptorsBuilderExtension', () {
-    test('booleanListWithField default', () {
-      final target = PropertyDescriptorsBuilder()
-        ..booleanListWithField(
-          name: 'prop',
-        );
-      verifyPropertyDescriptor<List<bool>, List<bool>>(
-        target,
-        name: 'prop',
-        initialPropertyValue: null,
-        initialFieldValue: null,
-        value: [true],
-      );
-    });
-
-    test('booleanListWithField fully specified', () async {
-      final target = PropertyDescriptorsBuilder()
-        ..booleanListWithField(
-          name: 'prop',
-          initialValues: [true],
-        );
-
-      verifyPropertyDescriptor<List<bool>, List<bool>>(
-        target,
-        name: 'prop',
-        initialPropertyValue: [true],
-        initialFieldValue: [true],
-        value: [true],
-      );
-    });
-
     test('enumeratedListWithField default', () {
       final target = PropertyDescriptorsBuilder()
         ..enumeratedListWithField(
           name: 'prop',
+          enumValues: _MyEnum.values,
         );
-      verifyPropertyDescriptor<List<Enum>, List<Enum>>(
+      verifyPropertyDescriptor<List<_MyEnum>, List<_MyEnum>>(
         target,
         name: 'prop',
         initialPropertyValue: null,
@@ -480,6 +432,7 @@ void main() {
         ..enumeratedListWithField(
           name: 'prop',
           initialValues: [_MyEnum.one],
+          enumValues: _MyEnum.values,
         );
 
       verifyPropertyDescriptor<List<_MyEnum>, List<_MyEnum>>(

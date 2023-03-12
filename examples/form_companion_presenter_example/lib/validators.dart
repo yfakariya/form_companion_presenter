@@ -79,7 +79,12 @@ class Waiter {
   Future<String?> run(Duration wait, String? Function() validator) =>
       _function(wait, validator);
 
-  static final Waiter defaultLogic = Waiter(Future<String?>.delayed);
+  static final Waiter defaultLogic = Waiter(
+    (duration, validator) => Future.delayed(
+      duration,
+      () => validator(),
+    ),
+  );
 }
 
 @riverpod

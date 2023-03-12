@@ -2,13 +2,16 @@
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+//!macro beginBuilderOnly
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+//!macro endBuilderOnly
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:form_builder_companion_presenter/async_validation_indicator.dart';
+import 'package:form_builder_companion_presenter/form_builder_companion_annotation.dart';
 import 'package:form_builder_companion_presenter/form_builder_companion_presenter.dart';
+//!macro beginBuilderOnly
 import 'package:form_builder_validators/form_builder_validators.dart';
-import 'package:form_companion_presenter/async_validation_indicator.dart';
-import 'package:form_companion_presenter/form_companion_annotation.dart';
-import 'package:form_companion_presenter/form_companion_presenter.dart';
+//!macro endBuilderOnly
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 //!macro beginNotManualOnly
@@ -40,16 +43,21 @@ class AccountPageTemplate extends Screen {
   String get title => 'TITLE_TEMPLATE';
 
   @override
-  Widget buildPage(BuildContext context, WidgetRef ref) => FormBuilder(
-        //!macro formValidateMode
+  Widget buildPage(BuildContext context, WidgetRef ref) {
+    final presenter = ref.read(accountPresenterTemplateProvider.notifier);
+    return FormBuilder(
+      //!macro formValidateMode
+      child: FormPropertiesRestorationScope(
+        presenter: presenter,
         child: _AccountPaneTemplate(),
-      );
+      ),
+    );
+  }
 }
 
 class _AccountPaneTemplate extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final presenter = ref.watch(accountPresenterTemplateProvider.notifier);
     final state = ref.watch(accountPresenterTemplateProvider);
 
     if (state is! AsyncData<$AccountPresenterTemplateFormProperties>) {
@@ -65,7 +73,7 @@ class _AccountPaneTemplate extends ConsumerWidget {
               labelText: LocaleKeys.id_label.tr(),
               hintText: LocaleKeys.id_hint.tr(),
               suffix: AsyncValidationIndicator(
-                presenter: presenter,
+                presenter: state.value.presenter,
                 propertyName: 'id',
               ),
             ),
@@ -131,8 +139,9 @@ class AccountPresenterTemplate extends _$AccountPresenterTemplate
             //!macro endBuilderOnly
           ],
         )
-        ..enumerated<Gender>(
+        ..enumerated(
           name: 'gender',
+          enumValues: Gender.values,
         )
         ..integerText(
           name: 'age',
@@ -148,8 +157,9 @@ class AccountPresenterTemplate extends _$AccountPresenterTemplate
           ],
         )
         //!macro beginBuilderOnly
-        ..enumeratedList<Region>(
+        ..enumeratedList(
           name: 'preferredRegions',
+          enumValues: Region.values,
         )
       //!macro endBuilderOnly
       ,

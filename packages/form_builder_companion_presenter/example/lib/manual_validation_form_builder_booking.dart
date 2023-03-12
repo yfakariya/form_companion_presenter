@@ -4,9 +4,8 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:form_builder_companion_presenter/form_builder_companion_annotation.dart';
 import 'package:form_builder_companion_presenter/form_builder_companion_presenter.dart';
-import 'package:form_companion_presenter/form_companion_annotation.dart';
-import 'package:form_companion_presenter/form_companion_presenter.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'l10n/locale_keys.g.dart';
@@ -43,10 +42,17 @@ class ManualValidationFormBuilderBookingPage extends Screen {
   String get title => LocaleKeys.manual_flutterFormBuilderBooking_title.tr();
 
   @override
-  Widget buildPage(BuildContext context, WidgetRef ref) => FormBuilder(
-        autovalidateMode: AutovalidateMode.disabled,
+  Widget buildPage(BuildContext context, WidgetRef ref) {
+    final presenter =
+        ref.read(manualValidationFormBuilderBookingPresenterProvider.notifier);
+    return FormBuilder(
+      autovalidateMode: AutovalidateMode.disabled,
+      child: FormPropertiesRestorationScope(
+        presenter: presenter,
         child: _ManualValidationFormBuilderBookingPane(),
-      );
+      ),
+    );
+  }
 }
 
 class _ManualValidationFormBuilderBookingPane extends ConsumerWidget {
@@ -181,9 +187,11 @@ class ManualValidationFormBuilderBookingPresenter
         )
         ..enumeratedWithField<RoomType, FormBuilderRadioGroup<RoomType>>(
           name: 'roomType',
+          enumValues: RoomType.values,
         )
-        ..enumeratedList<MealType>(
+        ..enumeratedList(
           name: 'mealOffers',
+          enumValues: MealType.values,
         )
         ..boolean(
           name: 'smoking',

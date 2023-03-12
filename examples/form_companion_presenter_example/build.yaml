@@ -6,12 +6,19 @@ targets:
           include:
             - lib/models.dart
           exclude:
+            - lib/*.g.dart
+            - lib/*.fcp.dart
+            - lib/*.freezed.dart
             - lib/**/*.g.dart
             - lib/**/*.fcp.dart
             - lib/**/*.freezed.dart
       riverpod_generator:
         generate_for:
           exclude:
+            - lib/*.g.dart
+            - lib/*.fcp.dart
+            - lib/*.freezed.dart
+            - lib/**/*.g.dart
             - lib/**/*.fcp.dart
             - lib/**/*.freezed.dart
       form_companion_generator:
@@ -25,8 +32,11 @@ targets:
             - lib/routes.dart
             - lib/screen.dart
             - lib/validators.dart
+            - lib/*.g.dart
+            - lib/*.fcp.dart
             - lib/*.freezed.dart
             - lib/**/*.g.dart
+            - lib/**/*.fcp.dart
             - lib/**/*.freezed.dart
           include:
             - lib/*.dart
