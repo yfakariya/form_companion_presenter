@@ -133,10 +133,7 @@ class _FormPropertiesRestorationScopeState
   }
 
   @override
-  Widget build(BuildContext context) => _FormPropertiesRestorationScope(
-        state: this,
-        child: widget._child,
-      );
+  Widget build(BuildContext context) => widget._child;
 
   @override
   void restoreState(RestorationBucket? oldBucket, bool initialRestore) {
@@ -159,19 +156,4 @@ class _FormPropertiesRestorationScopeState
       }
     }
   }
-
-  @override
-  void setState(VoidCallback fn) => super.setState(fn);
-}
-
-/// Provides state access from subtree.
-class _FormPropertiesRestorationScope extends InheritedWidget {
-  final _FormPropertiesRestorationScopeState state;
-  _FormPropertiesRestorationScope({required this.state, required super.child});
-
-  @override
-  bool updateShouldNotify(
-    covariant _FormPropertiesRestorationScope oldWidget,
-  ) =>
-      state != oldWidget.state;
 }
