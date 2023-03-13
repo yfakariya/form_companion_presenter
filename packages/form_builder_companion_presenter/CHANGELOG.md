@@ -1,3 +1,7 @@
+## 0.5.0+1
+
+ - **FIX**: license term and use symlinks. ([9c0f8491](https://github.com/yfakariya/form_companion_presenter/commit/9c0f849102abb23de23a23e29ff134058f0a70b0))
+
 ## 0.5.0
 
 > Note: This release has breaking changes.
