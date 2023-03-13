@@ -3,6 +3,38 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2023-03-13
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`form_builder_companion_presenter` - `v0.5.0+1`](#form_builder_companion_presenter---v0501)
+ - [`form_companion_generator` - `v0.5.0+1`](#form_companion_generator---v0501)
+ - [`form_companion_presenter` - `v0.5.0+1`](#form_companion_presenter---v0501)
+
+---
+
+#### `form_builder_companion_presenter` - `v0.5.0+1`
+
+ - **FIX**: license term and use symlinks. ([9c0f8491](https://github.com/yfakariya/form_companion_presenter/commit/9c0f849102abb23de23a23e29ff134058f0a70b0))
+
+#### `form_companion_generator` - `v0.5.0+1`
+
+ - **FIX**: license term and use symlinks. ([9c0f8491](https://github.com/yfakariya/form_companion_presenter/commit/9c0f849102abb23de23a23e29ff134058f0a70b0))
+
+#### `form_companion_presenter` - `v0.5.0+1`
+
+ - **FIX**: license term and use symlinks. ([9c0f8491](https://github.com/yfakariya/form_companion_presenter/commit/9c0f849102abb23de23a23e29ff134058f0a70b0))
+ - **FIX**: constants error in building web. ([639bb402](https://github.com/yfakariya/form_companion_presenter/commit/639bb4027394cf8db92a0879d57486802e77e1d8))
+
+
 ## 2023-03-12
 
 ### Changes

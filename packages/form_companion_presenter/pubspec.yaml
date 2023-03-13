@@ -3,7 +3,7 @@ description: >
   Helps building presenter for forms with validations in model layer
   including asynchronous validations, submittion button availability,
   etc.
-version: 0.5.0
+version: 0.5.0+1
 repository: https://github.com/yfakariya/form_companion_presenter
 issue_tracker: https://github.com/yfakariya/form_companion_presenter/issues
 
