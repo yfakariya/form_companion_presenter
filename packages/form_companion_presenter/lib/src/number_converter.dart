@@ -2,8 +2,7 @@
 
 import '../form_companion_presenter.dart';
 
-const _maxInt = 0x7FFFFFFFFFFFFFFF;
-const _minInt = 0x8000000000000000;
+import 'number/number_io.dart' if (dart.library.html) 'number/number_web.dart';
 
 /// A [ValueConverter] between [int] property value type and
 /// [double] form field value type.
@@ -11,12 +10,12 @@ final intDoubleConverter = ValueConverter<int, double>.fromCallbacks(
   toFieldValue: (v, l) => v?.toDouble(),
   toPropertyValue: (v, l) {
     if (v != null) {
-      if (v < _minInt) {
+      if (v < minInt) {
         return FailureResult(
           'Value is too small.',
           'Value $v is too small for 64bit integer.',
         );
-      } else if (v > _maxInt) {
+      } else if (v > maxInt) {
         return FailureResult(
           'Value is too large.',
           'Value $v is too large for 64bit integer.',
