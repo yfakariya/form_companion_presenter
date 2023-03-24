@@ -22,7 +22,7 @@ jobs:
 
     steps:
       # actions/checkout@v3.3.0
-      - uses: actions/checkout@24cb9080177205b6e8c946b17badbe402adc938f
+      - uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3
       - uses: ./.github/actions/build-and-test
 
   # Enables when newer stable version is released -- test each versions.
@@ -33,7 +33,7 @@ jobs:
 
   #   steps:
   #     # actions/checkout@v3.3.0
-  #     - uses: actions/checkout@24cb9080177205b6e8c946b17badbe402adc938f
+  #     - uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3
   #     - uses: ./.github/workflows/actions/build-and-test
   #       with:
   #         flutter-version: '3.7'
