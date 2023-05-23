@@ -64,7 +64,7 @@ scripts:
         - 'form_companion_generator_test_targets'
 
   test:grind:
-    run: melos exec -c 1 --fail-fast -- grind 
+    run: melos exec -c 1 --fail-fast -- fvm dart pub run grinder
     description: Run grind tests for a specific package in this project.
     packageFilters:
       flutter: true
