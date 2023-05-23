@@ -26,14 +26,14 @@ jobs:
       - uses: ./.github/actions/build-and-test
 
   # Enables when newer stable version is released -- test each versions.
-  # build-3_7:
-  #   runs-on: ubuntu-latest
+  build-3_7:
+    runs-on: ubuntu-latest
 
-  #   timeout-minutes: 15
+    timeout-minutes: 15
 
-  #   steps:
-  #     # actions/checkout@v3.3.0
-  #     - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
-  #     - uses: ./.github/workflows/actions/build-and-test
-  #       with:
-  #         flutter-version: '3.7'
+    steps:
+      # actions/checkout@v3.3.0
+      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
+      - uses: ./.github/actions/build-and-test
+        with:
+          flutter-version: '3.7.12'

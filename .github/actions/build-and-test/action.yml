@@ -41,6 +41,11 @@ runs:
       run: fvm install
       shell: bash
 
+    - name: Set default flutter version
+      if: inputs.flutter-version != 'any'
+      run: fvm global ${{ inputs.flutter-version }}
+      shell: bash
+
     - name: Initialize grinder project
       run: fvm flutter pub get
       working-directory: tool/dev_env
